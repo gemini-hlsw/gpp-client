@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpp_client"
+description = "Gemini Program Platform client."
+readme = "README.md"
+authors = [{ name = "NOIRLab" }]
+requires-python=">=3.10.0"
+dependencies = ["gql[aiohttp, websockets]>=3.5.2"]
+version = "0.0.0"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-xdist",
+    "pytest-cov",
+    "pytest-django",
+    "pytest-asyncio",
+    "pytest-remotedata",
+    "ruff",
+]
+docs = ["sphinx", "sphinx-rtd-theme", "sphinx-autobuild", "furo"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
