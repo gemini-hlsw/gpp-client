@@ -7,8 +7,8 @@ name = "gpp_client"
 description = "Gemini Program Platform client."
 readme = "README.md"
 authors = [{ name = "NOIRLab" }]
-requires-python=">=3.10.0"
-dependencies = ["gql[aiohttp, websockets]>=3.5.2"]
+requires-python = ">=3.10.0"
+dependencies = ["gql[aiohttp, websockets]>=3.5.2", "astropy>=5.3.4"]
 version = "0.0.0"
 
 [project.optional-dependencies]

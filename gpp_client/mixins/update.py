@@ -3,14 +3,41 @@ This module provides reusable mixins for updating resources via GraphQL,
 supporting batch updates, updates by ID, and updates filtered by program ID.
 """
 
-__all__ = ["UpdateByIdViaBatchMixin", "UpdateBatchMixin", "UpdateBatchByProgramIdMixin"]
+__all__ = [
+    "UpdateByIdMixin",
+    "UpdateByIdViaBatchMixin",
+    "UpdateBatchMixin",
+    "UpdateBatchByProgramIdMixin",
+]
 
 from typing import Any, Optional
 
 from .utils import create_program_id_filter
 
 
-# TODO: Write a _update_by_id.
+async def _update_by_id(
+    *,
+    client: Any,
+    query: str,
+    input_values: dict[str, Any],
+) -> dict[str, Any]:
+    """Execute a GraphQL mutation to update a single resource by identifier.
+
+    Parameters
+    ----------
+    client : Any
+        The GraphQL client instance used to execute the mutation.
+    query : str
+        The GraphQL mutation string, with `{fields}` already substituted.
+    input_values : dict[str, Any]
+        The full input object to be passed as the GraphQL input variable.
+
+    Returns
+    -------
+    dict[str, Any]
+        The result of the mutation, as returned by the GraphQL API.
+    """
+    return await client._execute(query=query, variables={"input": input_values})
 
 
 async def _update_batch(
@@ -44,19 +71,47 @@ async def _update_batch(
     dict[str, Any]
         The result of the mutation, including updated resources.
     """
-    input_data = {
+    input_values = {
         "SET": set_values,
         "WHERE": where,
         "LIMIT": limit,
         "includeDeleted": include_deleted,
     }
-    return await client._execute(query=query, variables={"input": input_data})
+    return await client._execute(query=query, variables={"input": input_values})
+
+
+class UpdateByIdMixin:
+    """"""
+
+    async def update_by_id(
+        self, *, input_values: dict[str, Any], fields: Optional[str] = None
+    ) -> dict[str, Any]:
+        """Execute an update mutation on a single resource.
+
+        Parameters
+        ----------
+        input_values : dict[str, Any]
+            The full GraphQL input block.
+        fields : str, optional
+            Fields to return in the mutation response.
+
+        Returns
+        -------
+        dict[str, Any]
+            The result of the mutation.
+        """
+        client = self.get_client()
+        query = self.get_query(query_id="update_by_id", fields=fields)
+
+        return await _update_by_id(
+            client=client, query=query, input_values=input_values
+        )
 
 
 class UpdateByIdViaBatchMixin:
     """Provides an update_by_id method using a batch-style update query."""
 
-    async def update_by_id(
+    async def update_by_id_via_batch(
         self,
         *,
         resource_id: str,
@@ -64,7 +119,7 @@ class UpdateByIdViaBatchMixin:
         include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Update a single resource by its ID.
+        """Update a single resource by its ID via batch method.
 
         Parameters
         ----------
@@ -83,7 +138,7 @@ class UpdateByIdViaBatchMixin:
             The updated resource.
         """
         client = self.get_client()
-        query = self.get_query(query_id="update_by_id", fields=fields)
+        query = self.get_query(query_id="update_by_id_via_batch", fields=fields)
 
         where = {"id": {"EQ": resource_id}}
 

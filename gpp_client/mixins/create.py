@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 
 async def _create(
-    *, client: Any, query: str, set_values: dict[str, Any]
+    *, client: Any, query: str, input_values: dict[str, Any]
 ) -> dict[str, Any]:
     """Helper to perform a create mutation.
 
@@ -20,31 +20,29 @@ async def _create(
         The GraphQL client instance.
     query : str
         The GraphQL mutation string with `{fields}` already substituted.
-    set_values : dict[str, Any]
-        The input data to send as the `SET` payload.
+    input_values : dict[str, Any]
+        The full input dictionary to pass under the `input` variable.
 
     Returns
     -------
     dict[str, Any]
         The GraphQL response for the newly created resource.
     """
-    input_data: dict[str, Any] = {"SET": set_values}
-
-    return await client._execute(query=query, variables={"input": input_data})
+    return await client._execute(query=query, variables={"input": input_values})
 
 
 class CreateMixin:
     """Mixin to create a new resource using a GraphQL mutation."""
 
     async def create(
-        self, *, set_values: dict[str, Any], fields: Optional[str] = None
+        self, *, input_values: dict[str, Any], fields: Optional[str] = None
     ) -> dict[str, Any]:
         """Create a new resource via a GraphQL mutation.
 
         Parameters
         ----------
-        set_values : dict[str, Any]
-            The fields to include in the new resource.
+        input_values : dict[str, Any]
+            The full input dictionary to pass to the GraphQL mutation.
         fields : str, optional
             Optional fields to return in the mutation response. Defaults to `default_fields`.
 
@@ -56,4 +54,4 @@ class CreateMixin:
         client = self.get_client()
         query = self.get_query(query_id="create", fields=fields)
 
-        return await _create(client=client, query=query, set_values=set_values)
+        return await _create(client=client, query=query, input_values=input_values)

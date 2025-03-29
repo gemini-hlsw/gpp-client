@@ -9,6 +9,7 @@ from .restore import RestoreBatchByProgramIdMixin, RestoreByIdViaBatchMixin
 from .update import (
     UpdateBatchByProgramIdMixin,
     UpdateBatchMixin,
+    UpdateByIdMixin,
     UpdateByIdViaBatchMixin,
 )
 
@@ -25,4 +26,5 @@ __all__ = [
     "UpdateBatchByProgramIdMixin",
     "UpdateBatchMixin",
     "UpdateByIdViaBatchMixin",
+    "UpdateByIdMixin",
 ]
