@@ -44,6 +44,7 @@ class BaseManager:
         "restore_by_id": None,
         "restore_by_program_id": None,
         "update_by_id": None,
+        "update_by_id_via_batch": None,
         "update_batch": None,
         "update_batch_by_program_id": None,
         "create": None,
@@ -56,6 +57,8 @@ class BaseManager:
 
     def __init__(self, client: "GPPClient") -> None:
         self._client = client
+        self._submanagers: dict[str, BaseManager] = {}
+        self.register_submanagers()
 
     @property
     def registered_queries(self) -> set[str]:
@@ -69,6 +72,10 @@ class BaseManager:
             The set of query IDs with registered templates.
         """
         return {k for k, v in self.queries.items() if v is not None}
+
+    @property
+    def submanagers(self) -> dict[str, "BaseManager"]:
+        return self._submanagers
 
     def get_client(self) -> "GPPClient":
         """Return the GraphQL client.
@@ -127,7 +134,7 @@ class BaseManager:
         ):
             raise NotImplementedError(
                 f"{self.__class__.__name__} must define `resource_id_field` as a "
-                "string."
+                "string or pass into function called."
             )
         return self.resource_id_field
 
@@ -151,3 +158,16 @@ class BaseManager:
                 f"{self.__class__.__name__} must define `default_fields` as a string."
             )
         return self.default_fields
+
+    def register_submanagers(self) -> None:
+        """Hook for subclasses to register their submanagers."""
+        pass
+
+    def register_submanager(self, name: str, manager: "BaseManager") -> None:
+        """Register a submanager as an attribute (e.g., self.reference)."""
+        self._submanagers[name] = manager
+        setattr(self, name, manager)
+
+    def get_submanager(self, name: str) -> Optional["BaseManager"]:
+        """Access a submanager by name (e.g., 'reference')."""
+        return self._submanagers.get(name)

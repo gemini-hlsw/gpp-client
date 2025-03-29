@@ -47,6 +47,8 @@ from ...mixins import (
 from ..base_manager import BaseManager
 from . import queries
 
+from ..utils import resolve_single_program_identifier
+
 
 class ProgramNoteManager(
     # Mixins are ordered top-down so that `super()` resolves as expected.
@@ -76,7 +78,7 @@ class ProgramNoteManager(
         "get_by_id": queries.GET_PROGRAM_NOTE,
         "restore_by_id": queries.UPDATE_PROGRAM_NOTES,
         "restore_by_program_id": queries.UPDATE_PROGRAM_NOTES,
-        "update_by_id": queries.UPDATE_PROGRAM_NOTES,
+        "update_by_id_via_batch": queries.UPDATE_PROGRAM_NOTES,
         "update_batch": queries.UPDATE_PROGRAM_NOTES,
         "update_batch_by_program_id": queries.UPDATE_PROGRAM_NOTES,
         "create": queries.CREATE_PROGRAM_NOTE,
@@ -134,38 +136,26 @@ class ProgramNoteManager(
         Raises
         ------
         ValueError
-            If neither `program_id` nor `program_reference` is provided.
-            If both are provided but inconsistent.
+            If zero or more than one identifiers are provided.
         """
-        if not program_id and not program_reference:
-            raise ValueError(
-                "At least one of `program_id` or `program_reference` must be provided."
-            )
+        resource_id_field, resource_id = resolve_single_program_identifier(
+            program_id=program_id,
+            program_reference=program_reference,
+            proposal_reference=proposal_reference,
+        )
 
-        if program_id and program_reference:
-            if not program_reference.endswith(program_id.split("-")[-1]):
-                raise ValueError(
-                    f"Mismatch: `program_id={program_id}` and "
-                    f"`program_reference={program_reference}` must refer to the same "
-                    "program."
-                )
-
-        set_values: dict[str, Any] = {
-            "title": title,
-            "text": text,
-            "isPrivate": is_private,
-            "existence": "PRESENT",
+        input_values: dict[str, Any] = {
+            resource_id_field: resource_id,
+            "SET": {
+                "title": title,
+                "text": text,
+                "isPrivate": is_private,
+                "existence": "PRESENT",
+            }
         }
 
-        if program_id:
-            set_values["programId"] = program_id
-        if program_reference:
-            set_values["programReference"] = program_reference
-        if proposal_reference:
-            set_values["proposalReference"] = proposal_reference
-
         # Delegate to CreateMixin with optional custom fields.
-        return await super().create(set_values=set_values, fields=fields)
+        return await super().create(input_values=input_values, fields=fields)
 
     async def update_by_id(
         self,
@@ -227,7 +217,7 @@ class ProgramNoteManager(
             raise ValueError("At least one field must be provided to update.")
 
         # Delegate to UpdateByIdViaBatchMixin with the provided params.
-        return await super().update_by_id(
+        return await super().update_by_id_via_batch(
             resource_id=resource_id,
             set_values=set_values,
             include_deleted=include_deleted,
