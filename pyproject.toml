@@ -23,6 +23,9 @@ test = [
 ]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinx-autobuild", "furo"]
 
+[project.scripts]
+gpp = "gpp_client.cli.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 
