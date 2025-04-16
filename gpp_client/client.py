@@ -18,6 +18,7 @@ from gql import Client, gql
 import aiohttp
 from gql.transport.aiohttp import AIOHTTPTransport
 
+from .managers.observation import ObservationManager
 from .managers.program_note import ProgramNoteManager
 from .managers.program import ProgramManager
 
@@ -69,6 +70,7 @@ class GPPClient:
         # TODO: Initialize all resource managers.
         self.program_note = ProgramNoteManager(self)
         self.program = ProgramManager(self)
+        self.observation = ObservationManager(self)
 
     async def _execute(
         self,
