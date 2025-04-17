@@ -86,7 +86,6 @@ class GetByIdMixin:
         self,
         *,
         resource_id: str,
-        resource_id_field: Optional[str] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Fetch a single resource by its ID.
@@ -95,8 +94,6 @@ class GetByIdMixin:
         ----------
         resource_id : str
             The unique ID of the resource to retrieve.
-        resource_id_field : str, optional
-            The resource ID field name.
         fields : str, optional
             The fields to return in the response.
 
@@ -107,7 +104,7 @@ class GetByIdMixin:
         """
         client = self.get_client()
         query = self.get_query(query_id="get_by_id", fields=fields)
-        resource_id_field = resource_id_field or self.get_resource_id_field()
+        resource_id_field = self.get_resource_id_field()
 
         return await _get_by_id(
             client=client,

@@ -18,7 +18,7 @@ Each manager must define:
 
 - `default_fields`: a string of default GraphQL fields returned from each query.
 
-- `resource_id_field`: the name of the unique identifier field used for lookups.
+- `resource_id_field`: the name of the unique identifier field used for 'GetByIdMixin'.
 
 Example
 -------
