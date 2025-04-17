@@ -75,7 +75,7 @@ def async_cli_method(
         result = asyncio.run(bound_method(**kwargs))
         if handle_result:
             handle_result(result)
-
+    
     wrapper.__signature__ = sig.replace(
         parameters=list(sig.parameters.values())[1:]
     )  # drop `self`
