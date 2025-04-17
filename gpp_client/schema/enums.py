@@ -412,7 +412,7 @@ class Band(str, Enum):
     B = "B"
     V = "V"
     R = "R"
-    I = "I"
+    I = "I"  # noqa: E741
     Y = "Y"
     J = "J"
     H = "H"

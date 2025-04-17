@@ -11,6 +11,7 @@ using the `{fields}` placeholder.
 2. Define `default_fields` with the default selection set.
 
 3. Define `resource_id_field` as the unique identifier key (e.g., "programNoteId").
+This is used only for 'GetByIdMixin' for now.
 
 You can optionally override methods from mixins to provide ergonomic interfaces
 for common mutations or queries (e.g., `create`, `update_by_id`).
@@ -24,7 +25,10 @@ Mixins expect:
 
 __all__ = ["BaseManager"]
 
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..client import GPPClient
 
 
 class BaseManager:
@@ -52,7 +56,10 @@ class BaseManager:
         "delete_by_id": None,
         "delete_batch_by_program_id": None,
     }
-    resource_id_field: str
+
+    # Only needed if using 'GetByIdMixin'.
+    resource_id_field: Optional[str]
+
     _client: "GPPClient"
 
     def __init__(self, client: "GPPClient") -> None:
@@ -117,7 +124,8 @@ class BaseManager:
         return query_template.replace("{fields}", fields or self.get_default_fields())
 
     def get_resource_id_field(self) -> str:
-        """Return the name of the resource ID field.
+        """Return the name of the resource ID field. Currently only needed for
+        'GetByIdMixin'.
 
         Returns
         -------
@@ -134,7 +142,7 @@ class BaseManager:
         ):
             raise NotImplementedError(
                 f"{self.__class__.__name__} must define `resource_id_field` as a "
-                "string or pass into function called."
+                "string to use the 'GetByIdMixin'."
             )
         return self.resource_id_field
 
