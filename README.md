@@ -18,7 +18,7 @@ from gpp_client import GPPClient
 
 client = GPPClient(
     url="https://your-gpp-api/graphql",
-    auth_token="your_token_here"
+    token="your_token_here"
 )
 
 # Create a program note
