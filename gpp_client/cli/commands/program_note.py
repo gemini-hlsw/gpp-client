@@ -1,13 +1,10 @@
-import asyncio
-from typing import Any
-
 import typer
 from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
 
 from ...client import GPPClient
-from ..utils import truncate_text, truncate_title, async_command
+from ..utils import async_command, truncate_text, truncate_title
 
 program_note = typer.Typer(help="Manage Program Notes.")
 console = Console()
