@@ -53,4 +53,5 @@ API Reference
    :maxdepth: 1
 
    base_manager
+   program
    program_note

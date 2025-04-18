@@ -1,11 +1,11 @@
-Program Note
-============
+Program
+=======
 
 .. note::
 
-   Accessed via ``client.program_note``.
+   Accessed via ``client.program``.
 
-.. automodule:: gpp_client.managers.program_note.manager
+.. automodule:: gpp_client.managers.program.manager
    :members:
    :undoc-members:
    :inherited-members:
