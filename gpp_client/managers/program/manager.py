@@ -20,7 +20,7 @@ class ProgramManager(CreateMixin, GetByIdMixin, GetBatchMixin, BaseManager):
     resource_id_field = "programId"
 
     def register_submanagers(self) -> None:
-        print("CALLED")
+        pass
 
     async def get_by_id(
         self,
