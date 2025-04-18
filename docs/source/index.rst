@@ -20,5 +20,6 @@ If you're just getting started, begin with the :doc:`Client <client>` section to
 
    quickstart
    client
+   credentials
    managers/index
    mixins/index

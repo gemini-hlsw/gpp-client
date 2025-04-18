@@ -19,6 +19,7 @@ Each manager provides high-level, asynchronous methods such as `create`, `get_by
 The following managers are accessible via `GPPClient`:
 
 - :attr:`~gpp_client.GPPClient.program_note` → :class:`~gpp_client.managers.program_note.manager.ProgramNoteManager`
+- :attr:`~gpp_client.GPPClient.program` → :class:`~gpp_client.managers.program.manager.ProgramManager`
 - *(more managers to be added as the client evolves)*
 
 Example
@@ -30,7 +31,7 @@ Example
 
     client = GPPClient(
         url="https://gpp.example.org/graphql",
-        auth_token="abc123"
+        token="abc123"
     )
 
     note = await client.program_note.create(
@@ -40,6 +41,10 @@ Example
     )
 
     fetched = await client.program_note.get_by_id(resource_id=note["id"])
+
+.. note::
+
+   For more information on how credentials are resolved, see :doc:`credentials`.
 
 API Reference
 -------------
