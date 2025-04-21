@@ -8,7 +8,7 @@ description = "Gemini Program Platform client."
 readme = "README.md"
 authors = [{ name = "NOIRLab" }]
 requires-python = ">=3.10.0"
-dependencies = ["gql[aiohttp, websockets]>=3.5.2", "astropy>=5.3.4"]
+dependencies = ["gql[aiohttp, websockets]>=3.5.2", "astropy>=5.3.4", "toml>=0.10.2"]
 version = "0.0.0"
 
 [project.optional-dependencies]
@@ -16,9 +16,9 @@ test = [
     "pytest",
     "pytest-xdist",
     "pytest-cov",
-    "pytest-django",
     "pytest-asyncio",
     "pytest-remotedata",
+    "pytest-mock",
     "ruff",
 ]
 docs = ["sphinx", "sphinx-rtd-theme", "sphinx-autobuild", "furo"]

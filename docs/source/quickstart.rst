@@ -15,8 +15,13 @@ Getting Started
 
    client = GPPClient(
        url="https://gpp.example.org/graphql",
-       auth_token="your_api_token_here"
+       token="your_api_token_here"
    )
+
+.. note::
+
+   You can also omit ``url`` and ``token`` if you’ve configured them via environment
+   variables or in a ``~/.gpp/config.toml`` file. See :doc:`credentials` for details.
 
 2. Fetch a Program Note by ID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
