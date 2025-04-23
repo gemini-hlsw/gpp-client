@@ -7,7 +7,7 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath("../.."))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -25,7 +25,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
-    "sphinx.ext.intersphinx"
+    "sphinxcontrib.typer",
 ]
 
 templates_path = ["_templates"]
@@ -48,10 +48,12 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
 
+
 def skip_member(app, what, name, obj, skip, options):
     if name in {"queries", "default_fields", "resource_id_field"}:
         return True  # skip this member
     return skip
+
 
 def setup(app):
     app.connect("autodoc-skip-member", skip_member)

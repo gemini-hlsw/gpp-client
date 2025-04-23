@@ -21,5 +21,6 @@ If you're just getting started, begin with the :doc:`Client <client>` section to
    quickstart
    client
    credentials
+   cli/index
    managers/index
    mixins/index
