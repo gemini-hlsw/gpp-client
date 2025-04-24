@@ -10,113 +10,65 @@ __all__ = [
     "UpdateBatchByProgramIdMixin",
 ]
 
-from typing import Any, Optional
+from pathlib import Path
+from typing import Any, Optional, Union
 
-from .utils import create_program_id_filter
-
-
-async def _update_by_id(
-    *,
-    client: Any,
-    query: str,
-    input_values: dict[str, Any],
-) -> dict[str, Any]:
-    """Execute a GraphQL mutation to update a single resource by identifier.
-
-    Parameters
-    ----------
-    client : Any
-        The GraphQL client instance used to execute the mutation.
-    query : str
-        The GraphQL mutation string, with `{fields}` already substituted.
-    input_values : dict[str, Any]
-        The full input object to be passed as the GraphQL input variable.
-
-    Returns
-    -------
-    dict[str, Any]
-        The result of the mutation, as returned by the GraphQL API.
-    """
-    return await client._execute(query=query, variables={"input": input_values})
-
-
-async def _update_batch(
-    *,
-    client: Any,
-    query: str,
-    set_values: dict[str, Any],
-    where: Optional[dict[str, Any]] = None,
-    limit: int = 100,
-    include_deleted: bool = False,
-) -> dict[str, Any]:
-    """Execute a GraphQL update mutation on a batch of resources.
-
-    Parameters
-    ----------
-    client : Any
-        The GraphQL client instance.
-    query : str
-        The mutation query string with a `{fields}` placeholder.
-    set_values : dict[str, Any]
-        The fields to update in each matched resource.
-    where : dict[str, Any], optional
-        The filter criteria for selecting resources.
-    limit : int, default=100
-        The maximum number of resources to update.
-    include_deleted : bool, default=False
-        Whether to include deleted resources in the update.
-
-    Returns
-    -------
-    dict[str, Any]
-        The result of the mutation, including updated resources.
-    """
-    input_values = {
-        "SET": set_values,
-        "WHERE": where,
-        "LIMIT": limit,
-        "includeDeleted": include_deleted,
-    }
-    return await client._execute(query=query, variables={"input": input_values})
+from .utils import create_program_id_filter, merge_set_values, build_input_values
 
 
 class UpdateByIdMixin:
-    """"""
+    """Provides update_by_id for updating a resource by identifier."""
 
     async def update_by_id(
-        self, *, input_values: dict[str, Any], fields: Optional[str] = None
+        self,
+        *,
+        set_values: dict[str, Any],
+        identifier: Optional[dict[str, Any]] = None,
+        from_json_file: Optional[Union[str, Path]] = None,
+        fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Execute an update mutation on a single resource.
 
         Parameters
         ----------
-        input_values : dict[str, Any]
-            The full GraphQL input block.
+        set_values : dict[str, Any]
+            The `SET` block of values to define the resource.
+        identifier : dict[str, Any], optional
+            One or more GraphQL identifiers (e.g., {"programId": "p-2025A-001"}).
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
         fields : str, optional
-            Fields to return in the mutation response.
+            Optional fields to return in the mutation response. Defaults to `default_fields`.
 
         Returns
         -------
         dict[str, Any]
             The result of the mutation.
+
+        Raises
+        ------
+        ValueError
+            If the file is invalid, or input is incomplete.
         """
-        client = self.get_client()
+        set_values = merge_set_values(set_values, from_json_file)
+        input_values = build_input_values(set_values=set_values, identifier=identifier)
+
         query = self.get_query(query_id="update_by_id", fields=fields)
 
-        return await _update_by_id(
-            client=client, query=query, input_values=input_values
-        )
+        return await self.execute(query=query, input_values=input_values)
 
 
 class UpdateByIdViaBatchMixin:
     """Provides an update_by_id method using a batch-style update query."""
 
-    async def update_by_id_via_batch(
+    async def update_by_id(
         self,
         *,
         resource_id: str,
         set_values: dict[str, Any],
         include_deleted: bool = False,
+        from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Update a single resource by its ID via batch method.
@@ -129,27 +81,26 @@ class UpdateByIdViaBatchMixin:
             Fields to update on the resource.
         include_deleted : bool, default=False
             Whether to include deleted resources in the update.
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
         fields : str, optional
-            Fields to return in the response. Uses default if not provided.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The updated resource.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="update_by_id_via_batch", fields=fields)
-
+        set_values = merge_set_values(set_values, from_json_file)
         where = {"id": {"EQ": resource_id}}
-
-        return await _update_batch(
-            client=client,
-            query=query,
-            set_values=set_values,
-            where=where,
-            limit=1,
-            include_deleted=include_deleted,
+        input_values = build_input_values(
+            set_values=set_values, where=where, limit=1, include_deleted=include_deleted
         )
+
+        query = self.get_query(query_id="update_by_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)
 
 
 class UpdateBatchMixin:
@@ -160,8 +111,9 @@ class UpdateBatchMixin:
         *,
         set_values: dict[str, Any],
         where: dict[str, Any],
-        limit: int = 100,
+        limit: Optional[int] = None,
         include_deleted: bool = False,
+        from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Update multiple resources matching a given filter.
@@ -172,29 +124,35 @@ class UpdateBatchMixin:
             Fields to update in each matching resource.
         where : dict[str, Any]
             The filter for selecting resources to update.
-        limit : int, default=100
-            Maximum number of resources to update.
+        limit : int, optional
+            Maximum number of updated resources to include in the response. All matching
+            resources will be updated, but only the first `limit` will be returned in
+            the GraphQL result. If additional resources were updated, `hasMore` will be
+            true.
         include_deleted : bool, default=False
             Whether to include deleted resources in the update.
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
         fields : str, optional
-            Fields to return in the response. Uses default if not provided.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The updated resources and `hasMore` flag.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="update_batch", fields=fields)
-
-        return await _update_batch(
-            client=client,
-            query=query,
+        set_values = merge_set_values(set_values, from_json_file)
+        input_values = build_input_values(
             set_values=set_values,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="update_batch", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)
 
 
 class UpdateBatchByProgramIdMixin:
@@ -206,8 +164,9 @@ class UpdateBatchByProgramIdMixin:
         program_id: str,
         set_values: dict[str, Any],
         where: Optional[dict[str, Any]] = None,
-        limit: int = 100,
+        limit: Optional[int] = None,
         include_deleted: bool = False,
+        from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Update resources matching a program ID and optional filters.
@@ -220,33 +179,39 @@ class UpdateBatchByProgramIdMixin:
             Fields to update in matching resources.
         where : dict[str, Any], optional
             Additional filter conditions.
-        limit : int, default=100
-            Maximum number of resources to update.
+        limit : int, optional
+            Maximum number of updated resources to include in the response. All matching
+            resources will be updated, but only the first `limit` will be returned in
+            the GraphQL result. If additional resources were updated, `hasMore` will be
+            true.
         include_deleted : bool, default=False
             Whether to include deleted resources in the update.
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
         fields : str, optional
-            Fields to return in the response. Uses default if not provided.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The updated resources and `hasMore` flag.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="update_batch_by_program_id", fields=fields)
-
+        set_values = merge_set_values(set_values, from_json_file)
         program_filter = create_program_id_filter(program_id)
 
+        # Combine the wheres if given.
         if where:
             combined_where = {"AND": [program_filter, where]}
         else:
             combined_where = program_filter
 
-        return await _update_batch(
-            client=client,
-            query=query,
+        input_values = build_input_values(
             set_values=set_values,
             where=combined_where,
             limit=limit,
             include_deleted=include_deleted,
         )
+        query = self.get_query(query_id="update_batch_by_program_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)

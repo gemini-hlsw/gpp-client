@@ -1,4 +1,10 @@
-__all__ = ["async_command", "truncate_string", "truncate_title", "truncate_text"]
+__all__ = [
+    "async_command",
+    "truncate_string",
+    "truncate_short",
+    "truncate_long",
+    "print_not_found",
+]
 
 import asyncio
 import functools
@@ -40,37 +46,42 @@ def truncate_string(value: Optional[str], max_length: int) -> str:
         Truncated string, possibly with "..." appended if truncated.
     """
     if not value:
-        return ""
+        return "<None>"
     return value if len(value) <= max_length else value[: max_length - 3] + "..."
 
 
-def truncate_title(value: Optional[str]) -> str:
-    """Truncate a title string to a a short readable length.
+def truncate_short(value: Optional[str]) -> str:
+    """Truncate a string to a short, readable length.
 
     Parameters
     ----------
     value : str, optional
-        The title to truncate.
+        The string to truncate.
 
     Returns
     -------
     str
-        Truncated title string.
+        Truncated string, intended for short fields like titles or IDs.
     """
     return truncate_string(value, max_length=20)
 
 
-def truncate_text(value: Optional[str]) -> str:
-    """Truncate a paragraph string to a short readable length.
+def truncate_long(value: Optional[str]) -> str:
+    """Truncate a string to a readable paragraph length.
 
     Parameters
     ----------
     value : str, optional
-        The paragraph text to truncate.
+        The string to truncate.
 
     Returns
     -------
     str
-        Truncated paragraph text.
+        Truncated string, intended for longer fields like descriptions or paragraphs.
     """
-    return truncate_string(value, max_length=40)
+    return truncate_string(value, max_length=50)
+
+
+def print_not_found() -> None:
+    """Print not found message in yellow."""
+    console.print("[bold yellow]No items found.[/bold yellow]")

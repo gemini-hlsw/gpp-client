@@ -28,7 +28,8 @@ Example
 
 __all__ = ["ProgramNoteManager"]
 
-from typing import Any, Optional
+from typing import Any, Optional, Union
+from pathlib import Path
 
 from ...mixins import (
     CreateMixin,
@@ -78,7 +79,7 @@ class ProgramNoteManager(
         "get_by_id": queries.GET_PROGRAM_NOTE,
         "restore_by_id": queries.UPDATE_PROGRAM_NOTES,
         "restore_by_program_id": queries.UPDATE_PROGRAM_NOTES,
-        "update_by_id_via_batch": queries.UPDATE_PROGRAM_NOTES,
+        "update_by_id": queries.UPDATE_PROGRAM_NOTES,
         "update_batch": queries.UPDATE_PROGRAM_NOTES,
         "update_batch_by_program_id": queries.UPDATE_PROGRAM_NOTES,
         "create": queries.CREATE_PROGRAM_NOTE,
@@ -98,6 +99,7 @@ class ProgramNoteManager(
         program_id: Optional[str] = None,
         program_reference: Optional[str] = None,
         proposal_reference: Optional[str] = None,
+        from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Create a new program note.
@@ -127,6 +129,11 @@ class ProgramNoteManager(
             The reference string of the program.
         proposal_reference : str, optional
             The reference to the proposal.
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
+        fields : str, optional
+            Fields to return in the response.
 
         Returns
         -------
@@ -138,24 +145,25 @@ class ProgramNoteManager(
         ValueError
             If zero or more than one identifiers are provided.
         """
-        resource_id_field, resource_id = resolve_single_program_identifier(
+        identifier = resolve_single_program_identifier(
             program_id=program_id,
             program_reference=program_reference,
             proposal_reference=proposal_reference,
         )
-
-        input_values: dict[str, Any] = {
-            resource_id_field: resource_id,
-            "SET": {
-                "title": title,
-                "text": text,
-                "isPrivate": is_private,
-                "existence": "PRESENT",
-            }
+        set_values = {
+            "title": title,
+            "text": text,
+            "isPrivate": is_private,
+            "existence": "PRESENT",
         }
 
         # Delegate to CreateMixin with optional custom fields.
-        return await super().create(input_values=input_values, fields=fields)
+        return await super().create(
+            set_values=set_values,
+            identifier=identifier,
+            fields=fields,
+            from_json_file=from_json_file,
+        )
 
     async def update_by_id(
         self,
@@ -166,11 +174,12 @@ class ProgramNoteManager(
         is_private: Optional[bool] = None,
         existence: Optional[str] = None,
         include_deleted: bool = False,
+        from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Update a specific program note by ID.
 
-        This override simplifies usage of the UpdateByIdViaBatchMixin
+        This override simplifies usage of the `UpdateByIdViaBatchMixin`
         by allowing users to pass intuitive keyword arguments instead
         of manually assembling the `set_values` dictionary.
 
@@ -191,6 +200,11 @@ class ProgramNoteManager(
             New existence state.
         include_deleted : bool, optional
             Whether to include deleted notes. Defaults to False.
+        from_json_file : str or Path, optional
+            Path to a JSON file whose keys will override values in `set_values`.
+            This only affects the `SET` portion of the mutation.
+        fields : str, optional
+            Fields to return in the response.
 
         Returns
         -------
@@ -217,9 +231,10 @@ class ProgramNoteManager(
             raise ValueError("At least one field must be provided to update.")
 
         # Delegate to UpdateByIdViaBatchMixin with the provided params.
-        return await super().update_by_id_via_batch(
+        return await super().update_by_id(
             resource_id=resource_id,
             set_values=set_values,
             include_deleted=include_deleted,
             fields=fields,
+            from_json_file=from_json_file,
         )

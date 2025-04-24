@@ -25,7 +25,7 @@ Mixins expect:
 
 __all__ = ["BaseManager"]
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from ..client import GPPClient
@@ -179,3 +179,50 @@ class BaseManager:
     def get_submanager(self, name: str) -> Optional["BaseManager"]:
         """Access a submanager by name (e.g., 'reference')."""
         return self._submanagers.get(name)
+
+    async def execute(
+        self,
+        *,
+        query: str,
+        input_values: Optional[dict[str, Any]] = None,
+        selector_values: Optional[dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """Execute a GraphQL query or mutation.
+
+        This method supports both GraphQL mutations that require an `input` object,
+        and queries that use named selector-style variables such as IDs, filters,
+        and pagination parameters.
+
+        Parameters
+        ----------
+        query : str
+            The GraphQL document string to execute. This should already have any
+            `{fields}` placeholder substituted, if applicable.
+        input_values : dict[str, Any], optional
+            Values to be passed under the `input` key in the GraphQL variables object.
+            This is typically used for mutations. If provided, the final GraphQL
+            variable payload will include: `{"input": input_values}`.
+        selector_values : dict[str, Any], optional
+            Top-level GraphQL variables used in queries, such as resource IDs,
+            `WHERE` filters, `LIMIT`, `OFFSET`, etc. These will be merged directly
+            into the top-level GraphQL variables object.
+
+        Returns
+        -------
+        dict[str, Any]
+            The result returned by the GraphQL API.
+
+        Notes
+        -----
+        This method assumes that mutation inputs follow the convention of using a single
+        `input` variable, while query operations may use any number of named arguments.
+        """
+        variables: dict[str, Any] = {}
+
+        if input_values is not None:
+            variables["input"] = input_values
+
+        if selector_values is not None:
+            variables.update(selector_values)
+
+        return await self._client._execute(query=query, variables=variables)
