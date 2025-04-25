@@ -9,46 +9,9 @@ __all__ = ["RestoreByIdViaBatchMixin", "RestoreBatchByProgramIdMixin"]
 
 from typing import Any, Optional
 
-from .utils import create_program_id_filter
-from .update import _update_batch
+from .utils import create_program_id_filter, build_input_values
 
-
-async def _restore_batch(
-    *,
-    client: Any,
-    query: str,
-    where: dict[str, Any],
-    limit: int = 100,
-    include_deleted: bool = True,
-) -> dict[str, Any]:
-    """Internal helper to restore resources by setting existence to PRESENT.
-
-    Parameters
-    ----------
-    client : Any
-        The GraphQL client instance.
-    query : str
-        The update mutation query string.
-    where : dict[str, Any]
-        Filter to select which resources to restore.
-    limit : int, default=100
-        Maximum number of resources to restore.
-    include_deleted : bool, default=True
-        Whether to include already-deleted resources in the match.
-
-    Returns
-    -------
-    dict[str, Any]
-        Result of the restore mutation.
-    """
-    return await _update_batch(
-        client=client,
-        query=query,
-        set_values={"existence": "PRESENT"},
-        where=where,
-        limit=limit,
-        include_deleted=include_deleted,
-    )
+_SET_VALUES = {"existence": "PRESENT"}
 
 
 class RestoreByIdViaBatchMixin:
@@ -77,16 +40,18 @@ class RestoreByIdViaBatchMixin:
         dict[str, Any]
             The restored resource result.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="restore_by_id", fields=fields)
+        where = {"id": {"EQ": resource_id}}
 
-        return await _restore_batch(
-            client=client,
-            query=query,
-            where={"id": {"EQ": resource_id}},
+        input_values = build_input_values(
+            set_values=_SET_VALUES,
+            where=where,
             limit=1,
             include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="restore_by_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)
 
 
 class RestoreBatchByProgramIdMixin:
@@ -97,7 +62,7 @@ class RestoreBatchByProgramIdMixin:
         *,
         program_id: str,
         where: Optional[dict[str, Any]] = None,
-        limit: int = 100,
+        limit: Optional[int] = None,
         include_deleted: bool = True,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -109,8 +74,11 @@ class RestoreBatchByProgramIdMixin:
             The program ID to match.
         where : dict[str, Any], optional
             Additional filters to apply alongside the program ID.
-        limit : int, default=100
-            Maximum number of resources to restore.
+        limit : int, optional
+            Maximum number of restored resources to include in the response. All 
+            matching resources will be restored, but only the first `limit` will be 
+            returned in the GraphQL result. If additional resources were restored, 
+            `hasMore` will be true.
         include_deleted : bool, default=True
             Whether to include already-deleted resources.
         fields : str, optional
@@ -121,9 +89,6 @@ class RestoreBatchByProgramIdMixin:
         dict[str, Any]
             The restored resources and metadata.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="restore_batch_by_program_id", fields=fields)
-
         program_filter = create_program_id_filter(program_id)
 
         if where:
@@ -131,10 +96,13 @@ class RestoreBatchByProgramIdMixin:
         else:
             combined_where = program_filter
 
-        return await _restore_batch(
-            client=client,
-            query=query,
+        input_values = build_input_values(
+            set_values=_SET_VALUES,
             where=combined_where,
             limit=limit,
             include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="restore_batch_by_program_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)

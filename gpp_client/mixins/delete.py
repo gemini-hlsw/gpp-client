@@ -8,46 +8,9 @@ __all__ = ["DeleteBatchMixin", "DeleteByIdViaBatchMixin", "DeleteBatchByProgramI
 
 from typing import Any, Optional
 
-from .utils import create_program_id_filter
+from .utils import create_program_id_filter, build_input_values
 
-# TODO: Write a _delete_by_id.
-
-
-async def _delete_batch(
-    *,
-    client: Any,
-    query: str,
-    where: dict[str, Any],
-    limit: int = 100,
-    include_deleted: bool = False,
-) -> dict[str, Any]:
-    """Helper function to perform a batch soft-delete.
-
-    Parameters
-    ----------
-    client : Any
-        The GraphQL client instance.
-    query : str
-        The mutation query template.
-    where : dict[str, Any]
-        Filter to match resources to delete.
-    limit : int, default=100
-        Maximum number of resources to delete.
-    include_deleted : bool, default=False
-        Whether to include already deleted resources.
-
-    Returns
-    -------
-    dict[str, Any]
-        The GraphQL response with updated resources.
-    """
-    input_data = {
-        "SET": {"existence": "DELETED"},
-        "WHERE": where,
-        "LIMIT": limit,
-        "includeDeleted": include_deleted,
-    }
-    return await client._execute(query=query, variables={"input": input_data})
+_SET_VALUES = {"existence": "DELETED"}
 
 
 class DeleteBatchMixin:
@@ -57,7 +20,7 @@ class DeleteBatchMixin:
         self,
         *,
         where: dict[str, Any],
-        limit: int = 100,
+        limit: Optional[int] = None,
         include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -67,27 +30,31 @@ class DeleteBatchMixin:
         ----------
         where : dict[str, Any]
             The filter to match resources.
-        limit : int, default=100
-            Maximum number of resources to delete.
+        limit : int, optional
+            Maximum number of deleted resources to include in the response. All matching
+            resources will be deleted, but only the first `limit` will be returned in
+            the GraphQL result. If additional resources were deleted, `hasMore` will be
+            true.
         include_deleted : bool, default=False
             Whether to include deleted resources in the match.
         fields : str, optional
-            Optional GraphQL fields to return after deletion.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The response from the delete mutation.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="delete_batch", fields=fields)
-        return await _delete_batch(
-            client=client,
-            query=query,
+        input_values = build_input_values(
+            set_values=_SET_VALUES,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="delete_batch", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)
 
 
 class DeleteByIdViaBatchMixin:
@@ -97,6 +64,7 @@ class DeleteByIdViaBatchMixin:
         self,
         *,
         resource_id: str,
+        include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Soft-delete a single resource by its ID.
@@ -105,19 +73,27 @@ class DeleteByIdViaBatchMixin:
         ----------
         resource_id : str
             ID of the resource to delete.
+        include_deleted : bool, default=False
+            Whether to include deleted resources in the update.
         fields : str, optional
-            Optional fields to return after deletion.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The response from the delete mutation.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="delete_by_id", fields=fields)
-        return await _delete_batch(
-            client=client, query=query, where={"id": {"EQ": resource_id}}, limit=1
+        where = {"id": {"EQ": resource_id}}
+        input_values = build_input_values(
+            set_values=_SET_VALUES,
+            limit=1,
+            where=where,
+            include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="delete_by_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)
 
 
 class DeleteBatchByProgramIdMixin:
@@ -128,7 +104,7 @@ class DeleteBatchByProgramIdMixin:
         *,
         program_id: str,
         where: Optional[dict[str, Any]] = None,
-        limit: int = 100,
+        limit: Optional[int] = None,
         include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -140,20 +116,21 @@ class DeleteBatchByProgramIdMixin:
             The program ID to scope the deletion.
         where : dict[str, Any], optional
             Additional filters to apply.
-        limit : int, default=100
-            Maximum number of resources to delete.
+        limit : int, optional
+            Maximum number of deleted resources to include in the response. All matching
+            resources will be deleted, but only the first `limit` will be returned in
+            the GraphQL result. If additional resources were deleted, `hasMore` will be
+            true.
         include_deleted : bool, default=False
             Whether to include already deleted resources.
         fields : str, optional
-            Optional fields to return after deletion.
+            The fields to return in the response.
 
         Returns
         -------
         dict[str, Any]
             The response from the delete mutation.
         """
-        client = self.get_client()
-        query = self.get_query(query_id="delete_batch_by_program_id", fields=fields)
         program_filter = create_program_id_filter(program_id)
 
         if where:
@@ -161,10 +138,13 @@ class DeleteBatchByProgramIdMixin:
         else:
             combined_where = program_filter
 
-        return await _delete_batch(
-            client=client,
-            query=query,
-            where=combined_where,
+        input_values = build_input_values(
+            set_values=_SET_VALUES,
             limit=limit,
+            where=combined_where,
             include_deleted=include_deleted,
         )
+
+        query = self.get_query(query_id="delete_batch_by_program_id", fields=fields)
+
+        return await self.execute(query=query, input_values=input_values)

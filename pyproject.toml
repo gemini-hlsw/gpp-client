@@ -16,6 +16,9 @@ dependencies = [
 ]
 version = "0.0.0"
 
+[tool.setuptools.packages.find]
+where = ["."]
+
 [project.optional-dependencies]
 test = [
     "pytest",
@@ -26,13 +29,16 @@ test = [
     "pytest-mock",
     "ruff",
 ]
-docs = ["sphinx", "sphinx-rtd-theme", "sphinx-autobuild", "furo", "sphinxcontrib-typer"]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-autobuild",
+    "furo",
+    "sphinxcontrib-typer",
+]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"
-
-[tool.setuptools.packages.find]
-where = ["."]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -41,3 +47,9 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# addopts = "-r A -v -n auto --cov=src --cov-report=term --cov=tests --cov-branch"
+addopts = ["--import-mode=importlib"]
+asyncio_default_fixture_loop_scope = "session"

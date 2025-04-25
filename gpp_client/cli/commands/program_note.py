@@ -5,7 +5,7 @@ from rich.table import Table
 
 from ...client import GPPClient
 from ...schema import enums
-from ..utils import async_command, truncate_text, truncate_title
+from ..utils import async_command, print_not_found, truncate_long, truncate_short
 
 program_note = typer.Typer(help="Manage Program Notes.")
 console = Console()
@@ -14,7 +14,7 @@ console = Console()
 @program_note.command("get-all")
 @async_command
 async def get_all(
-    limit: int = typer.Option(100, help="Max number of results."),
+    limit: int = typer.Option(None, help="Max number of results."),
     include_deleted: bool = typer.Option(False, help="Include deleted entries."),
 ):
     """List all program notes the user has access to."""
@@ -35,9 +35,9 @@ async def get_all(
     table.add_column("Text")
 
     for note in notes:
-        note_id = str(note.get("id", "<No ID>"))
-        title = truncate_title(note.get("title", "<No Title>"))
-        text = truncate_text(note.get("text", "<No Text>"))
+        note_id = str(note.get("id"))
+        title = truncate_long(note.get("title"))
+        text = truncate_short(note.get("text"))
         table.add_row(note_id, title, text)
 
     console.print(table)
@@ -58,10 +58,6 @@ async def get(
         return
 
     console.print(JSON.from_data(program_note))
-
-
-def print_not_found():
-    console.print("[bold yellow]No program note(s) found.[/bold yellow]")
 
 
 @program_note.command("create")

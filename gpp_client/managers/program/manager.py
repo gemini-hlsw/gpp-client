@@ -44,8 +44,7 @@ class ProgramManager(CreateMixin, GetByIdMixin, GetBatchMixin, BaseManager):
         program_reference : str, optional
             The program reference string.
         fields : str, optional
-            A comma-separated list of fields to include in the response. Defaults to
-            ``default_fields``.
+            Fields to return in the response.
 
         Returns
         -------
@@ -57,16 +56,15 @@ class ProgramManager(CreateMixin, GetByIdMixin, GetBatchMixin, BaseManager):
         ValueError
             If none of the identifiers are provided.
         """
-        resource_id_field, resource_id = resolve_single_program_identifier(
+        identifier = resolve_single_program_identifier(
             program_id=program_id,
             program_reference=program_reference,
             proposal_reference=proposal_reference,
         )
 
         return await super().get_by_id(
-            resource_id=resource_id,
-            resource_id_field=resource_id_field,
             fields=fields,
+            _identifier=identifier,
         )
 
     async def create(
@@ -100,7 +98,7 @@ class ProgramManager(CreateMixin, GetByIdMixin, GetBatchMixin, BaseManager):
         private_header : bool, optional
             Whether the program's FITS headers should be private (GOA setting).
         fields : str, optional
-            Fields to return in the mutation response.
+            Fields to return in the response.
 
         Returns
         -------
@@ -147,7 +145,4 @@ class ProgramManager(CreateMixin, GetByIdMixin, GetBatchMixin, BaseManager):
         if goa:
             set_values["goa"] = goa
 
-        # Wrap in SET.
-        input_values = {"SET": set_values}
-
-        return await super().create(input_values=input_values, fields=fields)
+        return await super().create(set_values=set_values, fields=fields)

@@ -24,7 +24,7 @@ def resolve_single_program_identifier(
     program_id: Optional[str] = None,
     program_reference: Optional[str] = None,
     proposal_reference: Optional[str] = None,
-) -> tuple[str, str]:
+) -> dict[str, str]:
     """Resolve exactly one program identifier for use in GraphQL operations.
 
     Parameters
@@ -38,8 +38,8 @@ def resolve_single_program_identifier(
 
     Returns
     -------
-    tuple[str, str]
-        A tuple of (``resource_id_field``, ``resource_id_value``)
+    dict[str, str]
+        A dict of the identifier.
 
     Raises
     ------
@@ -58,4 +58,6 @@ def resolve_single_program_identifier(
             "Exactly one of 'program_id', 'program_reference', or 'proposal_reference' must be provided."
         )
 
-    return next(iter(provided.items()))
+    key, value = next(iter(provided.items()))
+
+    return {key: value}
