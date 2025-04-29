@@ -65,10 +65,23 @@ class TestBuildInputValues:
     @pytest.mark.parametrize(
         "kwargs,expected",
         [
-            ({}, {}),
+            (
+                {},
+                {
+                    "WHERE": None,
+                    "LIMIT": None,
+                    "includeDeleted": False,
+                    "SET": None,
+                },
+            ),
             (
                 {"set_values": {"a": 1}},
-                {"SET": {"a": 1}},
+                {
+                    "WHERE": None,
+                    "LIMIT": None,
+                    "includeDeleted": False,
+                    "SET": {"a": 1},
+                },
             ),
             (
                 {
@@ -102,7 +115,15 @@ class TestBuildSelectorValues:
     @pytest.mark.parametrize(
         "kwargs,expected",
         [
-            ({}, {}),
+            (
+                {},
+                {
+                    "WHERE": None,
+                    "LIMIT": None,
+                    "OFFSET": None,
+                    "includeDeleted": False,
+                },
+            ),
             (
                 {
                     "identifier": {"targetId": "t-123"},

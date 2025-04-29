@@ -1,7 +1,9 @@
 Quickstart
 ==========
 
-This guide shows how to use the ``GPPClient`` to interact with the Gemini Program Platform (GPP) GraphQL API for working with program notes. A valid program is required.
+This guide shows how to quickly use the ``GPPClient`` to interact with the Gemini Program Platform (GPP) GraphQL API for working with program notes.
+
+A valid program is required to create or update notes, what we will be working with.
 
 Getting Started
 ---------------
@@ -20,8 +22,8 @@ Getting Started
 
 .. note::
 
-   You can also omit ``url`` and ``token`` if you’ve configured them via environment
-   variables or in a ``~/.gpp/config.toml`` file. See :doc:`credentials` for details.
+   You can also omit ``url`` and ``token`` if you’ve configured them via
+   environment variables or a configuration file. See :doc:`credentials` for more information.
 
 2. Fetch a Program Note by ID
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,8 +45,8 @@ Getting Started
        program_id="id_here"
    )
 
-4. Update a Note
-^^^^^^^^^^^^^^^^
+4. Update an Existing Note
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -54,8 +56,8 @@ Getting Started
        text="New note content."
    )
 
-5. Get All Notes in a Program
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5. List All Notes in a Program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -63,8 +65,8 @@ Getting Started
    for note in notes["programNotes"]["matches"]:
        print(note["title"])
 
-6. Soft-Delete a Note
-^^^^^^^^^^^^^^^^^^^^^
+6. Soft-Delete a Program Note
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 

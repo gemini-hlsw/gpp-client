@@ -1,25 +1,26 @@
 import os
-import tempfile
 from pathlib import Path
+from typing import Generator
 
 import pytest
 import toml
 
-from gpp_client.client import load_gpp_config, resolve_credentials
+from gpp_client.client import GPPClient
 
 
 @pytest.fixture
-def mock_config_file(mocker):
-    """Create a temporary GPP config file and patch Path.home()."""
-    temp_dir = tempfile.TemporaryDirectory()
-    config_path = Path(temp_dir.name) / ".gpp" / "config.toml"
-    config_path.parent.mkdir(parents=True, exist_ok=True)
+def mock_config_file(tmp_path: Path, mocker) -> Generator[Path, None, None]:
+    """Create a temporary GPP config file and patch typer.get_app_dir()."""
+    config_dir = tmp_path / ".gpp-client"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    config_path = config_dir / "config.toml"
     config_path.write_text(
-        toml.dumps({"url": "mock-url-config", "token": "mock-token-config"})
+        toml.dumps(
+            {"credentials": {"url": "mock-url-config", "token": "mock-token-config"}}
+        )
     )
-    mocker.patch("pathlib.Path.home", return_value=Path(temp_dir.name))
+    mocker.patch("typer.get_app_dir", return_value=config_dir)
     yield config_path
-    temp_dir.cleanup()
 
 
 @pytest.fixture
@@ -32,53 +33,53 @@ def mock_env(mocker):
     )
 
 
-def test_load_gpp_config_from_file(mock_config_file):
-    """Test loading configuration from file."""
-    config = load_gpp_config()
-    assert config["url"] == "mock-url-config"
-    assert config["token"] == "mock-token-config"
+class TestGPPClient:
+    """Tests for GPPClient."""
 
+    def test_credentials_from_args(self):
+        """Test GPPClient resolves credentials from direct arguments."""
+        client = GPPClient(url="mock-url-arg", token="mock-token-arg")
+        assert client._transport.url == "mock-url-arg"
+        assert client._transport.headers["Authorization"].startswith(
+            "Bearer mock-token-arg"
+        )
 
-def test_resolve_credentials_from_args():
-    """Test getting credentials from args."""
-    url, token = resolve_credentials(url="mock-url-arg", token="mock-token-arg")
-    assert url == "mock-url-arg"
-    assert token == "mock-token-arg"
+    def test_credentials_from_env(self, mock_env):
+        """Test GPPClient resolves credentials from environment variables."""
+        client = GPPClient()
+        assert client._transport.url == "mock-url-env"
+        assert client._transport.headers["Authorization"].startswith(
+            "Bearer mock-token-env"
+        )
 
+    def test_credentials_from_file(self, mock_config_file):
+        """Test GPPClient resolves credentials from config file."""
+        client = GPPClient()
+        assert client._transport.url == "mock-url-config"
+        assert client._transport.headers["Authorization"].startswith(
+            "Bearer mock-token-config"
+        )
 
-def test_resolve_credentials_from_env(mock_env):
-    """Test getting credentials from env."""
-    url, token = resolve_credentials()
-    assert url == "mock-url-env"
-    assert token == "mock-token-env"
+    def test_credentials_missing_all(self, mocker):
+        """Test GPPClient raises ValueError if credentials cannot be resolved."""
+        mocker.patch("typer.get_app_dir", return_value="/nonexistent")
+        mocker.patch.dict(os.environ, {}, clear=True)  # clear all env
 
+        with pytest.raises(ValueError, match="Missing GPP URL or GPP token"):
+            GPPClient()
 
-def test_resolve_credentials_from_file(mock_config_file):
-    """Test getting credentials from config file."""
-    url, token = resolve_credentials()
-    assert url == "mock-url-config"
-    assert token == "mock-token-config"
+    def test_args_override_env_and_config(self, mock_env, mock_config_file):
+        """Test that passed-in args take precedence over env and config file."""
+        client = GPPClient(url="mock-url-arg", token="mock-token-arg")
+        assert client._transport.url == "mock-url-arg"
+        assert client._transport.headers["Authorization"].startswith(
+            "Bearer mock-token-arg"
+        )
 
-
-def test_resolve_credentials_missing_all(mocker):
-    """Test raising issue if credentials are missing."""
-    mocker.patch("pathlib.Path.home", return_value=Path("/wrong"))
-
-    with pytest.raises(ValueError, match="Missing GPP URL or GPP token"):
-        resolve_credentials()
-
-
-def test_resolve_credentials_args_override_env_and_config(mock_env, mock_config_file):
-    """Ensure that passed-in args take precedence over env and config file."""
-    url, token = resolve_credentials(url="mock-url-arg", token="mock-token-arg")
-
-    assert url == "mock-url-arg"
-    assert token == "mock-token-arg"
-
-
-def test_resolve_credentials_env_override_config(mock_env, mock_config_file):
-    """Ensure that env vars take precedence over the config file."""
-    url, token = resolve_credentials()
-
-    assert url == "mock-url-env"
-    assert token == "mock-token-env"
+    def test_env_overrides_config(self, mock_env, mock_config_file):
+        """Test that env vars take precedence over the config file."""
+        client = GPPClient()
+        assert client._transport.url == "mock-url-env"
+        assert client._transport.headers["Authorization"].startswith(
+            "Bearer mock-token-env"
+        )
