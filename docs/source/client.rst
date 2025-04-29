@@ -1,5 +1,5 @@
-GPPClient
-=========
+Client
+======
 
 The main entry point for interacting with the Gemini Program Platform (GPP) GraphQL API.
 

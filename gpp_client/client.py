@@ -13,14 +13,13 @@ Examples
 __all__ = ["GPPClient"]
 
 import os
-from pathlib import Path
 from typing import Any, Optional
 
 import aiohttp
-import toml
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
+from .config import GPPConfig
 from .managers.program import ProgramManager
 from .managers.program_note import ProgramNoteManager
 
@@ -39,6 +38,8 @@ class GPPClient:
 
     Attributes
     ----------
+    config : GPPConfig
+        A configuration class that stores credentials and other settings.
     program_note : ProgramNoteManager
         Manager for program note operations.
     program : ProgramManager
@@ -50,7 +51,9 @@ class GPPClient:
         url: Optional[str] = None,
         token: Optional[str] = None,
     ) -> None:
-        resolved_url, resolved_token = resolve_credentials(url=url, token=token)
+        self.config = GPPConfig()
+
+        resolved_url, resolved_token = self._resolve_credentials(url=url, token=token)
         self._transport: AIOHTTPTransport = AIOHTTPTransport(
             url=resolved_url,
             headers={"Authorization": f"Bearer {resolved_token}"},
@@ -107,62 +110,60 @@ class GPPClient:
             # TODO: Log error, re-raise custom exception, or retry.
             raise RuntimeError(f"GraphQL execution failed: {exc}") from exc
 
+    def _resolve_credentials(
+        self,
+        url: Optional[str] = None,
+        token: Optional[str] = None,
+    ) -> tuple[str, str]:
+        """Resolve the GPP GraphQL credentials using precedence rules.
 
-def load_gpp_config() -> dict[str, str]:
-    """Load the GPP client configuration for a given profile.
+        This function looks for credentials in the following order:
+        1. Direct function arguments (`url`, `token`).
+        2. Environment variables `GPP_URL` and `GPP_TOKEN`.
+        3. Configuration file.
 
-    This function reads from the `~/.gpp/config.toml` file and returns the
-    configuration values.
+        Parameters
+        ----------
+        url : str, optional
+            The GraphQL endpoint URL. Overrides env and config if provided.
+        token : str, optional
+            The bearer token for authentication. Overrides env and config if provided.
 
-    Returns
-    -------
-    dict[str, str]
-        A dictionary of configuration values (typically `url` and `token`).
-        Returns an empty dictionary if the file is missing.
-    """
-    config_path = Path.home() / ".gpp" / "config.toml"
-    if not config_path.exists():
-        return {}
+        Returns
+        -------
+        tuple[str, str]
+            A tuple containing the resolved (url, token).
 
-    return toml.load(config_path)
+        Raises
+        ------
+        ValueError
+            If neither the `url` nor `token` could be resolved from any source.
+        """
+        config_url, config_token = self.config.get_credentials()
+        resolved_url = url or os.getenv("GPP_URL") or config_url
+        resolved_token = token or os.getenv("GPP_TOKEN") or config_token
 
+        if not resolved_url or not resolved_token:
+            raise ValueError(
+                "Missing GPP URL or GPP token. Provide via args, environment, or "
+                "in configuration file."
+            )
 
-def resolve_credentials(
-    url: Optional[str] = None,
-    token: Optional[str] = None,
-) -> tuple[str, str]:
-    """Resolve the GPP GraphQL credentials using precedence rules.
+        return resolved_url, resolved_token
 
-    This function looks for credentials in the following order:
-    1. Direct function arguments (`url`, `token`).
-    2. Environment variables `GPP_URL` and `GPP_TOKEN`.
-    3. Configuration file '~/.gpp/config.toml'.
+    @staticmethod
+    def set_credentials(url: str, token: str) -> None:
+        """Set and persist GPP credentials in the local configuration file.
 
-    Parameters
-    ----------
-    url : str, optional
-        The GraphQL endpoint URL. Overrides env and config if provided.
-    token : str, optional
-        The bearer token for authentication. Overrides env and config if provided.
+        This method creates or updates the stored credentials using the standard
+        configuration path defined by `typer.get_app_dir()`.
 
-    Returns
-    -------
-    tuple[str, str]
-        A tuple containing the resolved (url, token).
-
-    Raises
-    ------
-    ValueError
-        If neither the `url` nor `token` could be resolved from any source.
-    """
-    config = load_gpp_config()
-    resolved_url = url or os.getenv("GPP_URL") or config.get("url")
-    resolved_token = token or os.getenv("GPP_TOKEN") or config.get("token")
-
-    if not resolved_url or not resolved_token:
-        raise ValueError(
-            "Missing GPP URL or GPP token. Provide via args, environment, or "
-            "in configuration file '~/.gpp/config.toml.'"
-        )
-
-    return resolved_url, resolved_token
+        Parameters
+        ----------
+        url : str
+            The GraphQL API base URL to store.
+        token : str
+            The bearer token used for authentication.
+        """
+        config = GPPConfig()
+        config.set_credentials(url, token)

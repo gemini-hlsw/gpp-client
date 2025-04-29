@@ -1,18 +1,26 @@
 GPP Client Documentation
-========================
+=========================
 
-Welcome to the official documentation for the **GPP Python Client**, a modern, asynchronous GraphQL client designed to interact with the Gemini Program Platform (GPP) APIs.
+Welcome to the documentation for the **GPP Python Client**, a modern, asynchronous GraphQL client built to interact with the Gemini Program Platform (GPP) GraphQL API.
 
-This library provides a clean, extensible interface for working with GPP resources such as programs, observations, targets, and more.
+The GPP Client provides a clean, extensible way to manage GPP resources like programs, observations, targets, and more through a Pythonic interface.
 
-What You'll Find Here
----------------------
-- :doc:`Quickstart <quickstart>`: Get going quickly communicating with GPP.
-- :doc:`Client Overview <client>`: Learn how to authenticate and initialize the `GPPClient`, which serves as the main entry point to all functionality.
-- :doc:`Manager Modules <managers/index>`: Understand how resource-specific managers (e.g., `ProgramNoteManager`) encapsulate logic for GraphQL operations like `get_by_id`, `create`, and `update_batch`.
-- :doc:`Mixins <mixins/index>`: Dive into the reusable building blocks behind each manager — powerful abstractions that promote DRY and consistent logic for GraphQL patterns.
+What This Documentation Covers
+-------------------------------
 
-If you're just getting started, begin with the :doc:`Client <client>` section to see how to instantiate and use the `GPPClient`. Then, explore the available managers and mixins to understand how the system is structured and how to extend it.
+- :doc:`Quickstart <quickstart>`: Set up the GPP Client and connect to the GPP GraphQL API in minutes.
+- :doc:`Client Overview <client>`: Learn how to authenticate and initialize the `GPPClient`, the main entry point for interacting with GPP.
+- :doc:`Configuration <config>`: Understand where settings and credentials are stored and how to manage them.
+- :doc:`Authentication and Credentials <credentials>`: See the different ways to provide your API credentials.
+- :doc:`CLI Commands <cli/index>`: If you're using the CLI, explore available commands for managing configurations and interacting with resources.
+- :doc:`Resource Managers <managers/index>`: Learn how the `ProgramManager` and other managers work under the hood.
+- :doc:`Mixins <mixins/index>`: Dive deeper into the reusable mixins that build the managers.
+
+Getting Started
+---------------
+
+If you're new, start with the :doc:`Quickstart <quickstart>` guide to install the package and connect to GPP.
+Then move on to the :doc:`Client Overview <client>` to see how the client is organized and how to perform basic operations.
 
 .. toctree::
    :maxdepth: 2
@@ -20,6 +28,7 @@ If you're just getting started, begin with the :doc:`Client <client>` section to
 
    quickstart
    client
+   config
    credentials
    cli/index
    managers/index
