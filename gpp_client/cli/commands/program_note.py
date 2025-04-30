@@ -1,8 +1,9 @@
+from typing import Optional
+
 import typer
 from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
-from typing import Optional
 
 from ...client import GPPClient
 from ...schema import enums
@@ -17,7 +18,7 @@ console = Console()
 async def get_all(
     limit: Optional[int] = typer.Option(None, help="Max number of results."),
     include_deleted: Optional[bool] = typer.Option(
-        None, help="Include deleted notes in search.", is_flag=True
+        None, help="Include deleted notes in search."
     ),
 ):
     """List all program notes the user has access to."""
@@ -99,7 +100,7 @@ async def update(
     is_private: bool = typer.Option(None, help="Change privacy status."),
     existence: enums.Existence = typer.Option(None, help="Set existence."),
     include_deleted: Optional[bool] = typer.Option(
-        None, help="Include deleted notes in search.", is_flag=True
+        None, help="Include deleted notes in search."
     ),
 ):
     """Update an existing program note."""

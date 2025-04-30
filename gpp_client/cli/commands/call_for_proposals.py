@@ -32,15 +32,13 @@ async def get(
 @call_for_proposals.command("get-all")
 @async_command
 async def get_all(
-    is_open: bool = typer.Option(
-        False, "--is-open", help="Filter to only open calls.", is_flag=True
-    ),
+    is_open: bool = typer.Option(False, "--is-open", help="Filter to only open calls."),
     is_closed: bool = typer.Option(
-        False, "--is-closed", help="Filter to only closed calls.", is_flag=True
+        False, "--is-closed", help="Filter to only closed calls."
     ),
     limit: int = typer.Option(None, help="Max number of results."),
     include_deleted: Optional[bool] = typer.Option(
-        None, help="Include deleted entries.", is_flag=True
+        None, help="Include deleted entries."
     ),
 ):
     """List all calls for proposals the user has access to."""
