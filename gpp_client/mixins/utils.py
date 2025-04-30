@@ -76,7 +76,7 @@ def build_input_values(
     identifier: Optional[dict[str, Any]] = None,
     where: Optional[dict[str, Any]] = None,
     limit: Optional[int] = None,
-    include_deleted: bool = False,
+    include_deleted: Optional[bool] = None,
 ) -> dict[str, Any]:
     """Build a GraphQL input dictionary for a mutation/query.
 
@@ -87,10 +87,10 @@ def build_input_values(
     identifier : dict[str, Any], optional
         Dictionary of GraphQL identifiers, e.g., {"programId": "p-2025A-001"}.
     where : dict[str, Any], optional
-        Optional WHERE clause to filter affected items.
+        Optional where clause to filter and update filtered items.
     limit : int, optional
-        Maximum number of records to update.
-    include_deleted : bool, default=False
+        Maximum number of records to return. All will be updated though.
+    include_deleted : bool, optional
         Whether to include soft-deleted records in the update.
 
     Returns
@@ -99,11 +99,15 @@ def build_input_values(
         A dictionary formatted for use as GraphQL mutation input.
     """
     input_values: dict[str, Any] = {}
-    input_values["WHERE"] = where
-    input_values["LIMIT"] = limit
-    input_values["includeDeleted"] = include_deleted
-    input_values["SET"] = set_values
 
+    if set_values is not None:
+        input_values["SET"] = set_values
+    if where is not None:
+        input_values["WHERE"] = where
+    if limit is not None:
+        input_values["LIMIT"] = limit
+    if include_deleted is not None:
+        input_values["includeDeleted"] = include_deleted
     if identifier is not None:
         input_values.update(identifier)
 
@@ -116,7 +120,7 @@ def build_selector_values(
     where: Optional[dict[str, Any]] = None,
     limit: Optional[int] = None,
     offset: Optional[str] = None,
-    include_deleted: bool = False,
+    include_deleted: Optional[bool] = None,
 ) -> dict[str, Any]:
     """Build a GraphQL variable dictionary for selector-style queries.
 
@@ -125,13 +129,13 @@ def build_selector_values(
     identifier : dict[str, Any], optional
         Named selector values (e.g., {"targetId": "t-001"} or {"programId": "..."}).
     where : dict[str, Any], optional
-        WHERE clause for filtering.
+        Where clause for filtering return.
     limit : int, optional
         Limit the number of results.
     offset : str, optional
         Optional offset cursor (e.g., TargetId).
-    include_deleted : bool, default=False
-        Include soft-deleted records.
+    include_deleted : bool, optional
+        Whether to include soft-deleted records in the return.
 
     Returns
     -------
@@ -139,12 +143,16 @@ def build_selector_values(
         A dictionary of GraphQL query variables.
     """
     selector_values: dict[str, Any] = {}
-    selector_values["WHERE"] = where
-    selector_values["OFFSET"] = offset
-    selector_values["includeDeleted"] = include_deleted
-    selector_values["LIMIT"] = limit
 
+    # Always provide to handle selection.
+    selector_values["where"] = where
+    selector_values["limit"] = limit
+    selector_values["offset"] = offset
+
+    # Set if provided.
     if identifier is not None:
         selector_values.update(identifier)
+    if include_deleted is not None:
+        selector_values["includeDeleted"] = include_deleted
 
     return selector_values

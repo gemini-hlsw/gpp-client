@@ -22,6 +22,7 @@ from gql.transport.aiohttp import AIOHTTPTransport
 from .config import GPPConfig
 from .managers.program import ProgramManager
 from .managers.program_note import ProgramNoteManager
+from .managers.call_for_proposals import CallForProposalsManager
 
 
 class GPPClient:
@@ -40,6 +41,8 @@ class GPPClient:
     ----------
     config : GPPConfig
         A configuration class that stores credentials and other settings.
+    call_for_proposals : CallForProposalsManager
+        Manager for call for proposals.
     program_note : ProgramNoteManager
         Manager for program note operations.
     program : ProgramManager
@@ -75,6 +78,7 @@ class GPPClient:
             raise
 
         # TODO: Initialize all resource managers.
+        self.call_for_proposals = CallForProposalsManager(self)
         self.program_note = ProgramNoteManager(self)
         self.program = ProgramManager(self)
 

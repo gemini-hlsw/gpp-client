@@ -173,7 +173,7 @@ class ProgramNoteManager(
         text: Optional[str] = None,
         is_private: Optional[bool] = None,
         existence: Optional[str] = None,
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = False,
         from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -199,7 +199,7 @@ class ProgramNoteManager(
         existence : str, optional
             New existence state.
         include_deleted : bool, optional
-            Whether to include deleted notes. Defaults to False.
+            Whether to include deleted notes.
         from_json_file : str or Path, optional
             Path to a JSON file whose keys will override values in `set_values`.
             This only affects the `SET` portion of the mutation.

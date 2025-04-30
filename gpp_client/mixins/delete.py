@@ -21,7 +21,6 @@ class DeleteBatchMixin:
         *,
         where: dict[str, Any],
         limit: Optional[int] = None,
-        include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Soft-delete multiple resources using a custom `where` filter.
@@ -35,8 +34,6 @@ class DeleteBatchMixin:
             resources will be deleted, but only the first `limit` will be returned in
             the GraphQL result. If additional resources were deleted, `hasMore` will be
             true.
-        include_deleted : bool, default=False
-            Whether to include deleted resources in the match.
         fields : str, optional
             The fields to return in the response.
 
@@ -49,7 +46,7 @@ class DeleteBatchMixin:
             set_values=_SET_VALUES,
             where=where,
             limit=limit,
-            include_deleted=include_deleted,
+            include_deleted=False,
         )
 
         query = self.get_query(query_id="delete_batch", fields=fields)
@@ -64,7 +61,6 @@ class DeleteByIdViaBatchMixin:
         self,
         *,
         resource_id: str,
-        include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Soft-delete a single resource by its ID.
@@ -73,8 +69,6 @@ class DeleteByIdViaBatchMixin:
         ----------
         resource_id : str
             ID of the resource to delete.
-        include_deleted : bool, default=False
-            Whether to include deleted resources in the update.
         fields : str, optional
             The fields to return in the response.
 
@@ -88,7 +82,7 @@ class DeleteByIdViaBatchMixin:
             set_values=_SET_VALUES,
             limit=1,
             where=where,
-            include_deleted=include_deleted,
+            include_deleted=False,
         )
 
         query = self.get_query(query_id="delete_by_id", fields=fields)
@@ -105,7 +99,6 @@ class DeleteBatchByProgramIdMixin:
         program_id: str,
         where: Optional[dict[str, Any]] = None,
         limit: Optional[int] = None,
-        include_deleted: bool = False,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Soft-delete resources associated with a program ID.
@@ -121,8 +114,6 @@ class DeleteBatchByProgramIdMixin:
             resources will be deleted, but only the first `limit` will be returned in
             the GraphQL result. If additional resources were deleted, `hasMore` will be
             true.
-        include_deleted : bool, default=False
-            Whether to include already deleted resources.
         fields : str, optional
             The fields to return in the response.
 
@@ -142,7 +133,7 @@ class DeleteBatchByProgramIdMixin:
             set_values=_SET_VALUES,
             limit=limit,
             where=combined_where,
-            include_deleted=include_deleted,
+            include_deleted=False,
         )
 
         query = self.get_query(query_id="delete_batch_by_program_id", fields=fields)

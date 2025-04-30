@@ -21,7 +21,6 @@ class RestoreByIdViaBatchMixin:
         self,
         *,
         resource_id: str,
-        include_deleted: bool = True,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Restore a single resource by its ID.
@@ -30,8 +29,6 @@ class RestoreByIdViaBatchMixin:
         ----------
         resource_id : str
             The unique ID of the resource to restore.
-        include_deleted : bool, default=True
-            Whether to include already-deleted records.
         fields : str, optional
             The fields to return in the response.
 
@@ -46,7 +43,7 @@ class RestoreByIdViaBatchMixin:
             set_values=_SET_VALUES,
             where=where,
             limit=1,
-            include_deleted=include_deleted,
+            include_deleted=True,
         )
 
         query = self.get_query(query_id="restore_by_id", fields=fields)
@@ -63,7 +60,6 @@ class RestoreBatchByProgramIdMixin:
         program_id: str,
         where: Optional[dict[str, Any]] = None,
         limit: Optional[int] = None,
-        include_deleted: bool = True,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Restore multiple resources linked to a program.
@@ -79,8 +75,6 @@ class RestoreBatchByProgramIdMixin:
             matching resources will be restored, but only the first `limit` will be 
             returned in the GraphQL result. If additional resources were restored, 
             `hasMore` will be true.
-        include_deleted : bool, default=True
-            Whether to include already-deleted resources.
         fields : str, optional
             The fields to return in the response.
 
@@ -100,7 +94,7 @@ class RestoreBatchByProgramIdMixin:
             set_values=_SET_VALUES,
             where=combined_where,
             limit=limit,
-            include_deleted=include_deleted,
+            include_deleted=True,
         )
 
         query = self.get_query(query_id="restore_batch_by_program_id", fields=fields)
