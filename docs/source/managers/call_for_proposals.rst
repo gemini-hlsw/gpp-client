@@ -1,11 +1,11 @@
-Program Note
-============
+Call for Proposals
+==================
 
 .. note::
 
-   Accessed via ``client.program_note``.
+   Accessed via ``client.call_for_proposals``.
 
-.. automodule:: gpp_client.managers.program_note.manager
+.. automodule:: gpp_client.managers.call_for_proposals.manager
    :members:
    :undoc-members:
    :inherited-members:

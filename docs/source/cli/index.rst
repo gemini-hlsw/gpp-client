@@ -19,4 +19,6 @@ Each subcommand has its own page with full documentation:
 .. toctree::
     :maxdepth: 1
 
-    program-note
+    call_for_proposals
+    config
+    program_note

@@ -67,7 +67,7 @@ class UpdateByIdViaBatchMixin:
         *,
         resource_id: str,
         set_values: dict[str, Any],
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = None,
         from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -79,8 +79,8 @@ class UpdateByIdViaBatchMixin:
             The ID of the resource to update.
         set_values : dict[str, Any]
             Fields to update on the resource.
-        include_deleted : bool, default=False
-            Whether to include deleted resources in the update.
+        include_deleted : bool, optional
+            Whether to include soft-deleted records in the update.
         from_json_file : str or Path, optional
             Path to a JSON file whose keys will override values in `set_values`.
             This only affects the `SET` portion of the mutation.
@@ -112,7 +112,7 @@ class UpdateBatchMixin:
         set_values: dict[str, Any],
         where: dict[str, Any],
         limit: Optional[int] = None,
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = None,
         from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -129,8 +129,8 @@ class UpdateBatchMixin:
             resources will be updated, but only the first `limit` will be returned in
             the GraphQL result. If additional resources were updated, `hasMore` will be
             true.
-        include_deleted : bool, default=False
-            Whether to include deleted resources in the update.
+        include_deleted : bool, optional
+            Whether to include soft-deleted records in the update.
         from_json_file : str or Path, optional
             Path to a JSON file whose keys will override values in `set_values`.
             This only affects the `SET` portion of the mutation.
@@ -165,7 +165,7 @@ class UpdateBatchByProgramIdMixin:
         set_values: dict[str, Any],
         where: Optional[dict[str, Any]] = None,
         limit: Optional[int] = None,
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = None,
         from_json_file: Optional[Union[str, Path]] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -184,8 +184,8 @@ class UpdateBatchByProgramIdMixin:
             resources will be updated, but only the first `limit` will be returned in
             the GraphQL result. If additional resources were updated, `hasMore` will be
             true.
-        include_deleted : bool, default=False
-            Whether to include deleted resources in the update.
+        include_deleted : bool, optional
+            Whether to include soft-deleted records in the update.
         from_json_file : str or Path, optional
             Path to a JSON file whose keys will override values in `set_values`.
             This only affects the `SET` portion of the mutation.

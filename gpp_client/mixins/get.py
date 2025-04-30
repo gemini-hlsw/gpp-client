@@ -70,7 +70,7 @@ class GetBatchMixin:
         where: Optional[dict[str, Any]] = None,
         offset: Optional[str] = None,
         limit: Optional[int] = None,
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = None,
         fields: Optional[str] = None,
     ) -> dict[str, Any]:
         """Fetch a batch of resources using filter expressions.
@@ -84,7 +84,7 @@ class GetBatchMixin:
         limit : int, optional
             Maximum number of resources to include in the response. If additional
             resources were restored, `hasMore` will be true.
-        include_deleted : bool, default=False
+        include_deleted : bool, optional
             Whether to include soft-deleted entries.
         fields : str, optional
             The fields to return in the response.
@@ -111,7 +111,7 @@ class GetBatchByProgramIdMixin:
         *,
         program_id: str,
         where: Optional[dict[str, Any]] = None,
-        include_deleted: bool = False,
+        include_deleted: Optional[bool] = None,
         limit: Optional[int] = None,
         offset: Optional[str] = None,
         fields: Optional[str] = None,
@@ -124,8 +124,8 @@ class GetBatchByProgramIdMixin:
             The program ID to filter on.
         where : dict[str, Any], optional
             Additional filters to apply.
-        include_deleted : bool, default=False
-            Whether to include deleted entries.
+        include_deleted : bool, optional
+            Whether to include soft-deleted entries.
         limit : int, optional
             Maximum number of resources to include in the response. If additional
             resources were restored, `hasMore` will be true.

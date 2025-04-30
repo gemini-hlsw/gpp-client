@@ -53,5 +53,6 @@ API Reference
    :maxdepth: 1
 
    base_manager
+   call_for_proposals
    program
    program_note
