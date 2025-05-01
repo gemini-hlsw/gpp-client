@@ -1,0 +1,68 @@
+name: Run Tests
+
+on:
+  pull_request:
+    paths:
+      - "gpp_client/**/*.py"
+      - "tests/**/*.py"
+  push:
+    branches:
+      - main
+
+jobs:
+  run_tests:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: gpp-client
+
+      - name: Setup Miniforge
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          miniforge-version: latest
+          activate-environment: gpp-client-env
+          auto-activate-base: false
+
+      - name: Get date
+        id: get-date
+        run: echo "today=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Cache conda env
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CONDA }}/envs
+          key: conda-${{ runner.os }}--${{ runner.arch }}--${{
+            steps.get-date.outputs.today }}-${{
+            hashFiles('gpp-client/pyproject.toml') }}-${{
+            env.CACHE_NUMBER }}
+        env:
+          CACHE_NUMBER: 0
+        id: cache
+
+      - name: Update environment
+        run: |
+          cd gpp-client
+          pip install -v -e ".[test]"
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Run tests and calculate coverage
+        run: |
+          cd gpp-client
+          pytest -r A -v -n auto --cov=gpp_client --cov-report=xml --cov=tests --cov-branch
+
+    #   - name: Upload coverage reports to Codecov
+    #     uses: codecov/codecov-action@v5
+    #     with:
+    #       token: ${{ secrets.CODECOV_TOKEN }}

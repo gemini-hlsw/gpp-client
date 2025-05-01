@@ -67,19 +67,11 @@ class TestBuildInputValues:
         [
             (
                 {},
-                {
-                    "WHERE": None,
-                    "LIMIT": None,
-                    "includeDeleted": False,
-                    "SET": None,
-                },
+                {},
             ),
             (
                 {"set_values": {"a": 1}},
                 {
-                    "WHERE": None,
-                    "LIMIT": None,
-                    "includeDeleted": False,
                     "SET": {"a": 1},
                 },
             ),
@@ -118,10 +110,9 @@ class TestBuildSelectorValues:
             (
                 {},
                 {
-                    "WHERE": None,
-                    "LIMIT": None,
-                    "OFFSET": None,
-                    "includeDeleted": False,
+                    "where": None,
+                    "limit": None,
+                    "offset": None,
                 },
             ),
             (
@@ -134,9 +125,9 @@ class TestBuildSelectorValues:
                 },
                 {
                     "targetId": "t-123",
-                    "WHERE": {"name": {"LIKE": "abc"}},
-                    "LIMIT": 100,
-                    "OFFSET": "t-100",
+                    "where": {"name": {"LIKE": "abc"}},
+                    "limit": 100,
+                    "offset": "t-100",
                     "includeDeleted": True,
                 },
             ),

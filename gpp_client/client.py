@@ -11,18 +11,18 @@ Examples
 """
 
 __all__ = ["GPPClient"]
-
 import os
 from typing import Any, Optional
 
 import aiohttp
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.exceptions import TransportServerError
 
 from .config import GPPConfig
+from .managers.call_for_proposals import CallForProposalsManager
 from .managers.program import ProgramManager
 from .managers.program_note import ProgramNoteManager
-from .managers.call_for_proposals import CallForProposalsManager
 
 
 class GPPClient:
@@ -47,6 +47,16 @@ class GPPClient:
         Manager for program note operations.
     program : ProgramManager
         Manager for program operations.
+    """
+
+    _introspection_query = """
+        {
+            __schema {
+                queryType {
+                name
+                }
+            }
+        }
     """
 
     def __init__(
@@ -92,27 +102,37 @@ class GPPClient:
         Parameters
         ----------
         query : str
-            The raw GraphQL query or mutation string.
+            The raw GraphQL query or mutation string to execute.
         variables : dict[str, Any], optional
-            A dictionary of variables to pass along with the query.
+            Optional dictionary of variables to pass into the GraphQL query or mutation.
 
         Returns
         -------
         dict[str, Any]
-            The result of the GraphQL execution.
+            The parsed response returned by the GraphQL server.
 
         Raises
         ------
-        RuntimeError
-            If execution fails for any reason, the underlying exception
-            is wrapped and re-raised with context.
+        PermissionError
+            If the server responds with a 403 Forbidden status due to an invalid token.
+        ConnectionError
+            If the server endpoint is not found (404) or cannot be reached.
+        TransportServerError
+            If the server responds with another 4xx or 5xx error.
+        Exception
+            For all other unexpected client or transport-level errors.
         """
         try:
             async with self._client as session:
                 return await session.execute(gql(query), variable_values=variables)
-        except Exception as exc:
-            # TODO: Log error, re-raise custom exception, or retry.
-            raise RuntimeError(f"GraphQL execution failed: {exc}") from exc
+        except TransportServerError as exc:
+            if exc.code == 403:
+                raise PermissionError(f"Access denied, bad API token: {exc}") from exc
+            if exc.code == 404:
+                raise ConnectionError(f"Endpoint not found: {exc}") from exc
+            raise
+        except Exception:
+            raise
 
     def _resolve_credentials(
         self,
@@ -135,8 +155,10 @@ class GPPClient:
 
         Returns
         -------
-        tuple[str, str]
-            A tuple containing the resolved (url, token).
+        str
+            The URL for the GraphQL endpoint.
+        str
+            The token for authentication.
 
         Raises
         ------
@@ -171,3 +193,19 @@ class GPPClient:
         """
         config = GPPConfig()
         config.set_credentials(url, token)
+
+    async def check_connection(self) -> tuple[bool, Optional[str]]:
+        """Check if the GPP GraphQL endpoint is reachable and authenticated.
+
+        Returns
+        -------
+        bool
+            ``True`` if the connection and authentication succeed, ``False`` otherwise.
+        str, optional
+            The error message if the connection failed.
+        """
+        try:
+            await self._execute(self._introspection_query)
+            return True, None
+        except Exception as exc:
+            return False, str(exc)

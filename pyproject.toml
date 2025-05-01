@@ -51,5 +51,5 @@ docstring-code-line-length = "dynamic"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # addopts = "-r A -v -n auto --cov=src --cov-report=term --cov=tests --cov-branch"
-addopts = ["--import-mode=importlib"]
+addopts = ["--import-mode=importlib", "-rs"]
 asyncio_default_fixture_loop_scope = "session"
