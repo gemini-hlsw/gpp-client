@@ -9,12 +9,13 @@ What This Documentation Covers
 -------------------------------
 
 - :doc:`Quickstart <quickstart>`: Set up the GPP Client and connect to the GPP GraphQL API in minutes.
-- :doc:`Client Overview <client>`: Learn how to authenticate and initialize the `GPPClient`, the main entry point for interacting with GPP.
+- :doc:`Client Overview <client>`: Learn how to authenticate and initialize the ``GPPClient``, the main entry point for interacting with GPP.
 - :doc:`Configuration <config>`: Understand where settings and credentials are stored and how to manage them.
 - :doc:`Authentication and Credentials <credentials>`: See the different ways to provide your API credentials.
 - :doc:`CLI Commands <cli/index>`: If you're using the CLI, explore available commands for managing configurations and interacting with resources.
-- :doc:`Resource Managers <managers/index>`: Learn how the `ProgramManager` and other managers work under the hood.
-- :doc:`Mixins <mixins/index>`: Dive deeper into the reusable mixins that build the managers.
+- :doc:`Resource Managers <managers/index>`: Learn how the ``ProgramManager`` and other managers work and the available API to create, delete, restore, update, and get resources from GPP.
+- :doc:`Generated Types and API Structures <generated/index>`: Explore the auto-generated GraphQL types, fields, and inputs that are essential when constructing payloads for inputs and outputs.
+
 
 Getting Started
 ---------------
@@ -32,4 +33,4 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
    credentials
    cli/index
    managers/index
-   mixins/index
+   generated/index

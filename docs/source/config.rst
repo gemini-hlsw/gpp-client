@@ -28,13 +28,14 @@ The configuration file is stored in TOML format and typically includes:
 Usage
 -----
 
-Typical usage involves instantiating the class, retrieving credentials, or updating them:
+Typical usage involves instantiating the class directly, or accessing it from a ``GPPClient`` instance:
 
 .. code-block:: python
 
-   from gpp_client.config import GPPConfig
+   from gpp_client import GPPClient
 
-   config = GPPConfig()
+   client = GPPClient()
+   config = client.config
 
    # Get credentials.
    url, token = config.get_credentials()
