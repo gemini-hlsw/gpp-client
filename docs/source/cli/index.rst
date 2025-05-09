@@ -1,7 +1,7 @@
 CLI Reference
 =============
 
-The `gpp` command-line interface allows users to interact with the GPP through a modern Typer-based CLI.
+The ``gpp`` command-line interface provides access to the Gemini Program Platform (GPP), enabling interaction with programs, observations, targets, proposals, and related resources.
 
 .. typer:: gpp_client.cli.cli:app
     :prog: gpp
@@ -9,16 +9,24 @@ The `gpp` command-line interface allows users to interact with the GPP through a
     :width: 80
     :theme: dark
 
-This CLI includes subcommands to manage program notes and proposals.
+Each command supports ``--help`` for usage details.
 
-Subcommands
------------
+Commands
+--------
 
-Each subcommand has its own page with full documentation:
+Individual commands are documented below:
 
 .. toctree::
     :maxdepth: 1
 
-    call_for_proposals
     config
+    call_for_proposals
     program_note
+    observation
+    target
+
+.. note::
+
+   The ``config`` group is used to manage local settings and authentication for the CLI.
+   You must either configure credentials using ``gpp config`` or set the ``GPP_TOKEN``
+   and ``GPP_URL`` environment variables. See the :doc:`credentials` section for details.

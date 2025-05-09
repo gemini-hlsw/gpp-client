@@ -1,7 +1,7 @@
-Program
-=======
+Observation
+===========
 
-.. automodule:: gpp_client.managers.program
+.. automodule:: gpp_client.managers.observation
    :members:
    :undoc-members:
    :inherited-members:

@@ -18,9 +18,11 @@ Each manager provides high-level, asynchronous methods such as `create`, `get_by
 
 The following managers are accessible via `GPPClient`:
 
-- :attr:`~gpp_client.GPPClient.call_for_proposals` → :class:`~gpp_client.managers.call_for_proposals.manager.CallForProposalsManager`
-- :attr:`~gpp_client.GPPClient.program_note` → :class:`~gpp_client.managers.program_note.manager.ProgramNoteManager`
-- :attr:`~gpp_client.GPPClient.program` → :class:`~gpp_client.managers.program.manager.ProgramManager`
+- :attr:`~gpp_client.GPPClient.call_for_proposals` → :class:`~gpp_client.managers.call_for_proposals.CallForProposalsManager`
+- :attr:`~gpp_client.GPPClient.program_note` → :class:`~gpp_client.managers.program_note.ProgramNoteManager`
+- :attr:`~gpp_client.GPPClient.program` → :class:`~gpp_client.managers.program.ProgramManager`
+- :attr:`~gpp_client.GPPClient.target` → :class:`~gpp_client.managers.target.TargetManager`
+- :attr:`~gpp_client.GPPClient.observation` → :class:`~gpp_client.managers.observation.ObservationManager`
 - *(more managers to be added as the client evolves)*
 
 Example

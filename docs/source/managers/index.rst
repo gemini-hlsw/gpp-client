@@ -1,50 +1,61 @@
 Manager Modules
 ===============
 
-This section documents the resource managers that power the `GPPClient`.
+This section documents the resource-specific manager classes available on the ``GPPClient``.
 
 Overview
 --------
 
-In this library, a **Manager** is a high-level interface to a specific GraphQL resource, such as program notes, proposals, or observations. Managers are responsible for:
+A **manager** encapsulates all interaction logic for a specific GraphQL resource such as `programs`, `observations`, `targets`, and more. Each manager provides an asynchronous, Pythonic interface to the underlying GraphQL schema.
 
-- Registering and executing resource-specific GraphQL queries and mutations
-- Composing reusable mixins that implement common operations (create, get, update, delete, restore)
-- Optionally overriding logic to simplify the interface
+All managers inherit from a shared :doc:`BaseManager <base_manager>`, and most compose lightweight mixins for common operations like ``create``, ``update_all``, ``get-by-id``, and ``soft-deletion``.
 
-.. note::
+Accessing Managers
+------------------
 
-   All managers inherit from a shared :doc:`BaseManager <base_manager>`, which encapsulates core functionality.
-
-Every manager is available as an attribute of the `GPPClient`:
+Each manager is exposed as an attribute on the ``GPPClient`` instance:
 
 .. code-block:: python
 
-    client = GPPClient(...)
-    notes = await client.program_note.get_batch(...)
-    proposal = await client.proposal.get_by_id("p-123")
+   from gpp_client import GPPClient
 
-Why Managers?
--------------
+   client = GPPClient()
 
-Managers serve as a consistent and extensible namespace for operations on GraphQL resources. Rather than scattering query logic across the codebase, each resource has a dedicated manager that:
+   # Fetch a program by ID
+   program = await client.program.get_by_id("p-2025A-001")
 
-- Provides a focused, intuitive interface
-- Follows async/await patterns for modern Python
-- Enables custom overrides for ergonomic method signatures
-- Supports field selection overrides for GraphQL payload optimization
+   # Create a new program note
+   note = await client.program_note.create(
+       properties=ProgramNotePropertiesInput(
+           title="Important update",
+           text="Please confirm new calibration procedures.",
+           is_private=False
+       ),
+       program_id="p-2025A-001"
+   )
 
-Example: `ProgramNoteManager`
------------------------------
+Responsibilities
+----------------
 
-The `ProgramNoteManager` demonstrates the power of this pattern. It combines several mixins to support:
+Managers handle:
 
-- Creating new program notes
-- Fetching them by ID or in batches
-- Updating and deleting notes
-- Auto-generating `set_values` payloads for mutations
+- Asynchronous GraphQL query/mutation execution
+- Payload building using ``ariadne-codegen`` input types
+- Structured GraphQL field selection
+- Soft-delete and restore operations
+- Enforcement of resource-specific rules (e.g. requiring one program reference)
 
-Custom logic in `create()` and `update_by_id()` builds structured mutation payloads automatically, making it easier for users.
+Manager Patterns
+----------------
+
+Most managers follow this pattern:
+
+- ``create()`` accepts a generated input model and builds a typed mutation
+- ``get_all()`` provides filterable and paginated queries
+- ``get_by_id()`` accepts an identifier or reference and returns the resource
+- ``update_all()`` performs batch updates to all matching resources.
+- ``update_by_id()`` supports targeted updates using partial input models
+- ``delete_by_id()`` and ``restore_by_id()`` toggle resource existence
 
 API Reference
 -------------
@@ -56,3 +67,5 @@ API Reference
    call_for_proposals
    program
    program_note
+   target
+   observation

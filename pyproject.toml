@@ -9,15 +9,15 @@ readme = "README.md"
 authors = [{ name = "NOIRLab" }]
 requires-python = ">=3.10.0"
 dependencies = [
-    "gql[aiohttp, websockets]>=3.5.2",
     "astropy>=5.3.4",
     "toml>=0.10.2",
     "typer>=0.15.2",
+    "ariadne-codegen[subscriptions]>=0.14.0"
 ]
 version = "0.0.0"
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 
 [project.optional-dependencies]
 test = [
@@ -53,3 +53,15 @@ testpaths = ["tests"]
 # addopts = "-r A -v -n auto --cov=src --cov-report=term --cov=tests --cov-branch"
 addopts = ["--import-mode=importlib", "-rs"]
 asyncio_default_fixture_loop_scope = "session"
+
+[tool.ariadne-codegen]
+schema_path = "schema.graphql"
+client_name = "_GPPClient"
+client_file_name = "_client"
+enable_custom_operations = true
+target_package_name = "generated"
+target_package_path = "src/gpp_client"
+convert_to_snake_case = true
+plugins = [
+    "custom_plugins.AliasStrWrapperPlugin",
+]

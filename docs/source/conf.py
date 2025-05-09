@@ -6,6 +6,7 @@
 
 import os
 import sys
+from enum import Enum
 
 sys.path.insert(0, os.path.abspath("../.."))
 
@@ -50,10 +51,16 @@ intersphinx_mapping = {
 
 
 def skip_member(app, what, name, obj, skip, options):
-    if name in {"queries", "default_fields", "resource_id_field"}:
+    if name in {}:
         return True  # skip this member
     return skip
 
+def suppress_enum_docstring(app, what, name, obj, options, lines):
+    """Remove the default 'An enumeration.' docstring from Enum classes."""
+    if what == "class" and isinstance(obj, type) and issubclass(obj, Enum):
+        if lines and lines[0].strip() == "An enumeration.":
+            lines.clear()
 
 def setup(app):
     app.connect("autodoc-skip-member", skip_member)
+    app.connect("autodoc-process-docstring", suppress_enum_docstring)

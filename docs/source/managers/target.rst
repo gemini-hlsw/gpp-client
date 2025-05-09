@@ -1,7 +1,7 @@
-Program
-=======
+Target
+======
 
-.. automodule:: gpp_client.managers.program
+.. automodule:: gpp_client.managers.target
    :members:
    :undoc-members:
    :inherited-members:
