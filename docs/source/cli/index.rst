@@ -1,5 +1,5 @@
-CLI Reference
-=============
+Command Line Interface Reference
+================================
 
 The ``gpp`` command-line interface provides access to the Gemini Program Platform (GPP), enabling interaction with programs, observations, targets, proposals, and related resources.
 
@@ -29,4 +29,4 @@ Individual commands are documented below:
 
    The ``config`` group is used to manage local settings and authentication for the CLI.
    You must either configure credentials using ``gpp config`` or set the ``GPP_TOKEN``
-   and ``GPP_URL`` environment variables. See the :doc:`credentials` section for details.
+   and ``GPP_URL`` environment variables. See the :doc:`credentials </credentials>` section for details.

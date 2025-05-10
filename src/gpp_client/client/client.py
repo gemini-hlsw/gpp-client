@@ -1,8 +1,8 @@
 import os
 from typing import Optional
 
+from ..api._client import _GPPClient
 from ..config import GPPConfig
-from ..generated._client import _GPPClient
 from ..managers import (
     CallForProposalsManager,
     ObservationManager,
@@ -17,7 +17,36 @@ patch_base_operations_graphql_field_get_formatted_variables()
 
 
 class GPPClient:
-    """Public-facing client that exposes only resource managers."""
+    """Main entry point for interacting with the GPP GraphQL API.
+
+    This client provides access to all supported resource managers, including
+    programs, targets, observations, and more. It handles
+    authentication, configuration, and connection setup automatically.
+
+    Parameters
+    ----------
+    url : str, optional
+        The base URL of the GPP GraphQL API. If not provided, it will be loaded from
+        the ``GPP_URL`` environment variable or the local configuration file.
+    token : str, optional
+        The bearer token used for authentication. If not provided, it will be loaded
+        from the ``GPP_TOKEN`` environment variable or the local configuration file.
+
+    Attributes
+    ----------
+    config : GPPConfig
+        Interface to read and write local GPP configuration settings.
+    program_note : ProgramNoteManager
+        Manager for program notes (e.g., create, update, list).
+    target : TargetManager
+        Manager for targets in proposals or observations.
+    program : ProgramManager
+        Manager for proposals and observing programs.
+    call_for_proposals : CallForProposalsManager
+        Manager for open Calls for Proposals (CFPs).
+    observation : ObservationManager
+        Manager for observations submitted under proposals.
+    """
 
     def __init__(
         self,
@@ -103,27 +132,27 @@ class GPPClient:
 
         return resolved_url, resolved_token
 
-    async def check_connection(self) -> tuple[bool, Optional[str]]:
-        """Check if the GPP GraphQL endpoint is reachable and authenticated.
+    # async def check_connection(self) -> tuple[bool, Optional[str]]:
+    #     """Check if the GPP GraphQL endpoint is reachable and authenticated.
 
-        Returns
-        -------
-        bool
-            ``True`` if the connection and authentication succeed, ``False`` otherwise.
-        str, optional
-            The error message if the connection failed.
-        """
-        query = """
-            {
-                __schema {
-                    queryType {
-                    name
-                    }
-                }
-            }
-        """
-        try:
-            await self._client.execute(query)
-            return True, None
-        except Exception as exc:
-            return False, str(exc)
+    #     Returns
+    #     -------
+    #     bool
+    #         ``True`` if the connection and authentication succeed, ``False`` otherwise.
+    #     str, optional
+    #         The error message if the connection failed.
+    #     """
+    #     query = """
+    #         {
+    #             __schema {
+    #                 queryType {
+    #                 name
+    #                 }
+    #             }
+    #         }
+    #     """
+    #     try:
+    #         await self._client.execute(query)
+    #         return True, None
+    #     except Exception as exc:
+    #         return False, str(exc)
