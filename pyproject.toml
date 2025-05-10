@@ -12,7 +12,7 @@ dependencies = [
     "astropy>=5.3.4",
     "toml>=0.10.2",
     "typer>=0.15.2",
-    "ariadne-codegen[subscriptions]>=0.14.0"
+    "ariadne-codegen[subscriptions]>=0.14.0",
 ]
 version = "0.0.0"
 
@@ -64,4 +64,5 @@ target_package_path = "src/gpp_client"
 convert_to_snake_case = true
 plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
+    "custom_plugins.FixCustomFieldsLiteralPlugin",
 ]
