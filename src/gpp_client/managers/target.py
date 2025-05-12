@@ -2,17 +2,17 @@ __all__ = ["TargetManager"]
 
 from typing import Any, Optional
 
-from ..generated.custom_fields import (
+from ..api.custom_fields import (
     CreateTargetResultFields,
     ProgramFields,
     TargetFields,
     TargetSelectResultFields,
     UpdateTargetsResultFields,
 )
-from ..generated.custom_mutations import Mutation
-from ..generated.custom_queries import Query
-from ..generated.enums import Existence
-from ..generated.input_types import (
+from ..api.custom_mutations import Mutation
+from ..api.custom_queries import Query
+from ..api.enums import Existence
+from ..api.input_types import (
     CreateTargetInput,
     TargetPropertiesInput,
     UpdateTargetsInput,

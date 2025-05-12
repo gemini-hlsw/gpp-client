@@ -2,7 +2,7 @@ __all__ = ["ProgramManager"]
 
 from typing import Any, Optional
 
-from ..generated.custom_fields import (
+from ..api.custom_fields import (
     CreateProgramResultFields,
     DateIntervalFields,
     ProgramFields,
@@ -10,10 +10,10 @@ from ..generated.custom_fields import (
     ProgramUserFields,
     UpdateProgramsResultFields,
 )
-from ..generated.custom_mutations import Mutation
-from ..generated.custom_queries import Query
-from ..generated.enums import Existence
-from ..generated.input_types import (
+from ..api.custom_mutations import Mutation
+from ..api.custom_queries import Query
+from ..api.enums import Existence
+from ..api.input_types import (
     CreateProgramInput,
     ProgramPropertiesInput,
     UpdateProgramsInput,

@@ -24,7 +24,6 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
         try:
             return asyncio.run(func(*args, **kwargs))
         except Exception as exc:
-            raise(exc)
             console.print(f"[bold red]Error:[/bold red] {exc}", style="red")
             raise typer.Exit(code=1)
 

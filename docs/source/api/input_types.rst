@@ -1,7 +1,7 @@
 GraphQL Input Models
 ====================
 
-The ``gpp_client.generated.input_types`` module contains all of the **GraphQL input models** used when sending data to the Gemini Program Platform (GPP) API.
+The ``gpp_client.api.input_types`` module contains all of the **GraphQL input models** used when sending data to the Gemini Program Platform (GPP) API.
 
 These models define the structure of inputs required when creating or updating GPP resources such as `Programs`, `Observations`, `Targets`, and more. They are auto-generated from the GPP GraphQL schema using ``ariadne-codegen``, ensuring compatibility with the latest backend API types.
 
@@ -14,7 +14,7 @@ To use these input types, import the relevant class and populate it with the nec
 
 .. code-block:: python
 
-   from gpp_client.generated.input_types import ObservationPropertiesInput
+   from gpp_client.api.input_types import ObservationPropertiesInput
 
    input_data = ObservationPropertiesInput(
        title="Nightly science observation",
@@ -32,7 +32,7 @@ For optional nested structures, you may also need to import other input types li
 API Reference
 -------------
 
-.. automodule:: gpp_client.generated.input_types
+.. automodule:: gpp_client.api.input_types
    :members:
    :undoc-members:
    :exclude-members: model_config

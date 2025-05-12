@@ -5,11 +5,11 @@ __all__ = [
 
 from typing import Any, Set
 
-from ..generated.base_operation import GraphQLField
+from ..api.base_operation import GraphQLField
 
 
 def patch_base_operations_graphql_field__format_variable_name():
-    """This method is taken directly from the original generated code in `generated`,
+    """This method is taken directly from the original generated code in `api`,
     with the duplicate name logic commented out. This change ensures that GraphQL
     variables like `includeDeleted` are preserved with stable names across nested
     resources (e.g., when querying `program` from within `target`).

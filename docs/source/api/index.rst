@@ -1,4 +1,4 @@
-Generated Types and API Structures
+GPP GraphQL Client Building Blocks
 ==================================
 
 This section documents the auto-generated modules created from the GPP GraphQL schema via ``ariadne-codegen``. These modules form the foundation for all client interactions with the GPP API, and are used extensively when constructing GraphQL inputs and parsing responses.

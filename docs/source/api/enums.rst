@@ -14,13 +14,13 @@ For example:
 
 .. code-block:: python
 
-    from gpp_client.generated.enums import Existence
+    from gpp_client.api.enums import Existence
 
     input_data = TargetPropertiesInput(existence=Existence.PRESENT)
 
 API Reference
 -------------
 
-.. automodule:: gpp_client.generated.enums
+.. automodule:: gpp_client.api.enums
    :members:
    :undoc-members:
