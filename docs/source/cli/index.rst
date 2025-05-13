@@ -24,6 +24,7 @@ Individual commands are documented below:
     program_note
     observation
     target
+    program
 
 .. note::
 

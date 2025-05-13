@@ -1,5 +1,5 @@
-GraphQL Field Selectors
-=======================
+Field Selectors
+===============
 
 The ``gpp_client.api.custom_fields`` module contains statically defined field selectors used to build GraphQL queries and mutations.
 

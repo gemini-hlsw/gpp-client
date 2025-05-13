@@ -3,19 +3,31 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gpp_client"
+name = "gpp-client"
 description = "Gemini Program Platform client."
 readme = "README.md"
 authors = [{ name = "NOIRLab" }]
+license = { file = "LICENSE" }
 requires-python = ">=3.10.0"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
 dependencies = [
-    "astropy>=5.3.4",
     "toml>=0.10.2",
     "typer>=0.15.3",
     "ariadne-codegen[subscriptions]>=0.14.0",
     "click>=8.0.0,<8.2.0",
 ]
-version = "0.0.0"
+version = "25.05.0a0"
+keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -71,3 +83,9 @@ plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.FixCustomFieldsLiteralPlugin",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gemini-hlsw/gpp-client"
+Source = "https://github.com/gemini-hlsw/gpp-client"
+Issues = "https://github.com/gemini-hlsw/gpp-client/issues"
+Documentation = "https://gpp-client.readthedocs.io/en/latest/"

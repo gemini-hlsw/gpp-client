@@ -1,5 +1,5 @@
-GraphQL Query Builders
-======================
+Available Queries
+=================
 
 The ``gpp_client.api.custom_queries`` module defines statically typed query builders corresponding to GraphQL `Query` operations available in the GPP schema.
 

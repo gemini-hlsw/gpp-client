@@ -1,5 +1,5 @@
-GraphQL Enums
-==============
+Enums
+=====
 
 This module defines all enumerated types used in the GPP GraphQL schema.
 

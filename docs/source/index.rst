@@ -1,14 +1,14 @@
 GPP Client Documentation
 =========================
 
-Welcome to the documentation for the **GPP Python Client**, a modern, asynchronous GraphQL client built to interact with the Gemini Program Platform (GPP) GraphQL API.
+Welcome to the documentation for the **GPP Python Client**, a modern, asynchronous client built to interact with GPP, without the GraphQL.
 
 The GPP Client provides a clean, extensible way to manage GPP resources like programs, observations, targets, and more through a Pythonic interface.
 
 What This Documentation Covers
 -------------------------------
 
-- :doc:`Quickstart <quickstart>`: Set up the GPP Client and connect to the GPP GraphQL API in minutes.
+- :doc:`Quickstart <quickstart>`: Set up the GPP Client and connect to the GPP in minutes.
 - :doc:`Client Overview <client>`: Learn how to authenticate and initialize the ``GPPClient``, the main entry point for interacting with GPP.
 - :doc:`Configuration <config>`: Understand where settings and credentials are stored and how to manage them.
 - :doc:`Authentication and Credentials <credentials>`: See the different ways to provide your API credentials.
@@ -34,3 +34,4 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
    cli/index
    managers/index
    api/index
+   contributing
