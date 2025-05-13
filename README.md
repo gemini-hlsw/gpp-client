@@ -18,7 +18,7 @@ Python client and CLI for the GPP. Key features:
 - **Type‑safe GraphQL**
   - Pydantic models from the GPP GraphQL schema, so every query, mutation, and input type is validated.
 - **Resource Managers**
-  - High‑level `Manager` classes (e.g. `GPPClient.program`, `GPPClient.observation`) with convenient `get`, `get_all`, `create`, `update_by_id`, `delete_by_id`, `restore_by_id` and more methods, no need to write raw GraphQL.
+  - High‑level `Manager` classes (e.g. `GPPClient.program`, `GPPClient.observation`) with convenient `get_by_id`, `get_all`, `create`, `update_by_id`, `delete_by_id`, `restore_by_id` and more methods, no need to write raw GraphQL.
 - **Flexible payloads**
   - Create or update via in‑memory Pydantic inputs **or** `from_json` files.
 - **`gpp` CLI**
