@@ -1,5 +1,6 @@
 __all__ = ["ObservationManager"]
 
+from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
@@ -24,14 +25,15 @@ from ..api.input_types import (
     WhereString,
 )
 from .base_manager import BaseManager
-from .utils import validate_single_identifier
+from .utils import load_properties, validate_single_identifier
 
 
 class ObservationManager(BaseManager):
     async def create(
         self,
         *,
-        properties: ObservationPropertiesInput,
+        properties: Optional[ObservationPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         program_id: Optional[str] = None,
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
@@ -40,8 +42,13 @@ class ObservationManager(BaseManager):
 
         Parameters
         ----------
-        properties : ObservationPropertiesInput
-            Observation definition to use in creation.
+        properties : ObservationPropertiesInput, optional
+            Observation definition to use in creation. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         program_id : str, optional
             Direct program identifier. Must be provided if `proposal_reference` and
             `program_reference` are omitted.
@@ -58,12 +65,22 @@ class ObservationManager(BaseManager):
         Raises
         ------
         ValueError
-            If no valid program identifier is provided.
+            - If no valid program identifier is provided.
+            - If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
+        )
+
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ObservationPropertiesInput
         )
 
         input_data = CreateObservationInput(
@@ -85,7 +102,8 @@ class ObservationManager(BaseManager):
     async def update_all(
         self,
         *,
-        properties: ObservationPropertiesInput,
+        properties: Optional[ObservationPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         where: Optional[WhereObservation] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
@@ -94,8 +112,12 @@ class ObservationManager(BaseManager):
 
         Parameters
         ----------
-        properties : ObservationPropertiesInput
-            Fields to update.
+        properties : ObservationPropertiesInput, optional
+            Fields to update. This or ``from_json`` must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         where : WhereObservation, optional
             Filter expression to limit which observations are updated.
         limit : int, optional
@@ -107,7 +129,21 @@ class ObservationManager(BaseManager):
         -------
         dict[str, Any]
             The update result and updated records.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ObservationPropertiesInput
+        )
+
         input_data = UpdateObservationsInput(
             set=properties,
             where=where,
@@ -132,7 +168,8 @@ class ObservationManager(BaseManager):
         *,
         observation_id: Optional[str] = None,
         observation_reference: Optional[str] = None,
-        properties: ObservationPropertiesInput,
+        properties: Optional[ObservationPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
         """Update a single observation by ID or reference.
@@ -143,8 +180,13 @@ class ObservationManager(BaseManager):
             Unique internal ID of the observation.
         observation_reference : str, optional
             Human-readable reference label (e.g., "G-2025A-1234-Q-0001").
-        properties : ObservationPropertiesInput
-            New values to apply to the observation.
+        properties : ObservationPropertiesInput, optional
+            New values to apply to the observation. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         include_deleted : bool, default=False
             Whether to include soft-deleted observations in the match.
 
@@ -156,7 +198,14 @@ class ObservationManager(BaseManager):
         Raises
         ------
         ValueError
-            If neither or both of `observation_id` and `observation_reference` are provided.
+            - If neither or both of `observation_id` and `observation_reference` are
+            provided.
+            - If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         validate_single_identifier(
             observation_id=observation_id,
@@ -177,6 +226,7 @@ class ObservationManager(BaseManager):
             limit=1,
             properties=properties,
             include_deleted=include_deleted,
+            from_json=from_json,
         )
 
         return result["observations"][0]

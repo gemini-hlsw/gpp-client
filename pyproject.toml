@@ -49,6 +49,10 @@ line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
+[tool.ruff]
+# Ignore generated code.
+extend-exclude = ["api"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # addopts = "-r A -v -n auto --cov=src --cov-report=term --cov=tests --cov-branch"

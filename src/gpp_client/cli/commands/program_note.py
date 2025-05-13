@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
@@ -5,8 +6,9 @@ from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
 
-from gpp_client import GPPClient
-from gpp_client.cli.utils import (
+from ...api.input_types import ProgramNotePropertiesInput
+from ...client import GPPClient
+from ..utils import (
     async_command,
     print_not_found,
     truncate_long,
@@ -14,9 +16,7 @@ from gpp_client.cli.utils import (
 )
 
 console = Console()
-app = typer.Typer(
-    name="pnote", help="Manage program notes.", no_args_is_help=True
-)
+app = typer.Typer(name="pnote", help="Manage program notes.", no_args_is_help=True)
 
 
 @app.command("list")
@@ -98,19 +98,87 @@ async def restore_by_id(
 
 @app.command("create")
 @async_command
-async def create():
-    """Create a new program note (not yet implemented)."""
-    raise NotImplementedError(
-        "CLI support for 'create' is not yet implemented. Use the API directly with "
-        "'ProgramNotePropertiesInput'."
+async def create(
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            exists=True,
+            help="JSON file with the properties definition.",
+        ),
+    ],
+    program_id: Annotated[
+        Optional[str],
+        typer.Option(help="Program ID (supply exactly one identifier)."),
+    ] = None,
+    proposal_reference: Annotated[
+        Optional[str],
+        typer.Option(help="Proposal reference label (supply exactly one identifier)."),
+    ] = None,
+    program_reference: Annotated[
+        Optional[str],
+        typer.Option(help="Program label reference (supply exactly one identifier)."),
+    ] = None,
+):
+    """Create a new program note.
+
+    Exactly one of --program-id, --proposal-reference, or --program-reference
+    must be provided to identify the program. Supplying more than one (or none)
+    will result in an error.
+    """
+    client = GPPClient()
+    result = await client.program_note.create(
+        from_json=from_json,
+        program_id=program_id,
+        program_reference=program_reference,
+        proposal_reference=proposal_reference,
     )
+    console.print(JSON.from_data(result))
 
 
 @app.command("update")
 @async_command
-async def update_by_id():
-    """Update a program note by ID (not yet implemented)."""
-    raise NotImplementedError(
-        "CLI support for 'update' is not yet implemented. "
-        "Use the API directly with 'ProgramNotePropertiesInput'."
+async def update_by_id(
+    program_note_id: Annotated[
+        str, typer.Argument(..., help="Program note ID to update.")
+    ],
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            exists=True,
+            help="JSON file with the properties definition.",
+        ),
+    ],
+):
+    """Update a program note by ID."""
+    client = GPPClient()
+    result = await client.program_note.update_by_id(
+        program_note_id, from_json=from_json
     )
+    console.print(JSON.from_data(result))
+
+
+@app.command("schema")
+def schema(
+    indent: Annotated[
+        int,
+        typer.Option(
+            show_default=True,
+            help="Indentation level for pretty printing.",
+        ),
+    ] = 2,
+    sort_keys: Annotated[
+        bool,
+        typer.Option(
+            help="Sort object keys alphabetically.",
+        ),
+    ] = False,
+):
+    """Display the JSON Schema for the input properties.
+
+    Use this when crafting or validating the JSON files passed with
+    --from-json to the `create` or `update` commands.
+    """
+    schema = ProgramNotePropertiesInput.model_json_schema()
+    console.print(JSON.from_data(schema, indent=indent, sort_keys=sort_keys))

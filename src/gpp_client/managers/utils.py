@@ -1,53 +1,17 @@
-__all__ = ["valid_program_identifier", "print_fields", "validate_single_identifier"]
+__all__ = [
+    "print_fields",
+    "validate_single_identifier",
+    "load_properties",
+]
 
-from typing import Optional
+import json
+from pathlib import Path
+from typing import Any, Optional, Type, TypeVar
 
 from graphql import print_ast
+from pydantic import BaseModel
 
-
-def valid_program_identifier(
-    *,
-    program_id: Optional[str] = None,
-    program_reference: Optional[str] = None,
-    proposal_reference: Optional[str] = None,
-    raise_exception: bool = True,
-) -> bool:
-    """Validate that exactly one program identifier is provided.
-
-    Parameters
-    ----------
-    program_id : str, optional
-        The unique program ID.
-    program_reference : str, optional
-        A reference string for the program.
-    proposal_reference : str, optional
-        A reference string for the proposal.
-    raise_exception : bool, default=True
-        Whether to raise a ValueError if validation fails.
-
-    Returns
-    -------
-    bool
-        `True` if exactly one identifier is provided; `False` if validation fails and
-        `raise_exception` is `False`.
-
-    Raises
-    ------
-    ValueError
-        If none or more than one identifiers are provided and `raise_exception` is True.
-    """
-    values = [
-        v for v in (program_id, program_reference, proposal_reference) if v is not None
-    ]
-
-    if len(values) != 1:
-        if raise_exception:
-            raise ValueError(
-                "Exactly one of 'program_id', 'program_reference', or "
-                "'proposal_reference' must be provided."
-            )
-        return False
-    return True
+T = TypeVar("T", bound=BaseModel)
 
 
 def print_fields(fields):
@@ -76,3 +40,58 @@ def validate_single_identifier(**kwargs) -> None:
         raise ValueError(
             f"Expected exactly one of {', '.join(kwargs.keys())}, got {len(non_null)}."
         )
+
+
+def load_properties(
+    *,
+    properties: Optional[T] = None,
+    from_json: Optional[str | Path | dict[str, Any]] = None,
+    cls: Type[T],
+) -> T:
+    """Return a validated properties object from exactly one data source.
+
+    Parameters
+    ----------
+    properties : T, optional
+        Preconstructed properties instance. Returned unchanged when provided.
+    from_json : str | Path | dict[str, Any], optional
+        Path to a JSON file or a dictionary containing the JSON data.
+    cls : Type[T]
+        Concrete PropertiesInput class for validation. Required.
+
+    Returns
+    -------
+    T
+        Instance of ``cls`` representing the validated properties.
+
+    Raises
+    ------
+    ValueError
+        Raised when both or neither of ``properties`` and ``from_json`` are provided.
+    FileNotFoundError
+        Raised when ``from_json`` is a path that does not exist.
+    json.JSONDecodeError
+        Raised when the JSON file cannot be parsed.
+    TypeError
+        Raised when ``from_json`` is neither path-like nor a mapping.
+    """
+    # Ensure exactly one data source is provided.
+    if (properties is None) == (from_json is None):
+        raise ValueError(
+            "Provide exactly one of 'properties' or 'from_json', but not both."
+        )
+
+    if properties is not None:
+        return properties
+
+    # Load data from dictionary or JSON file.
+    if isinstance(from_json, dict):
+        data = from_json
+    else:
+        path = Path(from_json).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"JSON properties file not found: {path}")
+        with path.open() as f:
+            data = json.load(f)
+
+    return cls(**data)

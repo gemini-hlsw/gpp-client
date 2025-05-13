@@ -1,5 +1,6 @@
 __all__ = ["TargetManager"]
 
+from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
@@ -20,14 +21,15 @@ from ..api.input_types import (
     WhereTarget,
 )
 from .base_manager import BaseManager
-from .utils import validate_single_identifier
+from .utils import load_properties, validate_single_identifier
 
 
 class TargetManager(BaseManager):
     async def create(
         self,
         *,
-        target_properties: TargetPropertiesInput,
+        properties: Optional[TargetPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         program_id: Optional[str] = None,
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
@@ -36,8 +38,12 @@ class TargetManager(BaseManager):
 
         Parameters
         ----------
-        target_properties : TargetPropertiesInput
-            Full target definition.
+        properties : TargetPropertiesInput, optional
+            Full target definition. This or ``from_json`` must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         program_id : str, optional
             Program ID to associate with. Must be provided if neither
             `proposal_reference` nor `program_reference` is given.
@@ -54,12 +60,15 @@ class TargetManager(BaseManager):
         Raises
         ------
         ValueError
-            If no valid program identifier is provided.
+            - If no valid program identifier is provided.
+            - If zero or both of ``properties`` and ``from_json`` are provided.
 
         Notes
         -----
-        At least one of `program_id`, `proposal_reference`, or `program_reference` must
-        be specified to associate with a valid program.
+        - At least one of `program_id`, `proposal_reference`, or `program_reference`
+        must be specified to associate with a valid program.
+        - Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
 
         validate_single_identifier(
@@ -68,11 +77,15 @@ class TargetManager(BaseManager):
             program_reference=program_reference,
         )
 
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=TargetPropertiesInput
+        )
+
         input_data = CreateTargetInput(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
-            set=target_properties,
+            set=properties,
         )
 
         fields = Mutation.create_target(input=input_data).fields(
@@ -87,7 +100,8 @@ class TargetManager(BaseManager):
     async def update_all(
         self,
         *,
-        target_properties: TargetPropertiesInput,
+        properties: Optional[TargetPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         where: Optional[WhereTarget] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
@@ -97,8 +111,13 @@ class TargetManager(BaseManager):
 
         Parameters
         ----------
-        target_properties : TargetPropertiesInput
-            New values to apply to matching targets.
+        properties : TargetPropertiesInput, optional
+            New values to apply to matching targets. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         where : WhereTarget, optional
             Query filters to select which targets to update. If omitted, all targets
             are eligible.
@@ -111,9 +130,23 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary containing update results and the updated targets.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=TargetPropertiesInput
+        )
+
         input_data = UpdateTargetsInput(
-            set=target_properties,
+            set=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
@@ -135,7 +168,8 @@ class TargetManager(BaseManager):
         self,
         target_id: str,
         *,
-        target_properties: TargetPropertiesInput,
+        properties: Optional[TargetPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
         """Update a single target by its unique identifier.
@@ -143,23 +177,39 @@ class TargetManager(BaseManager):
         Parameters
         ----------
         target_id : str
-            Unique identifier of the target.
-        target_properties : TargetPropertiesInput
+            Unique identifier of the target. This or ``from_json`` must be
+            supplied.
+        properties : TargetPropertiesInput, optional
             New values to apply to the target.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         include_deleted : bool, default=False
             Whether to include soft-deleted targets in the update.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
 
         Returns
         -------
         dict[str, Any]
             Dictionary containing update result, including updated target data.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         where = WhereTarget(id=WhereOrderTargetId(eq=target_id))
 
         results = await self.update_all(
             where=where,
             limit=1,
-            target_properties=target_properties,
+            properties=properties,
+            from_json=from_json,
             include_deleted=include_deleted,
         )
 

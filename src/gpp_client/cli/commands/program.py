@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Annotated, Optional
 
 import typer
@@ -5,8 +6,9 @@ from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
 
-from gpp_client import GPPClient
-from gpp_client.cli.utils import (
+from ...api.input_types import ProgramPropertiesInput
+from ...client import GPPClient
+from ..utils import (
     async_command,
     print_not_found,
     truncate_short,
@@ -95,19 +97,61 @@ async def restore_by_id(
 
 @app.command("create")
 @async_command
-async def create():
-    """Create a new program (not yet implemented)."""
-    raise NotImplementedError(
-        "CLI support for 'create' is not yet implemented. Use the API directly with "
-        "'ProgramPropertiesInput'."
-    )
+async def create(
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            exists=True,
+            help="JSON file with the properties definition.",
+        ),
+    ],
+):
+    """Create a new program."""
+    client = GPPClient()
+    result = client.program.create(from_json=from_json)
+    console.print(JSON.from_data(result))
 
 
 @app.command("update")
 @async_command
-async def update_by_id():
-    """Update a program by ID (not yet implemented)."""
-    raise NotImplementedError(
-        "CLI support for 'update' is not yet implemented. "
-        "Use the API directly with 'ProgramPropertiesInput'."
-    )
+async def update_by_id(
+    program_id: Annotated[str, typer.Argument(..., help="Program ID to update.")],
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            exists=True,
+            help="JSON file with the properties definition.",
+        ),
+    ],
+):
+    """Update a program by ID."""
+    client = GPPClient()
+    result = await client.program.update_by_id(program_id, from_json=from_json)
+    console.print(JSON.from_data(result))
+
+
+@app.command("schema")
+def schema(
+    indent: Annotated[
+        int,
+        typer.Option(
+            show_default=True,
+            help="Indentation level for pretty printing.",
+        ),
+    ] = 2,
+    sort_keys: Annotated[
+        bool,
+        typer.Option(
+            help="Sort object keys alphabetically.",
+        ),
+    ] = False,
+):
+    """Display the JSON Schema for the input properties.
+
+    Use this when crafting or validating the JSON files passed with
+    --from-json to the `create` or `update` commands.
+    """
+    schema = ProgramPropertiesInput.model_json_schema()
+    console.print(JSON.from_data(schema, indent=indent, sort_keys=sort_keys))
