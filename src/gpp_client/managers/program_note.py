@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
@@ -18,14 +19,15 @@ from ..api.input_types import (
     WhereProgramNote,
 )
 from .base_manager import BaseManager
-from .utils import validate_single_identifier
+from .utils import load_properties, validate_single_identifier
 
 
 class ProgramNoteManager(BaseManager):
     async def create(
         self,
         *,
-        properties: ProgramNotePropertiesInput,
+        properties: Optional[ProgramNotePropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         program_id: Optional[str] = None,
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
@@ -34,8 +36,13 @@ class ProgramNoteManager(BaseManager):
 
         Parameters
         ----------
-        properties : ProgramNotePropertiesInput
-            Full program note definition to apply.
+        properties : ProgramNotePropertiesInput, optional
+            Full program note definition to apply. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         program_id : str, optional
             ID of the program to associate with.
         proposal_reference : str, optional
@@ -51,12 +58,22 @@ class ProgramNoteManager(BaseManager):
         Raises
         ------
         ValueError
-            If none of the program identifiers are provided.
+            - If none of the program identifiers are provided.
+            - If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
+        )
+
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
         )
 
         input_data = CreateProgramNoteInput(
@@ -78,7 +95,8 @@ class ProgramNoteManager(BaseManager):
     async def update_all(
         self,
         *,
-        properties: ProgramNotePropertiesInput,
+        properties: Optional[ProgramNotePropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         where: Optional[WhereProgramNote] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
@@ -87,8 +105,13 @@ class ProgramNoteManager(BaseManager):
 
         Parameters
         ----------
-        properties : ProgramNotePropertiesInput
-            Properties to apply to the matched program notes.
+        properties : ProgramNotePropertiesInput, optional
+            Properties to apply to the matched program notes. This or ``from_json``
+            must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         where : WhereProgramNote, optional
             Filtering criteria to match program notes to update.
         limit : int, optional
@@ -100,7 +123,22 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary of updated results and data.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
+        )
+
         input_data = UpdateProgramNotesInput(
             set=properties,
             where=where,
@@ -124,7 +162,8 @@ class ProgramNoteManager(BaseManager):
         self,
         program_note_id: str,
         *,
-        properties: ProgramNotePropertiesInput,
+        properties: Optional[ProgramNotePropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
         """Update a single program note by its ID.
@@ -133,8 +172,12 @@ class ProgramNoteManager(BaseManager):
         ----------
         program_note_id : str
             Unique identifier of the program note.
-        properties : ProgramNotePropertiesInput
-            Properties to update.
+        properties : ProgramNotePropertiesInput, optional
+            Properties to update. This or ``from_json`` must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         include_deleted : bool, default=False
             Whether to include soft-deleted entries.
 
@@ -142,6 +185,16 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             The updated program note.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         where = WhereProgramNote(id=WhereOrderProgramNoteId(eq=program_note_id))
 
@@ -150,6 +203,7 @@ class ProgramNoteManager(BaseManager):
             limit=1,
             properties=properties,
             include_deleted=include_deleted,
+            from_json=from_json,
         )
 
         # Since it returns one item, discard the 'matches' and return the item.

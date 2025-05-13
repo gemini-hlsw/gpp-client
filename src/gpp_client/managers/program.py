@@ -1,5 +1,6 @@
 __all__ = ["ProgramManager"]
 
+from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
@@ -21,26 +22,47 @@ from ..api.input_types import (
     WhereProgram,
 )
 from .base_manager import BaseManager
+from .utils import load_properties
 
 
 class ProgramManager(BaseManager):
     async def create(
         self,
         *,
-        properties: ProgramPropertiesInput,
+        properties: Optional[ProgramPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """Create a new program.
 
         Parameters
         ----------
-        properties : ProgramPropertiesInput
-            Full definition of the program to create.
+        properties : ProgramPropertiesInput, optional
+            Full definition of the program to create. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
 
         Returns
         -------
         dict[str, Any]
             The created program.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ProgramPropertiesInput
+        )
+
         input_data = CreateProgramInput(
             set=properties,
         )
@@ -57,7 +79,8 @@ class ProgramManager(BaseManager):
     async def update_all(
         self,
         *,
-        properties: ProgramPropertiesInput,
+        properties: Optional[ProgramPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         where: Optional[WhereProgram] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
@@ -66,8 +89,13 @@ class ProgramManager(BaseManager):
 
         Parameters
         ----------
-        properties : ProgramPropertiesInput
-            Values to set on the matching programs.
+        properties : ProgramPropertiesInput, optional
+            Values to set on the matching programs. This or ``from_json`` must be
+            supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         where : WhereProgram, optional
             Filter to determine which programs to update.
         limit : int, optional
@@ -79,7 +107,21 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             Update result and updated programs.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ProgramPropertiesInput
+        )
+
         input_data = UpdateProgramsInput(
             set=properties,
             where=where,
@@ -103,7 +145,8 @@ class ProgramManager(BaseManager):
         self,
         program_id: str,
         *,
-        properties: ProgramPropertiesInput,
+        properties: Optional[ProgramPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
         """Update a single program by its ID.
@@ -112,8 +155,12 @@ class ProgramManager(BaseManager):
         ----------
         program_id : str
             Unique identifier of the program to update.
-        properties : ProgramPropertiesInput
-            New values to apply.
+        properties : ProgramPropertiesInput, optional
+            New values to apply. This or ``from_json`` must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         include_deleted : bool, default=False
             Whether to include soft-deleted programs in the update.
 
@@ -121,6 +168,16 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             The updated program.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         where = WhereProgram(id=WhereOrderProgramId(eq=program_id))
 
@@ -129,6 +186,7 @@ class ProgramManager(BaseManager):
             limit=1,
             properties=properties,
             include_deleted=include_deleted,
+            from_json=from_json,
         )
 
         # Since it returns one item, discard the 'matches' and return the item.

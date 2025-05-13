@@ -1,5 +1,6 @@
 __all__ = ["CallForProposalsManager"]
 
+from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
@@ -20,26 +21,49 @@ from ..api.input_types import (
     WhereOrderCallForProposalsId,
 )
 from .base_manager import BaseManager
+from .utils import load_properties
 
 
 class CallForProposalsManager(BaseManager):
     async def create(
         self,
         *,
-        properties: CallForProposalsPropertiesInput,
+        properties: Optional[CallForProposalsPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
     ) -> dict[str, Any]:
         """Create a new call for proposals.
 
         Parameters
         ----------
-        properties : CallForProposalsPropertiesInput
-            Full definition of the call for proposals to create.
+        properties : CallForProposalsPropertiesInput, optional
+            Full definition of the call for proposals to create. This or ``from_json``
+            must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
 
         Returns
         -------
         dict[str, Any]
             The created call for proposals.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties,
+            from_json=from_json,
+            cls=CallForProposalsPropertiesInput,
+        )
+
         input_data = CreateCallForProposalsInput(set=properties)
 
         fields = Mutation.create_call_for_proposals(input=input_data).fields(
@@ -56,7 +80,8 @@ class CallForProposalsManager(BaseManager):
     async def update_all(
         self,
         *,
-        properties: CallForProposalsPropertiesInput,
+        properties: Optional[CallForProposalsPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         where: Optional[WhereCallForProposals] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
@@ -65,8 +90,13 @@ class CallForProposalsManager(BaseManager):
 
         Parameters
         ----------
-        properties : CallForProposalsPropertiesInput
-            Values to set on the matching calls for proposals.
+        properties : CallForProposalsPropertiesInput, optional
+            Values to set on the matching calls for proposals. This or ``from_json``
+            must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         where : WhereProgram, optional
             Filter to determine which calls for proposals to update.
         limit : int, optional
@@ -78,7 +108,23 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             Update result and updated calls for proposals.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
+        properties = load_properties(
+            properties=properties,
+            from_json=from_json,
+            cls=CallForProposalsPropertiesInput,
+        )
+
         input_data = UpdateCallsForProposalsInput(
             set=properties,
             where=where,
@@ -102,7 +148,8 @@ class CallForProposalsManager(BaseManager):
         self,
         call_for_proposals_id: str,
         *,
-        properties: CallForProposalsPropertiesInput,
+        properties: Optional[CallForProposalsPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
         """Update a single call for proposals by its ID.
@@ -111,8 +158,12 @@ class CallForProposalsManager(BaseManager):
         ----------
         call_for_proposals_id : str
             Unique identifier of the call for proposals to update.
-        properties : CallForProposalsPropertiesInput
-            New values to apply.
+        properties : CallForProposalsPropertiesInput, optional
+            New values to apply. This or ``from_json`` must be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
         include_deleted : bool, default=False
             Whether to include soft-deleted calls for proposals in the update.
 
@@ -120,6 +171,16 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             The updated call for proposals.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
+
+        Notes
+        -----
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+        both or neither raises ``ValueError``.
         """
         where = WhereCallForProposals(
             id=WhereOrderCallForProposalsId(eq=call_for_proposals_id)
@@ -129,6 +190,7 @@ class CallForProposalsManager(BaseManager):
             where=where,
             limit=1,
             properties=properties,
+            from_json=from_json,
             include_deleted=include_deleted,
         )
 
