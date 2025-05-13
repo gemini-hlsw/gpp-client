@@ -1,5 +1,5 @@
-GraphQL Mutation Builders
-=========================
+Available Mutations
+===================
 
 The ``gpp_client.api.custom_mutations`` module defines typed builders for all GraphQL mutation operations in the GPP schema.
 

@@ -1,9 +1,9 @@
-GraphQL Input Models
-====================
+Input Models
+============
 
-The ``gpp_client.api.input_types`` module contains all of the **GraphQL input models** used when sending data to the Gemini Program Platform (GPP) API.
+The ``gpp_client.api.input_types`` module contains all of the **GraphQL input models** used when sending data to the GPP.
 
-These models define the structure of inputs required when creating or updating GPP resources such as `Programs`, `Observations`, `Targets`, and more. They are auto-generated from the GPP GraphQL schema using ``ariadne-codegen``, ensuring compatibility with the latest backend API types.
+These models define the structure of inputs required when creating or updating GPP resources such as `Programs`, `Observations`, `Targets`, and more. They are auto-generated from the GPP GraphQL schema using ``ariadne-codegen``.
 
 Each input type corresponds directly to an ``InputObjectType`` in the GraphQL schema. These are passed into manager methods such as ``create()``, ``update_by_id()``, or ``update_all()`` via arguments like ``properties``.
 

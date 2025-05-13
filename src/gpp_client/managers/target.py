@@ -69,6 +69,7 @@ class TargetManager(BaseManager):
         must be specified to associate with a valid program.
         - Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``ValueError``.
+
         """
 
         validate_single_identifier(

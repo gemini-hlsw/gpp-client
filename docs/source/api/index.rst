@@ -22,7 +22,7 @@ The following submodules contain the core building blocks for working with GPP G
 Input Types
 ^^^^^^^^^^^
 
-Use these when building input arguments for ``create()``, ``update_by_id()``, ``update()``, and other manager methods.
+Use these when building input arguments for ``create()``, ``update_by_id()``, ``update_all()``, and other manager methods.
 
 - :doc:`Input Types <input_types>`
 

@@ -1,7 +1,7 @@
 Client
 ======
 
-The main entry point for interacting with the Gemini Program Platform (GPP) GraphQL API.
+The main entry point for interacting with GPP.
 
 This client manages:
 
@@ -14,9 +14,9 @@ Each resource is exposed through a manager accessible via an attribute on the cl
 Available Managers
 ------------------
 
-Each manager provides high-level, asynchronous methods such as `create`, `get_by_id`, `get_batch`, and `update_by_id`.
+Each manager provides high-level, asynchronous methods such as ``create``, ``get_by_id``, ``get_batch``, and ``update_by_id``.
 
-The following managers are accessible via `GPPClient`:
+The following managers are accessible via ``GPPClient``:
 
 - :attr:`~gpp_client.GPPClient.call_for_proposals` → :class:`~gpp_client.managers.call_for_proposals.CallForProposalsManager`
 - :attr:`~gpp_client.GPPClient.program_note` → :class:`~gpp_client.managers.program_note.ProgramNoteManager`
