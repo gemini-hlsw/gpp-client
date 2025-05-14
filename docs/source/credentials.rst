@@ -88,7 +88,7 @@ If CLI support is installed, you can also set credentials using the CLI:
 
 .. code-block:: bash
 
-   gpp config set-credentials --url "https://your-url-here.com" --token "your_token_here"
+   gpp config auth --url "https://your-url-here.com" --token "your_token_here"
 
 This performs the same operation as calling ``GPPClient.set_credentials()`` in Python.
 
