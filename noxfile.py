@@ -38,7 +38,7 @@ def remote(session):
 
 
 @nox.session(python=PYTHON_VERSIONS)
-def github_test(session):
+def github_tests(session):
     """Run GitHub CI test suite with coverage (only in 3.10)."""
     run_pytest(session, coverage=True)
 
