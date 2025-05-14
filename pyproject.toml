@@ -23,8 +23,10 @@ classifiers = [
 dependencies = [
     "toml>=0.10.2",
     "typer>=0.15.3",
-    "ariadne-codegen[subscriptions]>=0.14.0",
     "click>=8.0.0,<8.2.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.0,<3",
+    "graphql-core>=3.2.0,<3.3",
 ]
 version = "25.05.0a0"
 keywords = ["gemini", "gpp", "client", "program", "platform"]
@@ -41,6 +43,7 @@ test = [
     "pytest-remotedata",
     "pytest-mock",
     "ruff",
+    "ariadne-codegen>=0.15.0.dev1",
 ]
 docs = [
     "sphinx",
@@ -49,6 +52,7 @@ docs = [
     "furo",
     "sphinxcontrib-typer",
 ]
+codegen = ["ariadne-codegen>=0.15.0.dev1"]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"
