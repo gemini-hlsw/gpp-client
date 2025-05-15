@@ -23,6 +23,7 @@ The following managers are accessible via ``GPPClient``:
 - :attr:`~gpp_client.GPPClient.program` → :class:`~gpp_client.managers.program.ProgramManager`
 - :attr:`~gpp_client.GPPClient.target` → :class:`~gpp_client.managers.target.TargetManager`
 - :attr:`~gpp_client.GPPClient.observation` → :class:`~gpp_client.managers.observation.ObservationManager`
+- :attr:`~gpp_client.GPPClient.site_status` → :class:`~gpp_client.managers.site_status.SiteStatusManager`
 - *(more managers to be added as the client evolves)*
 
 Example

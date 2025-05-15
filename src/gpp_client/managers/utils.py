@@ -7,6 +7,9 @@ __all__ = [
 import json
 from pathlib import Path
 from typing import Any, Optional, Type, TypeVar
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 
 from graphql import print_ast
 from pydantic import BaseModel
@@ -95,3 +98,33 @@ def load_properties(
             data = json.load(f)
 
     return cls(**data)
+
+
+def normalize_to_utc(
+    time_str: Optional[str],
+    time_format: str,
+    local_zone: str = "UTC",
+) -> Optional[str]:
+    """
+    Normalize a time string to UTC and return ISO 8601 format.
+
+    Parameters
+    ----------
+    time_str : str
+        The input time string (e.g. "Thu May 15 12:01:06 2025").
+    time_format : str
+        Format string for `datetime.strptime`.
+    local_zone : str, default="UTC"
+        IANA timezone name. Only used if `time_str` is in local time.
+
+    Returns
+    -------
+    str, optional
+        The UTC datetime in ISO 8601 format with 'T' separator.
+    """
+    if not time_str:
+        return None
+    dt = datetime.strptime(time_str, time_format)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ZoneInfo(local_zone))
+    return dt.astimezone(ZoneInfo("UTC")).isoformat()

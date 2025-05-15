@@ -11,6 +11,7 @@ class TestCLI:
         assert "program" in result.stdout
         assert "config" in result.stdout
         assert "target" in result.stdout
+        assert "site" in result.stdout
 
     def test_help_no_flag(self, cli_runner):
         """Verify the help screen is shown for just typing the CLI."""
@@ -22,3 +23,4 @@ class TestCLI:
         assert "config" in result.stdout
         assert "target" in result.stdout
         assert "obs" in result.stdout
+        assert "site" in result.stdout

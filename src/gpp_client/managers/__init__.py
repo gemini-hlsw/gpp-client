@@ -2,6 +2,7 @@ from .call_for_proposals import CallForProposalsManager
 from .observation import ObservationManager
 from .program import ProgramManager
 from .program_note import ProgramNoteManager
+from .site_status import SiteStatusManager
 from .target import TargetManager
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "ProgramManager",
     "CallForProposalsManager",
     "ObservationManager",
+    "SiteStatusManager",
 ]
