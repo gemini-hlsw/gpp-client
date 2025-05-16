@@ -27,6 +27,8 @@ dependencies = [
     "httpx>=0.28.1",
     "pydantic>=2.11.0,<3",
     "graphql-core>=3.2.0,<3.3",
+    "beautifulsoup4>=4.13,<5",
+    "websockets>=14.2",
 ]
 version = "25.05.0a0"
 keywords = ["gemini", "gpp", "client", "program", "platform"]

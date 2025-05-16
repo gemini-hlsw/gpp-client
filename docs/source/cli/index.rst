@@ -25,6 +25,7 @@ Individual commands are documented below:
     observation
     target
     program
+    site_status
 
 .. note::
 

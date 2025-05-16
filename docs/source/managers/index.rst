@@ -59,3 +59,4 @@ API Reference
    program_note
    target
    observation
+   site_status

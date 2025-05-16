@@ -8,6 +8,7 @@ from ..managers import (
     ObservationManager,
     ProgramManager,
     ProgramNoteManager,
+    SiteStatusManager,
     TargetManager,
 )
 from ..patches import patch_base_operations_graphql_field_get_formatted_variables
@@ -46,6 +47,8 @@ class GPPClient:
         Manager for open Calls for Proposals (CFPs).
     observation : ObservationManager
         Manager for observations submitted under proposals.
+    site_status : SiteStatusManager
+        Manager for current status of Gemini North and South.
     """
 
     def __init__(
@@ -68,6 +71,8 @@ class GPPClient:
         self.program = ProgramManager(self)
         self.call_for_proposals = CallForProposalsManager(self)
         self.observation = ObservationManager(self)
+        # SiteStatusManager doesn't use the client so don't pass self.
+        self.site_status = SiteStatusManager()
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:

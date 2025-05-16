@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<!-- saved from url=(0068)https://www.gemini.edu/sciops/schedules/obsStatus/GN_Instrument.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta content="30" http-equiv="refresh">
+  
+  <title>
+   Gemini North Status
+  </title>
+  <link href="https://www.gemini.edu/sciops/schedules/obsStatus/gemini.ico" rel="icon" type="image/x-icon">
+  <style>
+   * {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #121212;
+  color:white;
+  font-family: Arial, Helvetica, sans-serif;
+   }
+
+img {
+   width: 100%;
+   height: auto;
+   }
+
+.image2 {
+   width: 100%;
+   height: auto;
+   max-width: 40%;
+   }
+
+.zoom {
+   padding: 0px;
+   transition: transform 0.5s ease;
+   margin: 0 auto;
+   border: none;
+   }
+   
+.zooml:active {
+   transform-origin: center left;
+   transform: scale(2);
+   }
+.zoomc:active {
+   transform-origin: center;
+   transform: scale(2);
+   }
+.zoomr:active {
+   transform-origin: center right;
+   transform: scale(2);
+   }
+
+video {
+   width: 100%;
+   height: auto;
+   }
+
+/* Style the header */
+.header {
+  background-color: #121212;
+  padding: 20px;
+  text-align: center;
+  color:white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 24px;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: row;
+  font-size: 24px;
+  text-align: center;
+}
+
+.flex-item {
+  background-color: #121212;
+  padding: 10px;
+  flex: 33%;
+}
+
+
+/* Responsive layout - makes a one column-layout instead of two-column layout */
+@media screen and (max-width: 1000px) {
+  .flex-container {
+    flex-direction: column;
+  }
+}
+
+
+table, td{
+  border: 1px solid white;
+  border-collapse: collapse;
+  text-align: center;
+  background-color:#121212;
+  color:white;
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+
+th{
+  border: 1px solid white;
+  border-collapse: collapse;
+  text-align: center;
+  background-color:#121212;
+  color:cyan;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+table {
+  width: 100%;
+}
+
+a:link {
+  color:yellow;
+}
+
+a:visited {
+  color:yellow;
+}
+
+a:active {
+  color: white;
+}
+  </style>
+ </head>
+ <body>
+  <div class="header">
+   <h1 id="pagetitle">
+    Gemini North Status 2025-05-15T14:00:04-10:00
+   </h1>
+   <table>
+    <tbody><tr>
+     <th style="font-style:italic">
+      Validity
+     </th>
+     <th style="font-style:italic">
+      ToO Availability
+     </th>
+     <th style="font-style:italic">
+      Instruments Availability
+     </th>
+     <th style="font-style:italic">
+      Comment
+     </th>
+     <th style="font-style:italic">
+      GMOS Config
+     </th>
+     <th style="font-style:italic">
+      Open Status
+     </th>
+    </tr>
+    <tr>
+     <td id="update">
+      Valid until 2025-05-15
+     </td>
+     <td id="avail">
+      Available for Target of Opportunity tonight
+     </td>
+     <td id="inst">
+      GMOS-N
+     </td>
+     <td id="comment">
+     </td>
+     <td id="gmos_config">
+      <a href="http://www.gemini.edu/sciops/schedules/obsStatus/gmosN.html">
+       Click Here
+      </a>
+     </td>
+     <td id="shutter" style="color:red">
+      CLOSED (as of 2025-05-15T14:00:04-10:00).
+     </td>
+    </tr>
+   </tbody></table>
+  </div>
+  <div class="flex-container">
+   <div class="flex-item">
+    <table>
+     <tbody><tr>
+      <td id="humidity">
+       Relative Humidity: 11%
+      </td>
+     </tr>
+     <tr>
+      <td id="temp">
+       Temparature: 5.2°C
+      </td>
+     </tr>
+     <tr>
+      <td id="wind_speed">
+       Wind Speed: 4.1 m/s
+      </td>
+     </tr>
+     <tr>
+      <td id="wind_dir">
+       Wind Direction: 36°
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="image2" id="gemstatus_img" src="./gn_status_files/GEM_CLOSED.png" style="transform:rotate(255.0001736111111deg)">
+       <img class="image2" id="wind_img" src="./gn_status_files/wind_arrow.png" style="transform:rotate(36deg)">
+      </td>
+     </tr>
+     <tr>
+      <td id="az">
+       Telescope Azimuth: 75.0°
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Humidity Risk &amp; Cloud Cover
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img 100%;="" auto;="" auto\9;="" class="FLEX-ITEM zoom zooml" height:="" id="plotcc" max-width:="" src="./gn_status_files/plotcc_GN_latest.gif" width:="" {="" }="">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       GOES Band 10 Satellite
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zooml" id="sat" src="./gn_status_files/latest_GOES_wv.jpg">
+      </td>
+     </tr>
+     <tr>
+      <td id="asiva_timestamp">
+       Nānā ao
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zooml" id="asiva" src="./gn_status_files/last.png">
+      </td>
+     </tr>
+     <tr>
+      <td id="site_link">
+       <a href="https://www.gemini.edu/observing/telescopes-and-sites/sites/weather-now">
+        More Site Conditions Resources
+       </a>
+      </td>
+     </tr>
+    </tbody></table>
+   </div>
+   <div class="flex-item" width="33%">
+    <table>
+     <tbody><tr>
+      <td>
+       East Cloud Camera
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <video autoplay="" class="NO-CACHE zoom zoomc" loop="" muted="" poster="currentstill_Hilo.png">
+        <source src="timelapse_Hilo.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+       </video>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       South Cloud Camera
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <video autoplay="" class="NO-CACHE zoom zoomc" loop="" muted="" poster="currentstill_South.png">
+        <source src="timelapse_South.mp4" type="video/mp4">
+       </video>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       West Cloud Camera
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <video autoplay="" class="NO-CACHE zoom zoomc" loop="" muted="" poster="currentstill_West.png">
+        <source src="timelapse_West.mp4" type="video/mp4">
+       </video>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       North Cloud Camera
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <video autoplay="" class="NO-CACHE zoom zoomc" loop="" muted="" poster="currentstill_North.png">
+        <source src="timelapse_North.mp4" type="video/mp4">
+       </video>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Up Cloud Camera
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <video autoplay="" class="NO-CACHE zoom zoomc" loop="" muted="" poster="currentstill_Up.png">
+        <source src="timelapse_Up.mp4" type="video/mp4">
+       </video>
+      </td>
+     </tr>
+    </tbody></table>
+   </div>
+   <div class="flex-item" width="33%">
+    <table>
+     <tbody><tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="mkcc" src="./gn_status_files/mkCC_latest.png">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="wv" src="./gn_status_files/mkWV_latest.png">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="iq" src="./gn_status_files/mkIQ_CFHT_latest.png">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="iq" src="./gn_status_files/mkIQ_Gemini_latest.png">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="env" src="./gn_status_files/mkENV_night_latest.png">
+      </td>
+     </tr>
+     <tr>
+      <td>
+       <img class="NO-CACHE zoom zoomr" id="env" src="./gn_status_files/mkENV_day_latest.png">
+      </td>
+     </tr>
+    </tbody></table>
+   </div>
+  </div>
+  <script>
+   var nods = document.getElementsByClassName('NO-CACHE');
+for (var i = 0; i < nods.length; i++)
+{
+    nods[i].attributes['src'].value += "?a=" + Math.random();
+}
+  </script>
+ 
+
+</body></html>
