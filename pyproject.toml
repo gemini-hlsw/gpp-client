@@ -30,7 +30,7 @@ dependencies = [
     "beautifulsoup4>=4.13,<5",
     "websockets>=14.2",
 ]
-version = "25.05.0a0"
+version = "25.05.0a1"
 keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
