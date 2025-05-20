@@ -10,6 +10,7 @@ from ..managers import (
     ProgramNoteManager,
     TargetManager,
 )
+from ..managers.group import GroupManager
 from ..patches import patch_base_operations_graphql_field_get_formatted_variables
 
 # Apply patch to fix inner includeDelete bug.
@@ -68,6 +69,7 @@ class GPPClient:
         self.program = ProgramManager(self)
         self.call_for_proposals = CallForProposalsManager(self)
         self.observation = ObservationManager(self)
+        self.group = GroupManager(self)
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:

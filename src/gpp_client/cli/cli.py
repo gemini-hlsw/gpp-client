@@ -6,7 +6,7 @@ from .commands import (
     observation,
     program,
     program_note,
-    target,
+    target, group,
 )
 
 app = typer.Typer(
@@ -18,6 +18,7 @@ app.add_typer(target.app)
 app.add_typer(program.app)
 app.add_typer(call_for_proposals.app)
 app.add_typer(observation.app)
+app.add_typer(group.app)
 
 
 def main():
