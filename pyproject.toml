@@ -26,7 +26,7 @@ dependencies = [
     "click>=8.0.0,<8.2.0",
     "httpx>=0.28.1",
     "pydantic>=2.11.0,<3",
-    "graphql-core>=3.2.0,<3.3",
+    "graphql-core>=3.2.0,<3.4",
     "beautifulsoup4>=4.13,<5",
     "websockets>=14.2",
 ]
@@ -89,6 +89,35 @@ plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.FixCustomFieldsLiteralPlugin",
 ]
+queries_path = "queries/"
+
+[tool.ariadne-codegen.scalars.ProgramNoteId]
+type = "str"
+
+[tool.ariadne-codegen.scalars.NonEmptyString]
+type = "str"
+
+[tool.ariadne-codegen.scalars.ProgramId]
+type = "str"
+
+[tool.datamodel-codegen]
+input = "schema.graphql"
+output = "model.py"
+input-file-type = "graphql"
+output-model-type = "pydantic_v2.BaseModel"
+snake-case-field = true
+use-standard-collections = true
+force-optional = true
+use-field-description = true
+target-python-version = "3.10"
+formatters = ["ruff-format", "ruff-check"]
+capitalize-enum-members = true
+use-subclass-enum = true
+use-annotated = true
+use-schema-description = true
+reuse-model = false
+aliases = "aliases.json"
+keep-model-order = true
 
 [project.urls]
 Homepage = "https://github.com/gemini-hlsw/gpp-client"

@@ -3,6 +3,11 @@
 from ._client import _GPPClient
 from .async_base_client import AsyncBaseClient
 from .base_model import BaseModel, Upload
+from .create_program_note import (
+    CreateProgramNote,
+    CreateProgramNoteCreateProgramNote,
+    CreateProgramNoteCreateProgramNoteProgramNote,
+)
 from .enums import (
     AtomExecutionState,
     AtomStage,
@@ -124,6 +129,13 @@ from .exceptions import (
     GraphQLClientHttpError,
     GraphQLClientInvalidResponseError,
 )
+from .fragments import ProgramNoteFields, ProgramNoteFieldsProgram
+from .get_all_program_notes import (
+    GetAllProgramNotes,
+    GetAllProgramNotesProgramNotes,
+    GetAllProgramNotesProgramNotesMatches,
+)
+from .get_program_note import GetProgramNote, GetProgramNoteProgramNote
 from .input_types import (
     AddAtomEventInput,
     AddDatasetEventInput,
@@ -376,6 +388,11 @@ from .input_types import (
     WhereUserProfile,
     WhereWavelength,
 )
+from .update_program_notes import (
+    UpdateProgramNotes,
+    UpdateProgramNotesUpdateProgramNotes,
+    UpdateProgramNotesUpdateProgramNotesProgramNotes,
+)
 
 __all__ = [
     "AddAtomEventInput",
@@ -433,6 +450,9 @@ __all__ = [
     "CreateGroupInput",
     "CreateObservationInput",
     "CreateProgramInput",
+    "CreateProgramNote",
+    "CreateProgramNoteCreateProgramNote",
+    "CreateProgramNoteCreateProgramNoteProgramNote",
     "CreateProgramNoteInput",
     "CreateProposalInput",
     "CreateTargetInput",
@@ -486,6 +506,11 @@ __all__ = [
     "GcalFilter",
     "GcalShutter",
     "Gender",
+    "GetAllProgramNotes",
+    "GetAllProgramNotesProgramNotes",
+    "GetAllProgramNotesProgramNotesMatches",
+    "GetProgramNote",
+    "GetProgramNoteProgramNote",
     "GmosAmpCount",
     "GmosAmpGain",
     "GmosAmpReadMode",
@@ -566,6 +591,8 @@ __all__ = [
     "PosAngleConstraintInput",
     "PosAngleConstraintMode",
     "ProgramEditInput",
+    "ProgramNoteFields",
+    "ProgramNoteFieldsProgram",
     "ProgramNotePropertiesInput",
     "ProgramPropertiesInput",
     "ProgramReferencePropertiesCalibrationInput",
@@ -656,7 +683,10 @@ __all__ = [
     "UpdateGroupsInput",
     "UpdateObservationsInput",
     "UpdateObservationsTimesInput",
+    "UpdateProgramNotes",
     "UpdateProgramNotesInput",
+    "UpdateProgramNotesUpdateProgramNotes",
+    "UpdateProgramNotesUpdateProgramNotesProgramNotes",
     "UpdateProgramUsersInput",
     "UpdateProgramsInput",
     "UpdateProposalInput",

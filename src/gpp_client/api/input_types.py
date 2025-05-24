@@ -117,7 +117,7 @@ class AddDatasetEventInput(BaseModel):
 
 
 class AddProgramUserInput(BaseModel):
-    program_id: Any = Field(alias=str("programId"))
+    program_id: str = Field(alias=str("programId"))
     role: ProgramUserRole
     set: Optional["ProgramUserPropertiesInput"] = Field(alias=str("SET"), default=None)
 
@@ -234,8 +234,8 @@ class CallForProposalsPartnerInput(BaseModel):
 
 class CatalogInfoInput(BaseModel):
     name: Optional[CatalogName] = None
-    id: Optional[Any] = None
-    object_type: Optional[Any] = Field(alias=str("objectType"), default=None)
+    id: Optional[str] = None
+    object_type: Optional[str] = Field(alias=str("objectType"), default=None)
 
 
 class ChangeProgramUserRoleInput(BaseModel):
@@ -309,7 +309,7 @@ class CreateCallForProposalsInput(BaseModel):
 
 
 class CreateObservationInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -324,7 +324,7 @@ class CreateProgramInput(BaseModel):
 
 
 class CreateProgramNoteInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -335,12 +335,12 @@ class CreateProgramNoteInput(BaseModel):
 
 
 class CreateProposalInput(BaseModel):
-    program_id: Any = Field(alias=str("programId"))
+    program_id: str = Field(alias=str("programId"))
     set: "ProposalPropertiesInput" = Field(alias=str("SET"))
 
 
 class CreateTargetInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -352,7 +352,7 @@ class CreateTargetInput(BaseModel):
 
 class DatasetPropertiesInput(BaseModel):
     qa_state: Optional[DatasetQaState] = Field(alias=str("qaState"), default=None)
-    comment: Optional[Any] = None
+    comment: Optional[str] = None
 
 
 class DeclinationInput(BaseModel):
@@ -366,7 +366,7 @@ class DeleteProgramUserInput(BaseModel):
 
 
 class DeleteProposalInput(BaseModel):
-    program_id: Any = Field(alias=str("programId"))
+    program_id: str = Field(alias=str("programId"))
 
 
 class EditAsterismsPatchInput(BaseModel):
@@ -651,17 +651,17 @@ class SetObservationWorkflowStateInput(BaseModel):
 
 class NonsiderealInput(BaseModel):
     key_type: Optional[EphemerisKeyType] = Field(alias=str("keyType"), default=None)
-    des: Optional[Any] = None
-    key: Optional[Any] = None
+    des: Optional[str] = None
+    key: Optional[str] = None
 
 
 class ConfigurationRequestProperties(BaseModel):
     status: Optional[ConfigurationRequestStatus] = None
-    justification: Optional[Any] = None
+    justification: Optional[str] = None
 
 
 class ObservationPropertiesInput(BaseModel):
-    subtitle: Optional[Any] = None
+    subtitle: Optional[str] = None
     science_band: Optional[ScienceBand] = Field(alias=str("scienceBand"), default=None)
     pos_angle_constraint: Optional["PosAngleConstraintInput"] = Field(
         alias=str("posAngleConstraint"), default=None
@@ -685,7 +685,7 @@ class ObservationPropertiesInput(BaseModel):
     existence: Optional[Existence] = None
     group_id: Optional[Any] = Field(alias=str("groupId"), default=None)
     group_index: Optional[Any] = Field(alias=str("groupIndex"), default=None)
-    observer_notes: Optional[Any] = Field(alias=str("observerNotes"), default=None)
+    observer_notes: Optional[str] = Field(alias=str("observerNotes"), default=None)
 
 
 class ObservationTimesInput(BaseModel):
@@ -727,8 +727,8 @@ class PosAngleConstraintInput(BaseModel):
 
 
 class ProgramPropertiesInput(BaseModel):
-    name: Optional[Any] = None
-    description: Optional[Any] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
     goa: Optional["GoaPropertiesInput"] = None
     existence: Optional[Existence] = None
     active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
@@ -736,8 +736,8 @@ class ProgramPropertiesInput(BaseModel):
 
 
 class ProgramNotePropertiesInput(BaseModel):
-    title: Optional[Any] = None
-    text: Optional[Any] = None
+    title: Optional[str] = None
+    text: Optional[str] = None
     is_private: Optional[bool] = Field(alias=str("isPrivate"), default=None)
     existence: Optional[Existence] = None
 
@@ -883,7 +883,7 @@ class RecordDatasetInput(BaseModel):
     step_id: Any = Field(alias=str("stepId"))
     filename: Any
     qa_state: Optional[DatasetQaState] = Field(alias=str("qaState"), default=None)
-    comment: Optional[Any] = None
+    comment: Optional[str] = None
 
 
 class RecordGmosNorthStepInput(BaseModel):
@@ -951,7 +951,7 @@ class ScienceRequirementsInput(BaseModel):
 
 
 class SetAllocationsInput(BaseModel):
-    program_id: Any = Field(alias=str("programId"))
+    program_id: str = Field(alias=str("programId"))
     allocations: List["AllocationInput"]
 
 
@@ -960,11 +960,11 @@ class SetGuideTargetNameInput(BaseModel):
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
     )
-    target_name: Optional[Any] = Field(alias=str("targetName"), default=None)
+    target_name: Optional[str] = Field(alias=str("targetName"), default=None)
 
 
 class SetProgramReferenceInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -1006,7 +1006,7 @@ class ProgramReferencePropertiesExampleInput(BaseModel):
 
 class ProgramReferencePropertiesLibraryInput(BaseModel):
     instrument: Instrument
-    description: Any
+    description: str
 
 
 class ProgramReferencePropertiesMonitoringInput(BaseModel):
@@ -1020,11 +1020,11 @@ class ProgramReferencePropertiesScienceInput(BaseModel):
 
 
 class ProgramReferencePropertiesSystemInput(BaseModel):
-    description: Any
+    description: str
 
 
 class SetProposalStatusInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -1118,7 +1118,7 @@ class StepConfigSmartGcalInput(BaseModel):
 
 
 class ExecutionEventAddedInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     visit_id: Optional[Any] = Field(alias=str("visitId"), default=None)
     event_type: Optional["WhereEqExecutionEventType"] = Field(
@@ -1128,32 +1128,32 @@ class ExecutionEventAddedInput(BaseModel):
 
 class TargetEditInput(BaseModel):
     target_id: Optional[Any] = Field(alias=str("targetId"), default=None)
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
 
 
 class GroupEditInput(BaseModel):
     group_id: Optional[Any] = Field(alias=str("groupId"), default=None)
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
 
 
 class ConfigurationRequestEditInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
 
 
 class DatasetEditInput(BaseModel):
     dataset_id: Optional[Any] = Field(alias=str("datasetId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     is_written: Optional[bool] = Field(alias=str("isWritten"), default=None)
 
 
 class ObservationEditInput(BaseModel):
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
 
 
 class ProgramEditInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
 
 
 class TargetEnvironmentInput(BaseModel):
@@ -1164,7 +1164,7 @@ class TargetEnvironmentInput(BaseModel):
 
 
 class TargetPropertiesInput(BaseModel):
-    name: Optional[Any] = None
+    name: Optional[str] = None
     sidereal: Optional["SiderealInput"] = None
     nonsidereal: Optional["NonsiderealInput"] = None
     source_profile: Optional["SourceProfileInput"] = Field(
@@ -1296,7 +1296,7 @@ class UpdateProgramsInput(BaseModel):
 
 
 class UpdateProposalInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -1328,7 +1328,7 @@ class WavelengthDitherInput(BaseModel):
 
 
 class AttachmentPropertiesInput(BaseModel):
-    description: Optional[Any] = None
+    description: Optional[str] = None
     checked: Optional[bool] = None
 
 
@@ -1364,8 +1364,8 @@ class GroupElementInput(BaseModel):
 
 
 class GroupPropertiesInput(BaseModel):
-    name: Optional[Any] = None
-    description: Optional[Any] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
     minimum_required: Optional[Any] = Field(alias=str("minimumRequired"), default=None)
     ordered: Optional[bool] = None
     minimum_interval: Optional["TimeSpanInput"] = Field(
@@ -1382,7 +1382,7 @@ class GroupPropertiesInput(BaseModel):
 
 
 class CreateGroupInput(BaseModel):
-    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    program_id: Optional[str] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
     )
@@ -1799,12 +1799,12 @@ class WhereOptionEqTacCategory(BaseModel):
 
 class WhereOptionString(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
-    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
-    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
-    in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
-    nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
-    like: Optional[Any] = Field(alias=str("LIKE"), default=None)
-    nlike: Optional[Any] = Field(alias=str("NLIKE"), default=None)
+    eq: Optional[str] = Field(alias=str("EQ"), default=None)
+    neq: Optional[str] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[str]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[str]] = Field(alias=str("NIN"), default=None)
+    like: Optional[str] = Field(alias=str("LIKE"), default=None)
+    nlike: Optional[str] = Field(alias=str("NLIKE"), default=None)
     match_case: Optional[bool] = Field(alias=str("MATCH_CASE"), default=True)
 
 
@@ -1967,25 +1967,25 @@ class WhereOrderPosInt(BaseModel):
 
 
 class WhereOrderProgramId(BaseModel):
-    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
-    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
-    in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
-    nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
-    gt: Optional[Any] = Field(alias=str("GT"), default=None)
-    lt: Optional[Any] = Field(alias=str("LT"), default=None)
-    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
-    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    eq: Optional[str] = Field(alias=str("EQ"), default=None)
+    neq: Optional[str] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[str]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[str]] = Field(alias=str("NIN"), default=None)
+    gt: Optional[str] = Field(alias=str("GT"), default=None)
+    lt: Optional[str] = Field(alias=str("LT"), default=None)
+    gte: Optional[str] = Field(alias=str("GTE"), default=None)
+    lte: Optional[str] = Field(alias=str("LTE"), default=None)
 
 
 class WhereOrderProgramNoteId(BaseModel):
-    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
-    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
-    in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
-    nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
-    gt: Optional[Any] = Field(alias=str("GT"), default=None)
-    lt: Optional[Any] = Field(alias=str("LT"), default=None)
-    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
-    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    eq: Optional[str] = Field(alias=str("EQ"), default=None)
+    neq: Optional[str] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[str]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[str]] = Field(alias=str("NIN"), default=None)
+    gt: Optional[str] = Field(alias=str("GT"), default=None)
+    lt: Optional[str] = Field(alias=str("LT"), default=None)
+    gte: Optional[str] = Field(alias=str("GTE"), default=None)
+    lte: Optional[str] = Field(alias=str("LTE"), default=None)
 
 
 class WhereOrderProgramUserId(BaseModel):
@@ -2238,12 +2238,12 @@ class WhereSpectroscopyConfigOption(BaseModel):
 
 
 class WhereString(BaseModel):
-    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
-    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
-    in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
-    nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
-    like: Optional[Any] = Field(alias=str("LIKE"), default=None)
-    nlike: Optional[Any] = Field(alias=str("NLIKE"), default=None)
+    eq: Optional[str] = Field(alias=str("EQ"), default=None)
+    neq: Optional[str] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[str]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[str]] = Field(alias=str("NIN"), default=None)
+    like: Optional[str] = Field(alias=str("LIKE"), default=None)
+    nlike: Optional[str] = Field(alias=str("NLIKE"), default=None)
     match_case: Optional[bool] = Field(alias=str("MATCH_CASE"), default=True)
 
 

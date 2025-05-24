@@ -1,0 +1,76 @@
+fragment ProgramNoteFields on ProgramNote {
+  id
+  title
+  text
+  isPrivate
+  existence
+  program {
+    id
+  }
+}
+
+query GetAllProgramNotes(
+  $includeDeleted: Boolean!
+  $where: WhereProgramNote
+  $offset: ProgramNoteId
+  $limit: NonNegInt
+) {
+  programNotes(
+    includeDeleted: $includeDeleted
+    WHERE: $where
+    OFFSET: $offset
+    LIMIT: $limit
+  ) {
+    hasMore
+    matches {
+      ...ProgramNoteFields
+    }
+  }
+}
+
+mutation CreateProgramNote(
+  $programId: ProgramId
+  $proposalReference: ProposalReferenceLabel
+  $programReference: ProgramReferenceLabel
+  $input: ProgramNotePropertiesInput!
+) {
+  createProgramNote(
+    input: {
+      programId: $programId
+      proposalReference: $proposalReference
+      programReference: $programReference
+      SET: $input
+    }
+  ) {
+    programNote {
+      ...ProgramNoteFields
+    }
+  }
+}
+
+mutation UpdateProgramNotes(
+  $set: ProgramNotePropertiesInput!
+  $where: WhereProgramNote
+  $limit: NonNegInt
+  $includeDeleted: Boolean = false
+) {
+  updateProgramNotes(
+    input: {
+      SET: $set
+      WHERE: $where
+      LIMIT: $limit
+      includeDeleted: $includeDeleted
+    }
+  ) {
+    hasMore
+    programNotes {
+      ...ProgramNoteFields
+    }
+  }
+}
+
+query GetProgramNote($id: ProgramNoteId!) {
+  programNote(programNoteId: $id) {
+    ...ProgramNoteFields
+  }
+}

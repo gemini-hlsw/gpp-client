@@ -1,20 +1,15 @@
 from pathlib import Path
 from typing import Any, Optional
 
-from ..api.custom_fields import (
-    CreateProgramNoteResultFields,
-    ProgramFields,
-    ProgramNoteFields,
-    ProgramNoteSelectResultFields,
-    UpdateProgramNotesResultFields,
-)
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
+from ..api.create_program_note import CreateProgramNote
+from ..api.fragments import ProgramNoteFields
+from ..api.update_program_notes import UpdateProgramNotesUpdateProgramNotes
+from ..api.get_all_program_notes import GetAllProgramNotes
+from ..api.get_program_note import GetProgramNote
+
 from ..api.enums import Existence
 from ..api.input_types import (
-    CreateProgramNoteInput,
     ProgramNotePropertiesInput,
-    UpdateProgramNotesInput,
     WhereOrderProgramNoteId,
     WhereProgramNote,
 )
@@ -31,7 +26,7 @@ class ProgramNoteManager(BaseManager):
         program_id: Optional[str] = None,
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
-    ) -> dict[str, Any]:
+    ) -> ProgramNoteFields:
         """Create a new program note.
 
         Parameters
@@ -76,21 +71,14 @@ class ProgramNoteManager(BaseManager):
             properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
         )
 
-        input_data = CreateProgramNoteInput(
+        result = await self.client.create_program_note(
+            input=properties,
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
-            set=properties,
         )
 
-        fields = Mutation.create_program_note(input=input_data).fields(
-            CreateProgramNoteResultFields.program_note().fields(*self._fields()),
-        )
-
-        operation_name = "createProgramNote"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        return result.create_program_note.program_note
 
     async def update_all(
         self,
@@ -100,7 +88,7 @@ class ProgramNoteManager(BaseManager):
         where: Optional[WhereProgramNote] = None,
         limit: Optional[int] = None,
         include_deleted: bool = False,
-    ) -> dict[str, Any]:
+    ) -> UpdateProgramNotesUpdateProgramNotes:
         """Update one or more program notes.
 
         Parameters
@@ -139,24 +127,11 @@ class ProgramNoteManager(BaseManager):
             properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
         )
 
-        input_data = UpdateProgramNotesInput(
-            set=properties,
-            where=where,
-            limit=limit,
-            include_deleted=include_deleted,
+        result = await self.client.update_program_notes(
+            set=properties, where=where, limit=limit, include_deleted=include_deleted
         )
-
-        fields = Mutation.update_program_notes(input=input_data).fields(
-            UpdateProgramNotesResultFields.has_more,
-            UpdateProgramNotesResultFields.program_notes().fields(
-                *self._fields(include_deleted=include_deleted)
-            ),
-        )
-
-        operation_name = "updateProgramNotes"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        
+        return result.update_program_notes
 
     async def update_by_id(
         self,
@@ -165,7 +140,7 @@ class ProgramNoteManager(BaseManager):
         properties: Optional[ProgramNotePropertiesInput] = None,
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
-    ) -> dict[str, Any]:
+    ) -> Any:
         """Update a single program note by its ID.
 
         Parameters
@@ -207,11 +182,11 @@ class ProgramNoteManager(BaseManager):
         )
 
         # Since it returns one item, discard the 'matches' and return the item.
-        return results["programNotes"][0]
+        return results.update_program_notes.program_notes[0]
 
     async def get_by_id(
         self, program_note_id: str, *, include_deleted: bool = False
-    ) -> dict[str, Any]:
+    ) -> GetProgramNote:
         """Fetch a program note by its ID.
 
         Parameters
@@ -226,23 +201,16 @@ class ProgramNoteManager(BaseManager):
         dict[str, Any]
             The program note data.
         """
-        fields = Query.program_note(program_note_id=program_note_id).fields(
-            *self._fields(include_deleted=include_deleted)
-        )
-
-        operation_name = "programNote"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        return await self.client.get_program_note(id=program_note_id)
 
     async def get_all(
         self,
         *,
         include_deleted: bool = False,
         where: WhereProgramNote | None = None,
-        offset: int | None = None,
+        offset: str | None = None,
         limit: int | None = None,
-    ) -> dict[str, Any]:
+    ) -> GetAllProgramNotes:
         """Fetch all program notes with optional filters.
 
         Parameters
@@ -251,7 +219,7 @@ class ProgramNoteManager(BaseManager):
             Whether to include soft-deleted entries.
         where : WhereProgramNote, optional
             Filters to apply to the query.
-        offset : int, optional
+        offset : str, optional
             Cursor-based pagination offset.
         limit : int, optional
             Max number of entries to return.
@@ -261,18 +229,9 @@ class ProgramNoteManager(BaseManager):
         dict[str, Any]
             A dictionary with `matches` and `hasMore` keys.
         """
-        fields = Query.program_notes(
-            include_deleted=include_deleted, where=where, offset=offset, limit=limit
-        ).fields(
-            ProgramNoteSelectResultFields.has_more,
-            ProgramNoteSelectResultFields.matches().fields(
-                *self._fields(include_deleted=include_deleted)
-            ),
+        return await self.client.get_all_program_notes(
+            include_deleted=include_deleted, where=where, limit=limit, offset=offset
         )
-        operation_name = "programNotes"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return result[operation_name]
 
     async def restore_by_id(self, program_note_id: str) -> dict[str, Any]:
         """Restore a soft-deleted program note by ID.
@@ -310,29 +269,4 @@ class ProgramNoteManager(BaseManager):
             program_note_id,
             properties=properties,
             include_deleted=False,
-        )
-
-    @staticmethod
-    def _fields(include_deleted: bool = False) -> tuple:
-        """Return the GraphQL fields to retrieve.
-
-        Parameters
-        ----------
-        include_deleted : bool, default=False
-            Whether to include deleted resources when fetching related fields.
-
-        Returns
-        -------
-        tuple
-            GraphQL field structure.
-        """
-        return (
-            ProgramNoteFields.id,
-            ProgramNoteFields.title,
-            ProgramNoteFields.text,
-            ProgramNoteFields.existence,
-            ProgramNoteFields.is_private,
-            ProgramNoteFields.program().fields(
-                ProgramFields.id,
-            ),
         )

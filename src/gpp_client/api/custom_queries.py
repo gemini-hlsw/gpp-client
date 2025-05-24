@@ -49,7 +49,7 @@ class Query:
         cls,
         include_deleted: bool,
         *,
-        program_id: Optional[Any] = None,
+        program_id: Optional[str] = None,
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
@@ -118,7 +118,7 @@ class Query:
         cls,
         include_deleted: bool,
         *,
-        program_id: Optional[Any] = None,
+        program_id: Optional[str] = None,
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
@@ -314,7 +314,7 @@ class Query:
         cls,
         include_deleted: bool,
         *,
-        program_id: Optional[Any] = None,
+        program_id: Optional[str] = None,
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
@@ -345,7 +345,7 @@ class Query:
     def program(
         cls,
         *,
-        program_id: Optional[Any] = None,
+        program_id: Optional[str] = None,
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None
     ) -> ProgramFields:
@@ -371,7 +371,7 @@ class Query:
         include_deleted: bool,
         *,
         where: Optional[WhereProgram] = None,
-        offset: Optional[Any] = None,
+        offset: Optional[str] = None,
         limit: Optional[Any] = None
     ) -> ProgramSelectResultFields:
         arguments: Dict[str, Dict[str, Any]] = {
@@ -388,7 +388,7 @@ class Query:
         )
 
     @classmethod
-    def program_note(cls, program_note_id: Any) -> ProgramNoteFields:
+    def program_note(cls, program_note_id: str) -> ProgramNoteFields:
         arguments: Dict[str, Dict[str, Any]] = {
             "programNoteId": {"type": "ProgramNoteId!", "value": program_note_id}
         }
@@ -403,7 +403,7 @@ class Query:
         include_deleted: bool,
         *,
         where: Optional[WhereProgramNote] = None,
-        offset: Optional[Any] = None,
+        offset: Optional[str] = None,
         limit: Optional[Any] = None
     ) -> ProgramNoteSelectResultFields:
         arguments: Dict[str, Dict[str, Any]] = {
@@ -474,7 +474,7 @@ class Query:
         cls,
         include_deleted: bool,
         *,
-        program_id: Optional[Any] = None,
+        program_id: Optional[str] = None,
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
