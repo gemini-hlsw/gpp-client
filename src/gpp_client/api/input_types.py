@@ -12,6 +12,7 @@ from .enums import (
     Band,
     BrightnessIntegratedUnits,
     BrightnessSurfaceUnits,
+    CalculationState,
     CalibrationRole,
     CallForProposalsType,
     CatalogName,
@@ -27,10 +28,12 @@ from .enums import (
     EphemerisKeyType,
     ExecutionEventType,
     Existence,
+    Flamingos2CustomSlitWidth,
     Flamingos2Decker,
     Flamingos2Disperser,
     Flamingos2Filter,
     Flamingos2Fpu,
+    Flamingos2LyotWheel,
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
@@ -1117,6 +1120,25 @@ class StepConfigSmartGcalInput(BaseModel):
     smart_gcal_type: SmartGcalType = Field(alias=str("smartGcalType"))
 
 
+class ObscalcUpdateInput(BaseModel):
+    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    old_state: Optional["WhereOptionEqCalculationState"] = Field(
+        alias=str("oldState"), default=None
+    )
+    new_state: Optional["WhereOptionEqCalculationState"] = Field(
+        alias=str("newState"), default=None
+    )
+
+
+class WhereOptionEqCalculationState(BaseModel):
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    eq: Optional[CalculationState] = Field(alias=str("EQ"), default=None)
+    neq: Optional[CalculationState] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[CalculationState]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[CalculationState]] = Field(alias=str("NIN"), default=None)
+
+
 class ExecutionEventAddedInput(BaseModel):
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
@@ -1330,6 +1352,55 @@ class WavelengthDitherInput(BaseModel):
 class AttachmentPropertiesInput(BaseModel):
     description: Optional[Any] = None
     checked: Optional[bool] = None
+
+
+class Flamingos2StaticInput(BaseModel):
+    mos_pre_imaging: Optional[MosPreImaging] = Field(
+        alias=str("mosPreImaging"), default=None
+    )
+    use_electronic_offsetting: Optional[bool] = Field(
+        alias=str("useElectronicOffsetting"), default=None
+    )
+
+
+class RecordFlamingos2StepInput(BaseModel):
+    atom_id: Any = Field(alias=str("atomId"))
+    flamingos_2: "Flamingos2DynamicInput" = Field(alias=str("flamingos2"))
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+    generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
+
+
+class RecordFlamingos2VisitInput(BaseModel):
+    observation_id: Any = Field(alias=str("observationId"))
+    flamingos_2: "Flamingos2StaticInput" = Field(alias=str("flamingos2"))
+
+
+class Flamingos2DynamicInput(BaseModel):
+    exposure: "TimeSpanInput"
+    disperser: Optional[Flamingos2Disperser] = None
+    filter: Flamingos2Filter
+    read_mode: Flamingos2ReadMode = Field(alias=str("readMode"))
+    lyot_wheel: Flamingos2LyotWheel = Field(alias=str("lyotWheel"))
+    fpu: Optional["Flamingos2FpuMaskInput"] = None
+    decker: Flamingos2Decker
+    readout_mode: Flamingos2ReadoutMode = Field(alias=str("readoutMode"))
+    reads: Flamingos2Reads
+
+
+class Flamingos2FpuMaskInput(BaseModel):
+    custom_mask: Optional["Flamingos2CustomMaskInput"] = Field(
+        alias=str("customMask"), default=None
+    )
+    builtin: Optional[Flamingos2Fpu] = None
+
+
+class Flamingos2CustomMaskInput(BaseModel):
+    filename: str
+    slit_width: Flamingos2CustomSlitWidth = Field(alias=str("slitWidth"))
 
 
 class Flamingos2LongSlitInput(BaseModel):
@@ -2237,6 +2308,22 @@ class WhereSpectroscopyConfigOption(BaseModel):
     )
 
 
+class WhereImagingConfigOption(BaseModel):
+    and_: Optional[List["WhereImagingConfigOption"]] = Field(
+        alias=str("AND"), default=None
+    )
+    or_: Optional[List["WhereImagingConfigOption"]] = Field(
+        alias=str("OR"), default=None
+    )
+    not_: Optional["WhereImagingConfigOption"] = Field(alias=str("NOT"), default=None)
+    adaptive_optics: Optional["WhereBoolean"] = Field(
+        alias=str("adaptiveOptics"), default=None
+    )
+    instrument: Optional["WhereEqInstrument"] = None
+    fov: Optional["WhereAngle"] = None
+    site: Optional["WhereEqSite"] = None
+
+
 class WhereString(BaseModel):
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
@@ -2364,6 +2451,7 @@ SpectralDefinitionIntegratedInput.model_rebuild()
 SpectralDefinitionSurfaceInput.model_rebuild()
 SpectroscopyScienceRequirementsInput.model_rebuild()
 StepConfigInput.model_rebuild()
+ObscalcUpdateInput.model_rebuild()
 ExecutionEventAddedInput.model_rebuild()
 TargetEnvironmentInput.model_rebuild()
 TargetPropertiesInput.model_rebuild()
@@ -2385,6 +2473,10 @@ UpdateProgramNotesInput.model_rebuild()
 UpdateProgramsInput.model_rebuild()
 UpdateProposalInput.model_rebuild()
 UpdateTargetsInput.model_rebuild()
+RecordFlamingos2StepInput.model_rebuild()
+RecordFlamingos2VisitInput.model_rebuild()
+Flamingos2DynamicInput.model_rebuild()
+Flamingos2FpuMaskInput.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
 CreateConfigurationRequestInput.model_rebuild()
@@ -2409,6 +2501,7 @@ WhereProposal.model_rebuild()
 WhereProposalPartnerEntry.model_rebuild()
 WhereProposalPartners.model_rebuild()
 WhereSpectroscopyConfigOption.model_rebuild()
+WhereImagingConfigOption.model_rebuild()
 WhereTarget.model_rebuild()
 WhereUser.model_rebuild()
 WhereUserProfile.model_rebuild()

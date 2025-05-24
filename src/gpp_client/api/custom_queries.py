@@ -14,6 +14,7 @@ from .custom_fields import (
     ExecutionEventSelectResultFields,
     FilterTypeMetaFields,
     GroupFields,
+    ImagingConfigOptionFields,
     ObservationFields,
     ObservationSelectResultFields,
     ObservingModeGroupSelectResultFields,
@@ -34,6 +35,7 @@ from .input_types import (
     WhereConfigurationRequest,
     WhereDataset,
     WhereExecutionEvent,
+    WhereImagingConfigOption,
     WhereObservation,
     WhereProgram,
     WhereProgramNote,
@@ -457,6 +459,20 @@ class Query:
         }
         return SpectroscopyConfigOptionFields(
             field_name="spectroscopyConfigOptions", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def imaging_config_options(
+        cls, *, where: Optional[WhereImagingConfigOption] = None
+    ) -> ImagingConfigOptionFields:
+        arguments: Dict[str, Dict[str, Any]] = {
+            "WHERE": {"type": "WhereImagingConfigOption", "value": where}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ImagingConfigOptionFields(
+            field_name="imagingConfigOptions", arguments=cleared_arguments
         )
 
     @classmethod

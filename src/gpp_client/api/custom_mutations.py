@@ -30,6 +30,8 @@ from .custom_fields import (
     ObservationWorkflowFields,
     RecordAtomResultFields,
     RecordDatasetResultFields,
+    RecordFlamingos2StepResultFields,
+    RecordFlamingos2VisitResultFields,
     RecordGmosNorthStepResultFields,
     RecordGmosNorthVisitResultFields,
     RecordGmosSouthStepResultFields,
@@ -82,6 +84,8 @@ from .input_types import (
     LinkUserInput,
     RecordAtomInput,
     RecordDatasetInput,
+    RecordFlamingos2StepInput,
+    RecordFlamingos2VisitInput,
     RecordGmosNorthStepInput,
     RecordGmosNorthVisitInput,
     RecordGmosSouthStepInput,
@@ -416,6 +420,34 @@ class Mutation:
         }
         return RecordDatasetResultFields(
             field_name="recordDataset", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def record_flamingos_2_step(
+        cls, input: RecordFlamingos2StepInput
+    ) -> RecordFlamingos2StepResultFields:
+        arguments: Dict[str, Dict[str, Any]] = {
+            "input": {"type": "RecordFlamingos2StepInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RecordFlamingos2StepResultFields(
+            field_name="recordFlamingos2Step", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def record_flamingos_2_visit(
+        cls, input: RecordFlamingos2VisitInput
+    ) -> RecordFlamingos2VisitResultFields:
+        arguments: Dict[str, Dict[str, Any]] = {
+            "input": {"type": "RecordFlamingos2VisitInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RecordFlamingos2VisitResultFields(
+            field_name="recordFlamingos2Visit", arguments=cleared_arguments
         )
 
     @classmethod
