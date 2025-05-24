@@ -75,6 +75,12 @@ class BandedTimeGraphQLField(GraphQLField):
         return self
 
 
+class CalculatedBandedTimeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalculatedBandedTimeGraphQLField":
+        self._alias = alias
+        return self
+
+
 class BiasGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "BiasGraphQLField":
         self._alias = alias
@@ -107,6 +113,12 @@ class CategorizedTimeGraphQLField(GraphQLField):
 
 class CategorizedTimeRangeGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CategorizedTimeRangeGraphQLField":
+        self._alias = alias
+        return self
+
+
+class CalculatedCategorizedTimeRangeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalculatedCategorizedTimeRangeGraphQLField":
         self._alias = alias
         return self
 
@@ -597,6 +609,12 @@ class StepConfigGraphQLField(GraphQLField):
         return self
 
 
+class ObscalcUpdateGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObscalcUpdateGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ExecutionEventAddedGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ExecutionEventAddedGraphQLField":
         self._alias = alias
@@ -891,6 +909,66 @@ class ExposureTimeModeGraphQLField(GraphQLField):
         return self
 
 
+class Flamingos2ExecutionConfigGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2ExecutionConfigGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2ExecutionSequenceGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2ExecutionSequenceGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2StaticGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2StaticGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RecordFlamingos2StepResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RecordFlamingos2StepResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RecordFlamingos2VisitResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RecordFlamingos2VisitResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2AtomGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2AtomGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2StepGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2StepGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2DynamicGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2DynamicGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2FpuMaskGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2FpuMaskGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2CustomMaskGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2CustomMaskGraphQLField":
+        self._alias = alias
+        return self
+
+
 class Flamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2LongSlitGraphQLField":
         self._alias = alias
@@ -1013,6 +1091,24 @@ class SpectroscopyConfigOptionGmosSouthGraphQLField(GraphQLField):
 
 class SpectroscopyConfigOptionFlamingos2GraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SpectroscopyConfigOptionFlamingos2GraphQLField":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ImagingConfigOptionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGmosNorthGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ImagingConfigOptionGmosNorthGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGmosSouthGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ImagingConfigOptionGmosSouthGraphQLField":
         self._alias = alias
         return self
 

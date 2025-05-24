@@ -29,6 +29,8 @@ from .custom_typing_fields import (
     BandNormalizedGraphQLField,
     BandNormalizedIntegratedGraphQLField,
     BandNormalizedSurfaceGraphQLField,
+    CalculatedBandedTimeGraphQLField,
+    CalculatedCategorizedTimeRangeGraphQLField,
     CallForProposalsGraphQLField,
     CallForProposalsPartnerGraphQLField,
     CallsForProposalsSelectResultGraphQLField,
@@ -87,7 +89,15 @@ from .custom_typing_fields import (
     ExecutionGraphQLField,
     ExposureTimeModeGraphQLField,
     FilterTypeMetaGraphQLField,
+    Flamingos2AtomGraphQLField,
+    Flamingos2CustomMaskGraphQLField,
+    Flamingos2DynamicGraphQLField,
+    Flamingos2ExecutionConfigGraphQLField,
+    Flamingos2ExecutionSequenceGraphQLField,
+    Flamingos2FpuMaskGraphQLField,
     Flamingos2LongSlitGraphQLField,
+    Flamingos2StaticGraphQLField,
+    Flamingos2StepGraphQLField,
     FluxDensityContinuumIntegratedGraphQLField,
     FluxDensityContinuumSurfaceGraphQLField,
     FluxDensityEntryGraphQLField,
@@ -120,6 +130,9 @@ from .custom_typing_fields import (
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
     HourAngleRangeGraphQLField,
+    ImagingConfigOptionGmosNorthGraphQLField,
+    ImagingConfigOptionGmosSouthGraphQLField,
+    ImagingConfigOptionGraphQLField,
     ItcGraphQLField,
     ItcResultGraphQLField,
     ItcResultSetGraphQLField,
@@ -155,6 +168,8 @@ from .custom_typing_fields import (
     RadialVelocityGraphQLField,
     RecordAtomResultGraphQLField,
     RecordDatasetResultGraphQLField,
+    RecordFlamingos2StepResultGraphQLField,
+    RecordFlamingos2VisitResultGraphQLField,
     RecordGmosNorthStepResultGraphQLField,
     RecordGmosNorthVisitResultGraphQLField,
     RecordGmosSouthStepResultGraphQLField,
@@ -836,6 +851,51 @@ class BandedTimeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "BandedTimeFields":
+        self._alias = alias
+        return self
+
+
+class CalculatedBandedTimeFields(GraphQLField):
+    state: "CalculatedBandedTimeGraphQLField" = CalculatedBandedTimeGraphQLField(
+        "state"
+    )
+
+    @classmethod
+    def value(cls) -> "BandedTimeFields":
+        return BandedTimeFields("value")
+
+    def fields(
+        self, *subfields: Union[CalculatedBandedTimeGraphQLField, "BandedTimeFields"]
+    ) -> "CalculatedBandedTimeFields":
+        """Subfields should come from the CalculatedBandedTimeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalculatedBandedTimeFields":
+        self._alias = alias
+        return self
+
+
+class CalculatedCategorizedTimeRangeFields(GraphQLField):
+    state: "CalculatedCategorizedTimeRangeGraphQLField" = (
+        CalculatedCategorizedTimeRangeGraphQLField("state")
+    )
+
+    @classmethod
+    def value(cls) -> "CategorizedTimeRangeFields":
+        return CategorizedTimeRangeFields("value")
+
+    def fields(
+        self,
+        *subfields: Union[
+            CalculatedCategorizedTimeRangeGraphQLField, "CategorizedTimeRangeFields"
+        ]
+    ) -> "CalculatedCategorizedTimeRangeFields":
+        """Subfields should come from the CalculatedCategorizedTimeRangeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalculatedCategorizedTimeRangeFields":
         self._alias = alias
         return self
 
@@ -2260,6 +2320,10 @@ class ExecutionConfigFields(GraphQLField):
     )
 
     @classmethod
+    def flamingos_2(cls) -> "Flamingos2ExecutionConfigFields":
+        return Flamingos2ExecutionConfigFields("flamingos2")
+
+    @classmethod
     def gmos_north(cls) -> "GmosNorthExecutionConfigFields":
         return GmosNorthExecutionConfigFields("gmosNorth")
 
@@ -2271,6 +2335,7 @@ class ExecutionConfigFields(GraphQLField):
         self,
         *subfields: Union[
             ExecutionConfigGraphQLField,
+            "Flamingos2ExecutionConfigFields",
             "GmosNorthExecutionConfigFields",
             "GmosSouthExecutionConfigFields",
         ]
@@ -2410,24 +2475,178 @@ class FilterTypeMetaFields(GraphQLField):
         return self
 
 
+class Flamingos2AtomFields(GraphQLField):
+    id: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField("id")
+    description: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField(
+        "description"
+    )
+    observe_class: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField(
+        "observeClass"
+    )
+
+    @classmethod
+    def steps(cls) -> "Flamingos2StepFields":
+        return Flamingos2StepFields("steps")
+
+    def fields(
+        self, *subfields: Union[Flamingos2AtomGraphQLField, "Flamingos2StepFields"]
+    ) -> "Flamingos2AtomFields":
+        """Subfields should come from the Flamingos2AtomFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2AtomFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2CustomMaskFields(GraphQLField):
+    filename: "Flamingos2CustomMaskGraphQLField" = Flamingos2CustomMaskGraphQLField(
+        "filename"
+    )
+    slit_width: "Flamingos2CustomMaskGraphQLField" = Flamingos2CustomMaskGraphQLField(
+        "slitWidth"
+    )
+
+    def fields(
+        self, *subfields: Flamingos2CustomMaskGraphQLField
+    ) -> "Flamingos2CustomMaskFields":
+        """Subfields should come from the Flamingos2CustomMaskFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2CustomMaskFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2DynamicFields(GraphQLField):
+    @classmethod
+    def exposure(cls) -> "TimeSpanFields":
+        return TimeSpanFields("exposure")
+
+    disperser: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
+        "disperser"
+    )
+    filter: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("filter")
+    read_mode: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
+        "readMode"
+    )
+    lyot_wheel: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
+        "lyotWheel"
+    )
+
+    @classmethod
+    def fpu(cls) -> "Flamingos2FpuMaskFields":
+        return Flamingos2FpuMaskFields("fpu")
+
+    decker: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("decker")
+    readout_mode: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
+        "readoutMode"
+    )
+    reads: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("reads")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2DynamicGraphQLField, "Flamingos2FpuMaskFields", "TimeSpanFields"
+        ]
+    ) -> "Flamingos2DynamicFields":
+        """Subfields should come from the Flamingos2DynamicFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2DynamicFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2ExecutionConfigFields(GraphQLField):
+    @classmethod
+    def static(cls) -> "Flamingos2StaticFields":
+        return Flamingos2StaticFields("static")
+
+    @classmethod
+    def acquisition(cls) -> "Flamingos2ExecutionSequenceFields":
+        return Flamingos2ExecutionSequenceFields("acquisition")
+
+    @classmethod
+    def science(cls) -> "Flamingos2ExecutionSequenceFields":
+        return Flamingos2ExecutionSequenceFields("science")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2ExecutionConfigGraphQLField,
+            "Flamingos2ExecutionSequenceFields",
+            "Flamingos2StaticFields",
+        ]
+    ) -> "Flamingos2ExecutionConfigFields":
+        """Subfields should come from the Flamingos2ExecutionConfigFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2ExecutionConfigFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2ExecutionSequenceFields(GraphQLField):
+    @classmethod
+    def next_atom(cls) -> "Flamingos2AtomFields":
+        return Flamingos2AtomFields("nextAtom")
+
+    @classmethod
+    def possible_future(cls) -> "Flamingos2AtomFields":
+        return Flamingos2AtomFields("possibleFuture")
+
+    has_more: "Flamingos2ExecutionSequenceGraphQLField" = (
+        Flamingos2ExecutionSequenceGraphQLField("hasMore")
+    )
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2ExecutionSequenceGraphQLField, "Flamingos2AtomFields"
+        ]
+    ) -> "Flamingos2ExecutionSequenceFields":
+        """Subfields should come from the Flamingos2ExecutionSequenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2ExecutionSequenceFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2FpuMaskFields(GraphQLField):
+    @classmethod
+    def custom_mask(cls) -> "Flamingos2CustomMaskFields":
+        return Flamingos2CustomMaskFields("customMask")
+
+    builtin: "Flamingos2FpuMaskGraphQLField" = Flamingos2FpuMaskGraphQLField("builtin")
+
+    def fields(
+        self,
+        *subfields: Union[Flamingos2FpuMaskGraphQLField, "Flamingos2CustomMaskFields"]
+    ) -> "Flamingos2FpuMaskFields":
+        """Subfields should come from the Flamingos2FpuMaskFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2FpuMaskFields":
+        self._alias = alias
+        return self
+
+
 class Flamingos2LongSlitFields(GraphQLField):
     disperser: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "disperser"
     )
     filter: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("filter")
     fpu: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("fpu")
-    read_mode: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
-        "readMode"
-    )
-    default_read_mode: "Flamingos2LongSlitGraphQLField" = (
-        Flamingos2LongSlitGraphQLField("defaultReadMode")
-    )
     explicit_read_mode: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("explicitReadMode")
-    )
-    reads: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("reads")
-    default_reads: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
-        "defaultReads"
     )
     explicit_reads: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "explicitReads"
@@ -2466,6 +2685,69 @@ class Flamingos2LongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "Flamingos2LongSlitFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2StaticFields(GraphQLField):
+    mos_pre_imaging: "Flamingos2StaticGraphQLField" = Flamingos2StaticGraphQLField(
+        "mosPreImaging"
+    )
+    use_electronic_offsetting: "Flamingos2StaticGraphQLField" = (
+        Flamingos2StaticGraphQLField("useElectronicOffsetting")
+    )
+
+    def fields(
+        self, *subfields: Flamingos2StaticGraphQLField
+    ) -> "Flamingos2StaticFields":
+        """Subfields should come from the Flamingos2StaticFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2StaticFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2StepFields(GraphQLField):
+    @classmethod
+    def instrument_config(cls) -> "Flamingos2DynamicFields":
+        return Flamingos2DynamicFields("instrumentConfig")
+
+    id: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField("id")
+    breakpoint: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField("breakpoint")
+
+    @classmethod
+    def step_config(cls) -> "StepConfigInterface":
+        return StepConfigInterface("stepConfig")
+
+    @classmethod
+    def telescope_config(cls) -> "TelescopeConfigFields":
+        return TelescopeConfigFields("telescopeConfig")
+
+    @classmethod
+    def estimate(cls) -> "StepEstimateFields":
+        return StepEstimateFields("estimate")
+
+    observe_class: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField(
+        "observeClass"
+    )
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2StepGraphQLField,
+            "Flamingos2DynamicFields",
+            "StepConfigInterface",
+            "StepEstimateFields",
+            "TelescopeConfigFields",
+        ]
+    ) -> "Flamingos2StepFields":
+        """Subfields should come from the Flamingos2StepFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2StepFields":
         self._alias = alias
         return self
 
@@ -3354,12 +3636,12 @@ class GroupFields(GraphQLField):
         return GroupElementFields("elements", arguments=cleared_arguments)
 
     @classmethod
-    def time_estimate_range(cls) -> "CategorizedTimeRangeFields":
-        return CategorizedTimeRangeFields("timeEstimateRange")
+    def time_estimate_range(cls) -> "CalculatedCategorizedTimeRangeFields":
+        return CalculatedCategorizedTimeRangeFields("timeEstimateRange")
 
     @classmethod
-    def time_estimate_banded(cls) -> "BandedTimeFields":
-        return BandedTimeFields("timeEstimateBanded")
+    def time_estimate_banded(cls) -> "CalculatedBandedTimeFields":
+        return CalculatedBandedTimeFields("timeEstimateBanded")
 
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
@@ -3368,8 +3650,8 @@ class GroupFields(GraphQLField):
         self,
         *subfields: Union[
             GroupGraphQLField,
-            "BandedTimeFields",
-            "CategorizedTimeRangeFields",
+            "CalculatedBandedTimeFields",
+            "CalculatedCategorizedTimeRangeFields",
             "GroupElementFields",
             "ProgramFields",
             "TimeSpanFields",
@@ -3505,6 +3787,82 @@ class HourAngleRangeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "HourAngleRangeFields":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionFields(GraphQLField):
+    instrument: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField(
+        "instrument"
+    )
+    filter_label: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField(
+        "filterLabel"
+    )
+    adaptive_optics: "ImagingConfigOptionGraphQLField" = (
+        ImagingConfigOptionGraphQLField("adaptiveOptics")
+    )
+    site: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField("site")
+
+    @classmethod
+    def fov(cls) -> "AngleFields":
+        return AngleFields("fov")
+
+    @classmethod
+    def gmos_north(cls) -> "ImagingConfigOptionGmosNorthFields":
+        return ImagingConfigOptionGmosNorthFields("gmosNorth")
+
+    @classmethod
+    def gmos_south(cls) -> "ImagingConfigOptionGmosSouthFields":
+        return ImagingConfigOptionGmosSouthFields("gmosSouth")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ImagingConfigOptionGraphQLField,
+            "AngleFields",
+            "ImagingConfigOptionGmosNorthFields",
+            "ImagingConfigOptionGmosSouthFields",
+        ]
+    ) -> "ImagingConfigOptionFields":
+        """Subfields should come from the ImagingConfigOptionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ImagingConfigOptionFields":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGmosNorthFields(GraphQLField):
+    filter: "ImagingConfigOptionGmosNorthGraphQLField" = (
+        ImagingConfigOptionGmosNorthGraphQLField("filter")
+    )
+
+    def fields(
+        self, *subfields: ImagingConfigOptionGmosNorthGraphQLField
+    ) -> "ImagingConfigOptionGmosNorthFields":
+        """Subfields should come from the ImagingConfigOptionGmosNorthFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ImagingConfigOptionGmosNorthFields":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGmosSouthFields(GraphQLField):
+    filter: "ImagingConfigOptionGmosSouthGraphQLField" = (
+        ImagingConfigOptionGmosSouthGraphQLField("filter")
+    )
+
+    def fields(
+        self, *subfields: ImagingConfigOptionGmosSouthGraphQLField
+    ) -> "ImagingConfigOptionGmosSouthFields":
+        """Subfields should come from the ImagingConfigOptionGmosSouthFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ImagingConfigOptionGmosSouthFields":
         self._alias = alias
         return self
 
@@ -4138,12 +4496,12 @@ class ProgramFields(GraphQLField):
         return GroupElementFields("allGroupElements", arguments=cleared_arguments)
 
     @classmethod
-    def time_estimate_range(cls) -> "CategorizedTimeRangeFields":
-        return CategorizedTimeRangeFields("timeEstimateRange")
+    def time_estimate_range(cls) -> "CalculatedCategorizedTimeRangeFields":
+        return CalculatedCategorizedTimeRangeFields("timeEstimateRange")
 
     @classmethod
-    def time_estimate_banded(cls) -> "BandedTimeFields":
-        return BandedTimeFields("timeEstimateBanded")
+    def time_estimate_banded(cls) -> "CalculatedBandedTimeFields":
+        return CalculatedBandedTimeFields("timeEstimateBanded")
 
     @classmethod
     def time_charge(cls) -> "BandedTimeFields":
@@ -4170,7 +4528,8 @@ class ProgramFields(GraphQLField):
             "AllocationFields",
             "AttachmentFields",
             "BandedTimeFields",
-            "CategorizedTimeRangeFields",
+            "CalculatedBandedTimeFields",
+            "CalculatedCategorizedTimeRangeFields",
             "ConfigurationRequestSelectResultFields",
             "DateIntervalFields",
             "GoaPropertiesFields",
@@ -4520,6 +4879,41 @@ class RecordDatasetResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "RecordDatasetResultFields":
+        self._alias = alias
+        return self
+
+
+class RecordFlamingos2StepResultFields(GraphQLField):
+    @classmethod
+    def step_record(cls) -> "StepRecordFields":
+        return StepRecordFields("stepRecord")
+
+    def fields(
+        self,
+        *subfields: Union[RecordFlamingos2StepResultGraphQLField, "StepRecordFields"]
+    ) -> "RecordFlamingos2StepResultFields":
+        """Subfields should come from the RecordFlamingos2StepResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RecordFlamingos2StepResultFields":
+        self._alias = alias
+        return self
+
+
+class RecordFlamingos2VisitResultFields(GraphQLField):
+    @classmethod
+    def visit(cls) -> "VisitFields":
+        return VisitFields("visit")
+
+    def fields(
+        self, *subfields: Union[RecordFlamingos2VisitResultGraphQLField, "VisitFields"]
+    ) -> "RecordFlamingos2VisitResultFields":
+        """Subfields should come from the RecordFlamingos2VisitResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RecordFlamingos2VisitResultFields":
         self._alias = alias
         return self
 
@@ -5412,6 +5806,10 @@ class StepRecordFields(GraphQLField):
     generated_id: "StepRecordGraphQLField" = StepRecordGraphQLField("generatedId")
 
     @classmethod
+    def flamingos_2(cls) -> "Flamingos2DynamicFields":
+        return Flamingos2DynamicFields("flamingos2")
+
+    @classmethod
     def gmos_north(cls) -> "GmosNorthDynamicFields":
         return GmosNorthDynamicFields("gmosNorth")
 
@@ -5426,6 +5824,7 @@ class StepRecordFields(GraphQLField):
             "AtomRecordFields",
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
+            "Flamingos2DynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
             "StepConfigInterface",
@@ -6365,6 +6764,10 @@ class VisitFields(GraphQLField):
         return TimeChargeInvoiceFields("timeChargeInvoice")
 
     @classmethod
+    def flamingos_2(cls) -> "Flamingos2StaticFields":
+        return Flamingos2StaticFields("flamingos2")
+
+    @classmethod
     def gmos_north(cls) -> "GmosNorthStaticFields":
         return GmosNorthStaticFields("gmosNorth")
 
@@ -6379,6 +6782,7 @@ class VisitFields(GraphQLField):
             "AtomRecordSelectResultFields",
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
+            "Flamingos2StaticFields",
             "GmosNorthStaticFields",
             "GmosSouthStaticFields",
             "ObservationFields",

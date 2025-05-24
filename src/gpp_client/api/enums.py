@@ -264,6 +264,13 @@ class StepType(str, Enum):
     SMART_GCAL = "SMART_GCAL"
 
 
+class CalculationState(str, Enum):
+    RETRY = "RETRY"
+    PENDING = "PENDING"
+    CALCULATING = "CALCULATING"
+    READY = "READY"
+
+
 class TimeAccountingCategory(str, Enum):
     AR = "AR"
     BR = "BR"
@@ -420,6 +427,24 @@ class Existence(str, Enum):
     DELETED = "DELETED"
 
 
+class Flamingos2CustomSlitWidth(str, Enum):
+    CUSTOM_WIDTH_1_PIX = "CUSTOM_WIDTH_1_PIX"
+    CUSTOM_WIDTH_2_PIX = "CUSTOM_WIDTH_2_PIX"
+    CUSTOM_WIDTH_3_PIX = "CUSTOM_WIDTH_3_PIX"
+    CUSTOM_WIDTH_4_PIX = "CUSTOM_WIDTH_4_PIX"
+    CUSTOM_WIDTH_6_PIX = "CUSTOM_WIDTH_6_PIX"
+    CUSTOM_WIDTH_8_PIX = "CUSTOM_WIDTH_8_PIX"
+    OTHER = "OTHER"
+
+
+class Flamingos2LyotWheel(str, Enum):
+    F16 = "F16"
+    GEMS_UNDER = "GEMS_UNDER"
+    GEMS_OVER = "GEMS_OVER"
+    HARTMANN_A = "HARTMANN_A"
+    HARTMANN_B = "HARTMANN_B"
+
+
 class Flamingos2Disperser(str, Enum):
     R1200_JH = "R1200_JH"
     R1200_HK = "R1200_HK"
@@ -483,11 +508,6 @@ class Flamingos2Reads(str, Enum):
     READS_14 = "READS_14"
     READS_15 = "READS_15"
     READS_16 = "READS_16"
-
-
-class Flamingos2WindowCover(str, Enum):
-    OPEN = "OPEN"
-    CLOSE = "CLOSE"
 
 
 class FluxDensityContinuumIntegratedUnits(str, Enum):
@@ -705,6 +725,7 @@ class Instrument(str, Enum):
     GNIRS = "GNIRS"
     GPI = "GPI"
     GSAOI = "GSAOI"
+    IGRINS2 = "IGRINS2"
     NIRI = "NIRI"
     VISITOR = "VISITOR"
     SCORPIO = "SCORPIO"
