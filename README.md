@@ -106,3 +106,30 @@ gpp obs update --observation-id o-123 --from-json updated_obs.json
 
 While in heavy development, please file requests or report bugs via our Jira board or Slack channel.
 
+# Developer Notes
+
+To update the GPP GraphQL schema and generate client code, run the scripts from the project’s top-level directory located in `scripts/`.
+
+## Download the Schema
+
+This script downloads the latest GPP GraphQL schema to `schema.graphql`. You must have `GPP_URL` and `GPP_TOKEN` env variables set for downloading to work.
+
+```bash
+python scripts/download_schema.py
+```
+
+### Requirements
+
+- `gql[httpx]==3.6.0b4`
+
+## Run Codegen
+
+This script regenerates the client code based on the updated schema.
+
+```bash
+python scripts/run_codegen.py
+```
+
+Requires:
+
+- `ariadne-codegen[subscriptions]==0.15.0.dev1`

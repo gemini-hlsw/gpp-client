@@ -23,7 +23,7 @@ jobs:
           GPP_URL: ${{ secrets.GPP_URL }}
           GPP_TOKEN: ${{ secrets.GPP_TOKEN }}
         run: |
-          python download_schema.py
+          python scripts/download_schema.py
       - name: Check for schema drift
         run: |
           git diff --exit-code schema.graphql

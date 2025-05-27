@@ -698,6 +698,7 @@ class GuideProbe(str, Enum):
     PWFS_1 = "PWFS_1"
     PWFS_2 = "PWFS_2"
     GMOS_OIWFS = "GMOS_OIWFS"
+    FLAMINGOS2_OIWFS = "FLAMINGOS2_OIWFS"
 
 
 class HiiRegionSpectrum(str, Enum):
