@@ -24,8 +24,8 @@ def main() -> None:
 
     # Check for required Python modules.
     try:
-        import httpx
-        import gql
+        import httpx  # noqa: F401
+        import gql  # noqa: F401
     except ImportError:
         fail(
             "Missing required modules. Install with `pip install "
