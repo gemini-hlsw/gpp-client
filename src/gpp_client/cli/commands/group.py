@@ -6,12 +6,13 @@ from rich.console import Console
 from rich.json import JSON
 
 from ...api import GroupPropertiesInput
+from ...cli.utils import async_command
+from ...client import GPPClient
+
 
 console = Console()
 app = typer.Typer(name="groups", help="Manage Groups.", no_args_is_help=True)
 
-from ...cli.utils import async_command
-from ...client import GPPClient
 
 @app.command("get")
 @async_command
