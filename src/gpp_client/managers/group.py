@@ -3,14 +3,14 @@ __all__ = ['GroupManager']
 from pathlib import Path
 from typing import Any, Optional, List
 
-from src.gpp_client.api import CreateGroupInput, GroupPropertiesInput, WhereGroup, UpdateObservationsInput, \
+from ..api import CreateGroupInput, GroupPropertiesInput, WhereGroup, UpdateObservationsInput, \
     WhereOrderGroupId, WhereOptionString, Existence, GroupElementInput
-from src.gpp_client.api.custom_fields import CreateGroupResultFields, UpdateGroupsResultFields, \
+from ..api.custom_fields import CreateGroupResultFields, UpdateGroupsResultFields, \
     GroupFields, ProgramFields, GroupElementFields
-from src.gpp_client.api.custom_mutations import Mutation
-from src.gpp_client.api.custom_queries import Query
-from src.gpp_client.managers.base_manager import BaseManager
-from src.gpp_client.managers.utils import validate_single_identifier, load_properties
+from ..api.custom_mutations import Mutation
+from ..api.custom_queries import Query
+from .base_manager import BaseManager
+from .utils import validate_single_identifier, load_properties
 
 
 class GroupManager(BaseManager):
