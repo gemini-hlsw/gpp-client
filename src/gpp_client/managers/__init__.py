@@ -4,6 +4,7 @@ from .program import ProgramManager
 from .program_note import ProgramNoteManager
 from .site_status import SiteStatusManager
 from .target import TargetManager
+from .group import GroupManager
 
 __all__ = [
     "ProgramNoteManager",
@@ -12,4 +13,5 @@ __all__ = [
     "CallForProposalsManager",
     "ObservationManager",
     "SiteStatusManager",
+    "GroupManager",
 ]

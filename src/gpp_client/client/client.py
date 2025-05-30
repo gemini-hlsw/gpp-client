@@ -10,6 +10,7 @@ from ..managers import (
     ProgramNoteManager,
     SiteStatusManager,
     TargetManager,
+    GroupManager
 )
 from ..patches import patch_base_operations_graphql_field_get_formatted_variables
 
@@ -73,6 +74,7 @@ class GPPClient:
         self.observation = ObservationManager(self)
         # SiteStatusManager doesn't use the client so don't pass self.
         self.site_status = SiteStatusManager()
+        self.group = GroupManager(self)
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:
