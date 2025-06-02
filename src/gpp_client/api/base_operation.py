@@ -30,7 +30,7 @@ class GraphQLArgument:
         )
 
 
-class  GraphQLField:
+class GraphQLField:
     """
     Represents a GraphQL field with its name, arguments, subfields, alias,
     and inline fragments.

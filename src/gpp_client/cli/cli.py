@@ -7,7 +7,8 @@ from .commands import (
     program,
     program_note,
     site_status,
-    target, group,
+    target,
+    group,
 )
 
 app = typer.Typer(
