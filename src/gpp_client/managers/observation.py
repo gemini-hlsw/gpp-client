@@ -10,7 +10,7 @@ from ..api.custom_fields import (
     ObservationSelectResultFields,
     ProgramFields,
     ScienceRequirementsFields,
-    UpdateObservationsResultFields, ObservationWorkflowFields, ExecutionFields, ExecutionDigestFields, SetupTimeFields,
+    UpdateObservationsResultFields, ObservationWorkflowFields,
     TimeSpanFields, ConstraintSetFields, TimingWindowFields, TimingWindowEndAtFields, TimingWindowEndAfterFields,
     TimingWindowRepeatFields, ElevationRangeFields, AirMassRangeFields, HourAngleRangeFields, TargetEnvironmentFields,
     CoordinatesFields, RightAscensionFields, DeclinationFields, TargetFields, SiderealFields, ProperMotionFields,
