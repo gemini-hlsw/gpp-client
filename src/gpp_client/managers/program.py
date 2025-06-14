@@ -9,7 +9,7 @@ from ..api.custom_fields import (
     ProgramFields,
     ProgramSelectResultFields,
     ProgramUserFields,
-    UpdateProgramsResultFields,
+    UpdateProgramsResultFields, GroupElementFields, GroupFields, ObservationFields, TimeSpanFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -321,5 +321,26 @@ class ProgramManager(BaseManager):
             ProgramFields.proposal_status,
             ProgramFields.pi().fields(
                 ProgramUserFields.id,
+            ),
+            ProgramFields.all_group_elements(include_deleted).fields(
+                GroupElementFields.parent_group_id,
+                GroupElementFields.observation().fields(
+                    ObservationFields.id,
+                    ObservationFields.group_id
+                ),
+                GroupElementFields.group().fields(
+                    GroupFields.id,
+                    GroupFields.name,
+                    GroupFields.minimum_required,
+                    GroupFields.ordered,
+                    GroupFields.parent_id,
+                    GroupFields.parent_index,
+                    GroupFields.minimum_interval().fields(
+                        TimeSpanFields.seconds
+                    ),
+                    GroupFields.maximum_interval().fields(
+                        TimeSpanFields.seconds
+                    )
+                )
             ),
         )

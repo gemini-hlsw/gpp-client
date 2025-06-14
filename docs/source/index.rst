@@ -14,6 +14,7 @@ What This Documentation Covers
 - :doc:`Authentication and Credentials <credentials>`: See the different ways to provide your API credentials.
 - :doc:`CLI Reference <cli/index>`: If you're using the CLI, explore available commands for managing configurations and interacting with resources.
 - :doc:`Resource Managers <managers/index>`: Learn how the ``ProgramManager`` and other managers work and the available API to create, delete, restore, update, and get resources from GPP.
+- :doc:`Director <director/index>`: A way to handle simultaneous managers for an specific service in GPP.
 - :doc:`GPP GraphQL Client Building Blocks <api/index>`: Explore the GraphQL API types, fields, and inputs that are essential when constructing payloads for inputs and outputs.
 
 
@@ -33,5 +34,6 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
    credentials
    cli/index
    managers/index
+   director/index
    api/index
    contributing
