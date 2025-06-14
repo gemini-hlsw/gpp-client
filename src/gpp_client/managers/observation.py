@@ -10,7 +10,11 @@ from ..api.custom_fields import (
     ObservationSelectResultFields,
     ProgramFields,
     ScienceRequirementsFields,
-    UpdateObservationsResultFields,
+    UpdateObservationsResultFields, ObservationWorkflowFields, ExecutionFields, ExecutionDigestFields, SetupTimeFields,
+    TimeSpanFields, ConstraintSetFields, TimingWindowFields, TimingWindowEndAtFields, TimingWindowEndAfterFields,
+    TimingWindowRepeatFields, ElevationRangeFields, AirMassRangeFields, HourAngleRangeFields, TargetEnvironmentFields,
+    CoordinatesFields, RightAscensionFields, DeclinationFields, TargetFields, SiderealFields, ProperMotionFields,
+    ProperMotionRAFields, ProperMotionDeclinationFields, NonsiderealFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -412,5 +416,90 @@ class ObservationManager(BaseManager):
             ),
             ObservationFields.science_requirements().fields(
                 ScienceRequirementsFields.mode
+            ),
+            ObservationFields.science_band,
+            # DEPRECATED, use calculated_workflow
+            ObservationFields.workflow().fields(
+                ObservationWorkflowFields.state
+            ),
+            # BEGIN SEQUENCE NEEDED
+            # ObservationFields.execution().fields(
+                # DEPRECATED, use calculated_digest
+            #    ExecutionFields.digest().fields(
+            #        ExecutionDigestFields.setup().fields(
+            #            SetupTimeFields.full().fields(
+            #                TimeSpanFields.seconds
+            #            ),
+            #            SetupTimeFields.reacquisition().fields(
+            #                TimeSpanFields.seconds
+            #            )
+            #        )
+            #    )
+            #),
+            # END SEQUENCE
+            ObservationFields.constraint_set().fields(
+                ConstraintSetFields.image_quality,
+                ConstraintSetFields.cloud_extinction,
+                ConstraintSetFields.sky_background,
+                ConstraintSetFields.water_vapor,
+                ConstraintSetFields.elevation_range().fields(
+                    ElevationRangeFields.air_mass().fields(
+                        AirMassRangeFields.min,
+                        AirMassRangeFields.max,
+                    ),
+                    ElevationRangeFields.hour_angle().fields(
+                        HourAngleRangeFields.min_hours,
+                        HourAngleRangeFields.max_hours,
+                    )
+                )
+            ),
+            ObservationFields.timing_windows().fields(
+                TimingWindowFields.inclusion,
+                TimingWindowFields.start_utc,
+                TimingWindowFields.end.on("TimingWindowEndAt", TimingWindowEndAtFields.at_utc),
+                TimingWindowFields.end.on("TimingWindowEndAfter",
+                    TimingWindowEndAfterFields.after().fields(
+                    TimeSpanFields.seconds
+                ),
+                                          TimingWindowEndAfterFields.repeat().fields(
+                                              TimingWindowRepeatFields.period().fields(
+                                                  TimeSpanFields.seconds
+                                              ),
+                                              TimingWindowRepeatFields.times
+                                          )),
+
+            ),
+            ObservationFields.target_environment().fields(
+                TargetEnvironmentFields.asterism(include_deleted).fields(
+                        TargetFields.sidereal().fields(
+                            SiderealFields.ra().fields(
+                                RightAscensionFields.hms
+                            ),
+                            SiderealFields.dec().fields(
+                                DeclinationFields.dms
+                            ),
+                            SiderealFields.proper_motion().fields(
+                                ProperMotionFields.ra().fields(
+                                    ProperMotionRAFields.milliarcseconds_per_year
+                                ),
+                                ProperMotionFields.dec().fields(
+                                    ProperMotionDeclinationFields.milliarcseconds_per_year
+                                )
+                            ),
+                            SiderealFields.epoch,
+                        ),
+                        TargetFields.nonsidereal().fields(
+                            NonsiderealFields.des,
+                        ),
+                        TargetFields.name
+                ),
+                TargetEnvironmentFields.explicit_base().fields(
+                    CoordinatesFields.ra().fields(
+                        RightAscensionFields.hms
+                    ),
+                    CoordinatesFields.dec().fields(
+                        DeclinationFields.dms
+                    )
+                ),
             ),
         )
