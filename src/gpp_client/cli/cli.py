@@ -12,7 +12,7 @@ from .commands import (
 )
 
 app = typer.Typer(
-    name="GPP Client", no_args_is_help=True, help="Client to communicate with GPP."
+    name="GPP Client", no_args_is_help=False, help="Client to communicate with GPP."
 )
 app.add_typer(config.app)
 app.add_typer(program_note.app)
