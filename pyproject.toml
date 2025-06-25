@@ -21,40 +21,19 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
-    "toml>=0.10.2",
-    "typer>=0.15.3",
-    "click>=8.0.0,<8.2.0",
-    "httpx>=0.28.1",
-    "pydantic>=2.11.0,<3",
-    "graphql-core>=3.2.0,<3.3",
-    "beautifulsoup4>=4.13,<5",
-    "websockets>=14.2",
+    "beautifulsoup4>=4.13.4,<5.0.0",
+    "graphql-core>=3.2.6,<3.3.0",
+    "httpx>=0.28.1,<0.29.0",
+    "pydantic>=2.11.7,<3.0.0",
+    "toml>=0.10.2,<0.11.0",
+    "typer>=0.16.0,<0.17.0",
+    "websockets>=15.0.1,<16.0.0",
 ]
 version = "25.05.0a1"
 keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-xdist",
-    "pytest-cov",
-    "pytest-asyncio",
-    "pytest-remotedata",
-    "pytest-mock",
-    "ruff",
-    "ariadne-codegen>=0.15.0.dev1",
-]
-docs = [
-    "sphinx",
-    "sphinx-rtd-theme",
-    "sphinx-autobuild",
-    "furo",
-    "sphinxcontrib-typer",
-]
-codegen = ["ariadne-codegen>=0.15.0.dev1"]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"
@@ -88,6 +67,26 @@ convert_to_snake_case = true
 plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.FixCustomFieldsLiteralPlugin",
+]
+
+[dependency-groups]
+codegen = [
+    "ariadne-codegen>=0.15.0.dev1",
+]
+dev = [
+    "ariadne-codegen>=0.15.0.dev1,<0.16.0",
+    "pytest-asyncio>=1.0.0,<2.0.0",
+    "pytest-cov>=6.2.1,<7.0.0",
+    "pytest-mock>=3.14.1,<4.0.0",
+    "pytest-remotedata>=0.4.1,<0.5.0",
+    "pytest-xdist>=3.7.0,<4.0.0",
+    "ruff>=0.12.0,<0.13.0",
+]
+docs = [
+    "furo>=2024.8.6,<2025.0.0",
+    "sphinx>=8.1.3,<9.0.0",
+    "sphinx-autobuild>=2024.10.3,<2025.0.0",
+    "sphinxcontrib-typer>=0.5.1,<0.6.0",
 ]
 
 [project.urls]
