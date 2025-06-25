@@ -7,6 +7,7 @@ on:
       - "src/**/*.py"
       - "tests/**/*.py"
       - "pyproject.toml"
+      - ".github/workflows/run_tests.yaml"
   push:
     branches: [main]
 
