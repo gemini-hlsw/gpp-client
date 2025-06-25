@@ -1,5 +1,4 @@
-from collections import defaultdict
-from typing import Any, List, Dict
+from typing import Any
 
 from src.gpp_client import GPPClient
 from src.gpp_client.api import WhereProgram, WhereObservation, WhereOrderObservationId
@@ -7,14 +6,16 @@ from src.gpp_client.api import WhereProgram, WhereObservation, WhereOrderObserva
 
 class Program:
     """ GPP Scheduler's program manager.
+
     The following version is a stripped and tailored version of a Program Manager
     that uses the regular client to get the program and observation information.
     """
     def __init__(self, client: GPPClient):
         self.client = client
 
-    async def _traverse_for_observation(self, group: Dict[str, Any], obs_map: Dict[str, Any]) -> None:
+    async def _traverse_for_observation(self, node: dict[str, Any], obs_map: dict[str, Any]) -> None:
         """Maps the information between the groups tree and the observations retrieved from a different query.
+
         Parameters
         ----------
         group: Dict[str, Any]
@@ -22,31 +23,49 @@ class Program:
         obs_map: Dict[str, Any]
             Mapping of observation ids with observation raw data.
 
-        Returns
-        -------
-
         """
-        obs = group.get("observation")
+        obs = node.get("observation")
+        group = node.get("group")
         if obs is not None:
             obs_id = obs["id"]
             obs_data = obs_map.get(obs_id)
             if obs_data is not None:
-                group["observation"] = obs_data
+                node["observation"] = obs_data
             else:
                 # No information on the ODB about the observation
                 # but the structure remains in the program.
                 # Put to None so observation doesn't get parse.
-                group["observation"] = None
+                node["observation"] = None
+        elif group is not None:
+            if group.get("elements"):
+                for child in group["elements"]:
+                    await self._traverse_for_observation(child, obs_map)
+            else:
+                # Empty groups like Calibration might add elements later.
+                group["elements"] = []
 
-        if "elements" in group:
-            for child in group["elements"]:
+        else:
+            # is the root
+            for child in node["elements"]:
                 await self._traverse_for_observation(child, obs_map)
 
     async def get_all(
             self,
             where: WhereProgram | None = None,
-    ) -> List[dict[str, Any]]:
-        """Fetch all programs with a complete group tree and observations."""
+    ) -> list[dict[str, Any]]:
+        """Fetch all programs with a complete group tree and observations.
+
+        Parameters
+        ----------
+        where : WhereProgram, optional
+            Optional filtering clause.
+
+        Returns
+        -------
+        list[dict[str, Any]]
+            A list of dictionaries representing the programs and their elements.
+
+        """
 
         response = await self.client.program.get_all(where=where)
 
@@ -56,7 +75,7 @@ class Program:
             # Create root group
             root = {"name": "root", "elements": []}
             groups_elements_mapping = {}
-            children_map = defaultdict(list)
+            children_map = {}
 
             # Iterate for all elements
             groups_in_programs = program['allGroupElements']
@@ -64,6 +83,7 @@ class Program:
                 parent_id = g.get('parentGroupId')
 
                 if parent_id is None:
+                    # Parent group or root observation.
                     root['elements'].append(g)
                     obs = g.get('observation')
                     elem = obs or g.get('group')
@@ -72,24 +92,28 @@ class Program:
                     if elem == obs:
                         observations.append(elem['id'])
                 else:
-                    children_map[parent_id].append(g)
+                    children_map.setdefault(parent_id, []).append(g)
+                    group = g.get('group')
+                    if group:
+                        # Sub-group that can contain children of their own.
+                        groups_elements_mapping[group['id']] = g
 
-                for parent_id, children in children_map.items():
-                    if parent_id in groups_elements_mapping:
-                        groups_elements_mapping[parent_id]["elements"] = children
-                    else:
-                        # Ignore orphans for now, but check for this use case in the ODB
-                        pass
-            program["elements"] = root
+            for parent_id, children in children_map.items():
+                if parent_id in groups_elements_mapping:
+                    groups_elements_mapping[parent_id]["group"].setdefault("elements", [])
+                    groups_elements_mapping[parent_id]["group"]["elements"] = children
 
+                else:
+                    print(f"Parent {parent_id} not found in mapping")
+                    # Ignore orphans for now, but check for this use case in the ODB
+                    pass
+            program["root"] = root
 
         where_observation = WhereObservation(id=WhereOrderObservationId(in_=observations))
         obs_response = await self.client.observation.get_all(where=where_observation)
         obs_mapping = {o['id']: o for o in obs_response['matches'] }
 
         for program in programs:
-            await self._traverse_for_observation(program["elements"], obs_mapping)
+            await self._traverse_for_observation(program["root"], obs_mapping)
 
         return programs
-
-
