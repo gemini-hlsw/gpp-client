@@ -32,10 +32,13 @@ app.add_typer(group.app)
 async def ping() -> None:
     """Ping GPP. Requires valid credentials."""
     client = GPPClient()
-    if await client.is_reachable():
+    success, error = await client.is_reachable()
+    if success:
         print("[green]GPP is reachable. Credentials are valid.[/green]")
     else:
         print("[red]Failed to reach GPP or credentials are invalid.[/red]")
+        if error:
+            print(f"[red]Details: {error}[/red]")
         raise typer.Exit(code=1)
 
 
