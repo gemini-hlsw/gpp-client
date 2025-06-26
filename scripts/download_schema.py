@@ -11,8 +11,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-GQL_MIN_VERSION = "3.6.0b4"
-
 
 def fail(message: str) -> None:
     logging.error(message)
@@ -24,13 +22,10 @@ def main() -> None:
 
     # Check for required Python modules.
     try:
-        import httpx  # noqa: F401
+        import aiohttp  # noqa: F401
         import gql  # noqa: F401
     except ImportError:
-        fail(
-            "Missing required modules. Install with `pip install "
-            f'"gql[httpx]=={GQL_MIN_VERSION}"`.'
-        )
+        fail('Missing required modules "gql" and "aiohttp"')
 
     # Read environment variables.
     GPP_URL = os.getenv("GPP_URL")
@@ -44,7 +39,7 @@ def main() -> None:
         "gql-cli",
         GPP_URL,
         "--transport",
-        "httpx",
+        "aiohttp",
         "--print-schema",
         "--schema-download",
         # "input_value_deprecation:true",
