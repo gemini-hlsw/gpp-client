@@ -1,15 +1,18 @@
 import typer
+from rich import print
 
+from ..client import GPPClient
 from .commands import (
     call_for_proposals,
     config,
+    group,
     observation,
     program,
     program_note,
     site_status,
     target,
-    group,
 )
+from .utils import async_command
 
 app = typer.Typer(
     name="GPP Client", no_args_is_help=False, help="Client to communicate with GPP."
@@ -22,6 +25,18 @@ app.add_typer(call_for_proposals.app)
 app.add_typer(observation.app)
 app.add_typer(site_status.app)
 app.add_typer(group.app)
+
+
+@app.command("ping")
+@async_command
+async def ping() -> None:
+    """Ping GPP. Requires valid credentials."""
+    client = GPPClient()
+    if await client.is_reachable():
+        print("[green]GPP is reachable. Credentials are valid.[/green]")
+    else:
+        print("[red]Failed to reach GPP or credentials are invalid.[/red]")
+        raise typer.Exit(code=1)
 
 
 def main():

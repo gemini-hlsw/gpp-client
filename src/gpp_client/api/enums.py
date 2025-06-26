@@ -373,6 +373,8 @@ class ObservingModeType(str, Enum):
     GMOS_NORTH_LONG_SLIT = "GMOS_NORTH_LONG_SLIT"
     GMOS_SOUTH_LONG_SLIT = "GMOS_SOUTH_LONG_SLIT"
     FLAMINGOS_2LONG_SLIT = "FLAMINGOS_2LONG_SLIT"
+    GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
+    GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
 
 
 class CoolStarTemperature(str, Enum):
@@ -682,13 +684,7 @@ class GmosSouthGrating(str, Enum):
     R150_G5326 = "R150_G5326"
 
 
-class GmosXBinning(str, Enum):
-    ONE = "ONE"
-    TWO = "TWO"
-    FOUR = "FOUR"
-
-
-class GmosYBinning(str, Enum):
+class GmosBinning(str, Enum):
     ONE = "ONE"
     TWO = "TWO"
     FOUR = "FOUR"
@@ -1096,6 +1092,12 @@ class CalibrationRole(str, Enum):
     PHOTOMETRIC = "PHOTOMETRIC"
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
     TELLURIC = "TELLURIC"
+
+
+class ArcType(str, Enum):
+    EMPTY = "EMPTY"
+    FULL = "FULL"
+    PARTIAL = "PARTIAL"
 
 
 class TimeChargeCorrectionOp(str, Enum):

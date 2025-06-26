@@ -903,6 +903,12 @@ class ExecutionDigestGraphQLField(GraphQLField):
         return self
 
 
+class CalculatedExecutionDigestGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalculatedExecutionDigestGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ExposureTimeModeGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ExposureTimeModeGraphQLField":
         self._alias = alias
@@ -1017,8 +1023,20 @@ class GmosNorthLongSlitGraphQLField(GraphQLField):
         return self
 
 
+class GmosNorthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosSouthLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosSouthLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosSouthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthImagingGraphQLField":
         self._alias = alias
         return self
 
@@ -1091,6 +1109,12 @@ class SpectroscopyConfigOptionGmosSouthGraphQLField(GraphQLField):
 
 class SpectroscopyConfigOptionFlamingos2GraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SpectroscopyConfigOptionFlamingos2GraphQLField":
+        self._alias = alias
+        return self
+
+
+class ImagingScienceRequirementsGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ImagingScienceRequirementsGraphQLField":
         self._alias = alias
         return self
 
@@ -1555,6 +1579,30 @@ class TargetGraphQLField(GraphQLField):
         return self
 
 
+class OpportunityGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "OpportunityGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RightAscensionArcGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RightAscensionArcGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DeclinationArcGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DeclinationArcGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RegionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RegionGraphQLField":
+        self._alias = alias
+        return self
+
+
 class TargetEnvironmentGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "TargetEnvironmentGraphQLField":
         self._alias = alias
@@ -1701,5 +1749,11 @@ class OffsetQGraphQLField(GraphQLField):
 
 class ObservationWorkflowGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ObservationWorkflowGraphQLField":
+        self._alias = alias
+        return self
+
+
+class CalculatedObservationWorkflowGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalculatedObservationWorkflowGraphQLField":
         self._alias = alias
         return self

@@ -1310,10 +1310,10 @@ enum GmosAmpCount {
 """CCD Readout Configuration"""
 type GmosCcdMode {
   """GMOS X-binning"""
-  xBin: GmosXBinning!
+  xBin: GmosBinning!
 
   """GMOS Y-binning"""
-  yBin: GmosYBinning!
+  yBin: GmosBinning!
 
   """GMOS Amp Count"""
   ampCount: GmosAmpCount!
@@ -1328,10 +1328,10 @@ type GmosCcdMode {
 """GMOS CCD readout input parameters"""
 input GmosCcdModeInput {
   """X Binning, defaults to 'ONE'."""
-  xBin: GmosXBinning
+  xBin: GmosBinning
 
   """Y Binning, defaults to 'ONE'."""
-  yBin: GmosYBinning
+  yBin: GmosBinning
 
   """Amp Count, defaults to 'TWELVE'."""
   ampCount: GmosAmpCount
@@ -1657,12 +1657,12 @@ input GmosNorthLongSlitInput {
   """
   The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitXBin: GmosXBinning
+  explicitXBin: GmosBinning
 
   """
   The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitYBin: GmosYBinning
+  explicitYBin: GmosBinning
 
   """
   The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
@@ -1688,6 +1688,39 @@ input GmosNorthLongSlitInput {
   The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
   """
   explicitSpatialOffsets: [OffsetComponentInput!]
+}
+
+"""Edit or create GMOS North Imaging advanced configuration"""
+input GmosNorthImagingInput {
+  """
+  The filters field must be specified with at least one filter. It cannot be unset with a null value.
+  """
+  filters: [GmosNorthFilter!]
+
+  """
+  The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitBin: GmosBinning
+
+  """
+  The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitRoi: GmosRoi
+
+  """
+  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitSpatialOffsets: [OffsetInput!]
 }
 
 """GMOS North stage mode"""
@@ -1929,12 +1962,12 @@ input GmosSouthLongSlitInput {
   """
   The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitXBin: GmosXBinning
+  explicitXBin: GmosBinning
 
   """
   The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitYBin: GmosYBinning
+  explicitYBin: GmosBinning
 
   """
   The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
@@ -1960,6 +1993,39 @@ input GmosSouthLongSlitInput {
   The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
   """
   explicitSpatialOffsets: [OffsetComponentInput!]
+}
+
+"""Edit or create GMOS South Imaging advanced configuration"""
+input GmosSouthImagingInput {
+  """
+  The filters field must be specified with at least one filter. It cannot be unset with a null value.
+  """
+  filters: [GmosSouthFilter!]
+
+  """
+  The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitBin: GmosBinning
+
+  """
+  The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitRoi: GmosRoi
+
+  """
+  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitSpatialOffsets: [OffsetInput!]
 }
 
 """GMOS South stage mode"""
@@ -3058,11 +3124,14 @@ type FastTurnaround implements ProposalType {
   """
   minPercentTime: IntPercent!
 
+  """Program User that will be selected as a reviewer for this program"""
+  reviewer: ProgramUser
+
   """
-  Partner associated with this FT proposal.  This is optional until submission,
-  by which time it must be defined.
+  Program User that will be selected as a mentor for this program.
+  Required when the reviewer does not have PhD educational status.
   """
-  piAffiliation: Partner
+  mentor: ProgramUser
 }
 
 """Proposal properties for Large Program CallForProposals."""
@@ -3213,10 +3282,16 @@ input FastTurnaroundInput {
   minPercentTime: IntPercent
 
   """
-  Partner associated with this FT proposal.  This is optional on creation but
-  must be specified upon submission.
+  The program user ID to be designated as the reviewer for this FT proposal.
+  If not specified, the PI will be the default reviewer.
   """
-  piAffiliation: Partner
+  reviewerId: ProgramUserId
+
+  """
+  The program user ID to be designated as the mentor for this FT proposal.
+  If not specified, no mentor will be assigned.
+  """
+  mentorId: ProgramUserId
 }
 
 input LargeProgramInput {
@@ -3492,6 +3567,16 @@ input ObservingModeInput {
   gmosSouthLongSlit: GmosSouthLongSlitInput
 
   """
+  The gmosNorthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gmosNorthImaging: GmosNorthImagingInput
+
+  """
+  The gmosSouthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gmosSouthImaging: GmosSouthImagingInput
+
+  """
   The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   flamingos2LongSlit: Flamingos2LongSlitInput
@@ -3500,14 +3585,20 @@ input ObservingModeInput {
 """Edit science requirements"""
 input ScienceRequirementsInput {
   """
-  The mode field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  ExposureTimeMode, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
   """
-  mode: ScienceMode
+  exposureTimeMode: ExposureTimeModeInput
 
   """
   The spectroscopy field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   spectroscopy: SpectroscopyScienceRequirementsInput
+
+  """
+  The imaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  imaging: ImagingScienceRequirementsInput
 }
 
 """
@@ -3696,6 +3787,27 @@ input SiderealInput {
   catalogInfo: CatalogInfoInput
 }
 
+input OpportunityInput {
+  region: RegionInput!
+}
+
+input RegionInput {
+  rightAscensionArc: RightAscensionArcInput!
+  declinationArc: DeclinationArcInput!
+}
+
+input RightAscensionArcInput {
+  type: ArcType!
+  start: RightAscensionInput
+  end: RightAscensionInput
+}
+
+input DeclinationArcInput {
+  type: ArcType!
+  start: DeclinationInput
+  end: DeclinationInput
+}
+
 """Signal-to-noise mode parameters"""
 input SignalToNoiseExposureTimeModeInput {
   """s/n value"""
@@ -3741,12 +3853,6 @@ input SpectroscopyScienceRequirementsInput {
   The resolution field may be unset by assigning a null value, or ignored by skipping it altogether
   """
   resolution: PosInt
-
-  """
-  ExposureTimeMode, which may be unset by assigning a null value, or ignored by
-  skipping it altogether.
-  """
-  exposureTimeMode: ExposureTimeModeInput
 
   """
   The wavelengthCoverage field may be unset by assigning a null value, or ignored by skipping it altogether
@@ -3949,6 +4055,40 @@ input ObscalcUpdateInput {
   newState: WhereOptionEqCalculationState
 }
 
+input WhereOrderCalculationState {
+  """Matches if the calculation state is exactly the supplied value."""
+  EQ: CalculationState
+
+  """Matches if the calculation state is not the supplied value."""
+  NEQ: CalculationState
+
+  """Matches if the calculation state is any of the supplied options."""
+  IN: [CalculationState!]
+
+  """Matches if the calculation state is none of the supplied values."""
+  NIN: [CalculationState!]
+
+  """
+  Matches if the calculation state is ordered after (>) the supplied value.
+  """
+  GT: CalculationState
+
+  """
+  Matches if the calculation state is ordered before (<) the supplied value.
+  """
+  LT: CalculationState
+
+  """
+  Matches if the calculation state is ordered after or equal (>=) the supplied value.
+  """
+  GTE: CalculationState
+
+  """
+  Matches if the calculation state is ordered before or equal (<=) the supplied value.
+  """
+  LTE: CalculationState
+}
+
 input WhereOptionEqCalculationState {
   """
   When `true`, matches if the CalculationState is not defined. When `false` matches
@@ -4104,6 +4244,7 @@ input TargetPropertiesInput {
   name: NonEmptyString
   sidereal: SiderealInput
   nonsidereal: NonsiderealInput
+  opportunity: OpportunityInput
   sourceProfile: SourceProfileInput
   existence: Existence
 }
@@ -5024,6 +5165,12 @@ enum ObservingModeType {
 
   """ObservingModeType Flamingos2LongSlit"""
   FLAMINGOS_2LONG_SLIT
+
+  """ObservingModeType GmosNorthImaging"""
+  GMOS_NORTH_IMAGING
+
+  """ObservingModeType GmosSouthImaging"""
+  GMOS_SOUTH_IMAGING
 }
 
 type ConstraintSet {
@@ -5371,7 +5518,14 @@ type Execution {
   If a sequence cannot be generated for this observation, `null` is returned
   along with warning messages.
   """
-  digest: ExecutionDigest
+  digest: ExecutionDigest @deprecated(reason: "will be updated with a CalculatedExecutionDigest result, use calculatedDigest for now")
+
+  """
+  Calculations dependent on the sequence, such as planned time and offsets.
+  If a sequence cannot be generated for this observation, `null` is returned
+  along with warning messages.
+  """
+  calculatedDigest: CalculatedExecutionDigest
 
   """
   Full execution config, including acquisition and science sequences.  If a
@@ -5531,6 +5685,15 @@ type ExecutionDigest {
   science: SequenceDigest
 }
 
+"""Wraps an ExecutionDigest with the background calculation state."""
+type CalculatedExecutionDigest {
+  """Background calculation state."""
+  state: CalculationState!
+
+  """The current execution digest itself."""
+  value: ExecutionDigest
+}
+
 """Exposure time mode, either signal to noise or fixed"""
 type ExposureTimeMode {
   """Signal to noise exposure time mode data, if applicable."""
@@ -5687,6 +5850,9 @@ type Flamingos2Dynamic {
 
   """Flamingos 2 reads."""
   reads: Flamingos2Reads!
+
+  """Central wavelength, which is taken from the filter wavelength."""
+  centralWavelength: Wavelength!
 }
 
 """Flamingos 2 instrument configuration input."""
@@ -5911,7 +6077,7 @@ enum Flamingos2Reads {
   READS_16
 }
 
-"""Flamingos2 South Long Slit mode"""
+"""Flamingos2 Long Slit mode"""
 type Flamingos2LongSlit {
   """Flamingos2 Disperser"""
   disperser: Flamingos2Disperser!
@@ -5963,6 +6129,21 @@ type Flamingos2LongSlit {
   default.
   """
   explicitReadoutMode: Flamingos2ReadoutMode
+
+  """
+  Spatial offsets, either explicitly specified in explicitSpatialOffsets
+  or else taken from defaultSpatialOffsets
+  """
+  spatialOffsets: [Offset!]!
+
+  """Default spatial offsets."""
+  defaultSpatialOffsets: [Offset!]!
+
+  """
+  Optional explicitly specified spatial offsets. If set it overrides the
+  the default.
+  """
+  explicitSpatialOffsets: [Offset!]
 
   """
   The disperser as it was initially selected.  See the `disperser` field for the
@@ -6019,6 +6200,11 @@ input Flamingos2LongSlitInput {
   The readoutMode field may be unset by assigning a null value, or ignored by skipping it altogether
   """
   explicitReadoutMode: Flamingos2ReadoutMode
+
+  """
+  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitSpatialOffsets: [OffsetInput!]
 }
 
 """Metadata for `enum FilterType`"""
@@ -6323,34 +6509,34 @@ type GmosNorthLongSlit {
   GMOS X-Binning, either explicitly specified in explicitXBin or else taken
   from the defaultXBin.
   """
-  xBin: GmosXBinning!
+  xBin: GmosBinning!
 
   """
   Default GMOS X-Binning, calculated from the effective slit size which in
   turn is based on the selected FPU, target source profile and image quality.
   """
-  defaultXBin: GmosXBinning!
+  defaultXBin: GmosBinning!
 
   """
   Optional explicitly specified GMOS X-Binning. If set it overrides the
   default.
   """
-  explicitXBin: GmosXBinning
+  explicitXBin: GmosBinning
 
   """
   GMOS Y-Binning, either explicitly specified in explicitYBin or else taken
   from the defaultYBin.
   """
-  yBin: GmosYBinning!
+  yBin: GmosBinning!
 
   """Default GMOS Y-Binning (TWO)."""
-  defaultYBin: GmosYBinning!
+  defaultYBin: GmosBinning!
 
   """
   Optional explicitly specified GMOS Y-Binning. If set it overrides the
   default.
   """
-  explicitYBin: GmosYBinning
+  explicitYBin: GmosBinning
 
   """
   GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
@@ -6451,6 +6637,90 @@ type GmosNorthLongSlit {
   field for the wavelength that will be used in the observation.
   """
   initialCentralWavelength: Wavelength!
+}
+
+"""GMOS North Imaging mode"""
+type GmosNorthImaging {
+  """GMOS North Filters for imaging mode (multiple filters allowed)"""
+  filters: [GmosNorthFilter!]!
+
+  """
+  Initial GMOS North Filters that were used when creating the imaging mode
+  """
+  initialFilters: [GmosNorthFilter!]!
+
+  """
+  GMOS Binning, either explicitly specified in explicitBin or else taken
+  from the defaultBin. XBinning == YBinning = Binning
+  """
+  bin: GmosBinning!
+
+  """Default GMOS Binning (TWO)."""
+  defaultBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS Binning. If set it overrides the
+  default.
+  """
+  explicitBin: GmosBinning
+
+  """
+  GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
+  else taken from the defaultAmpReadMode.
+  """
+  ampReadMode: GmosAmpReadMode!
+
+  """Default GmosAmpReadMode (SLOW)."""
+  defaultAmpReadMode: GmosAmpReadMode!
+
+  """
+  Optional explicitly specified GMOS amp read mode. If set it overrides the
+  default.
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  GMOS amp read gain, either explicitly specified in explicitAmpGain or else
+  taken from the defaultAmpGain.
+  """
+  ampGain: GmosAmpGain!
+
+  """Default GMOS amp gain (LOW)."""
+  defaultAmpGain: GmosAmpGain!
+
+  """
+  Optional explicitly specified GMOS amp gain.  If set it override the default.
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  GMOS ROI, either explicitly specified in explicitRoi or else taken from the
+  defaultRoi.
+  """
+  roi: GmosRoi!
+
+  """Default GMOS ROI (FULL_FRAME)."""
+  defaultRoi: GmosRoi!
+
+  """
+  Optional explicitly specified GMOS ROI.  If set it overrides the default.
+  """
+  explicitRoi: GmosRoi
+
+  """
+  Spacial offsets, either explicitly specified in explicitSpatialOffsets
+  or else taken from defaultSpatialOffsets
+  """
+  spatialOffsets: [Offset!]!
+
+  """Default spatial offsets."""
+  defaultSpatialOffsets: [Offset!]!
+
+  """
+  Optional explicitly specified spatial offsets. If set it overrides the
+  the default.
+  """
+  explicitSpatialOffsets: [Offset!]
 }
 
 """GMOS Region Of Interest"""
@@ -6663,34 +6933,34 @@ type GmosSouthLongSlit {
   GMOS X-Binning, either explicitly specified in explicitXBin or else taken
   from the defaultXBin.
   """
-  xBin: GmosXBinning!
+  xBin: GmosBinning!
 
   """
   Default GMOS X-Binning, calculated from the effective slit size which in
   turn is based on the selected FPU, target source profile and image quality.
   """
-  defaultXBin: GmosXBinning!
+  defaultXBin: GmosBinning!
 
   """
   Optional explicitly specified GMOS X-Binning. If set it overrides the
   default.
   """
-  explicitXBin: GmosXBinning
+  explicitXBin: GmosBinning
 
   """
   GMOS Y-Binning, either explicitly specified in explicitYBin or else taken
   from the defaultYBin.
   """
-  yBin: GmosYBinning!
+  yBin: GmosBinning!
 
   """Default GMOS Y-Binning (TWO)."""
-  defaultYBin: GmosYBinning!
+  defaultYBin: GmosBinning!
 
   """
   Optional explicitly specified GMOS Y-Binning. If set it overrides the
   default.
   """
-  explicitYBin: GmosYBinning
+  explicitYBin: GmosBinning
 
   """
   GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
@@ -6793,27 +7063,99 @@ type GmosSouthLongSlit {
   initialCentralWavelength: Wavelength!
 }
 
-"""GMOS X Binning"""
-enum GmosXBinning {
-  """GmosXBinning One"""
-  ONE
+"""GMOS South Imaging mode"""
+type GmosSouthImaging {
+  """GMOS South Filters for imaging mode (multiple filters allowed)"""
+  filters: [GmosSouthFilter!]!
 
-  """GmosXBinning Two"""
-  TWO
+  """
+  Initial GMOS South Filters that were used when creating the imaging mode
+  """
+  initialFilters: [GmosSouthFilter!]!
 
-  """GmosXBinning Four"""
-  FOUR
+  """
+  GMOS Binning, either explicitly specified in explicitBin or else taken
+  from the defaultBin. XBinning == YBinning = Binning
+  """
+  bin: GmosBinning!
+
+  """Default GMOS Binning (TWO)."""
+  defaultBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS Binning. If set it overrides the
+  default.
+  """
+  explicitBin: GmosBinning
+
+  """
+  GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
+  else taken from the defaultAmpReadMode.
+  """
+  ampReadMode: GmosAmpReadMode!
+
+  """Default GmosAmpReadMode (SLOW)."""
+  defaultAmpReadMode: GmosAmpReadMode!
+
+  """
+  Optional explicitly specified GMOS amp read mode. If set it overrides the
+  default.
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  GMOS amp read gain, either explicitly specified in explicitAmpGain or else
+  taken from the defaultAmpGain.
+  """
+  ampGain: GmosAmpGain!
+
+  """Default GMOS amp gain (LOW)."""
+  defaultAmpGain: GmosAmpGain!
+
+  """
+  Optional explicitly specified GMOS amp gain.  If set it override the default.
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  GMOS ROI, either explicitly specified in explicitRoi or else taken from the
+  defaultRoi.
+  """
+  roi: GmosRoi!
+
+  """Default GMOS ROI (FULL_FRAME)."""
+  defaultRoi: GmosRoi!
+
+  """
+  Optional explicitly specified GMOS ROI.  If set it overrides the default.
+  """
+  explicitRoi: GmosRoi
+
+  """
+  Spacial offsets, either explicitly specified in explicitSpatialOffsets
+  or else taken from defaultSpatialOffsets
+  """
+  spatialOffsets: [Offset!]!
+
+  """Default spatial offsets."""
+  defaultSpatialOffsets: [Offset!]!
+
+  """
+  Optional explicitly specified spatial offsets. If set it overrides the
+  the default.
+  """
+  explicitSpatialOffsets: [Offset!]
 }
 
-"""GMOS Y Binning"""
-enum GmosYBinning {
-  """GmosYBinning One"""
+"""GMOS Binning"""
+enum GmosBinning {
+  """GmosBinning One"""
   ONE
 
-  """GmosYBinning Two"""
+  """GmosBinning Two"""
   TWO
 
-  """GmosYBinning Four"""
+  """GmosBinning Four"""
   FOUR
 }
 
@@ -7214,6 +7556,59 @@ type SpectroscopyConfigOptionFlamingos2 {
   filter: Flamingos2Filter!
 }
 
+"""Edit or create imaging science requirements"""
+input ImagingScienceRequirementsInput {
+  """
+  minimumFov, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  minimumFov: AngleInput
+
+  """
+  narrowFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  narrowFilters: Boolean
+
+  """
+  broadFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  broadFilters: Boolean
+
+  """
+  combinedFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  combinedFilters: Boolean
+}
+
+type ImagingScienceRequirements {
+  """
+  minimumFov, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  minimumFov: Angle
+
+  """
+  narrowFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  narrowFilters: Boolean
+
+  """
+  broadFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  broadFilters: Boolean
+
+  """
+  combinedFilters, which may be unset by assigning a null value, or ignored by
+  skipping it altogether.
+  """
+  combinedFilters: Boolean
+}
+
 """Describes an instrument configuration option for imaging."""
 type ImagingConfigOption {
   instrument: Instrument!
@@ -7519,7 +7914,18 @@ type Observation {
 
   """Program configuration requests applicable to this observation."""
   configurationRequests: [ConfigurationRequest!]!
-  workflow: ObservationWorkflow!
+  workflow: ObservationWorkflow! @deprecated(reason: "will be updated with a CalculatedObservationWorkflow result, use calculatedWorkflow for now")
+
+  """
+  Obtains the current observation workflow state and valid transitions (and any
+  validation errors). Because this calculation is expensive, it is performed in
+  the background when something relevant changes and may be in a state of flux
+  when queried.  The calculation state in the result can be used to determine
+  whether a pending update is expected.
+  
+  NOTE: Temporary - will replace the 'workflow' field.
+  """
+  calculatedWorkflow: CalculatedObservationWorkflow
 }
 
 enum ExecutionState {
@@ -8284,7 +8690,7 @@ type Query {
   workflow states. This query is intended for operations and is available only for
   service users.
   """
-  observationsByWorkflowState(WHERE: WhereObservation, states: [ObservationWorkflowState!]): [Observation!]!
+  observationsByWorkflowState(WHERE: WhereObservation, states: [ObservationWorkflowState!]): [Observation!]! @deprecated(reason: "use 'workflow' field in WhereObservation filter")
 
   """
   Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any.
@@ -8521,6 +8927,12 @@ type ObservingMode {
   """GMOS South Long Slit mode"""
   gmosSouthLongSlit: GmosSouthLongSlit
 
+  """GMOS North Imaging mode"""
+  gmosNorthImaging: GmosNorthImaging
+
+  """GMOS South Imaging mode"""
+  gmosSouthImaging: GmosSouthImaging
+
   """Flamingos 2 Long Slit mode"""
   flamingos2LongSlit: Flamingos2LongSlit
 }
@@ -8594,10 +9006,18 @@ enum ScienceSubtype {
 
 type ScienceRequirements {
   """Science mode"""
-  mode: ScienceMode!
+  mode: ScienceMode
 
-  """Spectroscopy requirements"""
-  spectroscopy: SpectroscopyScienceRequirements!
+  """Requested exposure time mode."""
+  exposureTimeMode: ExposureTimeMode
+
+  """
+  Spectroscopy requirements, if mode is Spectroscopy, this mode must be set
+  """
+  spectroscopy: SpectroscopyScienceRequirements
+
+  """Imaging requirements, if mode is Imaging, this mode must be set"""
+  imaging: ImagingScienceRequirements
 }
 
 type ScienceRequirementsGroup {
@@ -8864,9 +9284,6 @@ type SpectroscopyScienceRequirements {
 
   """Requested resolution"""
   resolution: PosInt
-
-  """Requested exposure time mode."""
-  exposureTimeMode: ExposureTimeMode
 
   """Wavelength range"""
   wavelengthCoverage: Wavelength
@@ -9768,6 +10185,36 @@ type Target {
 
   """Nonsidereal tracking information, if this is a nonsidereal target"""
   nonsidereal: Nonsidereal
+
+  """Target of opportunity range information, if this a TOO target"""
+  opportunity: Opportunity
+}
+
+type Opportunity {
+  region: Region!
+}
+
+enum ArcType {
+  EMPTY
+  FULL
+  PARTIAL
+}
+
+type RightAscensionArc {
+  type: ArcType!
+  start: RightAscension
+  end: RightAscension
+}
+
+type DeclinationArc {
+  type: ArcType!
+  start: Declination
+  end: Declination
+}
+
+type Region {
+  rightAscensionArc: RightAscensionArc!
+  declinationArc: DeclinationArc!
 }
 
 type TargetEnvironment {
@@ -10992,6 +11439,9 @@ input WhereObservation {
   Matches on the site associated with the observation's instrument, if any.
   """
   site: WhereOptionEqSite
+
+  """Matches on the observation workflow state."""
+  workflow: WhereCalculatedObservationWorkflow
 }
 
 """Configuration request filter options.  All specified items must match."""
@@ -12567,6 +13017,61 @@ input WhereWavelength {
   micrometers: WhereOrderPosBigDecimal
 }
 
+"""
+Filters on equality or order comparisons of the workflow state.  All supplied
+criteria must match, but usually only one is selected.
+"""
+input WhereOrderObservationWorkflowState {
+  """Matches if the workflow state is exactly the supplied value."""
+  EQ: ObservationWorkflowState
+
+  """Matches if the workflow state is not the supplied value."""
+  NEQ: ObservationWorkflowState
+
+  """Matches if the workflow state value is any of the supplied options."""
+  IN: [ObservationWorkflowState!]
+
+  """Matches if the workflow state is none of the supplied values."""
+  NIN: [ObservationWorkflowState!]
+
+  """Matches if the workflow state is ordered after (>) the supplied value."""
+  GT: ObservationWorkflowState
+
+  """
+  Matches if the workflow state is ordered before (<) the supplied value.
+  """
+  LT: ObservationWorkflowState
+
+  """
+  Matches if the workflow state is ordered after or equal (>=) the supplied value.
+  """
+  GTE: ObservationWorkflowState
+
+  """
+  Matches if the workflow state is ordered before or equal (<=) the supplied value.
+  """
+  LTE: ObservationWorkflowState
+}
+
+"""
+Matches on the current state of the ObservationWorkflow, which may be in the
+process of being updated on the server.  Use the 'calculationState' if, for
+example, only interested in results for which no pending change is expected.
+"""
+input WhereCalculatedObservationWorkflow {
+  """
+  When `true`, matches if the calculated workflow is not defined. When `false`
+  matches if the calculated workflow is defined.
+  """
+  IS_NULL: Boolean
+
+  """Matches the current state of the background calculation."""
+  calculationState: WhereOrderCalculationState
+
+  """Matchs the workflow state itself."""
+  workflowState: WhereOrderObservationWorkflowState
+}
+
 type OffsetQ {
   """q offset in µas"""
   microarcseconds: Long!
@@ -12602,4 +13107,10 @@ type ObservationWorkflow {
   state: ObservationWorkflowState!
   validTransitions: [ObservationWorkflowState!]!
   validationErrors: [ObservationValidation!]!
+}
+
+type CalculatedObservationWorkflow {
+  """The current state of the background calculation."""
+  state: CalculationState!
+  value: ObservationWorkflow!
 }

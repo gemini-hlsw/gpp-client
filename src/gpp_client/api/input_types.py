@@ -7,6 +7,7 @@ from pydantic import Field
 
 from .base_model import BaseModel
 from .enums import (
+    ArcType,
     AtomStage,
     AttachmentType,
     Band,
@@ -50,6 +51,7 @@ from .enums import (
     GmosAmpCount,
     GmosAmpGain,
     GmosAmpReadMode,
+    GmosBinning,
     GmosCustomSlitWidth,
     GmosDtax,
     GmosEOffsetting,
@@ -65,8 +67,6 @@ from .enums import (
     GmosSouthFilter,
     GmosSouthGrating,
     GmosSouthStageMode,
-    GmosXBinning,
-    GmosYBinning,
     GuideState,
     HiiRegionSpectrum,
     Ignore,
@@ -87,7 +87,6 @@ from .enums import (
     ProposalStatus,
     QuasarSpectrum,
     ScienceBand,
-    ScienceMode,
     ScienceSubtype,
     SeeingTrend,
     SequenceCommand,
@@ -454,8 +453,8 @@ class GaussianInput(BaseModel):
 
 
 class GmosCcdModeInput(BaseModel):
-    x_bin: Optional[GmosXBinning] = Field(alias=str("xBin"), default=None)
-    y_bin: Optional[GmosYBinning] = Field(alias=str("yBin"), default=None)
+    x_bin: Optional[GmosBinning] = Field(alias=str("xBin"), default=None)
+    y_bin: Optional[GmosBinning] = Field(alias=str("yBin"), default=None)
     amp_count: Optional[GmosAmpCount] = Field(alias=str("ampCount"), default=None)
     amp_gain: Optional[GmosAmpGain] = Field(alias=str("ampGain"), default=None)
     amp_read_mode: Optional[GmosAmpReadMode] = Field(
@@ -508,10 +507,10 @@ class GmosNorthLongSlitInput(BaseModel):
     central_wavelength: Optional["WavelengthInput"] = Field(
         alias=str("centralWavelength"), default=None
     )
-    explicit_x_bin: Optional[GmosXBinning] = Field(
+    explicit_x_bin: Optional[GmosBinning] = Field(
         alias=str("explicitXBin"), default=None
     )
-    explicit_y_bin: Optional[GmosYBinning] = Field(
+    explicit_y_bin: Optional[GmosBinning] = Field(
         alias=str("explicitYBin"), default=None
     )
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
@@ -525,6 +524,21 @@ class GmosNorthLongSlitInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+
+
+class GmosNorthImagingInput(BaseModel):
+    filters: Optional[List[GmosNorthFilter]] = None
+    explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
     )
 
@@ -574,10 +588,10 @@ class GmosSouthLongSlitInput(BaseModel):
     central_wavelength: Optional["WavelengthInput"] = Field(
         alias=str("centralWavelength"), default=None
     )
-    explicit_x_bin: Optional[GmosXBinning] = Field(
+    explicit_x_bin: Optional[GmosBinning] = Field(
         alias=str("explicitXBin"), default=None
     )
-    explicit_y_bin: Optional[GmosYBinning] = Field(
+    explicit_y_bin: Optional[GmosBinning] = Field(
         alias=str("explicitYBin"), default=None
     )
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
@@ -591,6 +605,21 @@ class GmosSouthLongSlitInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+
+
+class GmosSouthImagingInput(BaseModel):
+    filters: Optional[List[GmosSouthFilter]] = None
+    explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
     )
 
@@ -823,7 +852,8 @@ class FastTurnaroundInput(BaseModel):
         alias=str("toOActivation"), default=None
     )
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
-    pi_affiliation: Optional[Partner] = Field(alias=str("piAffiliation"), default=None)
+    reviewer_id: Optional[Any] = Field(alias=str("reviewerId"), default=None)
+    mentor_id: Optional[Any] = Field(alias=str("mentorId"), default=None)
 
 
 class LargeProgramInput(BaseModel):
@@ -943,14 +973,23 @@ class ObservingModeInput(BaseModel):
     gmos_south_long_slit: Optional["GmosSouthLongSlitInput"] = Field(
         alias=str("gmosSouthLongSlit"), default=None
     )
+    gmos_north_imaging: Optional["GmosNorthImagingInput"] = Field(
+        alias=str("gmosNorthImaging"), default=None
+    )
+    gmos_south_imaging: Optional["GmosSouthImagingInput"] = Field(
+        alias=str("gmosSouthImaging"), default=None
+    )
     flamingos_2_long_slit: Optional["Flamingos2LongSlitInput"] = Field(
         alias=str("flamingos2LongSlit"), default=None
     )
 
 
 class ScienceRequirementsInput(BaseModel):
-    mode: Optional[ScienceMode] = None
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
     spectroscopy: Optional["SpectroscopyScienceRequirementsInput"] = None
+    imaging: Optional["ImagingScienceRequirementsInput"] = None
 
 
 class SetAllocationsInput(BaseModel):
@@ -1053,6 +1092,29 @@ class SiderealInput(BaseModel):
     )
 
 
+class OpportunityInput(BaseModel):
+    region: "RegionInput"
+
+
+class RegionInput(BaseModel):
+    right_ascension_arc: "RightAscensionArcInput" = Field(
+        alias=str("rightAscensionArc")
+    )
+    declination_arc: "DeclinationArcInput" = Field(alias=str("declinationArc"))
+
+
+class RightAscensionArcInput(BaseModel):
+    type: ArcType
+    start: Optional["RightAscensionInput"] = None
+    end: Optional["RightAscensionInput"] = None
+
+
+class DeclinationArcInput(BaseModel):
+    type: ArcType
+    start: Optional["DeclinationInput"] = None
+    end: Optional["DeclinationInput"] = None
+
+
 class SignalToNoiseExposureTimeModeInput(BaseModel):
     value: Any
     at: "WavelengthInput"
@@ -1085,9 +1147,6 @@ class SpectralDefinitionSurfaceInput(BaseModel):
 class SpectroscopyScienceRequirementsInput(BaseModel):
     wavelength: Optional["WavelengthInput"] = None
     resolution: Optional[Any] = None
-    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
-        alias=str("exposureTimeMode"), default=None
-    )
     wavelength_coverage: Optional["WavelengthInput"] = Field(
         alias=str("wavelengthCoverage"), default=None
     )
@@ -1129,6 +1188,17 @@ class ObscalcUpdateInput(BaseModel):
     new_state: Optional["WhereOptionEqCalculationState"] = Field(
         alias=str("newState"), default=None
     )
+
+
+class WhereOrderCalculationState(BaseModel):
+    eq: Optional[CalculationState] = Field(alias=str("EQ"), default=None)
+    neq: Optional[CalculationState] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[CalculationState]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[CalculationState]] = Field(alias=str("NIN"), default=None)
+    gt: Optional[CalculationState] = Field(alias=str("GT"), default=None)
+    lt: Optional[CalculationState] = Field(alias=str("LT"), default=None)
+    gte: Optional[CalculationState] = Field(alias=str("GTE"), default=None)
+    lte: Optional[CalculationState] = Field(alias=str("LTE"), default=None)
 
 
 class WhereOptionEqCalculationState(BaseModel):
@@ -1189,6 +1259,7 @@ class TargetPropertiesInput(BaseModel):
     name: Optional[Any] = None
     sidereal: Optional["SiderealInput"] = None
     nonsidereal: Optional["NonsiderealInput"] = None
+    opportunity: Optional["OpportunityInput"] = None
     source_profile: Optional["SourceProfileInput"] = Field(
         alias=str("sourceProfile"), default=None
     )
@@ -1419,6 +1490,9 @@ class Flamingos2LongSlitInput(BaseModel):
     explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
         alias=str("explicitReadoutMode"), default=None
     )
+    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
 
 
 class GoaPropertiesInput(BaseModel):
@@ -1464,6 +1538,13 @@ class CreateGroupInput(BaseModel):
     initial_contents: Optional[List[Optional["GroupElementInput"]]] = Field(
         alias=str("initialContents"), default=None
     )
+
+
+class ImagingScienceRequirementsInput(BaseModel):
+    minimum_fov: Optional["AngleInput"] = Field(alias=str("minimumFov"), default=None)
+    narrow_filters: Optional[bool] = Field(alias=str("narrowFilters"), default=None)
+    broad_filters: Optional[bool] = Field(alias=str("broadFilters"), default=None)
+    combined_filters: Optional[bool] = Field(alias=str("combinedFilters"), default=None)
 
 
 class CreateConfigurationRequestInput(BaseModel):
@@ -1763,6 +1844,7 @@ class WhereObservation(BaseModel):
     )
     instrument: Optional["WhereOptionEqInstrument"] = None
     site: Optional["WhereOptionEqSite"] = None
+    workflow: Optional["WhereCalculatedObservationWorkflow"] = None
 
 
 class WhereConfigurationRequest(BaseModel):
@@ -2380,6 +2462,29 @@ class WhereWavelength(BaseModel):
     micrometers: Optional["WhereOrderPosBigDecimal"] = None
 
 
+class WhereOrderObservationWorkflowState(BaseModel):
+    eq: Optional[ObservationWorkflowState] = Field(alias=str("EQ"), default=None)
+    neq: Optional[ObservationWorkflowState] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[ObservationWorkflowState]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[ObservationWorkflowState]] = Field(
+        alias=str("NIN"), default=None
+    )
+    gt: Optional[ObservationWorkflowState] = Field(alias=str("GT"), default=None)
+    lt: Optional[ObservationWorkflowState] = Field(alias=str("LT"), default=None)
+    gte: Optional[ObservationWorkflowState] = Field(alias=str("GTE"), default=None)
+    lte: Optional[ObservationWorkflowState] = Field(alias=str("LTE"), default=None)
+
+
+class WhereCalculatedObservationWorkflow(BaseModel):
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    calculation_state: Optional["WhereOrderCalculationState"] = Field(
+        alias=str("calculationState"), default=None
+    )
+    workflow_state: Optional["WhereOrderObservationWorkflowState"] = Field(
+        alias=str("workflowState"), default=None
+    )
+
+
 AddProgramUserInput.model_rebuild()
 AddTimeChargeCorrectionInput.model_rebuild()
 AllocationInput.model_rebuild()
@@ -2416,11 +2521,13 @@ GmosNorthDynamicInput.model_rebuild()
 GmosNorthFpuInput.model_rebuild()
 GmosNorthGratingConfigInput.model_rebuild()
 GmosNorthLongSlitInput.model_rebuild()
+GmosNorthImagingInput.model_rebuild()
 GmosNorthStaticInput.model_rebuild()
 GmosSouthDynamicInput.model_rebuild()
 GmosSouthFpuInput.model_rebuild()
 GmosSouthGratingConfigInput.model_rebuild()
 GmosSouthLongSlitInput.model_rebuild()
+GmosSouthImagingInput.model_rebuild()
 GmosSouthStaticInput.model_rebuild()
 CloneGroupInput.model_rebuild()
 ObservationPropertiesInput.model_rebuild()
@@ -2445,6 +2552,10 @@ SetAllocationsInput.model_rebuild()
 SetProgramReferenceInput.model_rebuild()
 ProgramReferencePropertiesInput.model_rebuild()
 SiderealInput.model_rebuild()
+OpportunityInput.model_rebuild()
+RegionInput.model_rebuild()
+RightAscensionArcInput.model_rebuild()
+DeclinationArcInput.model_rebuild()
 SignalToNoiseExposureTimeModeInput.model_rebuild()
 SourceProfileInput.model_rebuild()
 SpectralDefinitionIntegratedInput.model_rebuild()
@@ -2477,8 +2588,10 @@ RecordFlamingos2StepInput.model_rebuild()
 RecordFlamingos2VisitInput.model_rebuild()
 Flamingos2DynamicInput.model_rebuild()
 Flamingos2FpuMaskInput.model_rebuild()
+Flamingos2LongSlitInput.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
+ImagingScienceRequirementsInput.model_rebuild()
 CreateConfigurationRequestInput.model_rebuild()
 TimeChargeCorrectionInput.model_rebuild()
 WhereAngle.model_rebuild()
@@ -2506,3 +2619,4 @@ WhereTarget.model_rebuild()
 WhereUser.model_rebuild()
 WhereUserProfile.model_rebuild()
 WhereWavelength.model_rebuild()
+WhereCalculatedObservationWorkflow.model_rebuild()

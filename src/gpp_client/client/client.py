@@ -139,27 +139,27 @@ class GPPClient:
 
         return resolved_url, resolved_token
 
-    # async def check_connection(self) -> tuple[bool, Optional[str]]:
-    #     """Check if the GPP GraphQL endpoint is reachable and authenticated.
+    async def is_reachable(self) -> tuple[bool, Optional[str]]:
+        """Check if the GPP GraphQL endpoint is reachable and authenticated.
 
-    #     Returns
-    #     -------
-    #     bool
-    #         ``True`` if the connection and authentication succeed, ``False`` otherwise.
-    #     str, optional
-    #         The error message if the connection failed.
-    #     """
-    #     query = """
-    #         {
-    #             __schema {
-    #                 queryType {
-    #                 name
-    #                 }
-    #             }
-    #         }
-    #     """
-    #     try:
-    #         await self._client.execute(query)
-    #         return True, None
-    #     except Exception as exc:
-    #         return False, str(exc)
+        Returns
+        -------
+        bool
+            ``True`` if the connection and authentication succeed, ``False`` otherwise.
+        str, optional
+            The error message if the connection failed.
+        """
+        query = """
+            {
+                __schema {
+                    queryType {
+                    name
+                    }
+                }
+            }
+        """
+        try:
+            await self._client.execute(query)
+            return True, None
+        except Exception as exc:
+            return False, str(exc)
