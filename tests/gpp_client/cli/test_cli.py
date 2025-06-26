@@ -14,6 +14,7 @@ class TestCLI:
         assert "config" in result.stdout
         assert "target" in result.stdout
         assert "site" in result.stdout
+        assert "ping" in result.stdout
 
     @pytest.mark.remote_data
     def test_ping(self, cli_runner):
