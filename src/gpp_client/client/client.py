@@ -159,7 +159,9 @@ class GPPClient:
             }
         """
         try:
-            await self._client.execute(query)
+            response = await self._client.execute(query)
+            # Raise for any responses which are not a 2xx success code.
+            response.raise_for_status()
             return True, None
         except Exception as exc:
             return False, str(exc)
