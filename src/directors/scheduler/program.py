@@ -1,7 +1,9 @@
+import pprint
 from typing import Any
 
 from src.gpp_client import GPPClient
-from src.gpp_client.api import WhereProgram, WhereObservation, WhereOrderObservationId
+from src.gpp_client.api import WhereProgram, WhereObservation, WhereOrderObservationId, \
+    WhereCalculatedObservationWorkflow, WhereOrderObservationWorkflowState, ObservationWorkflowState
 
 
 class Program:
@@ -36,6 +38,8 @@ class Program:
                 # but the structure remains in the program.
                 # Put to None so observation doesn't get parse.
                 node["observation"] = None
+                # print(obs)
+                pass
         elif group is not None:
             if group.get("elements"):
                 for child in group["elements"]:
@@ -97,6 +101,8 @@ class Program:
                     if group:
                         # Sub-group that can contain children of their own.
                         groups_elements_mapping[group['id']] = g
+                    else:
+                        observations.append(g["observation"]['id'])
 
             for parent_id, children in children_map.items():
                 if parent_id in groups_elements_mapping:
@@ -109,7 +115,16 @@ class Program:
                     pass
             program["root"] = root
 
-        where_observation = WhereObservation(id=WhereOrderObservationId(in_=observations))
+        # If is in the list and status is Ready or OnGoing
+        where_observation = WhereObservation(
+            id=WhereOrderObservationId(in_=observations),
+            workflow=WhereCalculatedObservationWorkflow(
+                workflow_state=WhereOrderObservationWorkflowState(
+                    in_=[ObservationWorkflowState.READY, ObservationWorkflowState.ONGOING]
+                )
+            )
+        )
+
         obs_response = await self.client.observation.get_all(where=where_observation)
         obs_mapping = {o['id']: o for o in obs_response['matches'] }
 
