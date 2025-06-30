@@ -1,4 +1,4 @@
-from src.directors.scheduler import SchedulerDirector
+from src.gpp_client.directors.scheduler import SchedulerDirector
 from src.gpp_client import GPPClient
 
 
