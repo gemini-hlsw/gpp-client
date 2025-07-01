@@ -8,8 +8,9 @@ from typing import Any, Set
 from ..api.base_operation import GraphQLField
 
 
-def patch_base_operations_graphql_field__format_variable_name():
-    """This method is taken directly from the original generated code in `api`,
+def patch_base_operations_graphql_field__format_variable_name() -> None:
+    """
+    This method is taken directly from the original generated code in `api`,
     with the duplicate name logic commented out. This change ensures that GraphQL
     variables like `includeDeleted` are preserved with stable names across nested
     resources (e.g., when querying `program` from within `target`).
@@ -47,7 +48,8 @@ def patch_base_operations_graphql_field__format_variable_name():
 
 
 def patch_base_operations_graphql_field_get_formatted_variables() -> None:
-    """The generated client missed variables that were declared deep inside the
+    """
+    The generated client missed variables that were declared deep inside the
     field tree. It only kept the variables that belonged to each direct child
     node. If a nested field, for example program(includeDeleted) inside
     targets, added its own variable, the query referenced that variable but the
@@ -61,7 +63,14 @@ def patch_base_operations_graphql_field_get_formatted_variables() -> None:
     """
 
     def get_formatted_variables(self) -> dict[str, dict[str, Any]]:
-        """Recursively collect all variables under this field."""
+        """
+        Recursively collect all variables under this field.
+
+        Returns
+        -------
+        dict[str, dict[str, Any]]
+            The formatted variables.
+        """
         formatted_variables = self.formatted_variables.copy()
 
         # Collect from direct sub‑fields.

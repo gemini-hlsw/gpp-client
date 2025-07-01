@@ -1,5 +1,5 @@
 __all__ = [
-    "print_fields",
+    "_print_fields",
     "validate_single_identifier",
     "load_properties",
 ]
@@ -17,13 +17,14 @@ from pydantic import BaseModel
 T = TypeVar("T", bound=BaseModel)
 
 
-def print_fields(fields):
+def _print_fields(fields):
     """Print the fields to string."""
     return print(print_ast(fields.to_ast(0)))
 
 
 def validate_single_identifier(**kwargs) -> None:
-    """Validate that exactly one identifier is provided.
+    """
+    Validate that exactly one identifier is provided.
 
     This helper checks that exactly one of the provided keyword arguments
     is non-None. It raises a ValueError otherwise.
@@ -51,7 +52,8 @@ def load_properties(
     from_json: Optional[str | Path | dict[str, Any]] = None,
     cls: Type[T],
 ) -> T:
-    """Return a validated properties object from exactly one data source.
+    """
+    Return a validated properties object from exactly one data source.
 
     Parameters
     ----------

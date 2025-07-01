@@ -10,11 +10,27 @@ from ..api.custom_fields import (
     ObservationSelectResultFields,
     ProgramFields,
     ScienceRequirementsFields,
-    UpdateObservationsResultFields, ObservationWorkflowFields,
-    TimeSpanFields, ConstraintSetFields, TimingWindowFields, TimingWindowEndAtFields, TimingWindowEndAfterFields,
-    TimingWindowRepeatFields, ElevationRangeFields, AirMassRangeFields, HourAngleRangeFields, TargetEnvironmentFields,
-    CoordinatesFields, RightAscensionFields, DeclinationFields, TargetFields, SiderealFields, ProperMotionFields,
-    ProperMotionRAFields, ProperMotionDeclinationFields, NonsiderealFields,
+    UpdateObservationsResultFields,
+    ObservationWorkflowFields,
+    TimeSpanFields,
+    ConstraintSetFields,
+    TimingWindowFields,
+    TimingWindowEndAtFields,
+    TimingWindowEndAfterFields,
+    TimingWindowRepeatFields,
+    ElevationRangeFields,
+    AirMassRangeFields,
+    HourAngleRangeFields,
+    TargetEnvironmentFields,
+    CoordinatesFields,
+    RightAscensionFields,
+    DeclinationFields,
+    TargetFields,
+    SiderealFields,
+    ProperMotionFields,
+    ProperMotionRAFields,
+    ProperMotionDeclinationFields,
+    NonsiderealFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -42,7 +58,8 @@ class ObservationManager(BaseManager):
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Create a new observation under a specified program.
+        """
+        Create a new observation under a specified program.
 
         Parameters
         ----------
@@ -112,7 +129,8 @@ class ObservationManager(BaseManager):
         limit: Optional[int] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update one or more observations with new properties.
+        """
+        Update one or more observations with new properties.
 
         Parameters
         ----------
@@ -176,7 +194,8 @@ class ObservationManager(BaseManager):
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single observation by ID or reference.
+        """
+        Update a single observation by ID or reference.
 
         Parameters
         ----------
@@ -242,7 +261,8 @@ class ObservationManager(BaseManager):
         observation_reference: Optional[str] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Fetch a single observation by ID or reference.
+        """
+        Fetch a single observation by ID or reference.
 
         This method retrieves a single observation using either the internal ID or
         the reference label. Exactly one of `observation_id` or `observation_reference`
@@ -289,7 +309,8 @@ class ObservationManager(BaseManager):
         offset: int | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
-        """Retrieve all observations with optional filters.
+        """
+        Retrieve all observations with optional filters.
 
         Parameters
         ----------
@@ -326,7 +347,8 @@ class ObservationManager(BaseManager):
         observation_id: Optional[str] = None,
         observation_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Restore a soft-deleted observation using ID or reference.
+        """
+        Restore a soft-deleted observation using ID or reference.
 
         Parameters
         ----------
@@ -359,7 +381,8 @@ class ObservationManager(BaseManager):
         observation_id: Optional[str] = None,
         observation_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Soft-delete an observation using ID or reference.
+        """
+        Soft-delete an observation using ID or reference.
 
         Parameters
         ----------
@@ -388,7 +411,8 @@ class ObservationManager(BaseManager):
 
     @staticmethod
     def _fields(include_deleted: bool = False) -> tuple:
-        """Return the GraphQL fields to retrieve for observations.
+        """
+        Return the GraphQL fields to retrieve for observations.
 
         Parameters
         ----------
@@ -419,12 +443,10 @@ class ObservationManager(BaseManager):
             ),
             ObservationFields.science_band,
             # DEPRECATED, use calculated_workflow
-            ObservationFields.workflow().fields(
-                ObservationWorkflowFields.state
-            ),
+            ObservationFields.workflow().fields(ObservationWorkflowFields.state),
             # BEGIN SEQUENCE NEEDED
             # ObservationFields.execution().fields(
-                # DEPRECATED, use calculated_digest
+            # DEPRECATED, use calculated_digest
             #    ExecutionFields.digest().fields(
             #        ExecutionDigestFields.setup().fields(
             #            SetupTimeFields.full().fields(
@@ -435,7 +457,7 @@ class ObservationManager(BaseManager):
             #            )
             #        )
             #    )
-            #),
+            # ),
             # END SEQUENCE
             ObservationFields.constraint_set().fields(
                 ConstraintSetFields.image_quality,
@@ -450,56 +472,49 @@ class ObservationManager(BaseManager):
                     ElevationRangeFields.hour_angle().fields(
                         HourAngleRangeFields.min_hours,
                         HourAngleRangeFields.max_hours,
-                    )
-                )
+                    ),
+                ),
             ),
             ObservationFields.timing_windows().fields(
                 TimingWindowFields.inclusion,
                 TimingWindowFields.start_utc,
-                TimingWindowFields.end.on("TimingWindowEndAt", TimingWindowEndAtFields.at_utc),
-                TimingWindowFields.end.on("TimingWindowEndAfter",
-                    TimingWindowEndAfterFields.after().fields(
-                    TimeSpanFields.seconds
+                TimingWindowFields.end.on(
+                    "TimingWindowEndAt", TimingWindowEndAtFields.at_utc
                 ),
-                                          TimingWindowEndAfterFields.repeat().fields(
-                                              TimingWindowRepeatFields.period().fields(
-                                                  TimeSpanFields.seconds
-                                              ),
-                                              TimingWindowRepeatFields.times
-                                          )),
-
+                TimingWindowFields.end.on(
+                    "TimingWindowEndAfter",
+                    TimingWindowEndAfterFields.after().fields(TimeSpanFields.seconds),
+                    TimingWindowEndAfterFields.repeat().fields(
+                        TimingWindowRepeatFields.period().fields(
+                            TimeSpanFields.seconds
+                        ),
+                        TimingWindowRepeatFields.times,
+                    ),
+                ),
             ),
             ObservationFields.target_environment().fields(
                 TargetEnvironmentFields.asterism(include_deleted).fields(
-                        TargetFields.sidereal().fields(
-                            SiderealFields.ra().fields(
-                                RightAscensionFields.hms
+                    TargetFields.sidereal().fields(
+                        SiderealFields.ra().fields(RightAscensionFields.hms),
+                        SiderealFields.dec().fields(DeclinationFields.dms),
+                        SiderealFields.proper_motion().fields(
+                            ProperMotionFields.ra().fields(
+                                ProperMotionRAFields.milliarcseconds_per_year
                             ),
-                            SiderealFields.dec().fields(
-                                DeclinationFields.dms
+                            ProperMotionFields.dec().fields(
+                                ProperMotionDeclinationFields.milliarcseconds_per_year
                             ),
-                            SiderealFields.proper_motion().fields(
-                                ProperMotionFields.ra().fields(
-                                    ProperMotionRAFields.milliarcseconds_per_year
-                                ),
-                                ProperMotionFields.dec().fields(
-                                    ProperMotionDeclinationFields.milliarcseconds_per_year
-                                )
-                            ),
-                            SiderealFields.epoch,
                         ),
-                        TargetFields.nonsidereal().fields(
-                            NonsiderealFields.des,
-                        ),
-                        TargetFields.name
+                        SiderealFields.epoch,
+                    ),
+                    TargetFields.nonsidereal().fields(
+                        NonsiderealFields.des,
+                    ),
+                    TargetFields.name,
                 ),
                 TargetEnvironmentFields.explicit_base().fields(
-                    CoordinatesFields.ra().fields(
-                        RightAscensionFields.hms
-                    ),
-                    CoordinatesFields.dec().fields(
-                        DeclinationFields.dms
-                    )
+                    CoordinatesFields.ra().fields(RightAscensionFields.hms),
+                    CoordinatesFields.dec().fields(DeclinationFields.dms),
                 ),
             ),
         )

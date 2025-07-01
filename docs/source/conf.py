@@ -55,11 +55,13 @@ def skip_member(app, what, name, obj, skip, options):
         return True  # skip this member
     return skip
 
+
 def suppress_enum_docstring(app, what, name, obj, options, lines):
     """Remove the default 'An enumeration.' docstring from Enum classes."""
     if what == "class" and isinstance(obj, type) and issubclass(obj, Enum):
         if lines and lines[0].strip() == "An enumeration.":
             lines.clear()
+
 
 def setup(app):
     app.connect("autodoc-skip-member", skip_member)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Handles downloading the schema for the graphQL endpoint."""
 
 import os
 import subprocess
@@ -13,11 +14,20 @@ logging.basicConfig(
 
 
 def fail(message: str) -> None:
+    """
+    Log message and exit when failure.
+
+    Parameters
+    ----------
+    message : str
+        The message to log.
+    """
     logging.error(message)
     sys.exit(1)
 
 
 def main() -> None:
+    """Download the schema."""
     logging.info("Downloading GPP Graphql schema.")
 
     # Check for required Python modules.

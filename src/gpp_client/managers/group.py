@@ -1,12 +1,25 @@
-__all__ = ['GroupManager']
+__all__ = ["GroupManager"]
 
 from pathlib import Path
 from typing import Any, Optional, List
 
-from ..api import CreateGroupInput, GroupPropertiesInput, WhereGroup, UpdateObservationsInput, \
-    WhereOrderGroupId, WhereOptionString, Existence, GroupElementInput
-from ..api.custom_fields import CreateGroupResultFields, UpdateGroupsResultFields, \
-    GroupFields, ProgramFields, GroupElementFields
+from ..api import (
+    CreateGroupInput,
+    GroupPropertiesInput,
+    WhereGroup,
+    UpdateObservationsInput,
+    WhereOrderGroupId,
+    WhereOptionString,
+    Existence,
+    GroupElementInput,
+)
+from ..api.custom_fields import (
+    CreateGroupResultFields,
+    UpdateGroupsResultFields,
+    GroupFields,
+    ProgramFields,
+    GroupElementFields,
+)
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
 from .base_manager import BaseManager
@@ -14,21 +27,21 @@ from .utils import validate_single_identifier, load_properties
 
 
 class GroupManager(BaseManager):
-
-    GROUPS_RESULT_KEY = 'groups'
+    GROUPS_RESULT_KEY = "groups"
     FIRST_INDEX = 0
 
     async def create(
-            self,
-            *,
-            initial_contents: Optional[List[Optional[GroupElementInput]]] = None,
-            properties: Optional[GroupPropertiesInput] = None,
-            from_json: Optional[str | Path | dict[str, Any]] = None,
-            program_id: Optional[str] = None,
-            proposal_reference: Optional[str] = None,
-            program_reference: Optional[str] = None,
+        self,
+        *,
+        initial_contents: Optional[List[Optional[GroupElementInput]]] = None,
+        properties: Optional[GroupPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
+        program_id: Optional[str] = None,
+        proposal_reference: Optional[str] = None,
+        program_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Create a new group under a specified program.
+        """
+        Create a new group under a specified program.
 
         To pair it with a specific group of Observation see GroupElementInput.
 
@@ -57,7 +70,7 @@ class GroupManager(BaseManager):
             The created group.
         """
         validate_single_identifier(
-            program_id= program_id,
+            program_id=program_id,
             program_reference=program_reference,
             proposal_reference=proposal_reference,
         )
@@ -82,14 +95,15 @@ class GroupManager(BaseManager):
         return result[operation_name]
 
     async def update_all(
-            self,
-            properties: GroupPropertiesInput,
-            from_json: Optional[str | Path | dict[str, Any]] = None,
-            where: Optional[WhereGroup] = None,
-            limit: Optional[int] = None,
-            include_deleted: bool = False,
+        self,
+        properties: GroupPropertiesInput,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
+        where: Optional[WhereGroup] = None,
+        limit: Optional[int] = None,
+        include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update one or more groups with new properties.
+        """
+        Update one or more groups with new properties.
 
         Parameters
         ----------
@@ -115,7 +129,6 @@ class GroupManager(BaseManager):
         ------
         ValueError
             If zero or both of ``properties`` and ``from_json`` are provided.
-
         """
 
         properties = load_properties(
@@ -132,7 +145,7 @@ class GroupManager(BaseManager):
             UpdateGroupsResultFields.has_more,
             UpdateGroupsResultFields.groups().fields(
                 *self._fields(include_deleted=include_deleted)
-            )
+            ),
         )
         operation_name = "updateGroups"
         result = await self.client.mutation(fields, operation_name=operation_name)
@@ -140,14 +153,15 @@ class GroupManager(BaseManager):
         return result[operation_name]
 
     async def update_by_id(
-            self,
-            *,
-            group_id: Optional[str] = None,
-            group_name: Optional[str] = None,
-            properties: GroupPropertiesInput,
-            include_deleted: bool = False,
+        self,
+        *,
+        group_id: Optional[str] = None,
+        group_name: Optional[str] = None,
+        properties: GroupPropertiesInput,
+        include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single group with given ID.
+        """
+        Update a single group with given ID.
 
         Parameters
         ----------
@@ -187,26 +201,22 @@ class GroupManager(BaseManager):
         if group_id:
             where = WhereGroup(id=WhereOrderGroupId(eq=group_id))
         else:
-            where = WhereGroup(
-                name=WhereOptionString(eq=group_name)
-            )
+            where = WhereGroup(name=WhereOptionString(eq=group_name))
 
         result = await self.update_all(
-            where=where,
-            limit=1,
-            properties=properties,
-            include_deleted=include_deleted
+            where=where, limit=1, properties=properties, include_deleted=include_deleted
         )
         return result[GroupManager.GROUPS_RESULT_KEY][GroupManager.FIRST_INDEX]
 
     async def get_by_id(
-            self,
-            *,
-            group_id: Optional[str] = None,
-            group_name: Optional[str] = None,
-            include_deleted: bool = False,
+        self,
+        *,
+        group_id: Optional[str] = None,
+        group_name: Optional[str] = None,
+        include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Get a single group with given ID.
+        """
+        Get a single group with given ID.
 
         Parameters
         ----------
@@ -242,21 +252,23 @@ class GroupManager(BaseManager):
         return result[operation_name]
 
     async def get_all(
-            self,
-            *,
-            include_deleted: bool = False,
-            where: WhereGroup | None = None,
-            offset: int | None = None,
-            limit: int | None = None,
+        self,
+        *,
+        include_deleted: bool = False,
+        where: WhereGroup | None = None,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> dict[str, Any]:
         raise NotImplementedError("There is no groups query on the ODB")
 
     async def restore_by_id(
-            self,
-            group_id: Optional[str] = None,
-            group_name: Optional[str] = None,
+        self,
+        group_id: Optional[str] = None,
+        group_name: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Restore a soft-deleted group.
+        """
+        Restore a soft-deleted group.
+
         Parameters
         ----------
 
@@ -284,12 +296,13 @@ class GroupManager(BaseManager):
         )
 
     async def delete_by_id(
-            self,
-            *,
-            group_id: Optional[str] = None,
-            group_name: Optional[str] = None,
+        self,
+        *,
+        group_id: Optional[str] = None,
+        group_name: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Delete a soft-deleted group.
+        """
+        Delete a soft-deleted group.
 
         Parameters
         ----------
@@ -318,18 +331,6 @@ class GroupManager(BaseManager):
 
     @staticmethod
     def _fields(include_deleted: bool = False) -> tuple:
-        """
-
-        Parameters
-        ----------
-        include_deleted : bool, default=False
-            Whether to include soft-deleted groups in the match.
-        Returns
-        -------
-        tuple
-            Field selections for observation queries.
-
-        """
         return (
             GroupFields.id,
             GroupFields.parent_id,

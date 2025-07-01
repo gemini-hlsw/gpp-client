@@ -3,6 +3,7 @@ import asyncio
 import pytest
 from gpp_client import GPPClient
 
+
 # First check if the connection works before trying GPP queries.
 @pytest.fixture(scope="session", autouse=True)
 def check_connection(pytestconfig):

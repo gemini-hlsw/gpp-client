@@ -31,7 +31,8 @@ class CallForProposalsManager(BaseManager):
         properties: Optional[CallForProposalsPropertiesInput] = None,
         from_json: Optional[str | Path | dict[str, Any]] = None,
     ) -> dict[str, Any]:
-        """Create a new call for proposals.
+        """
+        Create a new call for proposals.
 
         Parameters
         ----------
@@ -86,7 +87,8 @@ class CallForProposalsManager(BaseManager):
         limit: Optional[int] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update multiple calls for proposals matching the given filter.
+        """
+        Update multiple calls for proposals matching the given filter.
 
         Parameters
         ----------
@@ -152,7 +154,8 @@ class CallForProposalsManager(BaseManager):
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single call for proposals by its ID.
+        """
+        Update a single call for proposals by its ID.
 
         Parameters
         ----------
@@ -200,7 +203,8 @@ class CallForProposalsManager(BaseManager):
     async def get_by_id(
         self, call_for_proposals_id: str, *, include_deleted: bool = False
     ) -> dict[str, Any]:
-        """Fetch a single call for proposals by its ID.
+        """
+        Fetch a single call for proposals by its ID.
 
         Parameters
         ----------
@@ -231,7 +235,8 @@ class CallForProposalsManager(BaseManager):
         offset: int | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
-        """Fetch all calls for proposals with optional filters and pagination.
+        """
+        Fetch all calls for proposals with optional filters and pagination.
 
         Parameters
         ----------
@@ -263,7 +268,8 @@ class CallForProposalsManager(BaseManager):
         return result[operation_name]
 
     async def restore_by_id(self, call_for_proposals_id: str) -> dict[str, Any]:
-        """Restore a soft-deleted call for proposals.
+        """
+        Restore a soft-deleted call for proposals.
 
         Parameters
         ----------
@@ -281,7 +287,8 @@ class CallForProposalsManager(BaseManager):
         )
 
     async def delete_by_id(self, call_for_proposals_id: str) -> dict[str, Any]:
-        """Soft-delete a call for proposals.
+        """
+        Soft-delete a call for proposals.
 
         Parameters
         ----------
@@ -302,7 +309,8 @@ class CallForProposalsManager(BaseManager):
 
     @staticmethod
     def _fields(include_deleted: bool = False) -> tuple:
-        """Return the GraphQL fields to retrieve for a call for proposals.
+        """
+        Return the GraphQL fields to retrieve for a call for proposals.
 
         Parameters
         ----------

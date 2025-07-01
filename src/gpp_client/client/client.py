@@ -10,7 +10,7 @@ from ..managers import (
     ProgramNoteManager,
     SiteStatusManager,
     TargetManager,
-    GroupManager
+    GroupManager,
 )
 from ..patches import patch_base_operations_graphql_field_get_formatted_variables
 
@@ -19,7 +19,8 @@ patch_base_operations_graphql_field_get_formatted_variables()
 
 
 class GPPClient:
-    """Main entry point for interacting with the GPP GraphQL API.
+    """
+    Main entry point for interacting with the GPP GraphQL API.
 
     This client provides access to all supported resource managers, including
     programs, targets, observations, and more. It handles
@@ -78,7 +79,8 @@ class GPPClient:
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:
-        """Set and persist GPP credentials in the local configuration file.
+        """
+        Set and persist GPP credentials in the local configuration file.
 
         This method creates or updates the stored credentials using the standard
         configuration path defined by `typer.get_app_dir()`.
@@ -101,7 +103,8 @@ class GPPClient:
         url: Optional[str] = None,
         token: Optional[str] = None,
     ) -> tuple[str, str]:
-        """Resolve the GPP GraphQL credentials using precedence rules.
+        """
+        Resolve the GPP GraphQL credentials using precedence rules.
 
         This function looks for credentials in the following order:
         1. Direct function arguments (`url`, `token`).
@@ -140,7 +143,8 @@ class GPPClient:
         return resolved_url, resolved_token
 
     async def is_reachable(self) -> tuple[bool, Optional[str]]:
-        """Check if the GPP GraphQL endpoint is reachable and authenticated.
+        """
+        Check if the GPP GraphQL endpoint is reachable and authenticated.
 
         Returns
         -------

@@ -7,7 +7,8 @@ if TYPE_CHECKING:
 
 
 class BaseManager:
-    """Base class for all resource managers.
+    """
+    Base class for all resource managers.
 
     Provides access to the underlying GraphQL client used to perform operations.
 

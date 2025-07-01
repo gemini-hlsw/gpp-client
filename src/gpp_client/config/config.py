@@ -21,7 +21,8 @@ class GPPConfig:
         self._data = self._load()
 
     def _load(self) -> dict[str, Any]:
-        """Load configuration data from disk.
+        """
+        Load configuration data from disk.
 
         Returns
         -------
@@ -41,7 +42,8 @@ class GPPConfig:
         self._data = self._load()
 
     def exists(self) -> bool:
-        """Whether the configuration file exists.
+        """
+        Whether the configuration file exists.
 
         Returns
         -------
@@ -51,7 +53,8 @@ class GPPConfig:
         return self.path.exists()
 
     def get(self) -> dict[str, Any]:
-        """Return the full configuration dictionary.
+        """
+        Return the full configuration dictionary.
 
         Returns
         -------
@@ -61,7 +64,8 @@ class GPPConfig:
         return self._data
 
     def get_credentials(self) -> tuple[Optional[str], Optional[str]]:
-        """Return the stored API URL and token.
+        """
+        Return the stored API URL and token.
 
         Returns
         -------
@@ -72,7 +76,8 @@ class GPPConfig:
         return creds.get("url"), creds.get("token")
 
     def set_credentials(self, url: str, token: str) -> None:
-        """Set new API credentials and save the configuration.
+        """
+        Set new API credentials and save the configuration.
 
         Parameters
         ----------
@@ -87,7 +92,8 @@ class GPPConfig:
         self.save()
 
     def credentials_set(self) -> bool:
-        """Check whether both URL and token are set.
+        """
+        Check whether both URL and token are set.
 
         Returns
         -------
@@ -99,7 +105,8 @@ class GPPConfig:
 
     @property
     def path(self) -> Path:
-        """Path to the configuration file.
+        """
+        Path to the configuration file.
 
         Returns
         -------

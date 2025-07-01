@@ -33,7 +33,8 @@ SITE_CONFIG = {
 
 class SiteStatusManager:
     async def get_by_id(self, site_id: Literal["south", "north"]) -> dict[str, Any]:
-        """Get the current site status payload for Gemini North or South.
+        """
+        Get the current site status payload for Gemini North or South.
 
         Parameters
         ----------
@@ -78,7 +79,8 @@ class SiteStatusManager:
         }
 
     async def _fetch_json(self, client: AsyncClient, url: str) -> dict[str, Any]:
-        """Fetch JSON content from the given URL.
+        """
+        Fetch JSON content from the given URL.
 
         Parameters
         ----------
@@ -97,7 +99,8 @@ class SiteStatusManager:
         return response.json()
 
     async def _fetch_webpage(self, client: AsyncClient, url: str) -> str:
-        """Fetch a webpage.
+        """
+        Fetch a webpage.
 
         Parameters
         ----------
@@ -117,7 +120,8 @@ class SiteStatusManager:
 
 
 def _parse_gemini_north_webpage(html: str) -> dict[str, Any]:
-    """Parse the Gemini North status HTML page to extract status values by ID.
+    """
+    Parse the Gemini North status HTML page to extract status values by ID.
 
     Parameters
     ----------
@@ -148,7 +152,8 @@ def _parse_gemini_north_webpage(html: str) -> dict[str, Any]:
 
 
 def _parse_gmos_config_page(html: str) -> Optional[dict[str, Any]]:
-    """Parse the GMOS configuration HTML page.
+    """
+    Parse the GMOS configuration HTML page.
 
     Parameters
     ----------
@@ -197,7 +202,8 @@ def _parse_gmos_config_page(html: str) -> Optional[dict[str, Any]]:
 
 
 def _parse_shutter(raw: Optional[str]) -> Optional[dict[str, Any]]:
-    """Parse the shutter status block.
+    """
+    Parse the shutter status block.
 
     Parameters
     ----------
@@ -233,7 +239,8 @@ def _parse_shutter(raw: Optional[str]) -> Optional[dict[str, Any]]:
 
 
 def _parse_instruments(raw: Optional[str]) -> Optional[dict[str, Any]]:
-    """Parse the instruments block.
+    """
+    Parse the instruments block.
 
     Parameters
     ----------
