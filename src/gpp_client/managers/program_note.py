@@ -32,7 +32,8 @@ class ProgramNoteManager(BaseManager):
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Create a new program note.
+        """
+        Create a new program note.
 
         Parameters
         ----------
@@ -101,7 +102,8 @@ class ProgramNoteManager(BaseManager):
         limit: Optional[int] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update one or more program notes.
+        """
+        Update one or more program notes.
 
         Parameters
         ----------
@@ -166,7 +168,8 @@ class ProgramNoteManager(BaseManager):
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single program note by its ID.
+        """
+        Update a single program note by its ID.
 
         Parameters
         ----------
@@ -212,7 +215,8 @@ class ProgramNoteManager(BaseManager):
     async def get_by_id(
         self, program_note_id: str, *, include_deleted: bool = False
     ) -> dict[str, Any]:
-        """Fetch a program note by its ID.
+        """
+        Fetch a program note by its ID.
 
         Parameters
         ----------
@@ -243,7 +247,8 @@ class ProgramNoteManager(BaseManager):
         offset: int | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
-        """Fetch all program notes with optional filters.
+        """
+        Fetch all program notes with optional filters.
 
         Parameters
         ----------
@@ -275,7 +280,8 @@ class ProgramNoteManager(BaseManager):
         return result[operation_name]
 
     async def restore_by_id(self, program_note_id: str) -> dict[str, Any]:
-        """Restore a soft-deleted program note by ID.
+        """
+        Restore a soft-deleted program note by ID.
 
         Parameters
         ----------
@@ -293,7 +299,8 @@ class ProgramNoteManager(BaseManager):
         )
 
     async def delete_by_id(self, program_note_id: str) -> dict[str, Any]:
-        """Soft-delete a program note by ID.
+        """
+        Soft-delete a program note by ID.
 
         Parameters
         ----------
@@ -314,7 +321,8 @@ class ProgramNoteManager(BaseManager):
 
     @staticmethod
     def _fields(include_deleted: bool = False) -> tuple:
-        """Return the GraphQL fields to retrieve.
+        """
+        Return the GraphQL fields to retrieve.
 
         Parameters
         ----------

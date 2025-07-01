@@ -17,12 +17,8 @@ app = typer.Typer(name="groups", help="Manage Groups.", no_args_is_help=True)
 @app.command("get")
 @async_command
 async def get(
-    group_id: Annotated[
-        Optional[str], typer.Option(help="Group ID.")
-    ] = None,
-    group_name: Annotated[
-        Optional[str], typer.Option(help="Group name.")
-    ] = None,
+    group_id: Annotated[Optional[str], typer.Option(help="Group ID.")] = None,
+    group_name: Annotated[Optional[str], typer.Option(help="Group name.")] = None,
     include_deleted: Annotated[
         bool, typer.Option(help="Include deleted entries.")
     ] = False,
@@ -40,12 +36,8 @@ async def get(
 @app.command("delete")
 @async_command
 async def delete(
-    group_id: Annotated[
-        Optional[str], typer.Option(help="Group ID.")
-    ] = None,
-    group_name: Annotated[
-        Optional[str], typer.Option(help="Group name.")
-    ] = None,
+    group_id: Annotated[Optional[str], typer.Option(help="Group ID.")] = None,
+    group_name: Annotated[Optional[str], typer.Option(help="Group name.")] = None,
 ):
     """Delete a group by ID or name."""
 
@@ -60,12 +52,8 @@ async def delete(
 @app.command("restore")
 @async_command
 async def restore(
-    group_id: Annotated[
-        Optional[str], typer.Option(help="Group ID.")
-    ] = None,
-    group_name: Annotated[
-        Optional[str], typer.Option(help="Group name.")
-    ] = None,
+    group_id: Annotated[Optional[str], typer.Option(help="Group ID.")] = None,
+    group_name: Annotated[Optional[str], typer.Option(help="Group name.")] = None,
 ):
     """Restore a group by ID or name."""
 
@@ -135,9 +123,7 @@ async def update_by_id(
     ] = None,
     group_name: Annotated[
         Optional[str],
-        typer.Option(
-            help="Group name (supply exactly one identifier)."
-        ),
+        typer.Option(help="Group name (supply exactly one identifier)."),
     ] = None,
 ):
     """Update a group by ID or name.

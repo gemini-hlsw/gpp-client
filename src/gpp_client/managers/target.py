@@ -34,7 +34,8 @@ class TargetManager(BaseManager):
         proposal_reference: Optional[str] = None,
         program_reference: Optional[str] = None,
     ) -> dict[str, Any]:
-        """Create a new target using a fully defined ``TargetPropertiesInput``.
+        """
+        Create a new target using a fully defined ``TargetPropertiesInput``.
 
         Parameters
         ----------
@@ -69,9 +70,7 @@ class TargetManager(BaseManager):
         must be specified to associate with a valid program.
         - Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``ValueError``.
-
         """
-
         validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
@@ -107,7 +106,8 @@ class TargetManager(BaseManager):
         limit: Optional[int] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update one or more targets using a partial or complete
+        """
+        Update one or more targets using a partial or complete
         ``TargetPropertiesInput``.
 
         Parameters
@@ -173,7 +173,8 @@ class TargetManager(BaseManager):
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single target by its unique identifier.
+        """
+        Update a single target by its unique identifier.
 
         Parameters
         ----------
@@ -189,15 +190,15 @@ class TargetManager(BaseManager):
         include_deleted : bool, default=False
             Whether to include soft-deleted targets in the update.
 
-        Raises
-        ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
-
         Returns
         -------
         dict[str, Any]
             Dictionary containing update result, including updated target data.
+
+        Raises
+        ------
+        ValueError
+            If zero or both of ``properties`` and ``from_json`` are provided.
 
         Notes
         -----
@@ -220,12 +221,15 @@ class TargetManager(BaseManager):
     async def get_by_id(
         self, target_id: str, *, include_deleted: bool = False
     ) -> dict[str, Any]:
-        """Fetch a single resource by ID.
+        """
+        Fetch a single resource by ID.
 
         Parameters
         ----------
         target_id : str
             Unique identifier of the target.
+        include_deleted : bool, default=False
+            Whether to include soft-deleted targets when retrieving.
 
         Returns
         -------
@@ -249,7 +253,8 @@ class TargetManager(BaseManager):
         offset: int | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
-        """Get all targets with optional filtering and pagination.
+        """
+        Get all targets with optional filtering and pagination.
 
         Parameters
         ----------
@@ -281,7 +286,8 @@ class TargetManager(BaseManager):
         return result[operation_name]
 
     async def restore_by_id(self, target_id: str) -> dict[str, Any]:
-        """Restore a soft-deleted resource by setting its existence to PRESENT.
+        """
+        Restore a soft-deleted resource by setting its existence to PRESENT.
 
         Parameters
         ----------
@@ -299,7 +305,8 @@ class TargetManager(BaseManager):
         )
 
     async def delete_by_id(self, target_id: str) -> dict[str, Any]:
-        """Soft-delete a resource by setting its existence to DELETED.
+        """
+        Soft-delete a resource by setting its existence to DELETED.
 
         Parameters
         ----------

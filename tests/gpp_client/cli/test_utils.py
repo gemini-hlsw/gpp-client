@@ -65,5 +65,5 @@ class TestAsyncCommand:
 
         with pytest.raises(typer.Exit):
             broken()
-        
+
         _ = capsys.readouterr()

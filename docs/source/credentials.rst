@@ -1,7 +1,7 @@
 Credentials
 ===========
 
-The ``GPPClient`` supports multiple methods for authenticating with the GPP GraphQL API.  
+The ``GPPClient`` supports multiple methods for authenticating with the GPP GraphQL API.
 This page describes how credentials are resolved and how to configure them.
 
 Credential Resolution Order

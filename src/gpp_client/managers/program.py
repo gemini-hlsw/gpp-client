@@ -9,7 +9,11 @@ from ..api.custom_fields import (
     ProgramFields,
     ProgramSelectResultFields,
     ProgramUserFields,
-    UpdateProgramsResultFields, GroupElementFields, GroupFields, ObservationFields, TimeSpanFields,
+    UpdateProgramsResultFields,
+    GroupElementFields,
+    GroupFields,
+    ObservationFields,
+    TimeSpanFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -32,7 +36,8 @@ class ProgramManager(BaseManager):
         properties: Optional[ProgramPropertiesInput] = None,
         from_json: Optional[str | Path | dict[str, Any]] = None,
     ) -> dict[str, Any]:
-        """Create a new program.
+        """
+        Create a new program.
 
         Parameters
         ----------
@@ -85,7 +90,8 @@ class ProgramManager(BaseManager):
         limit: Optional[int] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update multiple programs matching the given filter.
+        """
+        Update multiple programs matching the given filter.
 
         Parameters
         ----------
@@ -149,7 +155,8 @@ class ProgramManager(BaseManager):
         from_json: Optional[str | Path | dict[str, Any]] = None,
         include_deleted: bool = False,
     ) -> dict[str, Any]:
-        """Update a single program by its ID.
+        """
+        Update a single program by its ID.
 
         Parameters
         ----------
@@ -195,7 +202,8 @@ class ProgramManager(BaseManager):
     async def get_by_id(
         self, program_id: str, *, include_deleted: bool = False
     ) -> dict[str, Any]:
-        """Fetch a single program by its ID.
+        """
+        Fetch a single program by its ID.
 
         Parameters
         ----------
@@ -226,7 +234,8 @@ class ProgramManager(BaseManager):
         offset: int | None = None,
         limit: int | None = None,
     ) -> dict[str, Any]:
-        """Fetch all programs with optional filters and pagination.
+        """
+        Fetch all programs with optional filters and pagination.
 
         Parameters
         ----------
@@ -258,7 +267,8 @@ class ProgramManager(BaseManager):
         return result[operation_name]
 
     async def restore_by_id(self, program_id: str) -> dict[str, Any]:
-        """Restore a soft-deleted program.
+        """
+        Restore a soft-deleted program.
 
         Parameters
         ----------
@@ -276,7 +286,8 @@ class ProgramManager(BaseManager):
         )
 
     async def delete_by_id(self, program_id: str) -> dict[str, Any]:
-        """Soft-delete a program.
+        """
+        Soft-delete a program.
 
         Parameters
         ----------
@@ -297,7 +308,8 @@ class ProgramManager(BaseManager):
 
     @staticmethod
     def _fields(include_deleted: bool = False) -> tuple:
-        """Return the GraphQL fields to retrieve for a program.
+        """
+        Return the GraphQL fields to retrieve for a program.
 
         Parameters
         ----------
@@ -325,8 +337,7 @@ class ProgramManager(BaseManager):
             ProgramFields.all_group_elements(include_deleted).fields(
                 GroupElementFields.parent_group_id,
                 GroupElementFields.observation().fields(
-                    ObservationFields.id,
-                    ObservationFields.group_id
+                    ObservationFields.id, ObservationFields.group_id
                 ),
                 GroupElementFields.group().fields(
                     GroupFields.id,
@@ -335,12 +346,8 @@ class ProgramManager(BaseManager):
                     GroupFields.ordered,
                     GroupFields.parent_id,
                     GroupFields.parent_index,
-                    GroupFields.minimum_interval().fields(
-                        TimeSpanFields.seconds
-                    ),
-                    GroupFields.maximum_interval().fields(
-                        TimeSpanFields.seconds
-                    )
-                )
+                    GroupFields.minimum_interval().fields(TimeSpanFields.seconds),
+                    GroupFields.maximum_interval().fields(TimeSpanFields.seconds),
+                ),
             ),
         )

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Runs the code generator."""
 
 import subprocess
 import sys
@@ -13,11 +14,20 @@ logging.basicConfig(
 
 
 def fail(message: str) -> None:
+    """
+    Log message and exit when failure.
+
+    Parameters
+    ----------
+    message : str
+        The message to log.
+    """
     logging.error(message)
     sys.exit(1)
 
 
 def main() -> None:
+    """Run the codegen."""
     logging.info("Running ariadne-codegen.")
 
     # Check if ariadne-codegen is installed.
