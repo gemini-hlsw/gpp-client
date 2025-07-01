@@ -1,4 +1,6 @@
-from src.gpp_client import GPPClient
+__all__ = ["BaseDirector"]
+
+from ..client import GPPClient
 
 
 class BaseDirector:

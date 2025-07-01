@@ -1,3 +1,3 @@
-from .director import Director
+from .scheduler import SchedulerDirector
 
-__all__ = ["Director"]
+__all__ = ["SchedulerDirector"]

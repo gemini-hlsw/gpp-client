@@ -1,27 +1,44 @@
-Directors Interface
-===================
+Director Interface
+==================
 
-This section documents the included way to interact with more than one manager to satisfy the specific needs for a service.
+This section documents how to interact with multiple managers to satisfy the specific needs of a service.
 
 Overview
 --------
 
-A **director** allows to interact with more than one manager but using the same interface the managers do to ask for specific elements.
-This is because the ODB is limited on the information it can bring when working with too much information so it needs to be breakdown in multiple queries from different managers to recreate more complex structures.
+A **director** allows interaction with more than one manager through a unified interface.
+This is necessary because the ODB is limited in the amount of information it can retrieve at once.
+To reconstruct more complex structures, the system must issue multiple queries to different managers.
 
-Service-specific directors are all under an specific namespace in **Director** and uses the regular client for specific query/mutations.
+Service-specific directors are organized under distinct namespaces and use the regular client to perform queries and mutations.
 
-Use an specific director
-------------------------
+Using a Specific Director
+-------------------------
 
-The director interface allows to select an specific director using the namespace for each service.
+The director interface allows you to select a specific director by namespace for each service.
+
 
 .. code-block:: python
 
    from gpp_client import GPPClient
-   from gpp_client import Director
-
-
+   from gpp_client import GPPDirector
    client = GPPClient()
-   director = Director(client)
-   programs = await director.scheduler.program.get_all()
+   director = GPPDirector(client)
+   programs = await director.scheduler.get_all()
+
+
+.. automodule:: gpp_client.director
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+
+API Reference
+-------------
+
+.. toctree::
+   :maxdepth: 1
+
+   base_director
+   scheduler

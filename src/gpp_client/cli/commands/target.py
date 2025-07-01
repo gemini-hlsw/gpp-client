@@ -16,7 +16,7 @@ from ..utils import (
 )
 
 console = Console()
-app = typer.Typer(name="target", help="Manage targets.", no_args_is_help=True)
+app = typer.Typer(name="target", help="Manage targets.")
 
 
 @app.command("list")

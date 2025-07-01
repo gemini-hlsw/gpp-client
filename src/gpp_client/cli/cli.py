@@ -11,6 +11,7 @@ from .commands import (
     program_note,
     site_status,
     target,
+    scheduler,
 )
 from .utils import async_command
 
@@ -25,6 +26,7 @@ app.add_typer(call_for_proposals.app)
 app.add_typer(observation.app)
 app.add_typer(site_status.app)
 app.add_typer(group.app)
+app.add_typer(scheduler.app)
 
 
 @app.command("ping")

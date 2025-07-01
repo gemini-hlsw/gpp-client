@@ -16,7 +16,7 @@ from ...cli.utils import (
 from ...client import GPPClient
 
 console = Console()
-app = typer.Typer(name="cfp", no_args_is_help=True, help="Manage call for proposals.")
+app = typer.Typer(name="cfp", help="Manage call for proposals.")
 
 
 @app.command("list")

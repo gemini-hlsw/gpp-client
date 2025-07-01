@@ -1,3 +1,3 @@
-from .schedule_director import SchedulerDirector
+from .scheduler import SchedulerDirector
 
 __all__ = ["SchedulerDirector"]

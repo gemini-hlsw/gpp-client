@@ -9,7 +9,7 @@ from ...managers.site_status import Site
 from ..utils import async_command
 
 console = Console()
-app = typer.Typer(name="site", help="Retrieve site status.", no_args_is_help=True)
+app = typer.Typer(name="site", help="Retrieve site status.")
 
 
 @app.command("get")
