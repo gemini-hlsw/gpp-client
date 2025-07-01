@@ -90,7 +90,6 @@ codegen = [
 ]
 dev = [
     "ariadne-codegen>=0.15.0.dev1",
-    "pre-commit>=4.2.0",
     "pytest-asyncio>=1.0.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",

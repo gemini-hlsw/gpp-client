@@ -37,3 +37,4 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
    director/index
    api/index
    contributing
+   developer
