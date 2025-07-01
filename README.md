@@ -80,22 +80,22 @@ print("Created another:", another_note)
 
 ```bash
 # Get help.
-gpp --help
+$ gpp --help
 
 # Get observation help.
-gpp obs --help
+$ gpp obs --help
 
 # List observations.
-gpp obs list --limit 3
+$ gpp obs list --limit 3
 
 # Get details for one.
-gpp obs get o-123
+$ gpp obs get o-123
 
 # Create via JSON.
-gpp obs create --from-json new_obs.json --program-id p-123
+$ gpp obs create --from-json new_obs.json --program-id p-123
 
 # Update by ID via JSON.
-gpp obs update --observation-id o-123 --from-json updated_obs.json
+$ gpp obs update --observation-id o-123 --from-json updated_obs.json
 ```
 
 ## Reporting Bugs and Feature Requests
@@ -110,26 +110,77 @@ While in heavy development, please file requests or report bugs via our Jira boa
 
 To update the GPP GraphQL schema and generate client code, run the scripts from the project’s top-level directory located in `scripts/`.
 
+This project uses [uv](https://github.com/astral-sh/uv) to manage dependencies and execute scripts.
+
+When using `uv run`, a temporary virtual environment is created with only the dependencies required to run the script, based on the groups defined in `pyproject.toml`.
+
+There’s no need to manually create or activate a virtual environment, `uv` handles everything.
+
+## Set Up `pre-commit`
+
+To install `pre-commit` using `uv`, run:
+
+```bash
+$ uv tool install pre-commit --with pre-commit-uv
+```
+
+You may be prompted to add `.local/bin` to your `PATH`, `uv` installs tools there by default.
+
+Next, install the hooks defined in `.pre-commit-config.yaml`:
+
+```bash
+$ pre-commit install
+```
+
+Once installed, `pre-commit` will automatically run the configured hooks each time you make a commit. This helps catch formatting issues, docstring violations, and other problems before code is committed.
+
+To manually run all `pre-commit` hooks on the entire codebase:
+
+```bash
+$ pre-commit run --all-files
+```
+
 ## Download the Schema
 
 This script downloads the latest GPP GraphQL schema to `schema.graphql`. You must have `GPP_URL` and `GPP_TOKEN` env variables set for downloading to work.
 
 ```bash
-python scripts/download_schema.py
+$ uv run --group schema python scripts/download_schema.py
 ```
-
-### Requirements
-
-- `gql[httpx]==3.6.0b4`
 
 ## Run Codegen
 
 This script regenerates the client code based on the updated schema.
 
 ```bash
-python scripts/run_codegen.py
+$ uv run --group codegen python scripts/run_codegen.py
 ```
 
-Requires:
+## Creating and Deploying a Release
 
-- `ariadne-codegen[subscriptions]==0.15.0.dev1`
+Releases are managed using GitHub Actions. When you’re ready to publish a new version of the package, use the **Create Release** workflow.
+
+1. Go to the **Actions** tab on GitHub.
+2. Select the **Create Release** workflow from the sidebar.
+3. Click **Run workflow**.
+4. Enter the release version (e.g., `25.6.0`).
+   **Note:** Do **not** include a leading `v` or unnecessary zero padding.
+5. Click **Run workflow** to trigger the release.
+
+This workflow performs the following steps:
+
+- Updates the `version` field in `pyproject.toml`.
+- Updates the `uv.lock` file to reflect the new version.
+- Commits and pushes the changes to the repository.
+- Creates a Git tag.
+- Drafts a GitHub release.
+
+### Finalizing the Release
+
+After the workflow completes:
+
+1. Go to the **Releases** section on GitHub.
+2. Locate the newly created **draft release**.
+3. Click **Publish release**.
+
+Once published, the package will be automatically uploaded to [PyPI](https://pypi.org/project/gpp-client/). It may take a few minutes for the release to appear.

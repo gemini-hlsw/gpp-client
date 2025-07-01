@@ -66,9 +66,10 @@ class TargetManager(BaseManager):
 
         Notes
         -----
-        - At least one of `program_id`, `proposal_reference`, or `program_reference`
+        At least one of `program_id`, `proposal_reference`, or `program_reference`
         must be specified to associate with a valid program.
-        - Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
+
+        Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``ValueError``.
         """
         validate_single_identifier(
