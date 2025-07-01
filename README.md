@@ -80,22 +80,22 @@ print("Created another:", another_note)
 
 ```bash
 # Get help.
-$ gpp --help
+gpp --help
 
 # Get observation help.
-$ gpp obs --help
+gpp obs --help
 
 # List observations.
-$ gpp obs list --limit 3
+gpp obs list --limit 3
 
 # Get details for one.
-$ gpp obs get o-123
+gpp obs get o-123
 
 # Create via JSON.
-$ gpp obs create --from-json new_obs.json --program-id p-123
+gpp obs create --from-json new_obs.json --program-id p-123
 
 # Update by ID via JSON.
-$ gpp obs update --observation-id o-123 --from-json updated_obs.json
+gpp obs update --observation-id o-123 --from-json updated_obs.json
 ```
 
 ## Reporting Bugs and Feature Requests
@@ -121,7 +121,7 @@ There’s no need to manually create or activate a virtual environment, `uv` han
 To install `pre-commit` using `uv`, run:
 
 ```bash
-$ uv tool install pre-commit --with pre-commit-uv
+uv tool install pre-commit --with pre-commit-uv
 ```
 
 You may be prompted to add `.local/bin` to your `PATH`, `uv` installs tools there by default.
@@ -129,7 +129,7 @@ You may be prompted to add `.local/bin` to your `PATH`, `uv` installs tools ther
 Next, install the hooks defined in `.pre-commit-config.yaml`:
 
 ```bash
-$ pre-commit install
+pre-commit install
 ```
 
 Once installed, `pre-commit` will automatically run the configured hooks each time you make a commit. This helps catch formatting issues, docstring violations, and other problems before code is committed.
@@ -137,7 +137,7 @@ Once installed, `pre-commit` will automatically run the configured hooks each ti
 To manually run all `pre-commit` hooks on the entire codebase:
 
 ```bash
-$ pre-commit run --all-files
+pre-commit run --all-files
 ```
 
 ## Download the Schema
@@ -145,7 +145,7 @@ $ pre-commit run --all-files
 This script downloads the latest GPP GraphQL schema to `schema.graphql`. You must have `GPP_URL` and `GPP_TOKEN` env variables set for downloading to work.
 
 ```bash
-$ uv run --group schema python scripts/download_schema.py
+uv run --group schema python scripts/download_schema.py
 ```
 
 ## Run Codegen
@@ -153,7 +153,7 @@ $ uv run --group schema python scripts/download_schema.py
 This script regenerates the client code based on the updated schema.
 
 ```bash
-$ uv run --group codegen python scripts/run_codegen.py
+uv run --group codegen python scripts/run_codegen.py
 ```
 
 ## Creating and Deploying a Release
