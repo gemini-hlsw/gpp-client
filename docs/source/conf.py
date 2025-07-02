@@ -29,7 +29,7 @@ extensions = [
     "sphinxcontrib.typer",
 ]
 
-source_suffix = ".rst"
+source_suffix = {".rst": "restructuredtext"}
 master_doc = "index"
 
 templates_path = ["_templates"]
@@ -41,10 +41,11 @@ exclude_patterns = []
 
 html_theme = "furo"
 html_static_path = ["_static"]
-html_logo = "_static/gemini-logo-words.jpg"
 html_title = "GPP Client"
 github_url = "https://github.com/gemini-hlsw/gpp-client"
 html_theme_options = {
+    "light_logo": "logo-light.png",
+    "dark_logo": "logo-dark.png",
     "light_css_variables": {
         "color-brand-primary": "#5F392A",
         "color-brand-content": "#5F392A",
