@@ -1,11 +1,12 @@
 __all__ = ["SchedulerDirector"]
 
-from functools import cached_property
+from dataclasses import dataclass
 
-from ..base_director import BaseDirector
+from ..base import BaseDirector
 from .coordinators import ProgramCoordinator
 
 
+@dataclass
 class SchedulerDirector(BaseDirector):
     """
     Facade for Scheduler-domain workflows.
@@ -25,14 +26,5 @@ class SchedulerDirector(BaseDirector):
         Coordinates program data tailored to the Scheduler.
     """
 
-    @cached_property
-    def program(self) -> ProgramCoordinator:
-        """
-        Coordinator for program-related operations.
-
-        Returns
-        -------
-        ProgramCoordinator
-            Lazily created instance that orchestrates program-level workflows.
-        """
-        return ProgramCoordinator(self.client)
+    def __post_init__(self) -> None:
+        self.program: ProgramCoordinator = ProgramCoordinator(self.client)

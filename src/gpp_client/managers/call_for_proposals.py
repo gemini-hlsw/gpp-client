@@ -20,7 +20,7 @@ from ..api.input_types import (
     WhereCallForProposals,
     WhereOrderCallForProposalsId,
 )
-from .base_manager import BaseManager
+from .base import BaseManager
 from .utils import load_properties
 
 

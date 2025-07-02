@@ -5,12 +5,12 @@ from .api._client import _GPPClient
 from .config import GPPConfig
 from .managers import (
     CallForProposalsManager,
+    GroupManager,
     ObservationManager,
     ProgramManager,
     ProgramNoteManager,
     SiteStatusManager,
     TargetManager,
-    GroupManager,
 )
 from .patches import patch_base_operations_graphql_field_get_formatted_variables
 

@@ -22,7 +22,7 @@ from ..api.custom_fields import (
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
-from .base_manager import BaseManager
+from .base import BaseManager
 from .utils import validate_single_identifier, load_properties
 
 

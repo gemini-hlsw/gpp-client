@@ -14,15 +14,13 @@ class GPPDirector:
     Parameters
     ----------
     client : GPPClient
-        An instance of the `GPPClient` used to communicate with the GPP GraphQL API.
+        Pre-configured client used to perform raw GraphQL operations.
 
     Attributes
     ----------
     scheduler : SchedulerDirector
-        Provides access to scheduler-specific operations, including retrieving programs
-        with full observation trees and their live observation metadata.
+        High-level director for Scheduler-domain workflows.
     """
 
     def __init__(self, client: GPPClient):
-        # Add here different directors services
         self.scheduler = SchedulerDirector(client)

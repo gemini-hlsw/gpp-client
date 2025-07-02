@@ -18,7 +18,7 @@ from ..api.input_types import (
     WhereOrderProgramNoteId,
     WhereProgramNote,
 )
-from .base_manager import BaseManager
+from .base import BaseManager
 from .utils import load_properties, validate_single_identifier
 
 
