@@ -24,28 +24,28 @@ Input Types
 
 Use these when building input arguments for ``create()``, ``update_by_id()``, ``update_all()``, and other manager methods.
 
-- :doc:`Input Types <input_types>`
+- :doc:`Input Types <input-types>`
 
 Fields
 ^^^^^^
 
 Use these to specify which fields to request in GraphQL queries or mutations.
 
-- :doc:`Field Definitions <custom_fields>`
+- :doc:`Field Definitions <custom-fields>`
 
 Queries
 ^^^^^^^
 
 Use these builders to construct query operations.
 
-- :doc:`Query Builders <custom_queries>`
+- :doc:`Query Builders <custom-queries>`
 
 Mutations
 ^^^^^^^^^
 
 Use these builders to construct mutation operations.
 
-- :doc:`Mutation Builders <custom_mutations>`
+- :doc:`Mutation Builders <custom-mutations>`
 
 Enums
 ^^^^^
@@ -60,8 +60,8 @@ Module Reference
 .. toctree::
    :maxdepth: 1
 
-   input_types
+   input-types
    enums
-   custom_fields
-   custom_queries
-   custom_mutations
+   custom-fields
+   custom-queries
+   custom-mutations

@@ -1,5 +1,5 @@
-Director Interface
-==================
+Director
+========
 
 This section documents how to interact with multiple managers to satisfy the specific needs of a service.
 
@@ -48,5 +48,5 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
-   base_director
+   base
    scheduler

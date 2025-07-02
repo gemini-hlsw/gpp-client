@@ -1,5 +1,5 @@
-Manager Modules
-===============
+Managers
+========
 
 This section documents the resource-specific manager classes available on the ``GPPClient``.
 
@@ -8,7 +8,7 @@ Overview
 
 A **manager** encapsulates all interaction logic for a specific GraphQL resource such as `programs`, `observations`, `targets`, and more. Each manager provides an asynchronous, Pythonic interface to the underlying GraphQL schema.
 
-All managers inherit from a shared :doc:`BaseManager <base_manager>`, and most compose lightweight mixins for common operations like ``create``, ``update_all``, ``get_by_id``, and ``delete_by_id``.
+All managers inherit from a shared :doc:`BaseManager <base>`, and most compose lightweight mixins for common operations like ``create``, ``update_all``, ``get_by_id``, and ``delete_by_id``.
 
 Accessing Managers
 ------------------
@@ -53,10 +53,10 @@ API Reference
 .. toctree::
    :maxdepth: 1
 
-   base_manager
-   call_for_proposals
+   base
+   call-for-proposals
    program
-   program_note
+   program-note
    target
    observation
-   site_status
+   site-status
