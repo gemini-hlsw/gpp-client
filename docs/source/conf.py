@@ -16,7 +16,6 @@ sys.path.insert(0, os.path.abspath("../.."))
 project = "gpp_client"
 copyright = "2025, NOIRLab"
 author = "NOIRLab"
-release = "0.0.1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -27,6 +26,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "sphinxcontrib.typer",
+    "sphinx_copybutton",
 ]
 
 source_suffix = {".rst": "restructuredtext"}
@@ -78,7 +78,6 @@ autodoc_default_options = {
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
-
 
 
 def skip_member(app, what, name, obj, skip, options):
