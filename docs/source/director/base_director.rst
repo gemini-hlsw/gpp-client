@@ -1,7 +1,7 @@
 Base Director
 =============
 
-All directors inherit from this class, which encapsulates core functionality.
+All directors inherit from this class.
 
 
 .. automodule:: gpp_client.directors.base_director

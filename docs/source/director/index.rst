@@ -24,7 +24,15 @@ The director interface allows you to select a specific director by namespace for
    from gpp_client import GPPDirector
    client = GPPClient()
    director = GPPDirector(client)
-   programs = await director.scheduler.get_all()
+   programs = await director.scheduler.program.get_all()
+
+
+Or from the console:
+
+
+.. code-block:: bash
+
+   gpp sched program list
 
 
 .. automodule:: gpp_client.director

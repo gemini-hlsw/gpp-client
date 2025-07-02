@@ -4,7 +4,23 @@ from ..client import GPPClient
 
 
 class BaseDirector:
-    """Used to orchestrate various managers for a specific service."""
+    """Orchestrate multiple resource managers for a single GPP service.
 
-    def __init__(self, client: GPPClient):
-        self.client = client
+    Parameters
+    ----------
+    client : GPPClient
+        Authenticated low-level client reused by every manager / coordinator.
+
+    Attributes
+    ----------
+    client : GPPClient
+        The shared client instance.
+    """
+
+    def __init__(self, client: GPPClient) -> None:
+        self._client: GPPClient = client
+
+    @property
+    def client(self) -> GPPClient:
+        """Return the shared GPP client instance."""
+        return self._client

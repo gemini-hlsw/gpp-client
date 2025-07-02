@@ -1,9 +1,8 @@
 Scheduler
 =========
 
-The ``SchedulerDirector`` provides access to scheduler-related data in the GPP system by combining multiple underlying managers.
-
-Its primary purpose is to retrieve programs along with their associated observation trees and metadata in a single call.
+The ``SchedulerDirector`` exposes **coordinator** objects that orchestrate
+several *managers* to satisfy Scheduler-specific workflows.
 
 Usage Example
 -------------
@@ -14,10 +13,21 @@ Usage Example
    from gpp_client import Director
    client = GPPClient()
    director = Director(client)
-   programs = await director.scheduler.get_all()
+   programs = await director.scheduler.program.get_all()
+
+Coordinator layer
+-----------------
+
+Each coordinator bundles related manager calls into a single, domain-focused API.  For example, ``ProgramCoordinator`` combines ``ProgramManager`` and ``ObservationManager`` to return a program plus its observation hierarchy in one asynchronous method.
 
 
 .. automodule:: gpp_client.directors.scheduler
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:
+
+.. automodule:: gpp_client.directors.scheduler.coordinators.program
    :members:
    :undoc-members:
    :inherited-members:

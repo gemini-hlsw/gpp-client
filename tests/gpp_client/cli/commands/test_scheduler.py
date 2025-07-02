@@ -7,7 +7,7 @@ _RESOURCE_NAME = "sched"
 
 @pytest.mark.remote_data
 class TestScheduler:
-    def test_get_all(self, cli_runner):
+    def test_program_get_all(self, cli_runner):
         """Test listing multiple items."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "list"])
+        result = cli_runner.invoke(app, [_RESOURCE_NAME, "program", "list"])
         assert result.exit_code == 0
