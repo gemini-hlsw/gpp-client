@@ -15,17 +15,17 @@ Usage Example
    director = Director(client)
    programs = await director.scheduler.program.get_all()
 
-Coordinator layer
------------------
-
-Each coordinator bundles related manager calls into a single, domain-focused API.  For example, ``ProgramCoordinator`` combines ``ProgramManager`` and ``ObservationManager`` to return a program plus its observation hierarchy in one asynchronous method.
-
 
 .. automodule:: gpp_client.directors.scheduler
    :members:
    :undoc-members:
    :inherited-members:
    :show-inheritance:
+
+Coordinator layer
+-----------------
+
+Each coordinator bundles related manager calls into a single, domain-focused API.  For example, ``ProgramCoordinator`` combines ``ProgramManager`` and ``ObservationManager`` to return a program plus its observation hierarchy in one asynchronous method.
 
 .. automodule:: gpp_client.directors.scheduler.coordinators.program
    :members:

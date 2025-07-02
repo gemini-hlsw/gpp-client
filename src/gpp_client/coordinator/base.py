@@ -9,11 +9,9 @@ from ..client import GPPClient
 class BaseCoordinator:
     """
     Coordinate several managers to fulfil domain-level workflows.
-
-    Attributes
-    ----------
-    client : GPPClient
-        Shared low-level client injected by the parent director.
     """
 
     client: GPPClient
+    """
+    Shared low-level client injected by the parent director.
+    """
