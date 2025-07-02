@@ -16,7 +16,7 @@ from ..utils import (
 )
 
 console = Console()
-app = typer.Typer(name="pnote", help="Manage program notes.", no_args_is_help=True)
+app = typer.Typer(name="pnote", help="Manage program notes.")
 
 
 @app.command("list")

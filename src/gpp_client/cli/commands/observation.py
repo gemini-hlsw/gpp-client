@@ -17,7 +17,7 @@ from ...client import GPPClient
 from ...managers.utils import validate_single_identifier
 
 console = Console()
-app = typer.Typer(name="obs", help="Manage observations.", no_args_is_help=True)
+app = typer.Typer(name="obs", help="Manage observations.")
 
 
 @app.command("list")

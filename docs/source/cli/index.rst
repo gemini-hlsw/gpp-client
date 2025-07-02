@@ -1,5 +1,5 @@
-Command Line Interface Reference
-================================
+CLI
+===
 
 The ``gpp`` command-line interface provides access to the Gemini Program Platform (GPP), enabling interaction with programs, observations, targets, proposals, and related resources.
 
@@ -20,12 +20,13 @@ Individual commands are documented below:
     :maxdepth: 1
 
     config
-    call_for_proposals
-    program_note
+    call-for-proposals
+    program-note
     observation
     target
     program
-    site_status
+    site-status
+    scheduler
 
 .. note::
 

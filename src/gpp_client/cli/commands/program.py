@@ -15,7 +15,7 @@ from ..utils import (
 )
 
 console = Console()
-app = typer.Typer(name="program", help="Manage programs.", no_args_is_help=True)
+app = typer.Typer(name="program", help="Manage programs.")
 
 
 @app.command("list")

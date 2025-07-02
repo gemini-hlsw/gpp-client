@@ -1,38 +1,36 @@
+__all__ = ["ProgramCoordinator"]
+
 from typing import Any
 
-from src.gpp_client import GPPClient
-from src.gpp_client.api import (
-    WhereProgram,
+from ....api import (
+    ObservationWorkflowState,
+    WhereCalculatedObservationWorkflow,
     WhereObservation,
     WhereOrderObservationId,
-    WhereCalculatedObservationWorkflow,
     WhereOrderObservationWorkflowState,
-    ObservationWorkflowState,
+    WhereProgram,
 )
+from ....coordinator import BaseCoordinator
 
 
-class Program:
-    """GPP Scheduler's program manager.
-
-    The following version is a stripped and tailored version of a Program Manager
-    that uses the regular client to get the program and observation information.
+class ProgramCoordinator(BaseCoordinator):
     """
-
-    def __init__(self, client: GPPClient):
-        self.client = client
+    Combines multiple managers to return views of a program and its observations.
+    """
 
     async def _traverse_for_observation(
         self, node: dict[str, Any], obs_map: dict[str, Any]
     ) -> None:
-        """Maps the information between the groups tree and the observations retrieved from a different query.
+        """
+        Maps the information between the groups tree and the observations retrieved
+        from a different query.
 
         Parameters
         ----------
-        group: Dict[str, Any]
+        group: dict[str, Any]
             Root group and subsequently groups
-        obs_map: Dict[str, Any]
+        obs_map: dict[str, Any]
             Mapping of observation ids with observation raw data.
-
         """
         obs = node.get("observation")
         group = node.get("group")
@@ -42,8 +40,8 @@ class Program:
             if obs_data is not None:
                 node["observation"] = obs_data
             else:
-                # No information on the ODB about the observation
-                # but the structure remains in the program.
+                # No information on the ODB about the observation but the structure
+                # remains in the program.
                 # Put to None so observation doesn't get parse.
                 node["observation"] = None
                 # print(obs)
@@ -65,7 +63,8 @@ class Program:
         self,
         where: WhereProgram | None = None,
     ) -> list[dict[str, Any]]:
-        """Fetch all programs with a complete group tree and observations.
+        """
+        Fetch all programs with a complete group tree and observations.
 
         Parameters
         ----------
@@ -76,7 +75,6 @@ class Program:
         -------
         list[dict[str, Any]]
             A list of dictionaries representing the programs and their elements.
-
         """
 
         response = await self.client.program.get_all(where=where)
@@ -84,12 +82,12 @@ class Program:
         programs = response.get("matches", [])
         observations = []
         for program in programs:
-            # Create root group
+            # Create root group.
             root = {"name": "root", "elements": []}
             groups_elements_mapping = {}
             children_map = {}
 
-            # Iterate for all elements
+            # Iterate for all elements.
             groups_in_programs = program["allGroupElements"]
             for g in groups_in_programs:
                 parent_id = g.get("parentGroupId")
@@ -121,11 +119,11 @@ class Program:
 
                 else:
                     print(f"Parent {parent_id} not found in mapping")
-                    # Ignore orphans for now, but check for this use case in the ODB
+                    # Ignore orphans for now, but check for this use case in the ODB.
                     pass
             program["root"] = root
 
-        # If is in the list and status is Ready or OnGoing
+        # If is in the list and status is Ready or OnGoing.
         where_observation = WhereObservation(
             id=WhereOrderObservationId(in_=observations),
             workflow=WhereCalculatedObservationWorkflow(

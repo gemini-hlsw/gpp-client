@@ -11,7 +11,7 @@ from ...client import GPPClient
 
 
 console = Console()
-app = typer.Typer(name="groups", help="Manage Groups.", no_args_is_help=True)
+app = typer.Typer(name="groups", help="Manage Groups.")
 
 
 @app.command("get")

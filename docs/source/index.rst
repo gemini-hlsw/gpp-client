@@ -26,7 +26,7 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    quickstart
    client
@@ -34,7 +34,17 @@ Then move on to the :doc:`Client Overview <client>` to see how the client is org
    credentials
    cli/index
    managers/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Advanced
+
    director/index
    api/index
-   contributing
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Guide
+
    developer
+   contributing

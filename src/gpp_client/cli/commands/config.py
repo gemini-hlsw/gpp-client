@@ -10,7 +10,6 @@ console = Console()
 
 app = typer.Typer(
     name="config",
-    no_args_is_help=True,
     help="Manage GPP client configuration settings.",
 )
 
