@@ -30,7 +30,7 @@ from ..api.custom_fields import (
     ProperMotionFields,
     ProperMotionRAFields,
     ProperMotionDeclinationFields,
-    NonsiderealFields,
+    NonsiderealFields, CalculatedObservationWorkflowFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -442,8 +442,9 @@ class ObservationManager(BaseManager):
                 ScienceRequirementsFields.mode
             ),
             ObservationFields.science_band,
-            # DEPRECATED, use calculated_workflow
-            ObservationFields.workflow().fields(ObservationWorkflowFields.state),
+            ObservationFields.calculated_workflow().fields(
+                CalculatedObservationWorkflowFields.state
+            ),
             # BEGIN SEQUENCE NEEDED
             # ObservationFields.execution().fields(
             # DEPRECATED, use calculated_digest
