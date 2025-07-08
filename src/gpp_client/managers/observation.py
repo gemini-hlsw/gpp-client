@@ -11,7 +11,6 @@ from ..api.custom_fields import (
     ProgramFields,
     ScienceRequirementsFields,
     UpdateObservationsResultFields,
-    ObservationWorkflowFields,
     TimeSpanFields,
     ConstraintSetFields,
     TimingWindowFields,
