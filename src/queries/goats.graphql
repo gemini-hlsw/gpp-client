@@ -1,0 +1,217 @@
+query GetGOATSObservations($programId: ProgramId!) {
+  observations(
+    includeDeleted: false
+    WHERE: {
+      program: {
+        id: { EQ: $programId }
+      }
+    }
+  ) {
+    matches {
+      id
+      instrument
+      title
+      constraintSet {
+        imageQuality
+        cloudExtinction
+        skyBackground
+        waterVapor
+        elevationRange {
+          airMass {
+            min
+            max
+          }
+          hourAngle {
+            minHours
+            maxHours
+          }
+        }
+      }
+      targetEnvironment {
+        firstScienceTarget {
+          sidereal {
+            properMotion {
+              ra {
+                milliarcsecondsPerYear
+              }
+              dec {
+                milliarcsecondsPerYear
+              }
+            }
+            parallax {
+              milliarcseconds
+            }
+            radialVelocity {
+              kilometersPerSecond
+            }
+          }
+          sourceProfile {
+            point {
+              bandNormalized {
+                brightnesses {
+                  band
+                  value
+                  units
+                }
+              }
+            }
+          }
+        }
+      }
+      posAngleConstraint {
+        mode
+        angle {
+          degrees
+        }
+      }
+      scienceBand
+      observationDuration {
+        seconds
+        minutes
+        hours
+        iso
+      }
+      observerNotes
+      execution {
+        visits {
+          matches {
+            id
+            created
+            interval {
+              start
+              end
+              duration {
+                seconds
+                minutes
+                hours
+              }
+            }
+            atomRecords {
+              hasMore
+              matches {
+                id
+                created
+                executionState
+                interval {
+                  start
+                  end
+                  duration {
+                    seconds
+                    minutes
+                    hours
+                  }
+                }
+                steps {
+                  matches {
+                    index
+                    stepConfig {
+                      stepType
+                    }
+                    observeClass
+                    telescopeConfig {
+                      offset {
+                        p {
+                          arcseconds
+                        }
+                        q {
+                          arcseconds
+                        }
+                      }
+                      guiding
+                    }
+                    gmosNorth {
+                      roi
+                      readout {
+                        xBin
+                        yBin
+                      }
+                      exposure {
+                        seconds
+                      }
+                      centralWavelength {
+                        nanometers
+                      }
+                    }
+                    gmosSouth {
+                      roi
+                      readout {
+                        xBin
+                        yBin
+                      }
+                      exposure {
+                        seconds
+                      }
+                      centralWavelength {
+                        nanometers
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      scienceRequirements {
+        exposureTimeMode {
+          signalToNoise {
+            value
+            at {
+              nanometers
+            }
+          }
+          timeAndCount {
+            time {
+              seconds
+            }
+            count
+            at {
+              nanometers
+            }
+          }
+        }
+      }
+      observingMode {
+        instrument
+        mode
+        gmosNorthLongSlit {
+          grating
+          filter
+          fpu
+          spatialOffsets {
+            arcseconds
+          }
+          centralWavelength {
+            nanometers
+          }
+          wavelengthDithers {
+            nanometers
+          }
+          xBin
+          yBin
+          ampReadMode
+          roi
+        }
+        gmosSouthLongSlit {
+          grating
+          filter
+          fpu
+          spatialOffsets {
+            arcseconds
+          }
+          centralWavelength {
+            nanometers
+          }
+          wavelengthDithers {
+            nanometers
+          }
+          xBin
+          yBin
+          ampReadMode
+          roi
+        }
+      }
+    }
+    hasMore
+  }
+}

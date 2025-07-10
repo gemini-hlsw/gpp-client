@@ -29,7 +29,8 @@ from ..api.custom_fields import (
     ProperMotionFields,
     ProperMotionRAFields,
     ProperMotionDeclinationFields,
-    NonsiderealFields, CalculatedObservationWorkflowFields,
+    NonsiderealFields,
+    CalculatedObservationWorkflowFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
