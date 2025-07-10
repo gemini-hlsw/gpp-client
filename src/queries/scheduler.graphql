@@ -1,0 +1,19 @@
+query GetSchedulerPrograms{
+  programs(
+    WHERE: {
+      AND: [
+        { reference: { semester: { EQ: "2024B" } } }
+        { proposalStatus: { EQ: ACCEPTED } }
+      ]
+    }
+  ) {
+    matches {
+      id
+      proposal {
+        type {
+          scienceSubtype
+        }
+      }
+    }
+  }
+}
