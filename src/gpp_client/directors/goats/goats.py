@@ -1,18 +1,18 @@
-__all__ = ["SchedulerDirector"]
+__all__ = ["GOATSDirector"]
 
 from dataclasses import dataclass
 
 from ..base import BaseDirector
-from .coordinators import ProgramCoordinator
+from .coordinators import ObservationCoordinator
 
 
 @dataclass
-class SchedulerDirector(BaseDirector):
+class GOATSDirector(BaseDirector):
     """
-    Facade for Scheduler-domain workflows.
+    Facade for GOATS-domain workflows.
 
     The director instantiates and exposes coordinator objects that orchestrate
-    multiple managers to fulfil complex Scheduler-specific tasks. Each coordinator
+    multiple managers to fulfil complex GOATS-specific tasks. Each coordinator
     receives the shared ``GPPClient`` instance injected into this director.
 
     Parameters
@@ -22,9 +22,9 @@ class SchedulerDirector(BaseDirector):
 
     Attributes
     ----------
-    program : ProgramCoordinator
-        Coordinates program data tailored to the Scheduler.
+    observation : ObservationCoordinator
+        Coordinates observation data tailored for GOATS.
     """
 
     def __post_init__(self) -> None:
-        self.program: ProgramCoordinator = ProgramCoordinator(self.client)
+        self.observation: ObservationCoordinator = ObservationCoordinator(self.client)

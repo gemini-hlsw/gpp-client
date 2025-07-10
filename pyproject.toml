@@ -68,6 +68,7 @@ plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.FixCustomFieldsLiteralPlugin",
 ]
+queries_path = "src/queries"
 
 [tool.numpydoc_validation]
 checks = [

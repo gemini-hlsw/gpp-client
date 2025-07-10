@@ -1,7 +1,7 @@
 __all__ = ["GPPDirector"]
 
 from .client import GPPClient
-from .directors import SchedulerDirector
+from .directors import GOATSDirector, SchedulerDirector
 
 
 class GPPDirector:
@@ -20,7 +20,10 @@ class GPPDirector:
     ----------
     scheduler : SchedulerDirector
         High-level director for Scheduler-domain workflows.
+    goats : GOATSDirector
+        High-level director for GOATS-domain workflows.
     """
 
     def __init__(self, client: GPPClient):
         self.scheduler = SchedulerDirector(client)
+        self.goats = GOATSDirector(client)

@@ -13,7 +13,9 @@ from ..api.custom_fields import (
     GroupElementFields,
     GroupFields,
     ObservationFields,
-    TimeSpanFields, ProposalFields, CallForProposalsFields,
+    TimeSpanFields,
+    ProposalFields,
+    CallForProposalsFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -335,11 +337,10 @@ class ProgramManager(BaseManager):
                 ProposalFields.call().fields(
                     CallForProposalsFields.semester,
                     CallForProposalsFields.active().fields(
-                        DateIntervalFields.start,
-                        DateIntervalFields.end
-                    )
+                        DateIntervalFields.start, DateIntervalFields.end
+                    ),
                 ),
-                ProposalFields.type()
+                ProposalFields.type(),
             ),
             ProgramFields.pi().fields(
                 ProgramUserFields.id,

@@ -21,7 +21,7 @@ async def get_by_id(
             help="Site name: north or south (case-insensitive).", case_sensitive=False
         ),
     ],
-):
+) -> None:
     """Get site status for Gemini North or South."""
     client = GPPClient()
     result = await client.site_status.get_by_id(site_id)

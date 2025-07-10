@@ -12,6 +12,7 @@ from .commands import (
     site_status,
     target,
     scheduler,
+    goats,
 )
 from .utils import async_command
 
@@ -27,6 +28,7 @@ app.add_typer(observation.app)
 app.add_typer(site_status.app)
 app.add_typer(group.app)
 app.add_typer(scheduler.app)
+app.add_typer(goats.app)
 
 
 @app.command("ping")
