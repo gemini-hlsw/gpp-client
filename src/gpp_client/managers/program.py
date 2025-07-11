@@ -340,7 +340,6 @@ class ProgramManager(BaseManager):
                         DateIntervalFields.start, DateIntervalFields.end
                     ),
                 ),
-                ProposalFields.type(),
             ),
             ProgramFields.pi().fields(
                 ProgramUserFields.id,
