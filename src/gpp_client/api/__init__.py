@@ -190,6 +190,13 @@ from .get_goats_observations import (
     GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized,
     GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses,
 )
+from .get_scheduler_programs import (
+    GetSchedulerPrograms,
+    GetSchedulerProgramsPrograms,
+    GetSchedulerProgramsProgramsMatches,
+    GetSchedulerProgramsProgramsMatchesProposal,
+    GetSchedulerProgramsProgramsMatchesProposalType,
+)
 from .input_types import (
     AddAtomEventInput,
     AddDatasetEventInput,
@@ -641,6 +648,11 @@ __all__ = [
     "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePoint",
     "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized",
     "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses",
+    "GetSchedulerPrograms",
+    "GetSchedulerProgramsPrograms",
+    "GetSchedulerProgramsProgramsMatches",
+    "GetSchedulerProgramsProgramsMatchesProposal",
+    "GetSchedulerProgramsProgramsMatchesProposalType",
     "GmosAmpCount",
     "GmosAmpGain",
     "GmosAmpReadMode",
