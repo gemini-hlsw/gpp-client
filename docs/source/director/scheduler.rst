@@ -22,7 +22,7 @@ Usage Example
    :inherited-members:
    :show-inheritance:
 
-Coordinator layer
+Coordinator Layer
 -----------------
 
 Each coordinator bundles related manager calls into a single, domain-focused API.  For example, ``ProgramCoordinator`` combines ``ProgramManager`` and ``ObservationManager`` to return a program plus its observation hierarchy in one asynchronous method.

@@ -27,4 +27,4 @@ class ObservationCoordinator(BaseCoordinator):
         results = await self.client._client.get_goats_observations(
             program_id=program_id
         )
-        return results.model_dump()
+        return results.model_dump()["observations"]

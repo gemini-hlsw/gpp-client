@@ -50,3 +50,4 @@ API Reference
 
    base
    scheduler
+   goats
