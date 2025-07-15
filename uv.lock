@@ -563,7 +563,7 @@ wheels = [
 
 [[package]]
 name = "gpp-client"
-version = "25.7.2"
+version = "25.7.3"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
