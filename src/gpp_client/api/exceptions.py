@@ -77,7 +77,7 @@ class GraphQLClientGraphQLMultiError(GraphQLClientError):
         )
 
 
-class GraphQLClientInvalidMessageFormat(GraphQLClientError):  # noqa: N818
+class GraphQLClientInvalidMessageFormat(GraphQLClientError):
     def __init__(self, message: Union[str, bytes]) -> None:
         self.message = message
 

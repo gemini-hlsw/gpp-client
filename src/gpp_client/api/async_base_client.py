@@ -20,8 +20,6 @@ from .exceptions import (
 try:
     from websockets.client import (  # type: ignore[import-not-found,unused-ignore]
         WebSocketClientProtocol,
-    )
-    from websockets.client import (
         connect as ws_connect,
     )
     from websockets.typing import (  # type: ignore[import-not-found,unused-ignore]
@@ -33,15 +31,15 @@ except ImportError:
     from contextlib import asynccontextmanager
 
     @asynccontextmanager  # type: ignore
-    async def ws_connect(*args, **kwargs):
+    async def ws_connect(*args, **kwargs):  # pylint: disable=unused-argument
         raise NotImplementedError("Subscriptions require 'websockets' package.")
-        yield
+        yield  # pylint: disable=unreachable
 
     WebSocketClientProtocol = Any  # type: ignore[misc,assignment,unused-ignore]
     Data = Any  # type: ignore[misc,assignment,unused-ignore]
     Origin = Any  # type: ignore[misc,assignment,unused-ignore]
 
-    def Subprotocol(*args, **kwargs):  # type: ignore # noqa: N802, N803
+    def Subprotocol(*args, **kwargs):  # type: ignore # pylint: disable=invalid-name
         raise NotImplementedError("Subscriptions require 'websockets' package.")
 
 
