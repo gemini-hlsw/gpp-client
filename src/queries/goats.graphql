@@ -9,6 +9,7 @@ query GetGOATSObservations($programId: ProgramId!) {
   ) {
     matches {
       id
+      reference
       instrument
       title
       constraintSet {
@@ -73,6 +74,7 @@ query GetGOATSObservations($programId: ProgramId!) {
       }
       observerNotes
       execution {
+        executionState
         visits {
           matches {
             id
