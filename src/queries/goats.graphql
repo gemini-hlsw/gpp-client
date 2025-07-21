@@ -4,6 +4,7 @@ query GetGOATSObservations($programId: ProgramId!) {
     WHERE: {
       program: {
         id: { EQ: $programId }
+        proposalStatus: { EQ: ACCEPTED }
       }
     }
   ) {
