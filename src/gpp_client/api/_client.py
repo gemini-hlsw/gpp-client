@@ -35,7 +35,10 @@ class _GPPClient(AsyncBaseClient):
         query = gql(
             """
             query GetGOATSObservations($programId: ProgramId!) {
-              observations(includeDeleted: false, WHERE: {program: {id: {EQ: $programId}}}) {
+              observations(
+                includeDeleted: false
+                WHERE: {program: {id: {EQ: $programId}, proposalStatus: {EQ: ACCEPTED}}}
+              ) {
                 matches {
                   id
                   reference {
