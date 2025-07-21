@@ -9,7 +9,9 @@ query GetGOATSObservations($programId: ProgramId!) {
   ) {
     matches {
       id
-      reference
+      reference {
+        label
+      }
       instrument
       title
       constraintSet {
@@ -25,6 +27,33 @@ query GetGOATSObservations($programId: ProgramId!) {
           hourAngle {
             minHours
             maxHours
+          }
+        }
+      }
+      attachments {
+        id
+        attachmentType
+        fileName
+        description
+        updatedAt
+      }
+      timingWindows {
+        inclusion
+        startUtc
+        end {
+          ... on TimingWindowEndAt {
+            atUtc
+          }
+          ... on TimingWindowEndAfter {
+            after {
+              seconds
+            }
+            repeat {
+              period {
+                seconds
+              }
+              times
+            }
           }
         }
       }
@@ -75,86 +104,18 @@ query GetGOATSObservations($programId: ProgramId!) {
       observerNotes
       execution {
         executionState
-        visits {
-          matches {
-            id
-            created
-            interval {
-              start
-              end
-              duration {
-                seconds
-                minutes
-                hours
-              }
-            }
-            atomRecords {
-              hasMore
-              matches {
-                id
-                created
-                executionState
-                interval {
-                  start
-                  end
-                  duration {
-                    seconds
-                    minutes
-                    hours
-                  }
-                }
-                steps {
-                  matches {
-                    index
-                    stepConfig {
-                      stepType
-                    }
-                    observeClass
-                    telescopeConfig {
-                      offset {
-                        p {
-                          arcseconds
-                        }
-                        q {
-                          arcseconds
-                        }
-                      }
-                      guiding
-                    }
-                    gmosNorth {
-                      roi
-                      readout {
-                        xBin
-                        yBin
-                      }
-                      exposure {
-                        seconds
-                      }
-                      centralWavelength {
-                        nanometers
-                      }
-                    }
-                    gmosSouth {
-                      roi
-                      readout {
-                        xBin
-                        yBin
-                      }
-                      exposure {
-                        seconds
-                      }
-                      centralWavelength {
-                        nanometers
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
       scienceRequirements {
+        mode
+        spectroscopy {
+          wavelength {
+            nanometers
+          }
+          resolution
+          wavelengthCoverage {
+            nanometers
+          }
+        }
         exposureTimeMode {
           signalToNoise {
             value

@@ -38,6 +38,9 @@ class _GPPClient(AsyncBaseClient):
               observations(includeDeleted: false, WHERE: {program: {id: {EQ: $programId}}}) {
                 matches {
                   id
+                  reference {
+                    label
+                  }
                   instrument
                   title
                   constraintSet {
@@ -53,6 +56,34 @@ class _GPPClient(AsyncBaseClient):
                       hourAngle {
                         minHours
                         maxHours
+                      }
+                    }
+                  }
+                  attachments {
+                    id
+                    attachmentType
+                    fileName
+                    description
+                    updatedAt
+                  }
+                  timingWindows {
+                    inclusion
+                    startUtc
+                    end {
+                      __typename
+                      ... on TimingWindowEndAt {
+                        atUtc
+                      }
+                      ... on TimingWindowEndAfter {
+                        after {
+                          seconds
+                        }
+                        repeat {
+                          period {
+                            seconds
+                          }
+                          times
+                        }
                       }
                     }
                   }
@@ -102,87 +133,19 @@ class _GPPClient(AsyncBaseClient):
                   }
                   observerNotes
                   execution {
-                    visits {
-                      matches {
-                        id
-                        created
-                        interval {
-                          start
-                          end
-                          duration {
-                            seconds
-                            minutes
-                            hours
-                          }
-                        }
-                        atomRecords {
-                          hasMore
-                          matches {
-                            id
-                            created
-                            executionState
-                            interval {
-                              start
-                              end
-                              duration {
-                                seconds
-                                minutes
-                                hours
-                              }
-                            }
-                            steps {
-                              matches {
-                                index
-                                stepConfig {
-                                  __typename
-                                  stepType
-                                }
-                                observeClass
-                                telescopeConfig {
-                                  offset {
-                                    p {
-                                      arcseconds
-                                    }
-                                    q {
-                                      arcseconds
-                                    }
-                                  }
-                                  guiding
-                                }
-                                gmosNorth {
-                                  roi
-                                  readout {
-                                    xBin
-                                    yBin
-                                  }
-                                  exposure {
-                                    seconds
-                                  }
-                                  centralWavelength {
-                                    nanometers
-                                  }
-                                }
-                                gmosSouth {
-                                  roi
-                                  readout {
-                                    xBin
-                                    yBin
-                                  }
-                                  exposure {
-                                    seconds
-                                  }
-                                  centralWavelength {
-                                    nanometers
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    executionState
                   }
                   scienceRequirements {
+                    mode
+                    spectroscopy {
+                      wavelength {
+                        nanometers
+                      }
+                      resolution
+                      wavelengthCoverage {
+                        nanometers
+                      }
+                    }
                     exposureTimeMode {
                       signalToNoise {
                         value
