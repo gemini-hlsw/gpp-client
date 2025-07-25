@@ -19,6 +19,7 @@ from .custom_typing_fields import (
     AngleGraphQLField,
     AsterismGroupGraphQLField,
     AsterismGroupSelectResultGraphQLField,
+    AtomDigestGraphQLField,
     AtomEventGraphQLField,
     AtomRecordGraphQLField,
     AtomRecordSelectResultGraphQLField,
@@ -29,6 +30,7 @@ from .custom_typing_fields import (
     BandNormalizedGraphQLField,
     BandNormalizedIntegratedGraphQLField,
     BandNormalizedSurfaceGraphQLField,
+    CalculatedAtomDigestsGraphQLField,
     CalculatedBandedTimeGraphQLField,
     CalculatedCategorizedTimeRangeGraphQLField,
     CalculatedExecutionDigestGraphQLField,
@@ -586,6 +588,29 @@ class AsterismGroupSelectResultFields(GraphQLField):
         return self
 
 
+class AtomDigestFields(GraphQLField):
+    id: "AtomDigestGraphQLField" = AtomDigestGraphQLField("id")
+    observe_class: "AtomDigestGraphQLField" = AtomDigestGraphQLField("observeClass")
+
+    @classmethod
+    def time_estimate(cls) -> "CategorizedTimeFields":
+        return CategorizedTimeFields("timeEstimate")
+
+    step_types: "AtomDigestGraphQLField" = AtomDigestGraphQLField("stepTypes")
+    lamp_types: "AtomDigestGraphQLField" = AtomDigestGraphQLField("lampTypes")
+
+    def fields(
+        self, *subfields: Union[AtomDigestGraphQLField, "CategorizedTimeFields"]
+    ) -> "AtomDigestFields":
+        """Subfields should come from the AtomDigestFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "AtomDigestFields":
+        self._alias = alias
+        return self
+
+
 class AtomEventFields(GraphQLField):
     id: "AtomEventGraphQLField" = AtomEventGraphQLField("id")
 
@@ -860,6 +885,27 @@ class BandedTimeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "BandedTimeFields":
+        self._alias = alias
+        return self
+
+
+class CalculatedAtomDigestsFields(GraphQLField):
+    state: "CalculatedAtomDigestsGraphQLField" = CalculatedAtomDigestsGraphQLField(
+        "state"
+    )
+
+    @classmethod
+    def value(cls) -> "AtomDigestFields":
+        return AtomDigestFields("value")
+
+    def fields(
+        self, *subfields: Union[CalculatedAtomDigestsGraphQLField, "AtomDigestFields"]
+    ) -> "CalculatedAtomDigestsFields":
+        """Subfields should come from the CalculatedAtomDigestsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalculatedAtomDigestsFields":
         self._alias = alias
         return self
 
@@ -2309,6 +2355,10 @@ class ExecutionFields(GraphQLField):
         return CalculatedExecutionDigestFields("calculatedDigest")
 
     @classmethod
+    def atom_digests(cls) -> "CalculatedAtomDigestsFields":
+        return CalculatedAtomDigestsFields("atomDigests")
+
+    @classmethod
     def config(cls, *, future_limit: Optional[Any] = None) -> "ExecutionConfigFields":
         arguments: Dict[str, Dict[str, Any]] = {
             "futureLimit": {"type": "NonNegInt", "value": future_limit}
@@ -2381,6 +2431,7 @@ class ExecutionFields(GraphQLField):
         *subfields: Union[
             ExecutionGraphQLField,
             "AtomRecordSelectResultFields",
+            "CalculatedAtomDigestsFields",
             "CalculatedExecutionDigestFields",
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
@@ -3186,6 +3237,15 @@ class GmosNorthImagingFields(GraphQLField):
     initial_filters: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "initialFilters"
     )
+    multiple_filters_mode: "GmosNorthImagingGraphQLField" = (
+        GmosNorthImagingGraphQLField("multipleFiltersMode")
+    )
+    default_multiple_filters_mode: "GmosNorthImagingGraphQLField" = (
+        GmosNorthImagingGraphQLField("defaultMultipleFiltersMode")
+    )
+    explicit_multiple_filters_mode: "GmosNorthImagingGraphQLField" = (
+        GmosNorthImagingGraphQLField("explicitMultipleFiltersMode")
+    )
     bin: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField("bin")
     default_bin: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "defaultBin"
@@ -3582,6 +3642,15 @@ class GmosSouthImagingFields(GraphQLField):
     filters: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("filters")
     initial_filters: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "initialFilters"
+    )
+    multiple_filters_mode: "GmosSouthImagingGraphQLField" = (
+        GmosSouthImagingGraphQLField("multipleFiltersMode")
+    )
+    default_multiple_filters_mode: "GmosSouthImagingGraphQLField" = (
+        GmosSouthImagingGraphQLField("defaultMultipleFiltersMode")
+    )
+    explicit_multiple_filters_mode: "GmosSouthImagingGraphQLField" = (
+        GmosSouthImagingGraphQLField("explicitMultipleFiltersMode")
     )
     bin: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("bin")
     default_bin: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
@@ -5357,9 +5426,6 @@ class RightAscensionFields(GraphQLField):
     hms: "RightAscensionGraphQLField" = RightAscensionGraphQLField("hms")
     hours: "RightAscensionGraphQLField" = RightAscensionGraphQLField("hours")
     degrees: "RightAscensionGraphQLField" = RightAscensionGraphQLField("degrees")
-    microarcseconds: "RightAscensionGraphQLField" = RightAscensionGraphQLField(
-        "microarcseconds"
-    )
     microseconds: "RightAscensionGraphQLField" = RightAscensionGraphQLField(
         "microseconds"
     )
