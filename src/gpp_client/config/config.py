@@ -8,6 +8,8 @@ from typing import Any, Optional
 import toml
 import typer
 
+from ..constants import GPPEnvironment
+
 
 class GPPConfig:
     """Manage loading, saving, and updating GPP client configuration."""
@@ -32,6 +34,24 @@ class GPPConfig:
         if self.exists():
             return toml.load(self.path)
         return {}
+
+    def get_environment(self) -> GPPEnvironment:
+        """
+        Return the stored GPP environment.
+
+        Returns
+        -------
+        GPPEnvironment
+            The configured environment (default is PRODUCTION).
+        """
+        raw = self._data.get("credentials", {}).get("environment")
+        if not raw:
+            return GPPEnvironment.PRODUCTION
+
+        try:
+            return GPPEnvironment(raw.lower())
+        except ValueError:
+            return GPPEnvironment.PRODUCTION
 
     def save(self) -> None:
         """Save the current configuration data to disk."""
@@ -65,43 +85,43 @@ class GPPConfig:
 
     def get_credentials(self) -> tuple[Optional[str], Optional[str]]:
         """
-        Return the stored API URL and token.
+        Return the stored environment and token.
 
         Returns
         -------
         tuple[Optional[str], Optional[str]]
-            The URL and token if set, otherwise ``None`` for missing values.
+            The environment and token if set, otherwise ``None`` for missing values.
         """
         creds = self._data.get("credentials", {})
-        return creds.get("url"), creds.get("token")
+        return creds.get("environment"), creds.get("token")
 
-    def set_credentials(self, url: str, token: str) -> None:
+    def set_credentials(self, environment: str, token: str) -> None:
         """
         Set new API credentials and save the configuration.
 
         Parameters
         ----------
-        url : str
-            The GraphQL API URL.
+        environment : str
+            The GPP environment (production, staging, development).
         token : str
             The bearer token for authentication.
         """
         self._data.setdefault("credentials", {})
-        self._data["credentials"]["url"] = url
+        self._data["credentials"]["environment"] = environment
         self._data["credentials"]["token"] = token
         self.save()
 
     def credentials_set(self) -> bool:
         """
-        Check whether both URL and token are set.
+        Check whether both environment and token are set.
 
         Returns
         -------
         bool
             ``True`` if both credentials are present, ``False`` otherwise.
         """
-        url, token = self.get_credentials()
-        return bool(url and token)
+        environment, token = self.get_credentials()
+        return bool(environment and token)
 
     @property
     def path(self) -> Path:

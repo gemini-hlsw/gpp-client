@@ -3,6 +3,7 @@ from typing import Optional
 
 from .api._client import _GPPClient
 from .config import GPPConfig
+from .constants import GPPConstants, GPPEnvironment
 from .managers import (
     CallForProposalsManager,
     GroupManager,
@@ -23,17 +24,17 @@ class GPPClient:
     Main entry point for interacting with the GPP GraphQL API.
 
     This client provides access to all supported resource managers, including
-    programs, targets, observations, and more. It handles
-    authentication, configuration, and connection setup automatically.
+    programs, targets, observations, and more. It handles authentication,
+    configuration, and connection setup automatically.
 
     Parameters
     ----------
-    url : str, optional
-        The base URL of the GPP GraphQL API. If not provided, it will be loaded from
-        the ``GPP_URL`` environment variable or the local configuration file.
     token : str, optional
         The bearer token used for authentication. If not provided, it will be loaded
         from the ``GPP_TOKEN`` environment variable or the local configuration file.
+    environment : GPPEnvironment, optional
+        The GPP deployment to connect to ("production", "staging", "development").
+        Defaults to ``GPP_ENV`` environment variable or the config file, or falls back to "production".
 
     Attributes
     ----------
@@ -56,16 +57,18 @@ class GPPClient:
     def __init__(
         self,
         *,
-        url: Optional[str] = None,
         token: Optional[str] = None,
+        environment: Optional[GPPEnvironment] = None,
     ) -> None:
         self.config = GPPConfig()
 
-        # Determine which url and token to use.
-        resolved_url, resolved_token = self._resolve_credentials(url=url, token=token)
-
+        # Determine which environment and token to use.
+        resolved_token, resolved_environment = self._resolve_credentials(
+            token=token, environment=environment
+        )
+        url = GPPConstants.graphql_url(resolved_environment)
         headers = self._build_headers(resolved_token)
-        self._client = _GPPClient(url=resolved_url, headers=headers)
+        self._client = _GPPClient(url=url, headers=headers)
 
         # Initialize the managers.
         self.program_note = ProgramNoteManager(self)
@@ -78,7 +81,9 @@ class GPPClient:
         self.group = GroupManager(self)
 
     @staticmethod
-    def set_credentials(url: str, token: str) -> None:
+    def set_credentials(
+        token: str, environment: Optional[GPPEnvironment] = None
+    ) -> None:
         """
         Set and persist GPP credentials in the local configuration file.
 
@@ -87,60 +92,70 @@ class GPPClient:
 
         Parameters
         ----------
-        url : str
-            The GraphQL API base URL to store.
         token : str
             The bearer token used for authentication.
+        environment : GPPEnvironment, optional
+            The selected environment to connect to.
         """
         config = GPPConfig()
-        config.set_credentials(url, token)
+        config.set_credentials(token=token, environment=environment)
 
     def _build_headers(self, token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {token}"}
 
     def _resolve_credentials(
         self,
-        url: Optional[str] = None,
         token: Optional[str] = None,
+        environment: Optional[GPPEnvironment] = None,
     ) -> tuple[str, str]:
         """
-        Resolve the GPP GraphQL credentials using precedence rules.
+        Resolve the GPP environment and authentication token.
 
-        This function looks for credentials in the following order:
-        1. Direct function arguments (`url`, `token`).
-        2. Environment variables `GPP_URL` and `GPP_TOKEN`.
-        3. Configuration file.
+        Environment resolution order:
+        1. Function argument
+        2. Environment variable: GPP_ENV
+        3. Config file
+        4. Default to PRODUCTION
 
-        Parameters
-        ----------
-        url : str, optional
-            The GraphQL endpoint URL. Overrides env and config if provided.
-        token : str, optional
-            The bearer token for authentication. Overrides env and config if provided.
+        Token resolution order:
+        1. Function argument
+        2. Environment variable: GPP_TOKEN
+        3. Config file
 
         Returns
         -------
+        GPPEnvironment
+            The resolved environment.
         str
-            The URL for the GraphQL endpoint.
-        str
-            The token for authentication.
+            The resolved authentication token.
 
         Raises
         ------
         ValueError
-            If neither the `url` nor `token` could be resolved from any source.
+            If the token could not be resolved.
         """
-        config_url, config_token = self.config.get_credentials()
-        resolved_url = url or os.getenv("GPP_URL") or config_url
+        # Resolve environment
+        env_str = environment or os.getenv("GPP_ENV")
+        if isinstance(env_str, str):
+            try:
+                resolved_env = GPPEnvironment(env_str.lower())
+            except ValueError:
+                resolved_env = GPPEnvironment.PRODUCTION
+        elif isinstance(env_str, GPPEnvironment):
+            resolved_env = env_str
+        else:
+            resolved_env = self.config.get_environment()
+
+        # Resolve token.
+        _, config_token = self.config.get_credentials()
         resolved_token = token or os.getenv("GPP_TOKEN") or config_token
 
-        if not resolved_url or not resolved_token:
+        if not resolved_token:
             raise ValueError(
-                "Missing GPP URL or GPP token. Provide via args, environment, or "
-                "in configuration file."
+                "Missing GPP token. Provide via argument, env var, or config file."
             )
 
-        return resolved_url, resolved_token
+        return resolved_token, resolved_env
 
     async def is_reachable(self) -> tuple[bool, Optional[str]]:
         """
