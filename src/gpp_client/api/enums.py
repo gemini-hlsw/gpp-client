@@ -37,6 +37,11 @@ class ProposalStatus(str, Enum):
     NOT_ACCEPTED = "NOT_ACCEPTED"
 
 
+class GcalLampType(str, Enum):
+    ARC = "ARC"
+    FLAT = "FLAT"
+
+
 class AtomExecutionState(str, Enum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -776,6 +781,11 @@ class ConfigurationRequestStatus(str, Enum):
     APPROVED = "APPROVED"
     DENIED = "DENIED"
     WITHDRAWN = "WITHDRAWN"
+
+
+class MultipleFiltersMode(str, Enum):
+    GROUPED = "GROUPED"
+    INTERLEAVED = "INTERLEAVED"
 
 
 class ObservationValidationCode(str, Enum):

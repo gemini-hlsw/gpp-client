@@ -75,6 +75,7 @@ from .enums import (
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
     MosPreImaging,
+    MultipleFiltersMode,
     ObservationWorkflowState,
     ObserveClass,
     Partner,
@@ -530,6 +531,9 @@ class GmosNorthLongSlitInput(BaseModel):
 
 class GmosNorthImagingInput(BaseModel):
     filters: Optional[List[GmosNorthFilter]] = None
+    explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
+        alias=str("explicitMultipleFiltersMode"), default=None
+    )
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
@@ -611,6 +615,9 @@ class GmosSouthLongSlitInput(BaseModel):
 
 class GmosSouthImagingInput(BaseModel):
     filters: Optional[List[GmosSouthFilter]] = None
+    explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
+        alias=str("explicitMultipleFiltersMode"), default=None
+    )
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
@@ -908,7 +915,6 @@ class RecordAtomInput(BaseModel):
     visit_id: Any = Field(alias=str("visitId"))
     instrument: Instrument
     sequence_type: SequenceType = Field(alias=str("sequenceType"))
-    step_count: Optional[Any] = Field(alias=str("stepCount"), default=None)
     generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
 
 
@@ -959,7 +965,6 @@ class ResetAcquisitionInput(BaseModel):
 
 
 class RightAscensionInput(BaseModel):
-    microarcseconds: Optional[Any] = None
     microseconds: Optional[Any] = None
     degrees: Optional[Any] = None
     hours: Optional[Any] = None
