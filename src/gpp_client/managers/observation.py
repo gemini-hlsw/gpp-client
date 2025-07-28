@@ -442,7 +442,7 @@ class ObservationManager(BaseManager):
                 ScienceRequirementsFields.mode
             ),
             ObservationFields.science_band,
-            ObservationFields.calculated_workflow().fields(
+            ObservationFields.workflow().fields(
                 CalculatedObservationWorkflowFields.state
             ),
             # BEGIN SEQUENCE NEEDED

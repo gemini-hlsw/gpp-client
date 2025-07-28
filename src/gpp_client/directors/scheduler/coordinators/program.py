@@ -2,6 +2,7 @@ __all__ = ["ProgramCoordinator"]
 
 from typing import Any, TypeAlias
 
+
 from ....api import (
     ObservationWorkflowState,
     WhereCalculatedObservationWorkflow,
@@ -36,6 +37,32 @@ class ProgramCoordinator(BaseCoordinator):
                 return element.gmos_north
             case _:
                 raise RuntimeError(f"Unrecognized instrument: {instrument}")
+
+    def _parse_atom_digest(self, atom_digest_response: list) -> dict:
+        obs_atoms_mapping = {}
+        for atom_digest in atom_digest_response:
+            (
+                obs_id,
+                atom_idx,
+                atom_id,
+                observe_class,
+                time_estimate,
+                step_types,
+                lamp_types,
+            ) = atom_digest.split()
+            obs_atoms_mapping[obs_id].setdefault(obs_id, [])
+            obs_atoms_mapping[obs_id].append(
+                {
+                    "atom_idx": atom_idx,
+                    "atom_id": atom_id,
+                    "observe_class": observe_class,
+                    "time_estimate": time_estimate,
+                    "step_types": step_types,
+                    "lamp_types": lamp_types,
+                }
+            )
+
+        return obs_atoms_mapping
 
     async def _traverse_for_observation(
         self,
@@ -160,9 +187,17 @@ class ProgramCoordinator(BaseCoordinator):
         )
 
         obs_response = await self.client.observation.get_all(where=where_observation)
+        atom_digest_response = (
+            await self.client.restapi.get_atom_digests(observations)
+        ).split("\n")
+
+        if len(atom_digest_response) != len(obs_response["matches"]):
+            print("Missmatch in observation response and atom digest response")
+        obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
+        print(obs_atoms_mapping)
+
         obs_mapping = {o["id"]: o for o in obs_response["matches"]}
         obs_sequence_mapping = {}
-
         # Get sequence
         for obs in obs_mapping.keys():
             try:

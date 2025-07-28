@@ -357,16 +357,6 @@ query getSequence($obsId: ObservationId){
             }
           }
         }
-	    digest{
-          setup{
-            full{
-              seconds
-            }
-            reacquisition{
-              seconds
-            }
-          }
-        }
       }
     }
   }

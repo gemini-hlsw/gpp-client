@@ -1,4 +1,6 @@
 import os
+import aiohttp
+import gzip
 from typing import Optional
 
 from .api._client import _GPPClient
@@ -16,6 +18,90 @@ from .patches import patch_base_operations_graphql_field_get_formatted_variables
 
 # Apply patch to fix inner includeDelete bug.
 patch_base_operations_graphql_field_get_formatted_variables()
+
+
+class _RESTClient:
+    """
+    REST API client to non-GraphQL requests that help with the function of managers and coordinators.
+
+    Attributes
+    ----------
+    base_url : str
+        Base URL of the REST API. Derived from GPPClient base_url.
+    gpp_token : str
+        GPP token to authenticate against the REST API. Same as GPPClient.
+    """
+
+    def __init__(self, resolved_url: str, gpp_token: str) -> None:
+        self.base_url = resolved_url.rstrip("/odb")
+        self.gpp_token = gpp_token
+
+    async def get_atom_digests(
+        self, observation_ids: list, accept_gzip: bool = True
+    ) -> str:
+        """
+        Request atom digests for the given observation IDs.
+
+        Parameters
+        ----------
+        observation_ids : list
+             List of observation ID strings.
+        accept_gzip : bool
+            Whether to accept gzip compression.
+
+        Returns
+        -------
+        str
+            TSV data as string.
+
+        Raises
+        ------
+            aiohttp.ClientResponseError
+                For HTTP errors.
+            ValueError
+                For invalid observation IDs.
+        """
+        url = f"{self.base_url}/scheduler/atoms"
+
+        # Prepare headers
+        headers = {
+            "Content-Type": "text/plain",
+            "Authorization": f"Bearer {self.gpp_token}",
+        }
+
+        if accept_gzip:
+            headers["Accept-Encoding"] = "gzip"
+
+        # Prepare body - one observation ID per line
+        body = "\n".join(observation_ids)
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=body, headers=headers) as response:
+                # Handle different response codes
+                if response.status == 400:
+                    error_text = await response.text()
+                    raise ValueError(f"Invalid observation IDs: {error_text}")
+                elif response.status == 403:
+                    raise aiohttp.ClientResponseError(
+                        request_info=response.request_info,
+                        history=response.history,
+                        status=response.status,
+                        message="Access forbidden - check authentication and permissions",
+                    )
+                elif response.status != 200:
+                    response.raise_for_status()
+
+                # Handle gzipped response
+                content_encoding = response.headers.get("Content-Encoding", "").lower()
+                if content_encoding == "gzip":
+                    try:
+                        content = await response.read()
+                        return gzip.decompress(content).decode("utf-8")
+                    except gzip.BadGzipFile:
+                        # Server claimed gzip but sent plain text
+                        return await response.text()
+                else:
+                    return await response.text()
 
 
 class GPPClient:
@@ -66,6 +152,7 @@ class GPPClient:
 
         headers = self._build_headers(resolved_token)
         self._client = _GPPClient(url=resolved_url, headers=headers)
+        self.restapi = _RESTClient(resolved_url, resolved_token)
 
         # Initialize the managers.
         self.program_note = ProgramNoteManager(self)
