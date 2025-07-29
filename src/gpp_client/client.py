@@ -1,7 +1,11 @@
 import os
+import ssl
+
 import aiohttp
 import gzip
 from typing import Optional
+
+import certifi
 
 from .api._client import _GPPClient
 from .config import GPPConfig
@@ -75,7 +79,10 @@ class _RESTClient:
         # Prepare body - one observation ID per line
         body = "\n".join(observation_ids)
 
-        async with aiohttp.ClientSession() as session:
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.post(url, data=body, headers=headers) as response:
                 # Handle different response codes
                 if response.status == 400:

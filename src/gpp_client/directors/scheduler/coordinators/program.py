@@ -1,6 +1,6 @@
 __all__ = ["ProgramCoordinator"]
 
-from typing import Any, TypeAlias
+from typing import Any
 
 
 from ....api import (
@@ -10,15 +10,9 @@ from ....api import (
     WhereOrderObservationId,
     WhereOrderObservationWorkflowState,
     WhereProgram,
-    GetSequenceObservationsMatchesExecutionAtomRecordsMatchesStepsMatches,
-    GetSequenceObservationsMatchesExecutionConfig,
-    GraphQLClientGraphQLMultiError,
 )
+
 from ....coordinator import BaseCoordinator
-
-
-Step: TypeAlias = GetSequenceObservationsMatchesExecutionAtomRecordsMatchesStepsMatches
-Config: TypeAlias = GetSequenceObservationsMatchesExecutionConfig
 
 
 class ProgramCoordinator(BaseCoordinator):
@@ -27,19 +21,22 @@ class ProgramCoordinator(BaseCoordinator):
     """
 
     @staticmethod
-    def _check_instrument(instrument: str, element: Step | Config):
-        match instrument:
-            case "flamingos2":
-                return element.flamingos2
-            case "gmos_south":
-                return element.gmos_south
-            case "gmos_north":
-                return element.gmos_north
-            case _:
-                raise RuntimeError(f"Unrecognized instrument: {instrument}")
+    def _parse_atom_digest(atom_digest_response: list) -> dict:
+        """
+        Parses the plain text response from the REST API endpoint.
 
-    def _parse_atom_digest(self, atom_digest_response: list) -> dict:
+        Parameters
+        ----------
+        atom_digest_response : list
+            a string stream of atom information from different set of observations.
+
+        Returns
+        -------
+        dict
+            observation id and a sequence of atoms.
+        """
         obs_atoms_mapping = {}
+        print(atom_digest_response)
         for atom_digest in atom_digest_response:
             (
                 obs_id,
@@ -49,8 +46,8 @@ class ProgramCoordinator(BaseCoordinator):
                 time_estimate,
                 step_types,
                 lamp_types,
-            ) = atom_digest.split()
-            obs_atoms_mapping[obs_id].setdefault(obs_id, [])
+            ) = atom_digest.split("\t")
+            obs_atoms_mapping.setdefault(obs_id, [])
             obs_atoms_mapping[obs_id].append(
                 {
                     "atom_idx": atom_idx,
@@ -76,10 +73,12 @@ class ProgramCoordinator(BaseCoordinator):
 
         Parameters
         ----------
-        group: dict[str, Any]
+        node: dict[str, Any]
             Root group and subsequently groups
         obs_map: dict[str, Any]
             Mapping of observation ids with observation raw data.
+        obs_sequence: dict[str, list]
+            Mapping of the atoms sequence with the observation id.
         """
         obs = node.get("observation")
         group = node.get("group")
@@ -186,134 +185,20 @@ class ProgramCoordinator(BaseCoordinator):
             ),
         )
 
+        # Get observation data
         obs_response = await self.client.observation.get_all(where=where_observation)
+        obs_mapping = {o["id"]: o for o in obs_response["matches"]}
+
+        # Get sequence
         atom_digest_response = (
             await self.client.restapi.get_atom_digests(observations)
         ).split("\n")
-
-        if len(atom_digest_response) != len(obs_response["matches"]):
-            print("Missmatch in observation response and atom digest response")
         obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
-        print(obs_atoms_mapping)
 
-        obs_mapping = {o["id"]: o for o in obs_response["matches"]}
-        obs_sequence_mapping = {}
-        # Get sequence
-        for obs in obs_mapping.keys():
-            try:
-                number_executed_atoms = 0
-                response = await self.client._client.get_sequence(obs)
-                # print(response)
-                matches = response.observations.matches[
-                    0
-                ].execution.atom_records.matches
-                rows = []
-                for count, atom in enumerate(matches):
-                    number_executed_atoms = count
-                    instrument_name = atom.instrument.lower()
-                    for step in atom.steps.matches:
-                        ic = self._check_instrument(instrument_name, step)
-                        gc = ic.grating_config
-                        sc = step.step_config
-                        tc = step.telescope_config
-                        gcal = None
-                        if (
-                            sc.step_type == "GCAL"
-                        ):  # combine the GCAL lamps into a single field
-                            gcal = sc.continuum if sc.continuum is not None else ""
-                            gcal += ",".join(sc.arcs) if len(sc.arcs) > 0 else ""
-                        rows.append(
-                            {
-                                "atom": count,
-                                "breakpoint": None,
-                                "observe_class": step.observe_class,
-                                "type": sc.step_type,
-                                "gcal": gcal,
-                                "qa": step.qa_state,
-                                "exposure": ic.exposure.seconds,
-                                "p": tc.offset.p.arcseconds
-                                if hasattr(tc, "offset")
-                                else None,
-                                "q": tc.offset.q.arcseconds
-                                if hasattr(tc, "offset")
-                                else None,
-                                "wavelength": ic.central_wavelength.nanometers,
-                                "fpu": getattr(
-                                    ic.fpu, "builtin", None
-                                ),  # TODO: support MOS & IFU
-                                "grating": getattr(gc, "grating", None),
-                                "filter": ic.filter,
-                                "x_bin": ic.readout.x_bin,
-                                "y_bin": ic.readout.y_bin,
-                                "roi": ic.roi,
-                                "execution_state": step.execution_state,
-                                "duration": step.interval.duration.seconds,
-                            }
-                        )
-                config = response.observations.matches[0].execution.config
-                config_by_instrument = self._check_instrument(
-                    config.instrument.lower(), config
-                )
-                atoms = []
-
-                if hasattr(config_by_instrument.acquisition, "next_atom"):
-                    atoms.append(config_by_instrument.acquisition.next_atom)
-                if hasattr(config_by_instrument.acquisition, "possible_future"):
-                    atoms += config_by_instrument.acquisition.possible_future
-                if hasattr(config_by_instrument.science, "next_atom"):
-                    atoms.append(config_by_instrument.science.next_atom)
-                if hasattr(config_by_instrument.science, "possible_future"):
-                    atoms += config_by_instrument.science.possible_future
-
-                for count, atom in enumerate(atoms):
-                    for step in atom.steps:
-                        tc = step.telescope_config
-                        sc = step.step_config
-                        ic = step.instrument_config
-                        gc = ic.grating_config
-                        gcal = None
-                        if (
-                            sc.step_type == "GCAL"
-                        ):  # combine the GCAL lamps into a single field
-                            gcal = sc.continuum if sc.continuum is not None else ""
-                            gcal += ",".join(sc.arcs) if len(sc.arcs) > 0 else ""
-
-                        rows.append(
-                            {
-                                "atom": count + 1 + number_executed_atoms,
-                                "breakpoint": step.breakpoint,
-                                "observe_class": step.observe_class,
-                                "type": sc.step_type,
-                                "gcal": gcal,
-                                "qa": None,
-                                "exposure": ic.exposure.seconds,
-                                "p": tc.offset.p.arcseconds
-                                if hasattr(tc, "offset")
-                                else None,
-                                "q": tc.offset.q.arcseconds
-                                if hasattr(tc, "offset")
-                                else None,
-                                "wavelength": ic.central_wavelength.nanometers,
-                                "fpu": getattr(
-                                    ic.fpu, "builtin", None
-                                ),  # TODO: support MOS & IFU
-                                "grating": getattr(gc, "grating", None),
-                                "filter": ic.filter,
-                                "x_bin": ic.readout.x_bin,
-                                "y_bin": ic.readout.y_bin,
-                                "roi": ic.roi,
-                                "execution_state": "NOT_STARTED",
-                                "duration": step.estimate.total.seconds,
-                            }
-                        )
-                obs_sequence_mapping[obs] = rows
-
-            except GraphQLClientGraphQLMultiError as e:
-                print(e)
-
+        # Fill groups with the data above.
         for program in programs:
             await self._traverse_for_observation(
-                program["root"], obs_mapping, obs_sequence_mapping
+                program["root"], obs_mapping, obs_atoms_mapping
             )
 
         return programs
