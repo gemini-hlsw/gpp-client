@@ -36,7 +36,6 @@ class ProgramCoordinator(BaseCoordinator):
             observation id and a sequence of atoms.
         """
         obs_atoms_mapping = {}
-        print(atom_digest_response)
         for atom_digest in atom_digest_response:
             (
                 obs_id,
@@ -191,7 +190,7 @@ class ProgramCoordinator(BaseCoordinator):
 
         # Get sequence
         atom_digest_response = (
-            await self.client.restapi.get_atom_digests(observations)
+            await self.client._restapi.get_atom_digests(observations)
         ).split("\n")
         obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
 
