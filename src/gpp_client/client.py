@@ -13,6 +13,7 @@ from .managers import (
     TargetManager,
 )
 from .patches import patch_base_operations_graphql_field_get_formatted_variables
+from .rest import _GPPRESTClient
 
 # Apply patch to fix inner includeDelete bug.
 patch_base_operations_graphql_field_get_formatted_variables()
@@ -66,6 +67,7 @@ class GPPClient:
 
         headers = self._build_headers(resolved_token)
         self._client = _GPPClient(url=resolved_url, headers=headers)
+        self._restapi = _GPPRESTClient(resolved_url, resolved_token)
 
         # Initialize the managers.
         self.program_note = ProgramNoteManager(self)

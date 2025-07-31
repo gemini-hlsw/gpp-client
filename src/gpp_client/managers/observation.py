@@ -31,6 +31,11 @@ from ..api.custom_fields import (
     ProperMotionDeclinationFields,
     NonsiderealFields,
     CalculatedObservationWorkflowFields,
+    ObservingModeFields,
+    GmosNorthLongSlitFields,
+    WavelengthFields,
+    GmosSouthLongSlitFields,
+    OffsetQFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -442,24 +447,35 @@ class ObservationManager(BaseManager):
                 ScienceRequirementsFields.mode
             ),
             ObservationFields.science_band,
-            ObservationFields.calculated_workflow().fields(
+            ObservationFields.workflow().fields(
                 CalculatedObservationWorkflowFields.state
             ),
-            # BEGIN SEQUENCE NEEDED
-            # ObservationFields.execution().fields(
-            # DEPRECATED, use calculated_digest
-            #    ExecutionFields.digest().fields(
-            #        ExecutionDigestFields.setup().fields(
-            #            SetupTimeFields.full().fields(
-            #                TimeSpanFields.seconds
-            #            ),
-            #            SetupTimeFields.reacquisition().fields(
-            #                TimeSpanFields.seconds
-            #            )
-            #        )
-            #    )
-            # ),
-            # END SEQUENCE
+            ObservationFields.observing_mode().fields(
+                ObservingModeFields.instrument,
+                ObservingModeFields.mode,
+                ObservingModeFields.gmos_north_long_slit().fields(
+                    GmosNorthLongSlitFields.grating,
+                    GmosNorthLongSlitFields.filter,
+                    GmosNorthLongSlitFields.fpu,
+                    GmosNorthLongSlitFields.central_wavelength().fields(
+                        WavelengthFields.nanometers
+                    ),
+                    GmosNorthLongSlitFields.spatial_offsets().fields(
+                        OffsetQFields.arcseconds
+                    ),
+                ),
+                ObservingModeFields.gmos_south_long_slit().fields(
+                    GmosSouthLongSlitFields.grating,
+                    GmosSouthLongSlitFields.filter,
+                    GmosSouthLongSlitFields.fpu,
+                    GmosSouthLongSlitFields.central_wavelength().fields(
+                        WavelengthFields.nanometers
+                    ),
+                    GmosSouthLongSlitFields.spatial_offsets().fields(
+                        OffsetQFields.arcseconds
+                    ),
+                ),
+            ),
             ObservationFields.constraint_set().fields(
                 ConstraintSetFields.image_quality,
                 ConstraintSetFields.cloud_extinction,

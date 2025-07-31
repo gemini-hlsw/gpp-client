@@ -566,6 +566,7 @@ name = "gpp-client"
 version = "25.7.8"
 source = { editable = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "beautifulsoup4" },
     { name = "graphql-core" },
     { name = "httpx" },
@@ -603,6 +604,7 @@ schema = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", specifier = ">=3.12.13" },
     { name = "beautifulsoup4", specifier = ">=4.11.0" },
     { name = "graphql-core", specifier = ">=3.2.0" },
     { name = "httpx", specifier = ">=0.23" },
