@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import certifi
 import gzip
 import ssl
@@ -23,6 +24,7 @@ class _GPPRESTClient:
         self.base_url = resolved_url.rstrip("/odb")
         self.gpp_token = gpp_token
         self._session = None
+        self._lock = asyncio.Lock()
 
     def resolve_headers(self):
         headers = {
@@ -32,17 +34,28 @@ class _GPPRESTClient:
         return headers
 
     async def _get_session(self):
-        if self._session is None or self._session.closed:
-            ssl_context = ssl.create_default_context(cafile=certifi.where())
-            connector = aiohttp.TCPConnector(ssl=ssl_context)
-            headers = self.resolve_headers()
-            self._session = aiohttp.ClientSession(
-                base_url=self.base_url,
-                timeout=aiohttp.ClientTimeout(total=30),
-                connector=connector,
-                headers=headers,
-            )
-        return self._session
+        async with self._lock:
+            if self._session is None or self._session.closed:
+                ssl_context = ssl.create_default_context(cafile=certifi.where())
+                connector = aiohttp.TCPConnector(ssl=ssl_context)
+                headers = self.resolve_headers()
+                self._session = aiohttp.ClientSession(
+                    base_url=self.base_url,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                    connector=connector,
+                    headers=headers,
+                )
+            return self._session
+
+    async def close(self):
+        if self._session and not self._session.closed:
+            await self._session.close()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
 
     async def get_atom_digests(
         self, observation_ids: list, accept_gzip: bool = True
@@ -64,10 +77,10 @@ class _GPPRESTClient:
 
         Raises
         ------
-            aiohttp.ClientResponseError
-                For HTTP errors.
-            ValueError
-                For invalid observation IDs.
+        aiohttp.ClientResponseError
+            For HTTP errors.
+        ValueError
+            For invalid observation IDs.
         """
         headers = self.resolve_headers()
         if accept_gzip:

@@ -189,9 +189,14 @@ class ProgramCoordinator(BaseCoordinator):
         obs_mapping = {o["id"]: o for o in obs_response["matches"]}
 
         # Get sequence
-        atom_digest_response = (
-            await self.client._restapi.get_atom_digests(observations)
-        ).split("\n")
+        async with self.client._restapi as client:
+            atom_digest_response = (await client.get_atom_digests(observations)).split(
+                "\n"
+            )
+
+        # atom_digest_response = (
+        #    await self.client._restapi.get_atom_digests(observations)
+        # ).split("\n")
         obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
 
         # Fill groups with the data above.
