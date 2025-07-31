@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.10.0"
 resolution-markers = [
     "python_full_version >= '3.11'",
@@ -563,7 +563,7 @@ wheels = [
 
 [[package]]
 name = "gpp-client"
-version = "25.7.8"
+version = "25.7.9"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
