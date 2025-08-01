@@ -40,7 +40,7 @@ def main() -> None:
     # Run codegen.
     try:
         subprocess.run(
-            ["ariadne-codegen"],
+            ["ariadne-codegen", "client"],
             check=True,
         )
         logging.info("ariadne-codegen completed successfully.")

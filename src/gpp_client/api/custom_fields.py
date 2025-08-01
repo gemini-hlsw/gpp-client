@@ -19,7 +19,6 @@ from .custom_typing_fields import (
     AngleGraphQLField,
     AsterismGroupGraphQLField,
     AsterismGroupSelectResultGraphQLField,
-    AtomDigestGraphQLField,
     AtomEventGraphQLField,
     AtomRecordGraphQLField,
     AtomRecordSelectResultGraphQLField,
@@ -30,7 +29,6 @@ from .custom_typing_fields import (
     BandNormalizedGraphQLField,
     BandNormalizedIntegratedGraphQLField,
     BandNormalizedSurfaceGraphQLField,
-    CalculatedAtomDigestsGraphQLField,
     CalculatedBandedTimeGraphQLField,
     CalculatedCategorizedTimeRangeGraphQLField,
     CalculatedExecutionDigestGraphQLField,
@@ -70,6 +68,8 @@ from .custom_typing_fields import (
     CreateProposalResultGraphQLField,
     CreateTargetResultGraphQLField,
     CreateUserInvitationResultGraphQLField,
+    DatasetChronicleEntryGraphQLField,
+    DatasetChronicleEntrySelectResultGraphQLField,
     DatasetEstimateGraphQLField,
     DatasetEventGraphQLField,
     DatasetGraphQLField,
@@ -588,29 +588,6 @@ class AsterismGroupSelectResultFields(GraphQLField):
         return self
 
 
-class AtomDigestFields(GraphQLField):
-    id: "AtomDigestGraphQLField" = AtomDigestGraphQLField("id")
-    observe_class: "AtomDigestGraphQLField" = AtomDigestGraphQLField("observeClass")
-
-    @classmethod
-    def time_estimate(cls) -> "CategorizedTimeFields":
-        return CategorizedTimeFields("timeEstimate")
-
-    step_types: "AtomDigestGraphQLField" = AtomDigestGraphQLField("stepTypes")
-    lamp_types: "AtomDigestGraphQLField" = AtomDigestGraphQLField("lampTypes")
-
-    def fields(
-        self, *subfields: Union[AtomDigestGraphQLField, "CategorizedTimeFields"]
-    ) -> "AtomDigestFields":
-        """Subfields should come from the AtomDigestFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "AtomDigestFields":
-        self._alias = alias
-        return self
-
-
 class AtomEventFields(GraphQLField):
     id: "AtomEventGraphQLField" = AtomEventGraphQLField("id")
 
@@ -885,27 +862,6 @@ class BandedTimeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "BandedTimeFields":
-        self._alias = alias
-        return self
-
-
-class CalculatedAtomDigestsFields(GraphQLField):
-    state: "CalculatedAtomDigestsGraphQLField" = CalculatedAtomDigestsGraphQLField(
-        "state"
-    )
-
-    @classmethod
-    def value(cls) -> "AtomDigestFields":
-        return AtomDigestFields("value")
-
-    def fields(
-        self, *subfields: Union[CalculatedAtomDigestsGraphQLField, "AtomDigestFields"]
-    ) -> "CalculatedAtomDigestsFields":
-        """Subfields should come from the CalculatedAtomDigestsFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "CalculatedAtomDigestsFields":
         self._alias = alias
         return self
 
@@ -1947,6 +1903,126 @@ class DatasetFields(GraphQLField):
         return self
 
 
+class DatasetChronicleEntryFields(GraphQLField):
+    id: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField("id")
+    transaction_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("transactionId")
+    )
+
+    @classmethod
+    def user(cls) -> "UserFields":
+        return UserFields("user")
+
+    timestamp: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField(
+        "timestamp"
+    )
+    operation: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField(
+        "operation"
+    )
+
+    @classmethod
+    def dataset(cls) -> "DatasetFields":
+        return DatasetFields("dataset")
+
+    mod_dataset_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modDatasetId")
+    )
+    mod_step_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modStepId")
+    )
+    mod_observation_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modObservationId")
+    )
+    mod_visit_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modVisitId")
+    )
+    mod_reference: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modReference")
+    )
+    mod_filename: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modFilename")
+    )
+    mod_qa_state: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modQaState")
+    )
+    mod_interval: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modInterval")
+    )
+    mod_comment: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("modComment")
+    )
+    new_dataset_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newDatasetId")
+    )
+    new_step_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newStepId")
+    )
+    new_observation_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newObservationId")
+    )
+    new_visit_id: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newVisitId")
+    )
+    new_reference: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newReference")
+    )
+    new_filename: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newFilename")
+    )
+    new_qa_state: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newQaState")
+    )
+
+    @classmethod
+    def new_interval(cls) -> "TimestampIntervalFields":
+        return TimestampIntervalFields("newInterval")
+
+    new_comment: "DatasetChronicleEntryGraphQLField" = (
+        DatasetChronicleEntryGraphQLField("newComment")
+    )
+
+    def fields(
+        self,
+        *subfields: Union[
+            DatasetChronicleEntryGraphQLField,
+            "DatasetFields",
+            "TimestampIntervalFields",
+            "UserFields",
+        ]
+    ) -> "DatasetChronicleEntryFields":
+        """Subfields should come from the DatasetChronicleEntryFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DatasetChronicleEntryFields":
+        self._alias = alias
+        return self
+
+
+class DatasetChronicleEntrySelectResultFields(GraphQLField):
+    @classmethod
+    def matches(cls) -> "DatasetChronicleEntryFields":
+        return DatasetChronicleEntryFields("matches")
+
+    has_more: "DatasetChronicleEntrySelectResultGraphQLField" = (
+        DatasetChronicleEntrySelectResultGraphQLField("hasMore")
+    )
+
+    def fields(
+        self,
+        *subfields: Union[
+            DatasetChronicleEntrySelectResultGraphQLField, "DatasetChronicleEntryFields"
+        ]
+    ) -> "DatasetChronicleEntrySelectResultFields":
+        """Subfields should come from the DatasetChronicleEntrySelectResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DatasetChronicleEntrySelectResultFields":
+        self._alias = alias
+        return self
+
+
 class DatasetEstimateFields(GraphQLField):
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
@@ -2347,16 +2423,8 @@ class EmissionLinesSurfaceFields(GraphQLField):
 
 class ExecutionFields(GraphQLField):
     @classmethod
-    def digest(cls) -> "ExecutionDigestFields":
-        return ExecutionDigestFields("digest")
-
-    @classmethod
-    def calculated_digest(cls) -> "CalculatedExecutionDigestFields":
-        return CalculatedExecutionDigestFields("calculatedDigest")
-
-    @classmethod
-    def atom_digests(cls) -> "CalculatedAtomDigestsFields":
-        return CalculatedAtomDigestsFields("atomDigests")
+    def digest(cls) -> "CalculatedExecutionDigestFields":
+        return CalculatedExecutionDigestFields("digest")
 
     @classmethod
     def config(cls, *, future_limit: Optional[Any] = None) -> "ExecutionConfigFields":
@@ -2431,12 +2499,10 @@ class ExecutionFields(GraphQLField):
         *subfields: Union[
             ExecutionGraphQLField,
             "AtomRecordSelectResultFields",
-            "CalculatedAtomDigestsFields",
             "CalculatedExecutionDigestFields",
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
             "ExecutionConfigFields",
-            "ExecutionDigestFields",
             "ExecutionEventSelectResultFields",
             "VisitSelectResultFields",
         ]
@@ -4402,12 +4468,8 @@ class ObservationFields(GraphQLField):
         return ConfigurationRequestFields("configurationRequests")
 
     @classmethod
-    def workflow(cls) -> "ObservationWorkflowFields":
-        return ObservationWorkflowFields("workflow")
-
-    @classmethod
-    def calculated_workflow(cls) -> "CalculatedObservationWorkflowFields":
-        return CalculatedObservationWorkflowFields("calculatedWorkflow")
+    def workflow(cls) -> "CalculatedObservationWorkflowFields":
+        return CalculatedObservationWorkflowFields("workflow")
 
     def fields(
         self,
@@ -4421,7 +4483,6 @@ class ObservationFields(GraphQLField):
             "ExecutionFields",
             "ItcFields",
             "ObservationReferenceFields",
-            "ObservationWorkflowFields",
             "ObservingModeFields",
             "PosAngleConstraintFields",
             "ProgramFields",
@@ -5001,6 +5062,7 @@ class ProgramUserFields(GraphQLField):
     def invitations(cls) -> "UserInvitationFields":
         return UserInvitationFields("invitations")
 
+    affiliation: "ProgramUserGraphQLField" = ProgramUserGraphQLField("affiliation")
     has_data_access: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "hasDataAccess"
     )

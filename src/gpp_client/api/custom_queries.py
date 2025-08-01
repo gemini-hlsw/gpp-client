@@ -2,15 +2,16 @@
 
 from typing import Any, Dict, Optional
 
-from . import ObservationWorkflowState
 from .custom_fields import (
     AsterismGroupSelectResultFields,
     CallForProposalsFields,
     CallsForProposalsSelectResultFields,
     ConfigurationRequestSelectResultFields,
     ConstraintSetGroupSelectResultFields,
+    DatasetChronicleEntrySelectResultFields,
     DatasetFields,
     DatasetSelectResultFields,
+    ExecutionConfigFields,
     ExecutionEventSelectResultFields,
     FilterTypeMetaFields,
     GroupFields,
@@ -187,6 +188,21 @@ class Query:
         )
 
     @classmethod
+    def dataset_chronicle_entries(
+        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+    ) -> DatasetChronicleEntrySelectResultFields:
+        arguments: Dict[str, Dict[str, Any]] = {
+            "OFFSET": {"type": "ChronicleId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DatasetChronicleEntrySelectResultFields(
+            field_name="datasetChronicleEntries", arguments=cleared_arguments
+        )
+
+    @classmethod
     def events(
         cls,
         *,
@@ -204,6 +220,29 @@ class Query:
         }
         return ExecutionEventSelectResultFields(
             field_name="events", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def execution_config(
+        cls,
+        *,
+        observation_id: Optional[Any] = None,
+        observation_reference: Optional[Any] = None,
+        future_limit: Optional[Any] = None
+    ) -> ExecutionConfigFields:
+        arguments: Dict[str, Dict[str, Any]] = {
+            "observationId": {"type": "ObservationId", "value": observation_id},
+            "observationReference": {
+                "type": "ObservationReferenceLabel",
+                "value": observation_reference,
+            },
+            "futureLimit": {"type": "NonNegInt", "value": future_limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ExecutionConfigFields(
+            field_name="executionConfig", arguments=cleared_arguments
         )
 
     @classmethod
@@ -271,24 +310,6 @@ class Query:
         }
         return ObservationSelectResultFields(
             field_name="observations", arguments=cleared_arguments
-        )
-
-    @classmethod
-    def observations_by_workflow_state(
-        cls,
-        *,
-        where: Optional[WhereObservation] = None,
-        states: Optional[ObservationWorkflowState] = None
-    ) -> ObservationFields:
-        arguments: Dict[str, Dict[str, Any]] = {
-            "WHERE": {"type": "WhereObservation", "value": where},
-            "states": {"type": "ObservationWorkflowState", "value": states},
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return ObservationFields(
-            field_name="observationsByWorkflowState", arguments=cleared_arguments
         )
 
     @classmethod

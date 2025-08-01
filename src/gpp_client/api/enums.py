@@ -37,11 +37,6 @@ class ProposalStatus(str, Enum):
     NOT_ACCEPTED = "NOT_ACCEPTED"
 
 
-class GcalLampType(str, Enum):
-    ARC = "ARC"
-    FLAT = "FLAT"
-
-
 class AtomExecutionState(str, Enum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -365,11 +360,11 @@ class ChargeClass(str, Enum):
 
 
 class CloudExtinctionPreset(str, Enum):
+    ZERO = "ZERO"
     POINT_ONE = "POINT_ONE"
     POINT_THREE = "POINT_THREE"
     POINT_FIVE = "POINT_FIVE"
     ONE_POINT_ZERO = "ONE_POINT_ZERO"
-    ONE_POINT_FIVE = "ONE_POINT_FIVE"
     TWO_POINT_ZERO = "TWO_POINT_ZERO"
     THREE_POINT_ZERO = "THREE_POINT_ZERO"
 
@@ -397,6 +392,13 @@ class CoolStarTemperature(str, Enum):
     T2400_K = "T2400_K"
     T2600_K = "T2600_K"
     T2800_K = "T2800_K"
+
+
+class DatabaseOperation(str, Enum):
+    INSERT = "INSERT"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+    TRUNCATE = "TRUNCATE"
 
 
 class DatasetQaState(str, Enum):
@@ -614,7 +616,7 @@ class GmosNorthGrating(str, Enum):
     R831_G5302 = "R831_G5302"
     R600_G5304 = "R600_G5304"
     B480_G5309 = "B480_G5309"
-    R400_G5305 = "R400_G5305"
+    R400_G5310 = "R400_G5310"
     R150_G5308 = "R150_G5308"
 
 
