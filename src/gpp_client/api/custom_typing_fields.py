@@ -51,18 +51,6 @@ class AllocationGraphQLField(GraphQLField):
         return self
 
 
-class AtomDigestGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "AtomDigestGraphQLField":
-        self._alias = alias
-        return self
-
-
-class CalculatedAtomDigestsGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "CalculatedAtomDigestsGraphQLField":
-        self._alias = alias
-        return self
-
-
 class AtomEventGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "AtomEventGraphQLField":
         self._alias = alias
@@ -827,6 +815,18 @@ class CoordinatesGraphQLField(GraphQLField):
 
 class DatasetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "DatasetGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DatasetChronicleEntryGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DatasetChronicleEntryGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DatasetChronicleEntrySelectResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DatasetChronicleEntrySelectResultGraphQLField":
         self._alias = alias
         return self
 

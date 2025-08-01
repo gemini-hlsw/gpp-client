@@ -198,6 +198,7 @@ class BandNormalizedSurfaceInput(BaseModel):
 class CallForProposalsPropertiesInput(BaseModel):
     type: Optional[CallForProposalsType] = None
     semester: Optional[Any] = None
+    title: Optional[Any] = None
     coordinate_limits: Optional["SiteCoordinateLimitsInput"] = Field(
         alias=str("coordinateLimits"), default=None
     )
@@ -793,6 +794,7 @@ class ProgramUserPropertiesInput(BaseModel):
     )
     thesis: Optional[bool] = None
     gender: Optional[Gender] = None
+    affiliation: Optional[Any] = None
     has_data_access: Optional[bool] = Field(alias=str("hasDataAccess"), default=None)
 
 

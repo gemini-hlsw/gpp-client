@@ -193,37 +193,6 @@ input AngleInput {
   hms: String
 }
 
-enum GcalLampType {
-  ARC
-  FLAT
-}
-
-type AtomDigest {
-  """Atom id"""
-  id: AtomId!
-
-  """
-  Observe class for this atom as a whole (combined observe class for each of
-  its steps).
-  """
-  observeClass: ObserveClass!
-
-  """Expected execution time for this atom."""
-  timeEstimate: CategorizedTime!
-
-  """Step types contained in this atom."""
-  stepTypes: [StepType!]!
-
-  """Gcal lamp types used in this atom, if any."""
-  lampTypes: [GcalLampType!]!
-}
-
-type CalculatedAtomDigests {
-  """The current state of the background calculation."""
-  state: CalculationState!
-  value: [AtomDigest!]!
-}
-
 """
 Atom-level events.  The execution of a single atom will generate multiple events.
 """
@@ -502,6 +471,13 @@ input CallForProposalsPropertiesInput {
 
   """Semester associated with the call. Required on create."""
   semester: Semester
+
+  """
+  The CfP title.  If not set then a title will be determined from the CfP
+  properties.  This property is not required on create and may be assigned
+  a null value to return to the default.
+  """
+  title: NonEmptyString
 
   """
   Coordinate limits.  If not specified, they will default according to the
@@ -1179,8 +1155,8 @@ input TimeAndCountExposureTimeModeInput {
   """Exposure time, which must be greater than zero."""
   time: TimeSpanInput!
 
-  """Exposure count."""
-  count: NonNegInt!
+  """Exposure count, which must be greater than zero."""
+  count: PosInt!
 
   """S/N at wavelength."""
   at: WavelengthInput!
@@ -3005,6 +2981,9 @@ input ProgramUserPropertiesInput {
   """The user's reported gender."""
   gender: Gender
 
+  """Investigator affiliation."""
+  affiliation: NonEmptyString
+
   """
   Whether the user has data access.  This property may be changed only by the
   PI (or staff).  If a COI attempts to change the data access flag, the entire
@@ -3070,6 +3049,9 @@ type ProgramUser {
 
   """User invitations, if any, associated with this program user."""
   invitations: [UserInvitation!]!
+
+  """Investigator affiliation."""
+  affiliation: NonEmptyString
 
   """Has access to data."""
   hasDataAccess: Boolean!
@@ -5169,6 +5151,9 @@ enum ChargeClass {
 
 """Cloud extinction"""
 enum CloudExtinctionPreset {
+  """CloudExtinctionPreset Zero"""
+  ZERO
+
   """CloudExtinctionPreset PointOne"""
   POINT_ONE
 
@@ -5180,9 +5165,6 @@ enum CloudExtinctionPreset {
 
   """CloudExtinctionPreset OnePointZero"""
   ONE_POINT_ZERO
-
-  """CloudExtinctionPreset OnePointFive"""
-  ONE_POINT_FIVE
 
   """CloudExtinctionPreset TwoPointZero"""
   TWO_POINT_ZERO
@@ -5370,6 +5352,58 @@ type Dataset {
   isWritten: Boolean!
 }
 
+"""Database operations that provoke Chronicle table updates."""
+enum DatabaseOperation {
+  INSERT
+  UPDATE
+  DELETE
+  TRUNCATE
+}
+
+"""The Chronicle entry for dataset updates."""
+type DatasetChronicleEntry {
+  id: ChronicleId!
+  transactionId: TransactionId!
+
+  """The user who performed the insertion or update."""
+  user: User
+
+  """When the update happened."""
+  timestamp: Timestamp!
+
+  """The database operation that was performed."""
+  operation: DatabaseOperation!
+
+  """The dataset that was inserted or updated."""
+  dataset: Dataset!
+  modDatasetId: Boolean!
+  modStepId: Boolean!
+  modObservationId: Boolean!
+  modVisitId: Boolean!
+  modReference: Boolean!
+  modFilename: Boolean!
+  modQaState: Boolean!
+  modInterval: Boolean!
+  modComment: Boolean!
+  newDatasetId: DatasetId
+  newStepId: StepId
+  newObservationId: ObservationId
+  newVisitId: VisitId
+  newReference: DatasetReferenceLabel
+  newFilename: DatasetFilename
+  newQaState: DatasetQaState
+  newInterval: TimestampInterval
+  newComment: NonEmptyString
+}
+
+type DatasetChronicleEntrySelectResult {
+  """Matching entries up to the return size limit of 1000"""
+  matches: [DatasetChronicleEntry!]!
+
+  """`true` when there were additional matches that were not returned."""
+  hasMore: Boolean!
+}
+
 """
 Dataset-level events.  A single dataset will be associated with multiple events
 as it makes its way through observe, readout and write stages.
@@ -5554,20 +5588,7 @@ type Execution {
   If a sequence cannot be generated for this observation, `null` is returned
   along with warning messages.
   """
-  digest: ExecutionDigest @deprecated(reason: "will be updated with a CalculatedExecutionDigest result, use calculatedDigest for now")
-
-  """
-  Calculations dependent on the sequence, such as planned time and offsets.
-  If a sequence cannot be generated for this observation, `null` is returned
-  along with warning messages.
-  """
-  calculatedDigest: CalculatedExecutionDigest
-
-  """
-  A summary of pending atoms in this observation's sequence.  This is intended
-  for the scheduler, but is available generally.
-  """
-  atomDigests: CalculatedAtomDigests!
+  digest: CalculatedExecutionDigest
 
   """
   Full execution config, including acquisition and science sequences.  If a
@@ -5584,7 +5605,7 @@ type Execution {
     projected atom count is available in the execution digest.
     """
     futureLimit: NonNegInt = 25
-  ): ExecutionConfig
+  ): ExecutionConfig @deprecated(reason: "moved to Query -> executionConfig")
 
   """Determines the execution state as a whole of this observation."""
   executionState: ExecutionState!
@@ -6262,7 +6283,7 @@ type TimeAndCountExposureTimeMode {
   time: TimeSpan!
 
   """Exposure count."""
-  count: NonNegInt!
+  count: PosInt!
 
   """S/N at Wavelength."""
   at: Wavelength!
@@ -6523,8 +6544,8 @@ enum GmosNorthGrating {
   """GmosNorthGrating B480_G5309"""
   B480_G5309
 
-  """GmosNorthGrating R400_G5305"""
-  R400_G5305
+  """GmosNorthGrating R400_G5310"""
+  R400_G5310
 
   """GmosNorthGrating R150_G5308"""
   R150_G5308
@@ -7986,7 +8007,6 @@ type Observation {
 
   """Program configuration requests applicable to this observation."""
   configurationRequests: [ConfigurationRequest!]!
-  workflow: ObservationWorkflow! @deprecated(reason: "will be updated with a CalculatedObservationWorkflow result, use calculatedWorkflow for now")
 
   """
   Obtains the current observation workflow state and valid transitions (and any
@@ -7994,10 +8014,8 @@ type Observation {
   the background when something relevant changes and may be in a state of flux
   when queried.  The calculation state in the result can be used to determine
   whether a pending update is expected.
-  
-  NOTE: Temporary - will replace the 'workflow' field.
   """
-  calculatedWorkflow: CalculatedObservationWorkflow
+  workflow: CalculatedObservationWorkflow
 }
 
 enum ExecutionState {
@@ -8699,6 +8717,20 @@ type Query {
   ): DatasetSelectResult!
 
   """
+  Select all dataset chronicle entries.  This will contain detailed information
+  about dataset creation and updates.
+  """
+  datasetChronicleEntries(
+    """Starts the result set at (or after if not existent) the given id."""
+    OFFSET: ChronicleId
+
+    """
+    Limits the result to at most this number of matches (but never more than 1000).
+    """
+    LIMIT: NonNegInt
+  ): DatasetChronicleEntrySelectResult!
+
+  """
   Selects the first `LIMIT` matching execution events based on the provided `WHERE` parameter, if any.
   """
   events(
@@ -8715,6 +8747,29 @@ type Query {
     """
     LIMIT: NonNegInt
   ): ExecutionEventSelectResult!
+
+  """
+  Full execution config, including static values and acquisition and science
+  sequences.  If a sequence cannot be generated for this observation, `null`
+  is returned along with warning messages.
+  """
+  executionConfig(
+    """Specify to lookup the observation by its ID."""
+    observationId: ObservationId
+
+    """Specify to lookup the observation by its reference."""
+    observationReference: ObservationReferenceLabel
+
+    """
+    The maximum size (number of atoms) of the `possibleFuture` in the sequences.
+    If the projected future is longer, the size will be capped at this value.
+    Use 0 if only interested in the `nextAtom`.  The maximum is 100.  Each
+    sequence has a `hasMore` field that can be used to determine whether there
+    additional atoms beyond those returned in `possibleFuture`.  The total
+    projected atom count is available in the execution digest.
+    """
+    futureLimit: NonNegInt = 25
+  ): ExecutionConfig
 
   """Metadata for `enum FilterType`"""
   filterTypeMeta: [FilterTypeMeta!]!
@@ -8765,13 +8820,6 @@ type Query {
     """Set to true to include deleted values"""
     includeDeleted: Boolean! = false
   ): ObservationSelectResult!
-
-  """
-  Selects observations via a normal predicate *and* an additional filter for allowed
-  workflow states. This query is intended for operations and is available only for
-  service users.
-  """
-  observationsByWorkflowState(WHERE: WhereObservation, states: [ObservationWorkflowState!]): [Observation!]! @deprecated(reason: "use 'workflow' field in WhereObservation filter")
 
   """
   Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any.
