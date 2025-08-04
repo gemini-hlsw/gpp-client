@@ -1,0 +1,81 @@
+query GetSchedulerPrograms($programsList: [ProgramId!]) {
+  programs(
+    WHERE: { id: { IN: $programsList }, proposalStatus: { EQ: ACCEPTED } }
+  ) {
+    matches {
+      id
+      name
+      description
+      existence
+      type
+      active {
+        start
+        end
+      }
+      proposalStatus
+      proposal {
+        type {
+          scienceSubtype
+        }
+        call {
+          active {
+            start
+            end
+          }
+          semester
+        }
+      }
+      allocations {
+        category
+        duration {
+          hours
+        }
+        scienceBand
+      }
+      timeCharge {
+        band
+        time {
+          program {
+            hours
+          }
+          total {
+            hours
+          }
+          nonCharged {
+            hours
+          }
+        }
+      }
+      allGroupElements {
+        parentGroupId
+        group {
+          id
+          name
+          minimumRequired
+          ordered
+          parentId
+          parentIndex
+          minimumInterval {
+            seconds
+          }
+          maximumInterval {
+            seconds
+          }
+        }
+        observation {
+          id
+          groupId
+
+        }
+      }
+    }
+  }
+}
+
+query GetSchedulerAllProgramsId {
+  programs(WHERE: { proposalStatus: { EQ: ACCEPTED } }) {
+    matches {
+      id
+    }
+  }
+}

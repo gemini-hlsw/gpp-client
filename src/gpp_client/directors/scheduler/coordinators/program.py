@@ -9,7 +9,6 @@ from ....api import (
     WhereObservation,
     WhereOrderObservationId,
     WhereOrderObservationWorkflowState,
-    WhereProgram,
 )
 
 from ....coordinator import BaseCoordinator
@@ -92,8 +91,7 @@ class ProgramCoordinator(BaseCoordinator):
                 # remains in the program.
                 # Put to None so observation doesn't get parse.
                 node["observation"] = None
-                # print(obs)
-                pass
+
         elif group is not None:
             if group.get("elements"):
                 for child in group["elements"]:
@@ -109,14 +107,14 @@ class ProgramCoordinator(BaseCoordinator):
 
     async def get_all(
         self,
-        where: WhereProgram | None = None,
+        programs_list: list | None = None,
     ) -> list[dict[str, Any]]:
         """
         Fetch all programs with a complete group tree and observations.
 
         Parameters
         ----------
-        where : WhereProgram, optional
+        programs_list : list, optional
             Optional filtering clause.
 
         Returns
@@ -125,9 +123,17 @@ class ProgramCoordinator(BaseCoordinator):
             A list of dictionaries representing the programs and their elements.
         """
 
-        response = await self.client.program.get_all(where=where)
+        if not programs_list:
+            programs_list = [
+                p.id
+                for p in (
+                    await self.client._client.get_scheduler_all_programs_id()
+                ).programs.matches
+            ]
 
-        programs = response.get("matches", [])
+        response = await self.client._client.get_scheduler_programs(programs_list)
+        response = response.model_dump()
+        programs = response["programs"].get("matches", [])
         observations = []
         for program in programs:
             # Create root group.
@@ -136,9 +142,9 @@ class ProgramCoordinator(BaseCoordinator):
             children_map = {}
 
             # Iterate for all elements.
-            groups_in_programs = program["allGroupElements"]
+            groups_in_programs = program["all_group_elements"]
             for g in groups_in_programs:
-                parent_id = g.get("parentGroupId")
+                parent_id = g.get("parent_group_id")
 
                 if parent_id is None:
                     # Parent group or root observation.
@@ -194,9 +200,6 @@ class ProgramCoordinator(BaseCoordinator):
                 "\n"
             )
 
-        # atom_digest_response = (
-        #    await self.client._restapi.get_atom_digests(observations)
-        # ).split("\n")
         obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
 
         # Fill groups with the data above.
@@ -204,5 +207,6 @@ class ProgramCoordinator(BaseCoordinator):
             await self._traverse_for_observation(
                 program["root"], obs_mapping, obs_atoms_mapping
             )
+            del program["all_group_elements"]  # remove flatten tree
 
         return programs
