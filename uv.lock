@@ -563,7 +563,7 @@ wheels = [
 
 [[package]]
 name = "gpp-client"
-version = "25.8.0"
+version = "25.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
