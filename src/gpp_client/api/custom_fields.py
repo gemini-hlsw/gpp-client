@@ -607,6 +607,7 @@ class AtomEventFields(GraphQLField):
         return AtomRecordFields("atom")
 
     atom_stage: "AtomEventGraphQLField" = AtomEventGraphQLField("atomStage")
+    client_id: "AtomEventGraphQLField" = AtomEventGraphQLField("clientId")
 
     def fields(
         self,
@@ -2080,6 +2081,8 @@ class DatasetEventFields(GraphQLField):
     def dataset(cls) -> "DatasetFields":
         return DatasetFields("dataset")
 
+    client_id: "DatasetEventGraphQLField" = DatasetEventGraphQLField("clientId")
+
     def fields(
         self,
         *subfields: Union[
@@ -2592,6 +2595,7 @@ class ExecutionEventInterface(GraphQLField):
 
     received: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("received")
     event_type: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("eventType")
+    client_id: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("clientId")
 
     def fields(
         self,
@@ -2878,16 +2882,16 @@ class Flamingos2LongSlitFields(GraphQLField):
     )
 
     @classmethod
-    def spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("spatialOffsets")
+    def offsets(cls) -> "OffsetFields":
+        return OffsetFields("offsets")
 
     @classmethod
-    def default_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("defaultSpatialOffsets")
+    def default_offsets(cls) -> "OffsetFields":
+        return OffsetFields("defaultOffsets")
 
     @classmethod
-    def explicit_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("explicitSpatialOffsets")
+    def explicit_offsets(cls) -> "OffsetFields":
+        return OffsetFields("explicitOffsets")
 
     initial_disperser: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("initialDisperser")
@@ -3303,6 +3307,11 @@ class GmosNorthImagingFields(GraphQLField):
     initial_filters: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "initialFilters"
     )
+
+    @classmethod
+    def offsets(cls) -> "OffsetFields":
+        return OffsetFields("offsets")
+
     multiple_filters_mode: "GmosNorthImagingGraphQLField" = (
         GmosNorthImagingGraphQLField("multipleFiltersMode")
     )
@@ -3342,18 +3351,6 @@ class GmosNorthImagingFields(GraphQLField):
     explicit_roi: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "explicitRoi"
     )
-
-    @classmethod
-    def spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("spatialOffsets")
-
-    @classmethod
-    def default_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("defaultSpatialOffsets")
-
-    @classmethod
-    def explicit_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("explicitSpatialOffsets")
 
     def fields(
         self, *subfields: Union[GmosNorthImagingGraphQLField, "OffsetFields"]
@@ -3709,6 +3706,11 @@ class GmosSouthImagingFields(GraphQLField):
     initial_filters: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "initialFilters"
     )
+
+    @classmethod
+    def offsets(cls) -> "OffsetFields":
+        return OffsetFields("offsets")
+
     multiple_filters_mode: "GmosSouthImagingGraphQLField" = (
         GmosSouthImagingGraphQLField("multipleFiltersMode")
     )
@@ -3748,18 +3750,6 @@ class GmosSouthImagingFields(GraphQLField):
     explicit_roi: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "explicitRoi"
     )
-
-    @classmethod
-    def spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("spatialOffsets")
-
-    @classmethod
-    def default_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("defaultSpatialOffsets")
-
-    @classmethod
-    def explicit_spatial_offsets(cls) -> "OffsetFields":
-        return OffsetFields("explicitSpatialOffsets")
 
     def fields(
         self, *subfields: Union[GmosSouthImagingGraphQLField, "OffsetFields"]
@@ -5049,8 +5039,8 @@ class ProgramUserFields(GraphQLField):
         return PartnerLinkInterface("partnerLink")
 
     @classmethod
-    def fallback_profile(cls) -> "UserProfileFields":
-        return UserProfileFields("fallbackProfile")
+    def preferred_profile(cls) -> "UserProfileFields":
+        return UserProfileFields("preferredProfile")
 
     educational_status: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "educationalStatus"
@@ -5066,6 +5056,8 @@ class ProgramUserFields(GraphQLField):
     has_data_access: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "hasDataAccess"
     )
+    display_name: "ProgramUserGraphQLField" = ProgramUserGraphQLField("displayName")
+    email: "ProgramUserGraphQLField" = ProgramUserGraphQLField("email")
 
     def fields(
         self,
@@ -5605,6 +5597,7 @@ class SequenceEventFields(GraphQLField):
     received: "SequenceEventGraphQLField" = SequenceEventGraphQLField("received")
     event_type: "SequenceEventGraphQLField" = SequenceEventGraphQLField("eventType")
     command: "SequenceEventGraphQLField" = SequenceEventGraphQLField("command")
+    client_id: "SequenceEventGraphQLField" = SequenceEventGraphQLField("clientId")
 
     def fields(
         self,
@@ -5838,6 +5831,7 @@ class SlewEventFields(GraphQLField):
     received: "SlewEventGraphQLField" = SlewEventGraphQLField("received")
     event_type: "SlewEventGraphQLField" = SlewEventGraphQLField("eventType")
     slew_stage: "SlewEventGraphQLField" = SlewEventGraphQLField("slewStage")
+    client_id: "SlewEventGraphQLField" = SlewEventGraphQLField("clientId")
 
     def fields(
         self,
@@ -6190,6 +6184,7 @@ class StepEventFields(GraphQLField):
         return StepRecordFields("step")
 
     step_stage: "StepEventGraphQLField" = StepEventGraphQLField("stepStage")
+    client_id: "StepEventGraphQLField" = StepEventGraphQLField("clientId")
 
     def fields(
         self,
