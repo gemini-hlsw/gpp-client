@@ -35,6 +35,7 @@ from .input_types import (
     WhereCallForProposals,
     WhereConfigurationRequest,
     WhereDataset,
+    WhereDatasetChronicleEntry,
     WhereExecutionEvent,
     WhereImagingConfigOption,
     WhereObservation,
@@ -189,9 +190,14 @@ class Query:
 
     @classmethod
     def dataset_chronicle_entries(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        where: Optional[WhereDatasetChronicleEntry] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None
     ) -> DatasetChronicleEntrySelectResultFields:
         arguments: Dict[str, Dict[str, Any]] = {
+            "WHERE": {"type": "WhereDatasetChronicleEntry", "value": where},
             "OFFSET": {"type": "ChronicleId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }

@@ -23,6 +23,7 @@ from .enums import (
     ConditionsMeasurementSource,
     ConfigurationRequestStatus,
     CoolStarTemperature,
+    DatabaseOperation,
     DatasetQaState,
     DatasetStage,
     EducationalStatus,
@@ -112,11 +113,13 @@ from .enums import (
 class AddAtomEventInput(BaseModel):
     atom_id: Any = Field(alias=str("atomId"))
     atom_stage: AtomStage = Field(alias=str("atomStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddDatasetEventInput(BaseModel):
     dataset_id: Any = Field(alias=str("datasetId"))
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddProgramUserInput(BaseModel):
@@ -128,16 +131,19 @@ class AddProgramUserInput(BaseModel):
 class AddSequenceEventInput(BaseModel):
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddSlewEventInput(BaseModel):
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddStepEventInput(BaseModel):
     step_id: Any = Field(alias=str("stepId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddTimeChargeCorrectionInput(BaseModel):
@@ -532,6 +538,7 @@ class GmosNorthLongSlitInput(BaseModel):
 
 class GmosNorthImagingInput(BaseModel):
     filters: Optional[List[GmosNorthFilter]] = None
+    offsets: Optional[List["OffsetInput"]] = None
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
@@ -543,9 +550,6 @@ class GmosNorthImagingInput(BaseModel):
         alias=str("explicitAmpGain"), default=None
     )
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
-    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
-        alias=str("explicitSpatialOffsets"), default=None
-    )
 
 
 class GmosNorthStaticInput(BaseModel):
@@ -616,6 +620,7 @@ class GmosSouthLongSlitInput(BaseModel):
 
 class GmosSouthImagingInput(BaseModel):
     filters: Optional[List[GmosSouthFilter]] = None
+    offsets: Optional[List["OffsetInput"]] = None
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
@@ -627,9 +632,6 @@ class GmosSouthImagingInput(BaseModel):
         alias=str("explicitAmpGain"), default=None
     )
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
-    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
-        alias=str("explicitSpatialOffsets"), default=None
-    )
 
 
 class GmosSouthStaticInput(BaseModel):
@@ -786,8 +788,8 @@ class ProgramUserPropertiesInput(BaseModel):
     partner_link: Optional["PartnerLinkInput"] = Field(
         alias=str("partnerLink"), default=None
     )
-    fallback_profile: Optional["UserProfileInput"] = Field(
-        alias=str("fallbackProfile"), default=None
+    preferred_profile: Optional["UserProfileInput"] = Field(
+        alias=str("preferredProfile"), default=None
     )
     educational_status: Optional[EducationalStatus] = Field(
         alias=str("educationalStatus"), default=None
@@ -1432,6 +1434,44 @@ class AttachmentPropertiesInput(BaseModel):
     checked: Optional[bool] = None
 
 
+class WhereDatasetChronicleEntry(BaseModel):
+    and_: Optional[List["WhereDatasetChronicleEntry"]] = Field(
+        alias=str("AND"), default=None
+    )
+    or_: Optional[List["WhereDatasetChronicleEntry"]] = Field(
+        alias=str("OR"), default=None
+    )
+    not_: Optional["WhereDatasetChronicleEntry"] = Field(alias=str("NOT"), default=None)
+    id: Optional["WhereOrderChronicleId"] = None
+    user: Optional["WhereUser"] = None
+    operation: Optional["WhereEqDatabaseOperation"] = None
+    timestamp: Optional["WhereOrderTimestamp"] = None
+    dataset: Optional["WhereOrderDatasetId"] = None
+    mod_dataset_id: Optional["WhereBoolean"] = Field(
+        alias=str("modDatasetId"), default=None
+    )
+    mod_step_id: Optional["WhereBoolean"] = Field(alias=str("modStepId"), default=None)
+    mod_observation_id: Optional["WhereBoolean"] = Field(
+        alias=str("modObservationId"), default=None
+    )
+    mod_visit_id: Optional["WhereBoolean"] = Field(
+        alias=str("modVisitId"), default=None
+    )
+    mod_reference: Optional["WhereBoolean"] = Field(
+        alias=str("modReference"), default=None
+    )
+    mod_filename: Optional["WhereBoolean"] = Field(
+        alias=str("modFilename"), default=None
+    )
+    mod_qa_state: Optional["WhereBoolean"] = Field(
+        alias=str("modQaState"), default=None
+    )
+    mod_interval: Optional["WhereBoolean"] = Field(
+        alias=str("modInterval"), default=None
+    )
+    mod_comment: Optional["WhereBoolean"] = Field(alias=str("modComment"), default=None)
+
+
 class Flamingos2StaticInput(BaseModel):
     mos_pre_imaging: Optional[MosPreImaging] = Field(
         alias=str("mosPreImaging"), default=None
@@ -1497,8 +1537,8 @@ class Flamingos2LongSlitInput(BaseModel):
     explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
         alias=str("explicitReadoutMode"), default=None
     )
-    explicit_spatial_offsets: Optional[List["OffsetInput"]] = Field(
-        alias=str("explicitSpatialOffsets"), default=None
+    explicit_offsets: Optional[List["OffsetInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
     )
 
 
@@ -1698,6 +1738,13 @@ class WhereEqCallForProposalsType(BaseModel):
     neq: Optional[CallForProposalsType] = Field(alias=str("NEQ"), default=None)
     in_: Optional[List[CallForProposalsType]] = Field(alias=str("IN"), default=None)
     nin: Optional[List[CallForProposalsType]] = Field(alias=str("NIN"), default=None)
+
+
+class WhereEqDatabaseOperation(BaseModel):
+    eq: Optional[DatabaseOperation] = Field(alias=str("EQ"), default=None)
+    neq: Optional[DatabaseOperation] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[DatabaseOperation]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[DatabaseOperation]] = Field(alias=str("NIN"), default=None)
 
 
 class WhereOptionEqEducationalStatus(BaseModel):
@@ -1980,6 +2027,17 @@ class WhereOrderBigDecimal(BaseModel):
 
 
 class WhereOrderCallForProposalsId(BaseModel):
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+
+
+class WhereOrderChronicleId(BaseModel):
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
@@ -2322,8 +2380,8 @@ class WhereProgramUser(BaseModel):
     partner_link: Optional["WherePartnerLink"] = Field(
         alias=str("partnerLink"), default=None
     )
-    fallback_profile: Optional["WhereUserProfile"] = Field(
-        alias=str("fallbackProfile"), default=None
+    preferred_profile: Optional["WhereUserProfile"] = Field(
+        alias=str("preferredProfile"), default=None
     )
     educational_status: Optional["WhereOptionEqEducationalStatus"] = Field(
         alias=str("educationalStatus"), default=None
@@ -2591,6 +2649,7 @@ UpdateProgramNotesInput.model_rebuild()
 UpdateProgramsInput.model_rebuild()
 UpdateProposalInput.model_rebuild()
 UpdateTargetsInput.model_rebuild()
+WhereDatasetChronicleEntry.model_rebuild()
 RecordFlamingos2StepInput.model_rebuild()
 RecordFlamingos2VisitInput.model_rebuild()
 Flamingos2DynamicInput.model_rebuild()

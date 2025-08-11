@@ -684,7 +684,6 @@ class GmosSouthFilter(str, Enum):
 class GmosSouthGrating(str, Enum):
     B1200_G5321 = "B1200_G5321"
     R831_G5322 = "R831_G5322"
-    B600_G5323 = "B600_G5323"
     R600_G5324 = "R600_G5324"
     B480_G5327 = "B480_G5327"
     R400_G5325 = "R400_G5325"
