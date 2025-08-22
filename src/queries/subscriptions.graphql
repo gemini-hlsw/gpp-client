@@ -1,0 +1,115 @@
+subscription newObservationEdit(
+  $programId: ProgramId
+  $obsId: ObservationId
+) {
+  observationEdit(input: {programId: $programId, observationId: $obsId}) {
+    editType
+    observationId
+    value {
+      id
+      existence
+      reference {
+        label
+      }
+      calibrationRole
+      instrument
+      index
+      title
+      subtitle
+      scienceRequirements {
+        mode
+      }
+      scienceBand
+      workflow {
+        state
+      }
+      observingMode {
+        instrument
+        mode
+        gmosNorthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+          spatialOffsets {
+            arcseconds
+          }
+        }
+        gmosSouthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+          spatialOffsets {
+            arcseconds
+          }
+        }
+      }
+      constraintSet {
+        imageQuality
+        cloudExtinction
+        skyBackground
+        waterVapor
+        elevationRange {
+          airMass {
+            min
+            max
+          }
+          hourAngle {
+            minHours
+            maxHours
+          }
+        }
+      }
+      timingWindows {
+        inclusion
+        startUtc
+        end {
+          ... on TimingWindowEndAt {
+            atUtc
+          }
+          ... on TimingWindowEndAfter {
+            after {
+              seconds
+            }
+            repeat {
+              period {
+                seconds
+              }
+              times
+            }
+          }
+        }
+      }
+      targetEnvironment {
+        asterism {
+          sidereal {
+            ra {
+              hms
+            }
+            dec {
+              dms
+            }
+            epoch
+          }
+          nonsidereal {
+            des
+          }
+          name
+        }
+        explicitBase {
+          ra {
+            hms
+          }
+          dec {
+            dms
+          }
+        }
+      }
+    }
+  }
+}
