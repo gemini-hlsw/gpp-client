@@ -1,3 +1,4 @@
+import re
 import os
 from typing import Optional
 
@@ -63,10 +64,17 @@ class GPPClient:
         self.config = GPPConfig()
 
         # Determine which url and token to use.
-        resolved_url, resolved_token = self._resolve_credentials(url=url, token=token)
+        resolved_url, resolved_token, ws_url = self._resolve_credentials(
+            url=url, token=token
+        )
 
         headers = self._build_headers(resolved_token)
-        self._client = _GPPClient(url=resolved_url, headers=headers)
+        self._client = _GPPClient(
+            url=resolved_url,
+            ws_url=ws_url,
+            headers=headers,
+            ws_connection_init_payload=headers,
+        )
         self._restapi = _GPPRESTClient(resolved_url, resolved_token)
 
         # Initialize the managers.
@@ -104,7 +112,7 @@ class GPPClient:
         self,
         url: Optional[str] = None,
         token: Optional[str] = None,
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, str]:
         """
         Resolve the GPP GraphQL credentials using precedence rules.
 
@@ -126,6 +134,8 @@ class GPPClient:
             The URL for the GraphQL endpoint.
         str
             The token for authentication.
+        str
+            The Websocket URL for the same endpoint.
 
         Raises
         ------
@@ -141,8 +151,9 @@ class GPPClient:
                 "Missing GPP URL or GPP token. Provide via args, environment, or "
                 "in configuration file."
             )
+        ws_url = re.sub(r"^https?://([^/]+).*", r"wss://\1/ws", resolved_url)
 
-        return resolved_url, resolved_token
+        return resolved_url, resolved_token, ws_url
 
     async def is_reachable(self) -> tuple[bool, Optional[str]]:
         """

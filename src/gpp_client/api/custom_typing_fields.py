@@ -1225,6 +1225,12 @@ class ObservationGraphQLField(GraphQLField):
         return self
 
 
+class ConfigurationTargetGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationTargetGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGraphQLField":
         self._alias = alias
@@ -1251,6 +1257,24 @@ class ConfigurationGmosNorthLongSlitGraphQLField(GraphQLField):
 
 class ConfigurationGmosSouthLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGmosSouthLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosNorthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosNorthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosSouthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitGraphQLField":
         self._alias = alias
         return self
 

@@ -531,6 +531,9 @@ class GmosNorthLongSlitInput(BaseModel):
     explicit_wavelength_dithers: Optional[List["WavelengthDitherInput"]] = Field(
         alias=str("explicitWavelengthDithers"), default=None
     )
+    explicit_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
+    )
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
     )
@@ -612,6 +615,9 @@ class GmosSouthLongSlitInput(BaseModel):
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
     explicit_wavelength_dithers: Optional[List["WavelengthDitherInput"]] = Field(
         alias=str("explicitWavelengthDithers"), default=None
+    )
+    explicit_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
     )
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
@@ -2400,6 +2406,7 @@ class WhereProposal(BaseModel):
     not_: Optional["WhereProposal"] = Field(alias=str("NOT"), default=None)
     title: Optional["WhereOptionString"] = None
     reference: Optional["WhereProposalReference"] = None
+    call: Optional["WhereCallForProposals"] = None
 
 
 class WhereProposalPartnerEntry(BaseModel):
