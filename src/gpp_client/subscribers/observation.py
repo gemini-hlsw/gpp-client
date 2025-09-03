@@ -14,11 +14,26 @@ class ObservationSubscriber(BaseManager):
     async def get_edits(
         self, program_id: str | None = None, observation_id: str | None = None
     ):
+        """
+        Bring any edits related to observations inside the program or a specific observation.
+
+        Parameters
+        ----------
+        program_id : str, optional
+            Program id. It would show the edits for all the observations inside the program.
+        observation_id : str, optional
+            Observation id. It would show only the edits for that observation.
+
+        Returns
+        -------
+        AsyncIterator[Dict[str, Any]]:
+            Observation edit changes.
+        """
         if program_id is None and observation_id is None:
             raise ValueError("Either `program_id` or `observation_id` must be provided")
         if program_id is not None and observation_id is not None:
             raise ValueError("Either `program_id` or `observation_id` must be provided")
 
-        return self.client._client.new_observation_edit(
+        return self.client.new_observation_edit(
             program_id=program_id, observation_id=observation_id
         )

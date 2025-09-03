@@ -14,4 +14,4 @@ class ObservationCoordinator(BaseCoordinator):
         self, program_id: str | None = None, observation_id: str | None = None
     ):
         obs_subscriber = ObservationSubscriber(self.client)
-        return obs_subscriber.get_edits(program_id, observation_id)
+        return await obs_subscriber.get_edits(program_id, observation_id)
