@@ -238,6 +238,11 @@ class _GPPClient(AsyncBaseClient):
                   description
                   existence
                   type
+                  reference {
+                    __typename
+                    label
+                    type
+                  }
                   active {
                     start
                     end

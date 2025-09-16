@@ -30,6 +30,7 @@ class GetSchedulerProgramsProgramsMatches(BaseModel):
     description: Optional[Any]
     existence: Existence
     type: ProgramType
+    reference: Optional["GetSchedulerProgramsProgramsMatchesReference"]
     active: "GetSchedulerProgramsProgramsMatchesActive"
     proposal_status: ProposalStatus = Field(alias="proposalStatus")
     proposal: Optional["GetSchedulerProgramsProgramsMatchesProposal"]
@@ -40,6 +41,22 @@ class GetSchedulerProgramsProgramsMatches(BaseModel):
     all_group_elements: List["GetSchedulerProgramsProgramsMatchesAllGroupElements"] = (
         Field(alias="allGroupElements")
     )
+
+
+class GetSchedulerProgramsProgramsMatchesReference(BaseModel):
+    typename__: Literal[
+        "CalibrationProgramReference",
+        "CommissioningProgramReference",
+        "EngineeringProgramReference",
+        "ExampleProgramReference",
+        "LibraryProgramReference",
+        "MonitoringProgramReference",
+        "ProgramReference",
+        "ScienceProgramReference",
+        "SystemProgramReference",
+    ] = Field(alias="__typename")
+    label: Any
+    type: ProgramType
 
 
 class GetSchedulerProgramsProgramsMatchesActive(BaseModel):

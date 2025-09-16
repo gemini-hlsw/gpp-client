@@ -8,6 +8,10 @@ query GetSchedulerPrograms($programsList: [ProgramId!]) {
       description
       existence
       type
+      reference{
+        label
+        type
+      }
       active {
         start
         end
