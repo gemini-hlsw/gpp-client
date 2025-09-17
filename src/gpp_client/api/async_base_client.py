@@ -157,7 +157,9 @@ class AsyncBaseClient:
         headers.update(kwargs.get("extra_headers", {}))
 
         merged_kwargs: Dict[str, Any] = {"origin": self.ws_origin}
-        merged_kwargs.update(kwargs)
+        # There is a bug on the code-generator that causes Sub parameters
+        # be sent as  socket parameters.
+        # merged_kwargs.update(kwargs)
         merged_kwargs["extra_headers"] = headers
 
         operation_id = str(uuid4())
