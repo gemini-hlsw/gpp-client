@@ -49,12 +49,16 @@ from .custom_typing_fields import (
     ConditionsMeasurementGraphQLField,
     ConfigChangeEstimateGraphQLField,
     ConfigurationConditionsGraphQLField,
+    ConfigurationFlamingos2LongSlitGraphQLField,
+    ConfigurationGmosNorthImagingGraphQLField,
     ConfigurationGmosNorthLongSlitGraphQLField,
+    ConfigurationGmosSouthImagingGraphQLField,
     ConfigurationGmosSouthLongSlitGraphQLField,
     ConfigurationGraphQLField,
     ConfigurationObservingModeGraphQLField,
     ConfigurationRequestGraphQLField,
     ConfigurationRequestSelectResultGraphQLField,
+    ConfigurationTargetGraphQLField,
     ConstraintSetGraphQLField,
     ConstraintSetGroupGraphQLField,
     ConstraintSetGroupSelectResultGraphQLField,
@@ -1357,8 +1361,8 @@ class ConfigurationFields(GraphQLField):
         return ConfigurationConditionsFields("conditions")
 
     @classmethod
-    def reference_coordinates(cls) -> "CoordinatesFields":
-        return CoordinatesFields("referenceCoordinates")
+    def target(cls) -> "ConfigurationTargetFields":
+        return ConfigurationTargetFields("target")
 
     @classmethod
     def observing_mode(cls) -> "ConfigurationObservingModeFields":
@@ -1370,7 +1374,7 @@ class ConfigurationFields(GraphQLField):
             ConfigurationGraphQLField,
             "ConfigurationConditionsFields",
             "ConfigurationObservingModeFields",
-            "CoordinatesFields",
+            "ConfigurationTargetFields",
         ]
     ) -> "ConfigurationFields":
         """Subfields should come from the ConfigurationFields class"""
@@ -1408,6 +1412,40 @@ class ConfigurationConditionsFields(GraphQLField):
         return self
 
 
+class ConfigurationFlamingos2LongSlitFields(GraphQLField):
+    disperser: "ConfigurationFlamingos2LongSlitGraphQLField" = (
+        ConfigurationFlamingos2LongSlitGraphQLField("disperser")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationFlamingos2LongSlitGraphQLField
+    ) -> "ConfigurationFlamingos2LongSlitFields":
+        """Subfields should come from the ConfigurationFlamingos2LongSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosNorthImagingFields(GraphQLField):
+    filters: "ConfigurationGmosNorthImagingGraphQLField" = (
+        ConfigurationGmosNorthImagingGraphQLField("filters")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosNorthImagingGraphQLField
+    ) -> "ConfigurationGmosNorthImagingFields":
+        """Subfields should come from the ConfigurationGmosNorthImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosNorthImagingFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGmosNorthLongSlitFields(GraphQLField):
     grating: "ConfigurationGmosNorthLongSlitGraphQLField" = (
         ConfigurationGmosNorthLongSlitGraphQLField("grating")
@@ -1421,6 +1459,23 @@ class ConfigurationGmosNorthLongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationGmosNorthLongSlitFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthImagingFields(GraphQLField):
+    filters: "ConfigurationGmosSouthImagingGraphQLField" = (
+        ConfigurationGmosSouthImagingGraphQLField("filters")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosSouthImagingGraphQLField
+    ) -> "ConfigurationGmosSouthImagingFields":
+        """Subfields should come from the ConfigurationGmosSouthImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosSouthImagingFields":
         self._alias = alias
         return self
 
@@ -1458,11 +1513,26 @@ class ConfigurationObservingModeFields(GraphQLField):
     def gmos_south_long_slit(cls) -> "ConfigurationGmosSouthLongSlitFields":
         return ConfigurationGmosSouthLongSlitFields("gmosSouthLongSlit")
 
+    @classmethod
+    def gmos_north_imaging(cls) -> "ConfigurationGmosNorthImagingFields":
+        return ConfigurationGmosNorthImagingFields("gmosNorthImaging")
+
+    @classmethod
+    def gmos_south_imaging(cls) -> "ConfigurationGmosSouthImagingFields":
+        return ConfigurationGmosSouthImagingFields("gmosSouthImaging")
+
+    @classmethod
+    def flamingos_2_long_slit(cls) -> "ConfigurationFlamingos2LongSlitFields":
+        return ConfigurationFlamingos2LongSlitFields("flamingos2LongSlit")
+
     def fields(
         self,
         *subfields: Union[
             ConfigurationObservingModeGraphQLField,
+            "ConfigurationFlamingos2LongSlitFields",
+            "ConfigurationGmosNorthImagingFields",
             "ConfigurationGmosNorthLongSlitFields",
+            "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
         ]
     ) -> "ConfigurationObservingModeFields":
@@ -1532,6 +1602,30 @@ class ConfigurationRequestSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationRequestSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationTargetFields(GraphQLField):
+    @classmethod
+    def coordinates(cls) -> "CoordinatesFields":
+        return CoordinatesFields("coordinates")
+
+    @classmethod
+    def region(cls) -> "RegionFields":
+        return RegionFields("region")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ConfigurationTargetGraphQLField, "CoordinatesFields", "RegionFields"
+        ]
+    ) -> "ConfigurationTargetFields":
+        """Subfields should come from the ConfigurationTargetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationTargetFields":
         self._alias = alias
         return self
 
@@ -3424,6 +3518,18 @@ class GmosNorthLongSlitFields(GraphQLField):
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
+    def offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("offsets")
+
+    @classmethod
+    def default_offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("defaultOffsets")
+
+    @classmethod
+    def explicit_offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("explicitOffsets")
+
+    @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
         return OffsetQFields("spatialOffsets")
 
@@ -3821,6 +3927,18 @@ class GmosSouthLongSlitFields(GraphQLField):
     @classmethod
     def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
         return WavelengthDitherFields("explicitWavelengthDithers")
+
+    @classmethod
+    def offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("offsets")
+
+    @classmethod
+    def default_offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("defaultOffsets")
+
+    @classmethod
+    def explicit_offsets(cls) -> "OffsetQFields":
+        return OffsetQFields("explicitOffsets")
 
     @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
