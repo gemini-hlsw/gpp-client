@@ -28,7 +28,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "toml>=0.10",
     "typer>=0.16.0",
-    "websockets>=14.0",
+    "websockets>=14.2",
 ]
 version = "25.8.3"
 keywords = ["gemini", "gpp", "client", "program", "platform"]
@@ -74,24 +74,24 @@ queries_path = "src/queries"
 [tool.numpydoc_validation]
 checks = [
     "all",  # All except the rules listed below.
-    "SA01",  # See Also section.
-    "EX01",  # Example section.
-    "SS06",  # Summary can go into second line.
-    "GL08",  # Do not require docstring.
-    "ES01",  # No extended summary required.
-    "SS05",  # pydocstyle is better at finding infinitive verb.
+    "SA01", # See Also section.
+    "EX01", # Example section.
+    "SS06", # Summary can go into second line.
+    "GL08", # Do not require docstring.
+    "ES01", # No extended summary required.
+    "SS05", # pydocstyle is better at finding infinitive verb.
 ]
 exclude = [
     '^__init__$',
-    '\._[a-zA-Z_]+$',  # Private methods.
+    '\._[a-zA-Z_]+$', # Private methods.
 ]
 
 [dependency-groups]
 codegen = [
-    "ariadne-codegen>=0.15.0.dev1",
+    "ariadne-codegen==0.15.3",
 ]
 dev = [
-    "ariadne-codegen>=0.15.0.dev1",
+    { include-group = "codegen" },
     "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
     "pytest-mock>=3.14.1",
@@ -107,7 +107,7 @@ docs = [
     "sphinxcontrib-typer>=0.5.1",
 ]
 schema = [
-    "aiohttp>=3.8.0",
+    "aiohttp>=3.12.13",
     "gql>=3.5.0",
 ]
 
