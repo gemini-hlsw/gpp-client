@@ -160,7 +160,7 @@ wheels = [
 
 [[package]]
 name = "ariadne-codegen"
-version = "0.15.0.dev1"
+version = "0.15.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autoflake" },
@@ -172,9 +172,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/22/f9/52807a0837eaf95dd163ffb0c2ebef2e459e9bc3272261b06bb5cbf35a0c/ariadne_codegen-0.15.0.dev1.tar.gz", hash = "sha256:8c9419c755aa78ea0fb8bed77fe5c80fab17a09067919079c55b31379479fe34", size = 66355, upload-time = "2025-02-26T10:28:42.606Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/80/77efaec6129440d4c303e403e4fbf7196e02ac3f45cf72ab86614c8f944e/ariadne_codegen-0.15.3.tar.gz", hash = "sha256:30d8b876168411fb05eb52398ab319ce994b6d0b3fe6ae17056dc8a9f14aea6e", size = 66333, upload-time = "2025-09-19T10:24:15.629Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/91/77d96b21611eaa4faeedf384b59c7b6bd61645b5f2337a62debaea34b7df/ariadne_codegen-0.15.0.dev1-py3-none-any.whl", hash = "sha256:209ca42f77fae8b5728ea78104fb960c3b4b42091d07995b2eda87cb648e1376", size = 95598, upload-time = "2025-02-26T10:28:40.952Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/af/ce9774603c1f501b0e4a4e4796f48c05bbde2110e34d1479137711490c83/ariadne_codegen-0.15.3-py3-none-any.whl", hash = "sha256:7cd2cc68a7d3860422c8e03f5fe575ed6db22fca0a8a379779919fa08cf2a4f4", size = 95708, upload-time = "2025-09-19T10:24:13.247Z" },
 ]
 
 [[package]]
@@ -633,13 +633,13 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "toml", specifier = ">=0.10" },
     { name = "typer", specifier = ">=0.16.0" },
-    { name = "websockets", specifier = ">=14.0" },
+    { name = "websockets", specifier = ">=14.2" },
 ]
 
 [package.metadata.requires-dev]
-codegen = [{ name = "ariadne-codegen", specifier = ">=0.15.0.dev1" }]
+codegen = [{ name = "ariadne-codegen", specifier = "==0.15.3" }]
 dev = [
-    { name = "ariadne-codegen", specifier = ">=0.15.0.dev1" },
+    { name = "ariadne-codegen", specifier = "==0.15.3" },
     { name = "pytest-asyncio", specifier = ">=1.1.0" },
     { name = "pytest-cov", specifier = ">=6.2.1" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
@@ -655,7 +655,7 @@ docs = [
     { name = "sphinxcontrib-typer", specifier = ">=0.5.1" },
 ]
 schema = [
-    { name = "aiohttp", specifier = ">=3.8.0" },
+    { name = "aiohttp", specifier = ">=3.12.13" },
     { name = "gql", specifier = ">=3.5.0" },
 ]
 
