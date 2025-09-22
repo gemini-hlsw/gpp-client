@@ -7,15 +7,30 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      dependencies:
+        patterns:
+          - "aiohttp"
+          - "beautifulsoup"
+          - "graphql-core"
+          - "httpx"
+          - "pydantic"
+          - "toml"
+          - "typer"
+          - "websockets"
+      codegen-dependencies:
+        patterns:
+          - "ariadne-codegen"
       development-dependencies:
         patterns:
           - "pytest*"
           - "ruff"
-          - "ariadne-codegen"
       documentation-dependencies:
         patterns:
           - "furo"
           - "sphinx*"
+      schema-dependencies:
+        patterns:
+          - "gql"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
