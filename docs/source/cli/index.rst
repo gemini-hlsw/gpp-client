@@ -26,7 +26,9 @@ Individual commands are documented below:
     target
     program
     site-status
+    configuration-request
     scheduler
+    goats
 
 .. note::
 

@@ -300,9 +300,9 @@ class TargetManager(BaseManager):
         dict[str, Any]
             The restore result payload.
         """
-        target_properties = TargetPropertiesInput(existence=Existence.PRESENT)
+        properties = TargetPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
-            target_id, target_properties=target_properties, include_deleted=True
+            target_id, properties=properties, include_deleted=True
         )
 
     async def delete_by_id(self, target_id: str) -> dict[str, Any]:
@@ -319,10 +319,10 @@ class TargetManager(BaseManager):
         dict[str, Any]
             The delete result payload.
         """
-        target_properties = TargetPropertiesInput(existence=Existence.DELETED)
+        properties = TargetPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             target_id,
-            target_properties=target_properties,
+            properties=properties,
             include_deleted=False,
         )
 
