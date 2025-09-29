@@ -5,14 +5,15 @@ from ..client import GPPClient
 from .commands import (
     call_for_proposals,
     config,
+    configuration_request,
+    goats,
     group,
     observation,
     program,
     program_note,
+    scheduler,
     site_status,
     target,
-    scheduler,
-    goats,
 )
 from .utils import async_command
 
@@ -27,6 +28,7 @@ app.add_typer(call_for_proposals.app)
 app.add_typer(observation.app)
 app.add_typer(site_status.app)
 app.add_typer(group.app)
+app.add_typer(configuration_request.app)
 app.add_typer(scheduler.app)
 app.add_typer(goats.app)
 

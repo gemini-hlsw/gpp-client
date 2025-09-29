@@ -5,6 +5,7 @@ from .api._client import _GPPClient
 from .config import GPPConfig
 from .managers import (
     CallForProposalsManager,
+    ConfigurationRequestManager,
     GroupManager,
     ObservationManager,
     ProgramManager,
@@ -52,6 +53,10 @@ class GPPClient:
         Manager for observations submitted under proposals.
     site_status : SiteStatusManager
         Manager for current status of Gemini North and South.
+    group : GroupManager
+        Manager for groups.
+    configuration_request : ConfigurationRequestManager
+        Manager for configuration requests.
     """
 
     def __init__(
@@ -78,6 +83,7 @@ class GPPClient:
         # SiteStatusManager doesn't use the client so don't pass self.
         self.site_status = SiteStatusManager()
         self.group = GroupManager(self)
+        self.configuration_request = ConfigurationRequestManager(self)
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:

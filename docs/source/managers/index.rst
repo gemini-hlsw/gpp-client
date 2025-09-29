@@ -55,8 +55,10 @@ API Reference
 
    base
    call-for-proposals
+   configuration-request
    program
    program-note
    target
    observation
    site-status
+   group
