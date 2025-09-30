@@ -297,6 +297,7 @@ class _GPPClient(AsyncBaseClient):
                       maximumInterval {
                         seconds
                       }
+                      system
                     }
                     observation {
                       id

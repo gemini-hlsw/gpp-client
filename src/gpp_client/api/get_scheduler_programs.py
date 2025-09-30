@@ -150,6 +150,7 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup(BaseModel):
     maximum_interval: Optional[
         "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMaximumInterval"
     ] = Field(alias="maximumInterval")
+    system: bool
 
 
 class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMinimumInterval(
