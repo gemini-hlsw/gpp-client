@@ -1,12 +1,7 @@
 query GetGOATSObservations($programId: ProgramId!) {
   observations(
     includeDeleted: false
-    WHERE: {
-      program: {
-        id: { EQ: $programId }
-        proposalStatus: { EQ: ACCEPTED }
-      }
-    }
+    WHERE: { program: { id: { EQ: $programId }, proposalStatus: { EQ: ACCEPTED } } }
   ) {
     matches {
       id
@@ -59,6 +54,13 @@ query GetGOATSObservations($programId: ProgramId!) {
         }
       }
       targetEnvironment {
+        asterism {
+          id
+          name
+          opportunity {
+            __typename
+          }
+        }
         firstScienceTarget {
           sidereal {
             properMotion {

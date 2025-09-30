@@ -91,6 +91,13 @@ class _GPPClient(AsyncBaseClient):
                     }
                   }
                   targetEnvironment {
+                    asterism {
+                      id
+                      name
+                      opportunity {
+                        __typename
+                      }
+                    }
                     firstScienceTarget {
                       sidereal {
                         properMotion {
