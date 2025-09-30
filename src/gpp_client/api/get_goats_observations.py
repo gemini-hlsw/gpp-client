@@ -170,9 +170,24 @@ class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfte
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironment(BaseModel):
+    asterism: List["GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism"]
     first_science_target: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget"
     ] = Field(alias="firstScienceTarget")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism(BaseModel):
+    id: Any
+    name: Any
+    opportunity: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterismOpportunity"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterismOpportunity(
+    BaseModel
+):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget(
@@ -453,6 +468,7 @@ GetGOATSObservationsObservationsMatchesTimingWindows.model_rebuild()
 GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter.model_rebuild()
 GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironment.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion.model_rebuild()
