@@ -358,6 +358,7 @@ class ProgramManager(BaseManager):
                     GroupFields.parent_index,
                     GroupFields.minimum_interval().fields(TimeSpanFields.seconds),
                     GroupFields.maximum_interval().fields(TimeSpanFields.seconds),
+                    GroupFields.system,
                 ),
             ),
         )

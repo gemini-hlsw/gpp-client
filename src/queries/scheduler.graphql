@@ -65,6 +65,7 @@ query GetSchedulerPrograms($programsList: [ProgramId!]) {
           maximumInterval {
             seconds
           }
+          system
         }
         observation {
           id
