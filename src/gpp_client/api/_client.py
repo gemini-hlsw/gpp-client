@@ -100,6 +100,15 @@ class _GPPClient(AsyncBaseClient):
                     }
                     firstScienceTarget {
                       sidereal {
+                        ra {
+                          hms
+                          hours
+                          degrees
+                        }
+                        dec {
+                          dms
+                          degrees
+                        }
                         properMotion {
                           ra {
                             milliarcsecondsPerYear

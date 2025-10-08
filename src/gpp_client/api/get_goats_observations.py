@@ -204,6 +204,8 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal(
     BaseModel
 ):
+    ra: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRa"
+    dec: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealDec"
     proper_motion: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion"
     ] = Field(alias="properMotion")
@@ -213,6 +215,21 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
     radial_velocity: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRadialVelocity"
     ] = Field(alias="radialVelocity")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRa(
+    BaseModel
+):
+    hms: Any
+    hours: Any
+    degrees: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealDec(
+    BaseModel
+):
+    dms: Any
+    degrees: Any
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion(
