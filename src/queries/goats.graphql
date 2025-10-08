@@ -63,6 +63,15 @@ query GetGOATSObservations($programId: ProgramId!) {
         }
         firstScienceTarget {
           sidereal {
+            ra {
+              hms
+              hours
+              degrees
+            }
+            dec {
+              dms
+              degrees
+            }
             properMotion {
               ra {
                 milliarcsecondsPerYear
