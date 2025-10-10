@@ -4,43 +4,45 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
+    AirMassRangeFields,
+    CalculatedObservationWorkflowFields,
+    CloneObservationResultFields,
+    ConstraintSetFields,
+    CoordinatesFields,
     CreateObservationResultFields,
+    DeclinationFields,
+    ElevationRangeFields,
+    GmosNorthLongSlitFields,
+    GmosSouthLongSlitFields,
+    HourAngleRangeFields,
+    NonsiderealFields,
     ObservationFields,
     ObservationReferenceFields,
     ObservationSelectResultFields,
+    ObservingModeFields,
+    OffsetQFields,
     ProgramFields,
-    ScienceRequirementsFields,
-    UpdateObservationsResultFields,
-    TimeSpanFields,
-    ConstraintSetFields,
-    TimingWindowFields,
-    TimingWindowEndAtFields,
-    TimingWindowEndAfterFields,
-    TimingWindowRepeatFields,
-    ElevationRangeFields,
-    AirMassRangeFields,
-    HourAngleRangeFields,
-    TargetEnvironmentFields,
-    CoordinatesFields,
-    RightAscensionFields,
-    DeclinationFields,
-    TargetFields,
-    SiderealFields,
+    ProperMotionDeclinationFields,
     ProperMotionFields,
     ProperMotionRAFields,
-    ProperMotionDeclinationFields,
-    NonsiderealFields,
-    CalculatedObservationWorkflowFields,
-    ObservingModeFields,
-    GmosNorthLongSlitFields,
+    RightAscensionFields,
+    ScienceRequirementsFields,
+    SiderealFields,
+    TargetEnvironmentFields,
+    TargetFields,
+    TimeSpanFields,
+    TimingWindowEndAfterFields,
+    TimingWindowEndAtFields,
+    TimingWindowFields,
+    TimingWindowRepeatFields,
+    UpdateObservationsResultFields,
     WavelengthFields,
-    GmosSouthLongSlitFields,
-    OffsetQFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
 from ..api.enums import Existence
 from ..api.input_types import (
+    CloneObservationInput,
     CreateObservationInput,
     ObservationPropertiesInput,
     UpdateObservationsInput,
@@ -54,6 +56,74 @@ from .utils import load_properties, validate_single_identifier
 
 
 class ObservationManager(BaseManager):
+    async def clone(
+        self,
+        *,
+        observation_id: Optional[str] = None,
+        observation_reference: Optional[str] = None,
+        properties: Optional[ObservationPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
+    ) -> dict[str, Any]:
+        """
+        Clone an existing observation to create a new one.
+
+        Parameters
+        ----------
+        observation_id : str, optional
+            Unique internal ID of the observation to clone.
+        observation_reference : str, optional
+            Human-readable reference label (e.g., "G-2025A-1234-Q-0001") of the observation to clone.
+        properties : ObservationPropertiesInput, optional
+            Properties to override in the cloned observation. This or ``from_json`` may be supplied.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the JSON data.
+
+        Returns
+        -------
+        dict[str, Any]
+            A dictionary containing details of the original and new cloned observations.
+
+        Raises
+        ------
+        ValueError
+            - If neither or both of `observation_id` and `observation_reference` are
+            provided.
+            - If both `properties` and `from_json` are provided.
+
+        Notes
+        -----
+        Exactly one of `observation_id` or `observation_reference` must be provided to
+        identify the observation to clone. Additionally, either `properties` or
+        `from_json` may be supplied to specify overrides for the cloned observation.
+        """
+        validate_single_identifier(
+            observation_id=observation_id, observation_reference=observation_reference
+        )
+
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=ObservationPropertiesInput
+        )
+
+        input_data = CloneObservationInput(
+            observation_id=observation_id,
+            observation_reference=observation_reference,
+            set=properties,
+        )
+        fields = Mutation.clone_observation(input=input_data).fields(
+            CloneObservationResultFields.original_observation().fields(
+                # Only a few fields from the original are returned.
+                ObservationFields.id,
+                ObservationFields.existence,
+                ObservationFields.reference().fields(ObservationReferenceFields.label),
+            ),
+            CloneObservationResultFields.new_observation().fields(*self._fields()),
+        )
+
+        operation_name = "cloneObservation"
+        result = await self.client.mutation(fields, operation_name=operation_name)
+
+        return result[operation_name]
+
     async def create(
         self,
         *,

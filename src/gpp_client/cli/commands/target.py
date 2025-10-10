@@ -155,11 +155,14 @@ async def update_by_id(
 @app.command("clone")
 @async_command
 async def clone(
-    target_id: Annotated[str, typer.Argument(..., help="Target ID to clone.")],
+    target_id: Annotated[
+        str, typer.Option(..., "--target-id", help="Target ID to clone.")
+    ],
     from_json: Annotated[
         Path,
         typer.Option(
             ...,
+            "--from-json",
             exists=True,
             help="JSON file with the properties definition for the new target.",
         ),
