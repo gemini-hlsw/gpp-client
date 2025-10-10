@@ -209,6 +209,46 @@ async def update_by_id(
     console.print(JSON.from_data(result))
 
 
+@app.command("clone")
+@async_command
+async def clone(
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            "--from-json",
+            exists=True,
+            help="JSON file with the properties definition.",
+        ),
+    ],
+    observation_id: Annotated[
+        Optional[str],
+        typer.Option(help="Observation ID (supply exactly one identifier)."),
+    ] = None,
+    observation_reference: Annotated[
+        Optional[str],
+        typer.Option(
+            help="Observation reference label (supply exactly one identifier)."
+        ),
+    ] = None,
+):
+    """Clone an observation by ID or reference.
+
+    Exactly one of --observation-id or --observation-reference must be provided to
+    identify the observation. Supplying more than one (or none) will result in an error.
+
+    Optionally, a JSON file with properties can be provided to override specific
+    properties in the cloned observation.
+    """
+    client = GPPClient()
+    result = await client.observation.clone(
+        observation_id=observation_id,
+        observation_reference=observation_reference,
+        from_json=from_json,
+    )
+    console.print(JSON.from_data(result))
+
+
 @app.command("schema")
 def schema(
     indent: Annotated[
