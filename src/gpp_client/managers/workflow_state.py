@@ -138,7 +138,7 @@ class WorkflowStateManager(BaseManager):
         """
         if workflow["state"] != "READY":
             return False
-        return desired_state in workflow["value"].get("validTransitions", [])
+        return desired_state.value in workflow["value"].get("validTransitions", [])
 
     @staticmethod
     def _fields() -> tuple:
