@@ -213,7 +213,7 @@ async def update_by_id(
 @async_command
 async def clone(
     from_json: Annotated[
-        Optional[Path],
+        Path,
         typer.Option(
             ...,
             "--from-json",
