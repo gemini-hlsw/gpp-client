@@ -26,6 +26,17 @@ query GetGOATSObservations($programId: ProgramId!) {
           }
         }
       }
+      workflow {
+        state
+        value {
+          state
+          validTransitions
+          validationErrors {
+            code
+            messages
+          }
+        }
+      }
       attachments {
         id
         attachmentType

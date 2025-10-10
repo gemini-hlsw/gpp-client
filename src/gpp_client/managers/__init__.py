@@ -6,6 +6,7 @@ from .program import ProgramManager
 from .program_note import ProgramNoteManager
 from .site_status import SiteStatusManager
 from .target import TargetManager
+from .workflow_state import WorkflowStateManager
 
 __all__ = [
     "ProgramNoteManager",
@@ -16,4 +17,5 @@ __all__ = [
     "SiteStatusManager",
     "GroupManager",
     "ConfigurationRequestManager",
+    "WorkflowStateManager",
 ]

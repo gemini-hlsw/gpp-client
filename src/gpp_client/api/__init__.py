@@ -183,6 +183,9 @@ from .get_goats_observations import (
     GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat,
     GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod,
     GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt,
+    GetGOATSObservationsObservationsMatchesWorkflow,
+    GetGOATSObservationsObservationsMatchesWorkflowValue,
+    GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors,
 )
 from .get_scheduler_all_programs_id import (
     GetSchedulerAllProgramsId,
@@ -659,6 +662,9 @@ __all__ = [
     "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat",
     "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod",
     "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt",
+    "GetGOATSObservationsObservationsMatchesWorkflow",
+    "GetGOATSObservationsObservationsMatchesWorkflowValue",
+    "GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors",
     "GetSchedulerAllProgramsId",
     "GetSchedulerAllProgramsIdPrograms",
     "GetSchedulerAllProgramsIdProgramsMatches",

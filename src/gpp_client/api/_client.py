@@ -62,6 +62,17 @@ class _GPPClient(AsyncBaseClient):
                       }
                     }
                   }
+                  workflow {
+                    state
+                    value {
+                      state
+                      validTransitions
+                      validationErrors {
+                        code
+                        messages
+                      }
+                    }
+                  }
                   attachments {
                     id
                     attachmentType
