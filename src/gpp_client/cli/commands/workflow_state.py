@@ -11,7 +11,7 @@ from ...cli.utils import (
 from ...client import GPPClient
 
 console = Console()
-app = typer.Typer(name="ws", help="Manage observation workflow states.")
+app = typer.Typer(name="wfs", help="Manage observation workflow states.")
 
 
 @app.command("get")
