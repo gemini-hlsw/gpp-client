@@ -14,6 +14,7 @@ from .commands import (
     scheduler,
     site_status,
     target,
+    workflow_state,
 )
 from .utils import async_command
 
@@ -29,6 +30,7 @@ app.add_typer(observation.app)
 app.add_typer(site_status.app)
 app.add_typer(group.app)
 app.add_typer(configuration_request.app)
+app.add_typer(workflow_state.app)
 app.add_typer(scheduler.app)
 app.add_typer(goats.app)
 

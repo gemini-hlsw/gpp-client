@@ -10,6 +10,7 @@ from .enums import (
     AttachmentType,
     Band,
     BrightnessIntegratedUnits,
+    CalculationState,
     CloudExtinctionPreset,
     ExecutionState,
     GmosAmpReadMode,
@@ -23,6 +24,8 @@ from .enums import (
     GmosSouthGrating,
     ImageQualityPreset,
     Instrument,
+    ObservationValidationCode,
+    ObservationWorkflowState,
     ObservingModeType,
     PosAngleConstraintMode,
     ScienceBand,
@@ -50,6 +53,7 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     constraint_set: "GetGOATSObservationsObservationsMatchesConstraintSet" = Field(
         alias="constraintSet"
     )
+    workflow: Optional["GetGOATSObservationsObservationsMatchesWorkflow"]
     attachments: List["GetGOATSObservationsObservationsMatchesAttachments"]
     timing_windows: List["GetGOATSObservationsObservationsMatchesTimingWindows"] = (
         Field(alias="timingWindows")
@@ -109,6 +113,24 @@ class GetGOATSObservationsObservationsMatchesConstraintSetElevationRangeHourAngl
 ):
     min_hours: Any = Field(alias="minHours")
     max_hours: Any = Field(alias="maxHours")
+
+
+class GetGOATSObservationsObservationsMatchesWorkflow(BaseModel):
+    state: CalculationState
+    value: "GetGOATSObservationsObservationsMatchesWorkflowValue"
+
+
+class GetGOATSObservationsObservationsMatchesWorkflowValue(BaseModel):
+    state: ObservationWorkflowState
+    valid_transitions: List[ObservationWorkflowState] = Field(alias="validTransitions")
+    validation_errors: List[
+        "GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors"
+    ] = Field(alias="validationErrors")
+
+
+class GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors(BaseModel):
+    code: ObservationValidationCode
+    messages: List[str]
 
 
 class GetGOATSObservationsObservationsMatchesAttachments(BaseModel):
@@ -481,6 +503,8 @@ GetGOATSObservationsObservations.model_rebuild()
 GetGOATSObservationsObservationsMatches.model_rebuild()
 GetGOATSObservationsObservationsMatchesConstraintSet.model_rebuild()
 GetGOATSObservationsObservationsMatchesConstraintSetElevationRange.model_rebuild()
+GetGOATSObservationsObservationsMatchesWorkflow.model_rebuild()
+GetGOATSObservationsObservationsMatchesWorkflowValue.model_rebuild()
 GetGOATSObservationsObservationsMatchesTimingWindows.model_rebuild()
 GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter.model_rebuild()
 GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()

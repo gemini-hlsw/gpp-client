@@ -62,3 +62,4 @@ API Reference
    observation
    site-status
    group
+   workflow-state

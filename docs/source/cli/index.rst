@@ -27,6 +27,7 @@ Individual commands are documented below:
     program
     site-status
     configuration-request
+    workflow-state
     scheduler
     goats
 

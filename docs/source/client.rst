@@ -26,6 +26,7 @@ The following managers are accessible via ``GPPClient``:
 - :attr:`~gpp_client.GPPClient.site_status` → :class:`~gpp_client.managers.site_status.SiteStatusManager`
 - :attr:`~gpp_client.GPPClient.configuration_request` → :class:`~gpp_client.managers.configuration_request.ConfigurationRequestManager`
 - :attr:`~gpp_client.GPPClient.group` → :class:`~gpp_client.managers.group.GroupManager`
+- :attr:`~gpp_client.GPPClient.workflow_state` → :class:`~gpp_client.managers.workflow_state.WorkflowStateManager`
 - *(more managers to be added as the client evolves)*
 
 Example

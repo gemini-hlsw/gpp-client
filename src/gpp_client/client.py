@@ -12,6 +12,7 @@ from .managers import (
     ProgramNoteManager,
     SiteStatusManager,
     TargetManager,
+    WorkflowStateManager,
 )
 from .patches import patch_base_operations_graphql_field_get_formatted_variables
 from .rest import _GPPRESTClient
@@ -57,6 +58,8 @@ class GPPClient:
         Manager for groups.
     configuration_request : ConfigurationRequestManager
         Manager for configuration requests.
+    workflow_state : WorkflowStateManager
+        Manager for observation workflow states.
     """
 
     def __init__(
@@ -84,6 +87,7 @@ class GPPClient:
         self.site_status = SiteStatusManager()
         self.group = GroupManager(self)
         self.configuration_request = ConfigurationRequestManager(self)
+        self.workflow_state = WorkflowStateManager(self)
 
     @staticmethod
     def set_credentials(url: str, token: str) -> None:
