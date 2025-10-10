@@ -152,6 +152,25 @@ async def update_by_id(
     console.print(JSON.from_data(result))
 
 
+@app.command("clone")
+@async_command
+async def clone(
+    target_id: Annotated[str, typer.Argument(..., help="Target ID to clone.")],
+    from_json: Annotated[
+        Path,
+        typer.Option(
+            ...,
+            exists=True,
+            help="JSON file with the properties definition for the new target.",
+        ),
+    ],
+):
+    """Clone a target by ID."""
+    client = GPPClient()
+    result = await client.target.clone(target_id=target_id, from_json=from_json)
+    console.print(JSON.from_data(result))
+
+
 @app.command("schema")
 def schema(
     indent: Annotated[

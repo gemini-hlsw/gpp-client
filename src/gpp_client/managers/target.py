@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from ..api.custom_fields import (
+    CloneTargetResultFields,
     CreateTargetResultFields,
     ProgramFields,
     TargetFields,
@@ -14,6 +15,7 @@ from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
 from ..api.enums import Existence
 from ..api.input_types import (
+    CloneTargetInput,
     CreateTargetInput,
     TargetPropertiesInput,
     UpdateTargetsInput,
@@ -25,6 +27,56 @@ from .utils import load_properties, validate_single_identifier
 
 
 class TargetManager(BaseManager):
+    async def clone(
+        self,
+        *,
+        target_id: str,
+        properties: Optional[TargetPropertiesInput] = None,
+        from_json: Optional[str | Path | dict[str, Any]] = None,
+        replace_in: Optional[list[str]] = None,
+    ) -> dict[str, Any]:
+        """
+        Clone an existing target, optionally modifying some properties.
+
+        Parameters
+        ----------
+        target_id : str
+            Unique identifier of the target to clone.
+        properties : TargetPropertiesInput, optional
+            Properties to override in the cloned target.
+        from_json : str | Path | dict[str, Any], optional
+            JSON representation of the properties. May be a path-like object
+            (``str`` or ``Path``) to a JSON file, or a ``dict`` already containing the
+            JSON data.
+        replace_in : list[str], optional
+            List of observation IDs where the cloned target should replace the
+            original target.
+
+        Returns
+        -------
+        dict[str, Any]
+            The original and newly created target data.
+        """
+        properties = load_properties(
+            properties=properties, from_json=from_json, cls=TargetPropertiesInput
+        )
+
+        input_data = CloneTargetInput(
+            target_id=target_id,
+            set=properties,
+            replace_in=replace_in,
+        )
+
+        fields = Mutation.clone_target(input=input_data).fields(
+            CloneTargetResultFields.original_target().fields(*self._fields()),
+            CloneTargetResultFields.new_target().fields(*self._fields()),
+        )
+
+        operation_name = "cloneTarget"
+        result = await self.client.mutation(fields, operation_name=operation_name)
+
+        return result[operation_name]
+
     async def create(
         self,
         *,
