@@ -1,3 +1,19 @@
+query GetGOATSPrograms {
+  programs(includeDeleted: false, WHERE: { proposalStatus: { EQ: ACCEPTED } }) {
+    matches {
+      id
+      name
+      description
+      reference {
+        label
+      }
+      proposalStatus
+      type
+    }
+    hasMore
+  }
+}
+
 query GetGOATSObservations($programId: ProgramId!) {
   observations(
     includeDeleted: false
@@ -125,17 +141,10 @@ query GetGOATSObservations($programId: ProgramId!) {
         iso
       }
       observerNotes
-      execution {
-        executionState
-      }
       scienceRequirements {
         mode
         spectroscopy {
           wavelength {
-            nanometers
-          }
-          resolution
-          wavelengthCoverage {
             nanometers
           }
         }

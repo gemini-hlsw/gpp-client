@@ -3,7 +3,7 @@ __all__ = ["GOATSDirector"]
 from dataclasses import dataclass
 
 from ..base import BaseDirector
-from .coordinators import ObservationCoordinator
+from .coordinators import ObservationCoordinator, ProgramCoordinator
 
 
 @dataclass
@@ -24,7 +24,10 @@ class GOATSDirector(BaseDirector):
     ----------
     observation : ObservationCoordinator
         Coordinates observation data tailored for GOATS.
+    program : ProgramCoordinator
+        Coordinates program data tailored for GOATS.
     """
 
     def __post_init__(self) -> None:
         self.observation: ObservationCoordinator = ObservationCoordinator(self.client)
+        self.program: ProgramCoordinator = ProgramCoordinator(self.client)
