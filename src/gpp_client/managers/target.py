@@ -10,6 +10,13 @@ from ..api.custom_fields import (
     TargetFields,
     TargetSelectResultFields,
     UpdateTargetsResultFields,
+    OpportunityFields,
+    SiderealFields,
+    RegionFields,
+    RightAscensionArcFields,
+    RightAscensionFields,
+    DeclinationFields,
+    DeclinationArcFields,
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
@@ -391,5 +398,37 @@ class TargetManager(BaseManager):
                 ProgramFields.name,
                 ProgramFields.description,
                 ProgramFields.existence,
+            ),
+            TargetFields.opportunity().fields(
+                OpportunityFields.region().fields(
+                    RegionFields.right_ascension_arc().fields(
+                        RightAscensionArcFields.start().fields(
+                            RightAscensionFields.degrees,
+                        ),
+                        RightAscensionArcFields.end().fields(
+                            RightAscensionFields.degrees,
+                        ),
+                    ),
+                    RegionFields.declination_arc().fields(
+                        DeclinationArcFields.start().fields(
+                            DeclinationFields.degrees,
+                        ),
+                        DeclinationArcFields.end().fields(
+                            DeclinationFields.degrees,
+                        ),
+                    ),
+                )
+            ),
+            TargetFields.sidereal().fields(
+                SiderealFields.ra().fields(
+                    RightAscensionFields.hours,
+                    RightAscensionFields.hms,
+                    RightAscensionFields.degrees,
+                ),
+                SiderealFields.dec().fields(
+                    DeclinationFields.degrees,
+                    DeclinationFields.dms,
+                ),
+                SiderealFields.epoch,
             ),
         )
