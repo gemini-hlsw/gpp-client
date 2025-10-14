@@ -67,7 +67,6 @@ target_package_path = "src/gpp_client"
 convert_to_snake_case = true
 plugins = [
     "custom_plugins.AliasStrWrapperPlugin",
-    "custom_plugins.FixCustomFieldsLiteralPlugin",
 ]
 queries_path = "src/queries"
 
@@ -87,9 +86,7 @@ exclude = [
 ]
 
 [dependency-groups]
-codegen = [
-    "ariadne-codegen==0.16.0",
-]
+codegen = ["ariadne-codegen==0.16.0"]
 dev = [
     { include-group = "codegen" },
     "pytest-asyncio>=1.2.0",
@@ -106,10 +103,7 @@ docs = [
     "sphinx-copybutton>=0.5.2",
     "sphinxcontrib-typer>=0.6.2",
 ]
-schema = [
-    "aiohttp>=3.12.13",
-    "gql>=3.5.0",
-]
+schema = ["aiohttp>=3.12.13", "gql>=3.5.0"]
 
 [project.urls]
 Homepage = "https://github.com/gemini-hlsw/gpp-client"

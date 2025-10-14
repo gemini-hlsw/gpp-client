@@ -111,14 +111,20 @@ from .enums import (
 
 
 class AddAtomEventInput(BaseModel):
+    """AtomEvent creation parameters."""
+
     atom_id: Any = Field(alias=str("atomId"))
     atom_stage: AtomStage = Field(alias=str("atomStage"))
     client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddDatasetEventInput(BaseModel):
+    """DatasetEvent creation parameters."""
+
     dataset_id: Any = Field(alias=str("datasetId"))
+    "Dataset id"
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
+    "Dataset execution stage."
     client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
@@ -129,40 +135,55 @@ class AddProgramUserInput(BaseModel):
 
 
 class AddSequenceEventInput(BaseModel):
+    """SequenceEvent creation parameters."""
+
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
     client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddSlewEventInput(BaseModel):
+    """SlewEvent creation parameters."""
+
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
     client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddStepEventInput(BaseModel):
+    """StepEvent creation parameters."""
+
     step_id: Any = Field(alias=str("stepId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
     client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
 
 
 class AddTimeChargeCorrectionInput(BaseModel):
+    """Input to the 'addTimeChargeCorrection' mutation. Identifies the visit
+    that will be corrected and describes the correction itself."""
+
     visit_id: Any = Field(alias=str("visitId"))
     correction: "TimeChargeCorrectionInput"
 
 
 class AirMassRangeInput(BaseModel):
+    """Air mass range creation and edit parameters"""
+
     min: Optional[Any] = None
     max: Optional[Any] = None
 
 
 class AllocationInput(BaseModel):
+    """An individual time allocation input."""
+
     category: TimeAccountingCategory
     science_band: ScienceBand = Field(alias=str("scienceBand"))
     duration: "TimeSpanInput"
 
 
 class AngleInput(BaseModel):
+    """Create an angle from a signed value.  Choose exactly one of the available units."""
+
     microarcseconds: Optional[Any] = None
     microseconds: Optional[Any] = None
     milliarcseconds: Optional[Any] = None
@@ -178,50 +199,83 @@ class AngleInput(BaseModel):
 
 
 class BandBrightnessIntegratedInput(BaseModel):
+    """Create or edit a band brightness value with integrated magnitude units.  When creating a new value, all fields except "error" are required."""
+
     band: Band
     value: Optional[Any] = None
+    "The value field is required when creating a new instance of BandBrightnessIntegrated, but optional when editing"
     units: Optional[BrightnessIntegratedUnits] = None
+    "The units field is required when creating a new instance of BandBrightnessIntegrated, but optional when editing"
     error: Optional[Any] = None
+    "Error values are optional"
 
 
 class BandBrightnessSurfaceInput(BaseModel):
+    """Create or edit a band brightness value with surface magnitude units.  When creating a new value, all fields except "error" are required."""
+
     band: Band
     value: Optional[Any] = None
+    "The value field is required when creating a new instance of BandBrightnessSurface, but optional when editing"
     units: Optional[BrightnessSurfaceUnits] = None
+    "The units field is required when creating a new instance of BandBrightnessSurface, but optional when editing"
     error: Optional[Any] = None
+    "Error values are optional"
 
 
 class BandNormalizedIntegratedInput(BaseModel):
+    """Create or edit a band normalized value with integrated magnitude units.  Specify at least "brightnesses" when creating a new BandNormalizedIntegrated."""
+
     sed: Optional["UnnormalizedSedInput"] = None
+    "The sed field is optional and nullable"
     brightnesses: Optional[List["BandBrightnessIntegratedInput"]] = None
+    "The brightnesses field is required when creating a new instance of BandNormalizedIntegrated, but optional when editing"
 
 
 class BandNormalizedSurfaceInput(BaseModel):
+    """Create or edit a band normalized value with surface magnitude units.  Specify at least "brightnesses" when creating a new BandNormalizedSurface."""
+
     sed: Optional["UnnormalizedSedInput"] = None
+    "The sed field is optional and nullable"
     brightnesses: Optional[List["BandBrightnessSurfaceInput"]] = None
+    "The brightnesses field is required when creating a new instance of BandNormalizedSurface, but optional when editing"
 
 
 class CallForProposalsPropertiesInput(BaseModel):
+    """The properties of a Call for Proposal in an input for creation and editing."""
+
     type: Optional[CallForProposalsType] = None
+    "Type of the call. Required on create."
     semester: Optional[Any] = None
+    "Semester associated with the call. Required on create."
     title: Optional[Any] = None
+    "The CfP title.  If not set then a title will be determined from the CfP\nproperties.  This property is not required on create and may be assigned\na null value to return to the default."
     coordinate_limits: Optional["SiteCoordinateLimitsInput"] = Field(
         alias=str("coordinateLimits"), default=None
     )
+    "Coordinate limits.  If not specified, they will default according to the\ncoordinates that are safely visible during the active period of the call."
     active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
+    "Active period start date (inclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may begin the\nevening of the indicated date at the site of the observation.\n\nThe start date is required on create and must be before the `activeEnd` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
     active_end: Optional[Any] = Field(alias=str("activeEnd"), default=None)
+    "Active period end date (exclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may end the\nmorning of the indicated date at the site of the observation.\n\nThe end date is required on create and must be after the `activeStart` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
     submission_deadline_default: Optional[Any] = Field(
         alias=str("submissionDeadlineDefault"), default=None
     )
+    "Specifies a submission deadline to use for any partners without an explicit\npartner deadline."
     partners: Optional[List["CallForProposalsPartnerInput"]] = None
+    "Partners that may participate in the call along with their respective\ndeadlines.  When editing, supply the entire list of all partners. Defaults to\nall partners."
     instruments: Optional[List[Instrument]] = None
+    "When specified, the call is limited to the listed instruments.  When not\nspecified, all otherwise available instruments may be used.  When editing,\nsupply the entire list of instruments to set.  Nullable on edit."
     proprietary_months: Optional[Any] = Field(
         alias=str("proprietaryMonths"), default=None
     )
+    "The default proprietary period for proposals linked to this call.  If not\nspecified, the default period for the call type will be used."
     existence: Optional[Existence] = None
+    "DELETED or PRESENT.  On create defaults to PRESENT."
 
 
 class SiteCoordinateLimitsInput(BaseModel):
+    """Coordinate limits input per site."""
+
     north: Optional["CoordinateLimitsInput"] = None
     south: Optional["CoordinateLimitsInput"] = None
 
@@ -230,9 +284,13 @@ class CoordinateLimitsInput(BaseModel):
     ra_start: Optional["RightAscensionInput"] = Field(
         alias=str("raStart"), default=None
     )
+    "Optional RA limit start RA."
     ra_end: Optional["RightAscensionInput"] = Field(alias=str("raEnd"), default=None)
+    "Optional RA limit end RA."
     dec_start: Optional["DeclinationInput"] = Field(alias=str("decStart"), default=None)
+    "Optional declination limit start declination."
     dec_end: Optional["DeclinationInput"] = Field(alias=str("decEnd"), default=None)
+    "Optional declination limit end declination."
 
 
 class CallForProposalsPartnerInput(BaseModel):
@@ -240,20 +298,36 @@ class CallForProposalsPartnerInput(BaseModel):
     submission_deadline_override: Optional[Any] = Field(
         alias=str("submissionDeadlineOverride"), default=None
     )
+    "If this partner has an explicit submission deadline that overrides the\nCall for Proposals 'defaultSubmissionDeadine' then it is specified here.\nOtherwise, the partner deadline is the default deadline for the call."
 
 
 class CatalogInfoInput(BaseModel):
+    """Catalog id consisting of catalog name, string identifier and an optional object type"""
+
     name: Optional[CatalogName] = None
+    "The name field must be either specified or skipped altogether.  It cannot be unset with a null value."
     id: Optional[Any] = None
+    "The id field must be either specified or skipped altogether.  It cannot be unset with a null value."
     object_type: Optional[Any] = Field(alias=str("objectType"), default=None)
+    "The objectType field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class ChangeProgramUserRoleInput(BaseModel):
+    """Input used to change the role of a program user."""
+
     program_user_id: Any = Field(alias=str("programUserId"))
+    "Program user to update."
     new_role: ProgramUserRole = Field(alias=str("newRole"))
+    "New role they should assume."
 
 
 class CloneObservationInput(BaseModel):
+    """Describes an observation clone operation, making any edits in the `SET`
+    parameter.  The observation status in the cloned observation defaults to NEW.
+    Identify the observation to clone by specifying either its id or reference.  If
+    both are specified, they must refer to the same observation.  If neither is
+    specified, nothing will be cloned."""
+
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
@@ -262,25 +336,34 @@ class CloneObservationInput(BaseModel):
 
 
 class CloneTargetInput(BaseModel):
+    """Describes a target clone operation, making any edits in the `SET` parameter and replacing the target in the selected `REPLACE_IN` observations"""
+
     target_id: Any = Field(alias=str("targetId"))
     set: Optional["TargetPropertiesInput"] = Field(alias=str("SET"), default=None)
     replace_in: Optional[List[Any]] = Field(alias=str("REPLACE_IN"), default=None)
 
 
 class ConstraintSetInput(BaseModel):
+    """Constraint set creation and editing parameters"""
+
     image_quality: Optional[ImageQualityPreset] = Field(
         alias=str("imageQuality"), default=None
     )
+    "The imageQuality field is required when creating a new instance of ConstraintSet, but optional when editing"
     cloud_extinction: Optional[CloudExtinctionPreset] = Field(
         alias=str("cloudExtinction"), default=None
     )
+    "The cloudExtinction field is required when creating a new instance of ConstraintSet, but optional when editing"
     sky_background: Optional[SkyBackground] = Field(
         alias=str("skyBackground"), default=None
     )
+    "The skyBackground field is required when creating a new instance of ConstraintSet, but optional when editing"
     water_vapor: Optional[WaterVapor] = Field(alias=str("waterVapor"), default=None)
+    "The waterVapor field is required when creating a new instance of ConstraintSet, but optional when editing"
     elevation_range: Optional["ElevationRangeInput"] = Field(
         alias=str("elevationRange"), default=None
     )
+    "The elevationRange field is required when creating a new instance of ConstraintSet, but optional when editing"
 
 
 class ConditionsEntryInput(BaseModel):
@@ -308,6 +391,8 @@ class ConditionsExpectationInput(BaseModel):
 
 
 class CoordinatesInput(BaseModel):
+    """Absolute coordinates relative base epoch"""
+
     ra: Optional["RightAscensionInput"] = None
     dec: Optional["DeclinationInput"] = None
 
@@ -319,6 +404,9 @@ class CreateCallForProposalsInput(BaseModel):
 
 
 class CreateObservationInput(BaseModel):
+    """Observation creation parameters.  One of programId or programReference is
+    required.  If both are provided, they must refer to the same program."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -330,6 +418,8 @@ class CreateObservationInput(BaseModel):
 
 
 class CreateProgramInput(BaseModel):
+    """Program creation parameters"""
+
     set: Optional["ProgramPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
@@ -345,11 +435,16 @@ class CreateProgramNoteInput(BaseModel):
 
 
 class CreateProposalInput(BaseModel):
+    """Input for creating a proposal."""
+
     program_id: Any = Field(alias=str("programId"))
     set: "ProposalPropertiesInput" = Field(alias=str("SET"))
 
 
 class CreateTargetInput(BaseModel):
+    """Target creation parameters.  One of programId or programReference is required.
+    If both are provided, they must refer to the same program."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -361,30 +456,42 @@ class CreateTargetInput(BaseModel):
 
 
 class DatasetPropertiesInput(BaseModel):
+    """Editable dataset properties"""
+
     qa_state: Optional[DatasetQaState] = Field(alias=str("qaState"), default=None)
     comment: Optional[Any] = None
 
 
 class DeclinationInput(BaseModel):
+    """Declination, choose one of the available units"""
+
     microarcseconds: Optional[Any] = None
     degrees: Optional[Any] = None
     dms: Optional[Any] = None
 
 
 class DeleteProgramUserInput(BaseModel):
+    """Input for deleting a program user."""
+
     program_user_id: Any = Field(alias=str("programUserId"))
 
 
 class DeleteProposalInput(BaseModel):
+    """Input for deleting a proposal."""
+
     program_id: Any = Field(alias=str("programId"))
 
 
 class EditAsterismsPatchInput(BaseModel):
+    """Add or delete targets in an asterism"""
+
     add: Optional[List[Any]] = Field(alias=str("ADD"), default=None)
     delete: Optional[List[Any]] = Field(alias=str("DELETE"), default=None)
 
 
 class ElevationRangeInput(BaseModel):
+    """Elevation range creation and edit parameters.  Choose one of airMass or hourAngle constraints."""
+
     air_mass: Optional["AirMassRangeInput"] = Field(alias=str("airMass"), default=None)
     hour_angle: Optional["HourAngleRangeInput"] = Field(
         alias=str("hourAngle"), default=None
@@ -392,265 +499,412 @@ class ElevationRangeInput(BaseModel):
 
 
 class EmissionLineIntegratedInput(BaseModel):
+    """Create or edit an emission line with integrated line flux units.  When creating a new value, all fields are required."""
+
     wavelength: "WavelengthInput"
     line_width: Optional[Any] = Field(alias=str("lineWidth"), default=None)
+    "The lineWidth field is required when creating a new instance of EmissionLineIntegrated, but optional when editing"
     line_flux: Optional["LineFluxIntegratedInput"] = Field(
         alias=str("lineFlux"), default=None
     )
+    "The lineFlux field is required when creating a new instance of EmissionLineIntegrated, but optional when editing"
 
 
 class EmissionLineSurfaceInput(BaseModel):
+    """Create or edit an emission line with surface line flux units.  When creating a new value, all fields are required."""
+
     wavelength: "WavelengthInput"
     line_width: Optional[Any] = Field(alias=str("lineWidth"), default=None)
+    "The lineWidth field is required when creating a new instance of EmissionLineSurface, but optional when editing"
     line_flux: Optional["LineFluxSurfaceInput"] = Field(
         alias=str("lineFlux"), default=None
     )
+    "The lineFlux field is required when creating a new instance of EmissionLineSurface, but optional when editing"
 
 
 class EmissionLinesIntegratedInput(BaseModel):
+    """Create or edit emission lines with integrated line flux and flux density continuum units. Both "lines" and "fluxDensityContinuum" are required when creating a new EmissionLinesIntegrated."""
+
     lines: Optional[List["EmissionLineIntegratedInput"]] = None
+    "The lines field is required when creating a new instance of EmissionLinesIntegrated, but optional when editing"
     flux_density_continuum: Optional["FluxDensityContinuumIntegratedInput"] = Field(
         alias=str("fluxDensityContinuum"), default=None
     )
+    "The fluxDensityContinuum field is required when creating a new instance of EmissionLinesIntegrated, but optional when editing"
 
 
 class EmissionLinesSurfaceInput(BaseModel):
+    """Create or edit emission lines with surface line flux and flux density continuum units. Both "lines" and "fluxDensityContinuum" are required when creating a new EmissionLinesSurface."""
+
     lines: Optional[List["EmissionLineSurfaceInput"]] = None
+    "The lines field is required when creating a new instance of EmissionLinesSurface, but optional when editing"
     flux_density_continuum: Optional["FluxDensityContinuumSurfaceInput"] = Field(
         alias=str("fluxDensityContinuum"), default=None
     )
+    "The fluxDensityContinuum field is required when creating a new instance of EmissionLinesSurface, but optional when editing"
 
 
 class ExposureTimeModeInput(BaseModel):
+    """Exposure time mode input.  Specify fixed or signal to noise, but not both"""
+
     signal_to_noise: Optional["SignalToNoiseExposureTimeModeInput"] = Field(
         alias=str("signalToNoise"), default=None
     )
+    "The signalToNoise field must be either specified or skipped altogether.  It cannot be unset with a null value."
     time_and_count: Optional["TimeAndCountExposureTimeModeInput"] = Field(
         alias=str("timeAndCount"), default=None
     )
+    "The timeAndCount field must be either specified or skipped altogether.  It cannot be unset with a null value."
 
 
 class TimeAndCountExposureTimeModeInput(BaseModel):
+    """Time And Count exposure time mode parameters"""
+
     time: "TimeSpanInput"
+    "Exposure time, which must be greater than zero."
     count: Any
+    "Exposure count, which must be greater than zero."
     at: "WavelengthInput"
+    "S/N at wavelength."
 
 
 class FluxDensity(BaseModel):
+    """Flux density entry"""
+
     wavelength: "WavelengthInput"
     density: Any
 
 
 class FluxDensityContinuumIntegratedInput(BaseModel):
+    """A flux density continuum value with integrated units"""
+
     value: Any
     units: FluxDensityContinuumIntegratedUnits
     error: Optional[Any] = None
 
 
 class FluxDensityContinuumSurfaceInput(BaseModel):
+    """A flux density continuum value with surface units"""
+
     value: Any
     units: FluxDensityContinuumSurfaceUnits
     error: Optional[Any] = None
 
 
 class GaussianInput(BaseModel):
+    """Create or edit a gaussian source.  Specify both "fwhm" and "spectralDefinition" when creating a new Gaussian."""
+
     fwhm: Optional["AngleInput"] = None
+    "The fwhm field is required when creating a new instance of Gaussian, but optional when editing"
     spectral_definition: Optional["SpectralDefinitionIntegratedInput"] = Field(
         alias=str("spectralDefinition"), default=None
     )
+    "The spectralDefinition field is required when creating a new instance of Gaussian, but optional when editing"
 
 
 class GmosCcdModeInput(BaseModel):
+    """GMOS CCD readout input parameters"""
+
     x_bin: Optional[GmosBinning] = Field(alias=str("xBin"), default=None)
+    "X Binning, defaults to 'ONE'."
     y_bin: Optional[GmosBinning] = Field(alias=str("yBin"), default=None)
+    "Y Binning, defaults to 'ONE'."
     amp_count: Optional[GmosAmpCount] = Field(alias=str("ampCount"), default=None)
+    "Amp Count, defaults to 'TWELVE'."
     amp_gain: Optional[GmosAmpGain] = Field(alias=str("ampGain"), default=None)
+    "Amp Gain, defaults to 'LOW'"
     amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("ampReadMode"), default=None
     )
+    "Amp Read Mode, defaults to 'SLOW'"
 
 
 class GmosCustomMaskInput(BaseModel):
+    """GMOS custom mask input parameters"""
+
     filename: str
+    "Custom mask file name"
     slit_width: GmosCustomSlitWidth = Field(alias=str("slitWidth"))
+    "Custom mask slit width"
 
 
 class GmosNodAndShuffleInput(BaseModel):
+    """Creation input parameters for GMOS nod and shuffle"""
+
     pos_a: "OffsetInput" = Field(alias=str("posA"))
+    "Offset position A"
     pos_b: "OffsetInput" = Field(alias=str("posB"))
+    "Offset position B"
     e_offset: GmosEOffsetting = Field(alias=str("eOffset"))
+    "Electronic offsetting"
     shuffle_offset: Any = Field(alias=str("shuffleOffset"))
+    "Shuffle offset"
     shuffle_cycles: Any = Field(alias=str("shuffleCycles"))
+    "Shuffle cycles"
 
 
 class GmosNorthDynamicInput(BaseModel):
+    """GMOS North instrument configuration input"""
+
     exposure: "TimeSpanInput"
+    "Exposure time"
     readout: "GmosCcdModeInput"
+    "GMOS CCD readout"
     dtax: GmosDtax
+    "GMOS detector x offset"
     roi: GmosRoi
+    "GMOS region of interest"
     grating_config: Optional["GmosNorthGratingConfigInput"] = Field(
         alias=str("gratingConfig"), default=None
     )
+    "GMOS North grating"
     filter: Optional[GmosNorthFilter] = None
+    "GMOS North filter"
     fpu: Optional["GmosNorthFpuInput"] = None
+    "GMOS North FPU"
 
 
 class GmosNorthFpuInput(BaseModel):
+    """GMOS North FPU input parameters (choose custom or builtin)."""
+
     custom_mask: Optional["GmosCustomMaskInput"] = Field(
         alias=str("customMask"), default=None
     )
+    "Custom mask FPU option"
     builtin: Optional[GmosNorthBuiltinFpu] = None
+    "Builtin FPU option"
 
 
 class GmosNorthGratingConfigInput(BaseModel):
+    """GMOS North grating input parameters"""
+
     grating: GmosNorthGrating
+    "GmosGmosNorth grating"
     order: GmosGratingOrder
+    "GMOS grating order"
     wavelength: "WavelengthInput"
+    "Grating wavelength"
 
 
 class GmosNorthLongSlitInput(BaseModel):
+    """Edit or create GMOS North Long Slit advanced configuration"""
+
     grating: Optional[GmosNorthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
     filter: Optional[GmosNorthFilter] = None
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[GmosNorthBuiltinFpu] = None
+    "The fpu field must be either specified or skipped altogether.  It cannot be unset with a null value."
     central_wavelength: Optional["WavelengthInput"] = Field(
         alias=str("centralWavelength"), default=None
     )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
     explicit_x_bin: Optional[GmosBinning] = Field(
         alias=str("explicitXBin"), default=None
     )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_y_bin: Optional[GmosBinning] = Field(
         alias=str("explicitYBin"), default=None
     )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
     )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_gain: Optional[GmosAmpGain] = Field(
         alias=str("explicitAmpGain"), default=None
     )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_wavelength_dithers: Optional[List["WavelengthDitherInput"]] = Field(
         alias=str("explicitWavelengthDithers"), default=None
     )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitOffsets"), default=None
     )
+    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
     )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether\n@deprecated(reason: \"Use 'explicitOffsets' instead.\")"
 
 
 class GmosNorthImagingInput(BaseModel):
+    """Edit or create GMOS North Imaging advanced configuration"""
+
     filters: Optional[List[GmosNorthFilter]] = None
+    "The filters field must be specified with at least one filter. It cannot be unset with a null value."
     offsets: Optional[List["OffsetInput"]] = None
+    "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
+    "How sequences are generated when multiple filters are specified.\nDefaults to GROUPED."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
+    "The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
     )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_gain: Optional[GmosAmpGain] = Field(
         alias=str("explicitAmpGain"), default=None
     )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class GmosNorthStaticInput(BaseModel):
+    """GMOS North static configuration input parameters"""
+
     stage_mode: Optional[GmosNorthStageMode] = Field(
         alias=str("stageMode"), default=None
     )
+    "GMOS North Stage Mode (default to FOLLOW_XY)"
     detector: Optional[GmosNorthDetector] = None
+    "GMOS North Detector option (defaults to HAMAMATSU)"
     mos_pre_imaging: Optional[MosPreImaging] = Field(
         alias=str("mosPreImaging"), default=None
     )
+    "Whether this is a MOS pre-imaging observation (defaults to IS_NOT_MOS_PRE_IMAGING)"
     nod_and_shuffle: Optional["GmosNodAndShuffleInput"] = Field(
         alias=str("nodAndShuffle"), default=None
     )
+    "GMOS Nod And Shuffle configuration"
 
 
 class GmosSouthDynamicInput(BaseModel):
+    """GMOS South instrument configuration input"""
+
     exposure: "TimeSpanInput"
+    "Exposure time"
     readout: "GmosCcdModeInput"
+    "GMOS CCD readout"
     dtax: GmosDtax
+    "GMOS detector x offset"
     roi: GmosRoi
+    "GMOS region of interest"
     grating_config: Optional["GmosSouthGratingConfigInput"] = Field(
         alias=str("gratingConfig"), default=None
     )
+    "GMOS South grating"
     filter: Optional[GmosSouthFilter] = None
+    "GMOS South filter"
     fpu: Optional["GmosSouthFpuInput"] = None
+    "GMOS South FPU"
 
 
 class GmosSouthFpuInput(BaseModel):
+    """GMOS South FPU input parameters (choose custom or builtin)."""
+
     custom_mask: Optional["GmosCustomMaskInput"] = Field(
         alias=str("customMask"), default=None
     )
+    "Custom mask FPU option"
     builtin: Optional[GmosSouthBuiltinFpu] = None
+    "Builtin FPU option"
 
 
 class GmosSouthGratingConfigInput(BaseModel):
+    """GMOS South grating input parameters"""
+
     grating: GmosSouthGrating
+    "GmosGmosSouth grating"
     order: GmosGratingOrder
+    "GMOS grating order"
     wavelength: "WavelengthInput"
+    "Grating wavelength"
 
 
 class GmosSouthLongSlitInput(BaseModel):
+    """Edit or create GMOS South Long Slit advanced configuration"""
+
     grating: Optional[GmosSouthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
     filter: Optional[GmosSouthFilter] = None
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[GmosSouthBuiltinFpu] = None
+    "The fpu field must be either specified or skipped altogether.  It cannot be unset with a null value."
     central_wavelength: Optional["WavelengthInput"] = Field(
         alias=str("centralWavelength"), default=None
     )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
     explicit_x_bin: Optional[GmosBinning] = Field(
         alias=str("explicitXBin"), default=None
     )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_y_bin: Optional[GmosBinning] = Field(
         alias=str("explicitYBin"), default=None
     )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
     )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_gain: Optional[GmosAmpGain] = Field(
         alias=str("explicitAmpGain"), default=None
     )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_wavelength_dithers: Optional[List["WavelengthDitherInput"]] = Field(
         alias=str("explicitWavelengthDithers"), default=None
     )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitOffsets"), default=None
     )
+    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
         alias=str("explicitSpatialOffsets"), default=None
     )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether\n@deprecated(reason: \"Use 'explicitOffsets' instead.\")"
 
 
 class GmosSouthImagingInput(BaseModel):
+    """Edit or create GMOS South Imaging advanced configuration"""
+
     filters: Optional[List[GmosSouthFilter]] = None
+    "The filters field must be specified with at least one filter. It cannot be unset with a null value."
     offsets: Optional[List["OffsetInput"]] = None
+    "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
+    "How sequences are generated when multiple filters are specified.\nDefaults to GROUPED."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
+    "The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
         alias=str("explicitAmpReadMode"), default=None
     )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_gain: Optional[GmosAmpGain] = Field(
         alias=str("explicitAmpGain"), default=None
     )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class GmosSouthStaticInput(BaseModel):
+    """GMOS South static configuration input parameters"""
+
     stage_mode: Optional[GmosSouthStageMode] = Field(
         alias=str("stageMode"), default=None
     )
+    "GMOS South Stage Mode (defaults to FOLLOW_XYZ)"
     detector: Optional[GmosSouthDetector] = None
+    "GMOS South Detector option (defaults to HAMAMATSU)"
     mos_pre_imaging: Optional[MosPreImaging] = Field(
         alias=str("mosPreImaging"), default=None
     )
+    "Whether this is a MOS pre-imaging observation (defaults to IS_NOT_MOS_PRE_IMAGING)"
     nod_and_shuffle: Optional["GmosNodAndShuffleInput"] = Field(
         alias=str("nodAndShuffle"), default=None
     )
+    "GMOS Nod And Shuffle configuration"
 
 
 class CloneGroupInput(BaseModel):
@@ -659,33 +913,51 @@ class CloneGroupInput(BaseModel):
 
 
 class HourAngleRangeInput(BaseModel):
+    """Hour angle range creation parameters"""
+
     min_hours: Optional[Any] = Field(alias=str("minHours"), default=None)
     max_hours: Optional[Any] = Field(alias=str("maxHours"), default=None)
 
 
 class LineFluxIntegratedInput(BaseModel):
+    """A line flux value with integrated units"""
+
     value: Any
     units: LineFluxIntegratedUnits
 
 
 class LineFluxSurfaceInput(BaseModel):
+    """A line flux value with surface units"""
+
     value: Any
     units: LineFluxSurfaceUnits
 
 
 class LinkUserInput(BaseModel):
+    """Links a 'User' with a 'Program', filling in the 'user' field of the
+    corresponding 'ProgramUser'."""
+
     program_user_id: Any = Field(alias=str("programUserId"))
+    "The program user that will reference the user."
     user_id: Any = Field(alias=str("userId"))
+    "The user to be linked."
 
 
 class CreateUserInvitationInput(BaseModel):
+    """Creates an invitation, if none exists for the indicated 'ProgramUser', and sets
+    it to 'PENDING' status. If there is an outstanding invitation, it must be
+    declined or revoked before a new one may be issued."""
+
     program_user_id: Any = Field(alias=str("programUserId"))
+    "The associated program user."
     recipient_email: Any = Field(alias=str("recipientEmail"))
+    "The recipient to whom the invitation should be sent."
 
 
 class RedeemUserInvitationInput(BaseModel):
     key: Any
     accept: Optional[bool] = True
+    "Pass false here to decline the invitation."
 
 
 class RevokeUserInvitationInput(BaseModel):
@@ -698,115 +970,191 @@ class SetObservationWorkflowStateInput(BaseModel):
 
 
 class NonsiderealInput(BaseModel):
+    """Nonsidereal target parameters.  Supply `keyType` and `des` or `key`"""
+
     key_type: Optional[EphemerisKeyType] = Field(alias=str("keyType"), default=None)
+    "The keyType field must be either specified or skipped altogether.  It cannot be unset with a null value."
     des: Optional[Any] = None
+    "The des field must be either specified or skipped altogether.  It cannot be unset with a null value."
     key: Optional[Any] = None
+    "The key field must be either specified or skipped altogether.  It cannot be unset with a null value."
 
 
 class ConfigurationRequestProperties(BaseModel):
+    """Configuration request properties."""
+
     status: Optional[ConfigurationRequestStatus] = None
     justification: Optional[Any] = None
 
 
 class ObservationPropertiesInput(BaseModel):
+    """Observation properties"""
+
     subtitle: Optional[Any] = None
+    "Subtitle adds additional detail to the target-based observation title, and is both optional and nullable"
     science_band: Optional[ScienceBand] = Field(alias=str("scienceBand"), default=None)
+    "The science band to assign to this observation.  Set to `null` to remove the\nscience band."
     pos_angle_constraint: Optional["PosAngleConstraintInput"] = Field(
         alias=str("posAngleConstraint"), default=None
     )
+    "Position angle constraint, if any. Set to null to remove all position angle constraints"
     target_environment: Optional["TargetEnvironmentInput"] = Field(
         alias=str("targetEnvironment"), default=None
     )
+    "The targetEnvironment defaults to empty if not specified on creation, and may be edited but not deleted"
     constraint_set: Optional["ConstraintSetInput"] = Field(
         alias=str("constraintSet"), default=None
     )
+    "The constraintSet defaults to standard values if not specified on creation, and may be edited but not deleted"
     timing_windows: Optional[List["TimingWindowInput"]] = Field(
         alias=str("timingWindows"), default=None
     )
+    "The timingWindows defaults to empty if not specified on creation, and may be edited by specifying a new whole array"
     attachments: Optional[List[Any]] = None
+    "The attachments defaults to empty if not specified on creation, and may be edited by specifying a new whole array"
     science_requirements: Optional["ScienceRequirementsInput"] = Field(
         alias=str("scienceRequirements"), default=None
     )
+    "The scienceRequirements defaults to spectroscopy if not specified on creation, and may be edited but not deleted"
     observing_mode: Optional["ObservingModeInput"] = Field(
         alias=str("observingMode"), default=None
     )
+    "The observingMode describes the chosen observing mode and instrument, is optional and may be deleted"
     existence: Optional[Existence] = None
+    "Whether the observation is considered deleted (defaults to PRESENT) but may be edited"
     group_id: Optional[Any] = Field(alias=str("groupId"), default=None)
+    "Enclosing group, if any."
     group_index: Optional[Any] = Field(alias=str("groupIndex"), default=None)
+    "Index in enclosing group or at the top level if ungrouped. If left unspecified on creation, observation will be added last in its enclosing group or at the top level. Cannot be set to null."
     observer_notes: Optional[Any] = Field(alias=str("observerNotes"), default=None)
+    "Set the notes for  thhe observer"
 
 
 class ObservationTimesInput(BaseModel):
+    """Observation times properties"""
+
     observation_time: Optional[Any] = Field(alias=str("observationTime"), default=None)
+    "Expected execution time used for time-dependent calculations such as average parallactic angle and guide star selection."
     observation_duration: Optional["TimeSpanInput"] = Field(
         alias=str("observationDuration"), default=None
     )
+    "Expected observation duration used in conjunction with observationTime. If not set, remaining observation time is used."
 
 
 class OffsetComponentInput(BaseModel):
+    """Offset component (p or q) input parameters. Choose one angle units definition."""
+
     microarcseconds: Optional[Any] = None
+    "Angle in µas"
     milliarcseconds: Optional[Any] = None
+    "Angle in mas"
     arcseconds: Optional[Any] = None
+    "Angle in arcsec"
 
 
 class OffsetInput(BaseModel):
+    """Offset input.  Define offset in p and q."""
+
     p: "OffsetComponentInput"
+    "Offset in p"
     q: "OffsetComponentInput"
+    "Offset in q"
 
 
 class ParallaxInput(BaseModel):
+    """Parallax, choose one of the available units"""
+
     microarcseconds: Optional[Any] = None
     milliarcseconds: Optional[Any] = None
 
 
 class PartnerLinkInput(BaseModel):
+    """Describes the user / partner association.  Only one of `partner` or `linkType`
+    should be specified, but as long as they are consistent both may be supplied."""
+
     link_type: Optional[PartnerLinkType] = Field(alias=str("linkType"), default=None)
+    "Describes the state of the association between a user and a partner. The\nlink type is assumed to be `HAS_PARTNER` if the `partner` is specified.\nOtherwise, if `partner` is `null`, the link type is required."
     partner: Optional[Partner] = None
+    "If the user should be associated with a particular partner, it is specified\nhere.  Only set `partner` or `linkType`, but not both."
 
 
 class PartnerSplitInput(BaseModel):
+    """Time request percentage that should be associated with a particular partner for
+    Queue and Classical proposals."""
+
     partner: Partner
     percent: Any
+    "Percentage of requested time that should be associated with the partner."
 
 
 class PosAngleConstraintInput(BaseModel):
+    """Create or edit position angle constraint.  If not specified, then the
+    position angle required to reach the best guide star option will be used."""
+
     mode: Optional[PosAngleConstraintMode] = None
+    "The constraint mode field determines whether the angle field is respected\nor ignored."
     angle: Optional["AngleInput"] = None
+    "The fixed position angle that is used when the mode is FIXED, ALLOW_FLIP or\nPARALLACTIC_OVERRIDE.  Set but ignored when UNBOUNDED or AVERAGE_PARALLACTIC."
 
 
 class ProgramPropertiesInput(BaseModel):
+    """Program properties"""
+
     name: Optional[Any] = None
+    "The program name / title, which is both optional and nullable."
     description: Optional[Any] = None
+    "The program description / abstract, which is both optional and nullable."
     goa: Optional["GoaPropertiesInput"] = None
+    "Sets the GOA properties for this program.  If not specified on create,\ndefault values are used."
     existence: Optional[Existence] = None
+    "Whether the program is considered deleted (defaults to PRESENT) but may be edited"
     active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
+    "Active period start date (inclusive) for this program.  The date is considered\nto be the local date at each observation site.  Observations may begin the\nevening of the indicated date at the site of the observation.\n\nThis property is avaliable only to those with staff access or better. Not\nnullable.  Limited to dates between 1900 and 2100 (exclusive)."
     active_end: Optional[Any] = Field(alias=str("activeEnd"), default=None)
+    "Active period end date (exclusive) for this program.  The date is considered\nto be the local date at each observation site.  Observations may end the\nmorning of the indicated date at the site of the observation.\n\nThis property is avaliable only to those with staff access or better. Not\nnullable.  Limited to dates between 1900 and 2100 (exclusive)."
 
 
 class ProgramNotePropertiesInput(BaseModel):
+    """ProgramNote creation and edit properties."""
+
     title: Optional[Any] = None
+    "The note title.  Required on creation."
     text: Optional[Any] = None
+    "The note text, if any."
     is_private: Optional[bool] = Field(alias=str("isPrivate"), default=None)
+    "Whether the note is only available to Gemini staff.  This property is\navailable only to Gemini staff and defaults to false."
     existence: Optional[Existence] = None
+    "Whether the program is considered deleted (defaults to PRESENT)."
 
 
 class ProgramUserPropertiesInput(BaseModel):
+    """Editable properties that define a program / user connection."""
+
     partner_link: Optional["PartnerLinkInput"] = Field(
         alias=str("partnerLink"), default=None
     )
+    "The user's partner."
     preferred_profile: Optional["UserProfileInput"] = Field(
         alias=str("preferredProfile"), default=None
     )
+    "The preferred profile overrides any values that may be in the Orcid profile (user.profile)."
     educational_status: Optional[EducationalStatus] = Field(
         alias=str("educationalStatus"), default=None
     )
+    "The user's educational status."
     thesis: Optional[bool] = None
+    "Is a thesis included in the proposal."
     gender: Optional[Gender] = None
+    "The user's reported gender."
     affiliation: Optional[Any] = None
+    "Investigator affiliation."
     has_data_access: Optional[bool] = Field(alias=str("hasDataAccess"), default=None)
+    "Whether the user has data access.  This property may be changed only by the\nPI (or staff).  If a COI attempts to change the data access flag, the entire\nupdate is ignored."
 
 
 class ProperMotionComponentInput(BaseModel):
+    """Proper motion component, choose one of the available units"""
+
     microarcseconds_per_year: Optional[Any] = Field(
         alias=str("microarcsecondsPerYear"), default=None
     )
@@ -816,11 +1164,16 @@ class ProperMotionComponentInput(BaseModel):
 
 
 class ProperMotionInput(BaseModel):
+    """Proper motion, choose one of the available units"""
+
     ra: "ProperMotionComponentInput"
     dec: "ProperMotionComponentInput"
 
 
 class ProposalTypeInput(BaseModel):
+    """Properties associated with particular proposal types.  Exactly one of
+    these should be set upon creation or editing."""
+
     classical: Optional["ClassicalInput"] = None
     demo_science: Optional["DemoScienceInput"] = Field(
         alias=str("demoScience"), default=None
@@ -845,73 +1198,104 @@ class ProposalTypeInput(BaseModel):
 
 class ClassicalInput(BaseModel):
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[List["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
+    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
 
 
 class DemoScienceInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
 
 class DirectorsTimeInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
 
 class FastTurnaroundInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     reviewer_id: Optional[Any] = Field(alias=str("reviewerId"), default=None)
+    "The program user ID to be designated as the reviewer for this FT proposal.\nIf not specified, the PI will be the default reviewer."
     mentor_id: Optional[Any] = Field(alias=str("mentorId"), default=None)
+    "The program user ID to be designated as the mentor for this FT proposal.\nIf not specified, no mentor will be assigned."
 
 
 class LargeProgramInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required (first semester) to consider this\nproposal a success. If not set, 100% is assumed."
     min_percent_total_time: Optional[Any] = Field(
         alias=str("minPercentTotalTime"), default=None
     )
+    "The minimum percentage of time required over the lifetime of the program to\nconsider this proposal a success.  If not set, 100% is assumed."
     total_time: Optional["TimeSpanInput"] = Field(alias=str("totalTime"), default=None)
+    "The total time requested over the lifetime of the program.  If not set, zero\nhours are assumed."
 
 
 class PoorWeatherInput(BaseModel):
+    """Input for a poor weather proposal.  There are no fields to further specify a
+    poor weather proposal but GraphQL requires at least one field.  Therefore this
+    input includes a single optional 'ignore' field which need not be set."""
+
     ignore: Optional[Ignore] = None
+    "This field is not intended to be used (and may be left unset), but is required\nby the GraphQL specification."
 
 
 class QueueInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[List["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
+    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
 
 
 class SystemVerificationInput(BaseModel):
     to_o_activation: Optional[ToOActivation] = Field(
         alias=str("toOActivation"), default=None
     )
+    "The toOActivation field is optional. If not specified when creating a\nproposal, it defaults to `NONE'."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
 
 class ProposalPropertiesInput(BaseModel):
+    """Program proposal"""
+
     category: Optional[TacCategory] = None
+    "The category field may be unset by assigning a null value, or ignored by skipping it altogether"
     call_id: Optional[Any] = Field(alias=str("callId"), default=None)
+    "Sets the associated Call for Proposals. This is optional upon creation, but\nmust be set for a successful submission.  Also, the Call for Proposals type\nmust agree with the proposal type (see 'type' below).  For example a Queue\nproposal must be submitted to a Regular Semester Call and a Demo Science\nproposal must be submitted to a Demo Science Call, etc."
     type: Optional["ProposalTypeInput"] = None
+    "Specifies the properties that depend on the call type. If not set on creation,\na regular semester queue proposal is assumed.  The selected call properties\nmust match the call (see 'callId' above) or a submission attempt will fail\nwith an error. Call properties can be edited, but when switching the call\ntype itself, all properties required for that type must be included."
 
 
 class RadialVelocityInput(BaseModel):
+    """Radial velocity, choose one of the available units"""
+
     centimeters_per_second: Optional[Any] = Field(
         alias=str("centimetersPerSecond"), default=None
     )
@@ -922,6 +1306,8 @@ class RadialVelocityInput(BaseModel):
 
 
 class RecordAtomInput(BaseModel):
+    """Input parameters for creating a new atom record."""
+
     visit_id: Any = Field(alias=str("visitId"))
     instrument: Instrument
     sequence_type: SequenceType = Field(alias=str("sequenceType"))
@@ -929,13 +1315,21 @@ class RecordAtomInput(BaseModel):
 
 
 class RecordDatasetInput(BaseModel):
+    """Dataset creation parameters."""
+
     step_id: Any = Field(alias=str("stepId"))
+    "Corresponding Step id."
     filename: Any
+    "Dataset filename."
     qa_state: Optional[DatasetQaState] = Field(alias=str("qaState"), default=None)
+    "Dataset QA State."
     comment: Optional[Any] = None
+    "Dataset comment."
 
 
 class RecordGmosNorthStepInput(BaseModel):
+    """Input parameters for creating a new GmosNorth StepRecord"""
+
     atom_id: Any = Field(alias=str("atomId"))
     gmos_north: "GmosNorthDynamicInput" = Field(alias=str("gmosNorth"))
     step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
@@ -947,11 +1341,15 @@ class RecordGmosNorthStepInput(BaseModel):
 
 
 class RecordGmosNorthVisitInput(BaseModel):
+    """Input parameters for creating a new GmosNorthVisit"""
+
     observation_id: Any = Field(alias=str("observationId"))
     gmos_north: "GmosNorthStaticInput" = Field(alias=str("gmosNorth"))
 
 
 class RecordGmosSouthStepInput(BaseModel):
+    """Input parameters for creating a new GmosSouth StepRecord"""
+
     atom_id: Any = Field(alias=str("atomId"))
     gmos_south: "GmosSouthDynamicInput" = Field(alias=str("gmosSouth"))
     step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
@@ -963,11 +1361,17 @@ class RecordGmosSouthStepInput(BaseModel):
 
 
 class RecordGmosSouthVisitInput(BaseModel):
+    """Input parameters for creating a new GmosSouthVisit"""
+
     observation_id: Any = Field(alias=str("observationId"))
     gmos_south: "GmosSouthStaticInput" = Field(alias=str("gmosSouth"))
 
 
 class ResetAcquisitionInput(BaseModel):
+    """Input parameters for resetting the acquisition sequence so that it executes
+    from the initial step, regardless of which steps may have previously been
+    executed.  Select one of `observationId` or `observationReference`."""
+
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
@@ -975,6 +1379,8 @@ class ResetAcquisitionInput(BaseModel):
 
 
 class RightAscensionInput(BaseModel):
+    """Right Ascension, choose one of the available units"""
+
     microseconds: Optional[Any] = None
     degrees: Optional[Any] = None
     hours: Optional[Any] = None
@@ -982,32 +1388,49 @@ class RightAscensionInput(BaseModel):
 
 
 class ObservingModeInput(BaseModel):
+    """Edit or create an observation's observing mode"""
+
     gmos_north_long_slit: Optional["GmosNorthLongSlitInput"] = Field(
         alias=str("gmosNorthLongSlit"), default=None
     )
+    "The gmosNorthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gmos_south_long_slit: Optional["GmosSouthLongSlitInput"] = Field(
         alias=str("gmosSouthLongSlit"), default=None
     )
+    "The gmosSouthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gmos_north_imaging: Optional["GmosNorthImagingInput"] = Field(
         alias=str("gmosNorthImaging"), default=None
     )
+    "The gmosNorthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gmos_south_imaging: Optional["GmosSouthImagingInput"] = Field(
         alias=str("gmosSouthImaging"), default=None
     )
+    "The gmosSouthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
     flamingos_2_long_slit: Optional["Flamingos2LongSlitInput"] = Field(
         alias=str("flamingos2LongSlit"), default=None
     )
+    "The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
 
 
 class ScienceRequirementsInput(BaseModel):
+    """Edit science requirements"""
+
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
+    "ExposureTimeMode, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     spectroscopy: Optional["SpectroscopyScienceRequirementsInput"] = None
+    "The spectroscopy field must be either specified or skipped altogether.  It cannot be unset with a null value."
     imaging: Optional["ImagingScienceRequirementsInput"] = None
+    "The imaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
 
 
 class SetAllocationsInput(BaseModel):
+    """Describes the program allocations.  Each partner and band combination should
+    appear at most once in the 'allocations' array. One of programId,
+    programReference or proposalReference is required. (If two or more are provided,
+    they must refer to the same program.)"""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -1019,14 +1442,25 @@ class SetAllocationsInput(BaseModel):
 
 
 class SetGuideTargetNameInput(BaseModel):
+    """Input parameters for setting the guide star name for an observation.
+    Identify the observation to clone by specifying either its id or reference.  If
+    both are specified, they must refer to the same observation.  If neither is
+    specified, an error will be returned."""
+
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
     )
     target_name: Optional[Any] = Field(alias=str("targetName"), default=None)
+    'The name of the guide star. This must satisfy the regular expression "^Gaia DR3 (-?\\d+)$" where the\nnumeric part is the Gaia source_id. Omit or set to null to delete.'
 
 
 class SetProgramReferenceInput(BaseModel):
+    """Input for setting the program reference.  Identify the program to update with one
+    of `programId`, `proposalReference` or `programReference`.  If more than one of
+    these is specified, all must match.  Use `SET` to specify the new program
+    reference properties."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -1038,6 +1472,9 @@ class SetProgramReferenceInput(BaseModel):
 
 
 class ProgramReferencePropertiesInput(BaseModel):
+    """Properties for the chosen program reference type.  Supply the value for exactly
+    one of the inputs."""
+
     calibration: Optional["ProgramReferencePropertiesCalibrationInput"] = None
     commissioning: Optional["ProgramReferencePropertiesCommissioningInput"] = None
     engineering: Optional["ProgramReferencePropertiesEngineeringInput"] = None
@@ -1049,44 +1486,64 @@ class ProgramReferencePropertiesInput(BaseModel):
 
 
 class ProgramReferencePropertiesCalibrationInput(BaseModel):
+    """Inputs required when updating or switching to a calibration program."""
+
     semester: Any
     instrument: Instrument
 
 
 class ProgramReferencePropertiesCommissioningInput(BaseModel):
+    """Inputs required when updating or switching to a commissioning program."""
+
     semester: Any
     instrument: Instrument
 
 
 class ProgramReferencePropertiesEngineeringInput(BaseModel):
+    """Inputs required when updating or switching to an engineering program."""
+
     semester: Any
     instrument: Instrument
 
 
 class ProgramReferencePropertiesExampleInput(BaseModel):
+    """Inputs required when updating or switching to an example program."""
+
     instrument: Instrument
 
 
 class ProgramReferencePropertiesLibraryInput(BaseModel):
+    """Inputs required when updating or switching to a library program."""
+
     instrument: Instrument
     description: Any
 
 
 class ProgramReferencePropertiesMonitoringInput(BaseModel):
+    """Inputs required when updating or switching to a monitoring program."""
+
     semester: Any
     instrument: Instrument
 
 
 class ProgramReferencePropertiesScienceInput(BaseModel):
+    """Inputs required when updating or switching to a science program."""
+
     semester: Any
     science_subtype: ScienceSubtype = Field(alias=str("scienceSubtype"))
 
 
 class ProgramReferencePropertiesSystemInput(BaseModel):
+    """Inputs required when updating or switching to a system program."""
+
     description: Any
 
 
 class SetProposalStatusInput(BaseModel):
+    """Input for setting the proposal status.  Identify the program to update with one
+    of `programId`, `proposalReference` or `programReference`.  If more than one of
+    these is specified, all must match."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -1098,19 +1555,28 @@ class SetProposalStatusInput(BaseModel):
 
 
 class SiderealInput(BaseModel):
+    """Sidereal target edit parameters"""
+
     ra: Optional["RightAscensionInput"] = None
+    "The ra field must be either specified or skipped altogether.  It cannot be unset with a null value."
     dec: Optional["DeclinationInput"] = None
+    "The dec field must be either specified or skipped altogether.  It cannot be unset with a null value."
     epoch: Optional[Any] = None
+    "The epoch field must be either specified or skipped altogether.  It cannot be unset with a null value."
     proper_motion: Optional["ProperMotionInput"] = Field(
         alias=str("properMotion"), default=None
     )
+    "The properMotion field may be unset by assigning a null value, or ignored by skipping it altogether"
     radial_velocity: Optional["RadialVelocityInput"] = Field(
         alias=str("radialVelocity"), default=None
     )
+    "The radialVelocity field may be unset by assigning a null value, or ignored by skipping it altogether"
     parallax: Optional["ParallaxInput"] = None
+    "The parallax field may be unset by assigning a null value, or ignored by skipping it altogether"
     catalog_info: Optional["CatalogInfoInput"] = Field(
         alias=str("catalogInfo"), default=None
     )
+    "The catalogInfo field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class OpportunityInput(BaseModel):
@@ -1137,17 +1603,25 @@ class DeclinationArcInput(BaseModel):
 
 
 class SignalToNoiseExposureTimeModeInput(BaseModel):
+    """Signal-to-noise mode parameters"""
+
     value: Any
+    "s/n value"
     at: "WavelengthInput"
+    "Corresponding wavelength."
 
 
 class SourceProfileInput(BaseModel):
+    """Create or edit a source profile.  Exactly one of "point", "uniform" or "gaussian" is required."""
+
     point: Optional["SpectralDefinitionIntegratedInput"] = None
     uniform: Optional["SpectralDefinitionSurfaceInput"] = None
     gaussian: Optional["GaussianInput"] = None
 
 
 class SpectralDefinitionIntegratedInput(BaseModel):
+    '''Spectral definition input with integrated units.  Specify exactly one of "bandNormalized" or "emissionLines"'''
+
     band_normalized: Optional["BandNormalizedIntegratedInput"] = Field(
         alias=str("bandNormalized"), default=None
     )
@@ -1157,6 +1631,8 @@ class SpectralDefinitionIntegratedInput(BaseModel):
 
 
 class SpectralDefinitionSurfaceInput(BaseModel):
+    '''Spectral definition input with surface units.  Specify exactly one of "bandNormalized" or "emissionLines"'''
+
     band_normalized: Optional["BandNormalizedSurfaceInput"] = Field(
         alias=str("bandNormalized"), default=None
     )
@@ -1166,29 +1642,47 @@ class SpectralDefinitionSurfaceInput(BaseModel):
 
 
 class SpectroscopyScienceRequirementsInput(BaseModel):
+    """Edit or create spectroscopy science requirements"""
+
     wavelength: Optional["WavelengthInput"] = None
+    "The wavelength field may be unset by assigning a null value, or ignored by skipping it altogether"
     resolution: Optional[Any] = None
+    "The resolution field may be unset by assigning a null value, or ignored by skipping it altogether"
     wavelength_coverage: Optional["WavelengthInput"] = Field(
         alias=str("wavelengthCoverage"), default=None
     )
+    "The wavelengthCoverage field may be unset by assigning a null value, or ignored by skipping it altogether"
     focal_plane: Optional[FocalPlane] = Field(alias=str("focalPlane"), default=None)
+    "The focalPlane field may be unset by assigning a null value, or ignored by skipping it altogether"
     focal_plane_angle: Optional["AngleInput"] = Field(
         alias=str("focalPlaneAngle"), default=None
     )
+    "The focalPlaneAngle field may be unset by assigning a null value, or ignored by skipping it altogether"
     capability: Optional[SpectroscopyCapabilities] = None
+    "The capabilities field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class StepConfigInput(BaseModel):
+    """Step configuration.  Choose exactly one step type."""
+
     bias: Optional[bool] = None
+    "Bias step creation option"
     dark: Optional[bool] = None
+    "Dark step creation option"
     gcal: Optional["StepConfigGcalInput"] = None
+    "GCAL step creation option"
     science: Optional[bool] = None
+    "Science step creation option"
     smart_gcal: Optional["StepConfigSmartGcalInput"] = Field(
         alias=str("smartGcal"), default=None
     )
+    "Smart gcal creation option"
 
 
 class StepConfigGcalInput(BaseModel):
+    """GCAL configuration creation input.  Specify either one or more arcs or else
+    one continuum."""
+
     arcs: Optional[List[GcalArc]] = None
     continuum: Optional[GcalContinuum] = None
     diffuser: GcalDiffuser
@@ -1197,10 +1691,17 @@ class StepConfigGcalInput(BaseModel):
 
 
 class StepConfigSmartGcalInput(BaseModel):
+    """SmartGcal step creation input"""
+
     smart_gcal_type: SmartGcalType = Field(alias=str("smartGcalType"))
+    "Smart Gcal type"
 
 
 class ObscalcUpdateInput(BaseModel):
+    """Input to the obscalcUpdate subscription.  Specify programId and/or observation
+    id to filter events to that program and/or observation.  Specify the old and
+    new states to limit events to only those transitions."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     old_state: Optional["WhereOptionEqCalculationState"] = Field(
@@ -1213,21 +1714,34 @@ class ObscalcUpdateInput(BaseModel):
 
 class WhereOrderCalculationState(BaseModel):
     eq: Optional[CalculationState] = Field(alias=str("EQ"), default=None)
+    "Matches if the calculation state is exactly the supplied value."
     neq: Optional[CalculationState] = Field(alias=str("NEQ"), default=None)
+    "Matches if the calculation state is not the supplied value."
     in_: Optional[List[CalculationState]] = Field(alias=str("IN"), default=None)
+    "Matches if the calculation state is any of the supplied options."
     nin: Optional[List[CalculationState]] = Field(alias=str("NIN"), default=None)
+    "Matches if the calculation state is none of the supplied values."
     gt: Optional[CalculationState] = Field(alias=str("GT"), default=None)
+    "Matches if the calculation state is ordered after (>) the supplied value."
     lt: Optional[CalculationState] = Field(alias=str("LT"), default=None)
+    "Matches if the calculation state is ordered before (<) the supplied value."
     gte: Optional[CalculationState] = Field(alias=str("GTE"), default=None)
+    "Matches if the calculation state is ordered after or equal (>=) the supplied value."
     lte: Optional[CalculationState] = Field(alias=str("LTE"), default=None)
+    "Matches if the calculation state is ordered before or equal (<=) the supplied value."
 
 
 class WhereOptionEqCalculationState(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the CalculationState is not defined. When `false` matches\nif the CalculationState is defined."
     eq: Optional[CalculationState] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[CalculationState] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[CalculationState]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[CalculationState]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class ExecutionEventAddedInput(BaseModel):
@@ -1241,23 +1755,35 @@ class ExecutionEventAddedInput(BaseModel):
 
 class TargetEditInput(BaseModel):
     target_id: Optional[Any] = Field(alias=str("targetId"), default=None)
+    "Target ID"
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    "Program ID"
 
 
 class GroupEditInput(BaseModel):
     group_id: Optional[Any] = Field(alias=str("groupId"), default=None)
+    "Group ID, or Null to watch top-level group(s), or omit to watch all groups."
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    "Program ID"
 
 
 class ConfigurationRequestEditInput(BaseModel):
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    "Program ID"
 
 
 class DatasetEditInput(BaseModel):
+    """Specifies filtering options for dataset edit events from the `datasetEdit`
+    subscription."""
+
     dataset_id: Optional[Any] = Field(alias=str("datasetId"), default=None)
+    "If set, only events for the associated dataset are sent."
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    "If set, only events for datasets produced by the associated observation are sent."
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    "If set, only events for datasets produced by the associated program are sent."
     is_written: Optional[bool] = Field(alias=str("isWritten"), default=None)
+    "If set, only events for datasets that are written to disk are sent.  (Note,\ndatasets are considered to be written when an `END_WRITE` event is received by\nthe database.)"
 
 
 class ObservationEditInput(BaseModel):
@@ -1270,13 +1796,18 @@ class ProgramEditInput(BaseModel):
 
 
 class TargetEnvironmentInput(BaseModel):
+    """Target environment editing and creation parameters"""
+
     explicit_base: Optional["CoordinatesInput"] = Field(
         alias=str("explicitBase"), default=None
     )
+    "The explicitBase field may be unset by assigning a null value, or ignored by skipping it altogether"
     asterism: Optional[List[Any]] = None
 
 
 class TargetPropertiesInput(BaseModel):
+    """Target properties"""
+
     name: Optional[Any] = None
     sidereal: Optional["SiderealInput"] = None
     nonsidereal: Optional["NonsiderealInput"] = None
@@ -1288,28 +1819,48 @@ class TargetPropertiesInput(BaseModel):
 
 
 class TelescopeConfigInput(BaseModel):
+    """Science step creation input"""
+
     offset: Optional["OffsetInput"] = None
+    "Offset position, which defaults to (0, 0) arcsec."
     guiding: Optional[GuideState] = None
+    "Whether guiding is enabled for this step (defaults to 'ENABLED')."
 
 
 class TimingWindowRepeatInput(BaseModel):
+    """Timing window repetition parameters."""
+
     period: "TimeSpanInput"
+    "Repeat period, counting from the start of the window."
     times: Optional[Any] = None
+    "Repetition times. If omitted, will repeat forever."
 
 
 class TimingWindowEndInput(BaseModel):
+    """Timing window end parameters."""
+
     at_utc: Optional[Any] = Field(alias=str("atUtc"), default=None)
+    "Window end date and time, in UTC. If specified, after and repeat must be omitted."
     after: Optional["TimeSpanInput"] = None
+    "Window end after a period of time. If specified, atUtc must be omitted."
     repeat: Optional["TimingWindowRepeatInput"] = None
+    "Repetition parameters. Only allowed if after is specified. If ommitted, window will not repeat."
 
 
 class TimingWindowInput(BaseModel):
+    """Timing window creation parameters."""
+
     inclusion: TimingWindowInclusion
+    "Whether this is an INCLUDE or EXCLUDE window."
     start_utc: Any = Field(alias=str("startUtc"))
+    "Window start time, in UTC."
     end: Optional["TimingWindowEndInput"] = None
+    "Window end parameters. If omitted, the window will never end."
 
 
 class UnnormalizedSedInput(BaseModel):
+    """Un-normalized SED input parameters.  Define one value only."""
+
     stellar_library: Optional[StellarLibrarySpectrum] = Field(
         alias=str("stellarLibrary"), default=None
     )
@@ -1336,80 +1887,153 @@ class UnnormalizedSedInput(BaseModel):
 
 
 class UpdateAsterismsInput(BaseModel):
+    """Input for bulk updating multiple observations.  Select observations
+    with the 'WHERE' input and specify the changes in 'SET'.  All the selected
+    observations must be in the same program."""
+
     set: "EditAsterismsPatchInput" = Field(alias=str("SET"))
+    "Describes the values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
+    "Filters the observations to be updated according to those that match the\ngiven constraints.  All must correspond to the same program."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional\nobservations match the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
 
 
 class UpdateAttachmentsInput(BaseModel):
+    """Attachment selection and update description.  Use `SET` to specify the changes, `WHERE` to select the attachments to update, and `LIMIT` to control the size of the return value."""
+
     set: "AttachmentPropertiesInput" = Field(alias=str("SET"))
+    "Describes the attachment values to modify."
     where: Optional["WhereAttachment"] = Field(alias=str("WHERE"), default=None)
+    "Filters the attachments to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional attachments match the WHERE clause they will be updated but not returned)."
 
 
 class UpdateCallsForProposalsInput(BaseModel):
+    """Call for proposals selection and update description.  Use `SET` to specify the
+    changes, `WHERE` to select the calls to update, and `LIMIT` to control the
+    size of the return value."""
+
     set: "CallForProposalsPropertiesInput" = Field(alias=str("SET"))
+    "Describes the call for proposals properties to modify."
     where: Optional["WhereCallForProposals"] = Field(alias=str("WHERE"), default=None)
+    "Filters the calls to be updated according to those that match the given\nconstraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional calls\nmatch the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted calls."
 
 
 class UpdateDatasetsInput(BaseModel):
+    """Dataset selection and update description. Use `SET` to specify the changes, `WHERE` to select the datasets to update, and `LIMIT` to control the size of the return value."""
+
     set: "DatasetPropertiesInput" = Field(alias=str("SET"))
+    "Describes the dataset values to modify."
     where: Optional["WhereDataset"] = Field(alias=str("WHERE"), default=None)
+    "Filters the datasets to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional datasets match the WHERE clause they will be updated but not returned)."
 
 
 class UpdateGroupsInput(BaseModel):
+    """Dataset selection and update description. Use `SET` to specify the changes, `WHERE` to select the groups to update, and `LIMIT` to control the size of the return value."""
+
     set: "GroupPropertiesInput" = Field(alias=str("SET"))
+    "Describes the dataset values to modify."
     where: Optional["WhereGroup"] = Field(alias=str("WHERE"), default=None)
+    "Filters the datasets to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional datasets match the WHERE clause they will be updated but not returned)."
 
 
 class UpdateObservationsInput(BaseModel):
+    """Observation selection and update description.  Use `SET` to specify the changes, `WHERE` to select the observations to update, and `LIMIT` to control the size of the return value."""
+
     set: "ObservationPropertiesInput" = Field(alias=str("SET"))
+    "Describes the observation values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
+    "Filters the observations to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional observations match the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted observations."
 
 
 class UpdateConfigurationRequestsInput(BaseModel):
+    """ConfigurationRequest selection and update description.  Use `SET` to specify the changes, `WHERE` to select the requests to update, and `LIMIT` to control the size of the return value."""
+
     set: "ConfigurationRequestProperties" = Field(alias=str("SET"))
+    "Describes the observation values to modify."
     where: Optional["WhereConfigurationRequest"] = Field(
         alias=str("WHERE"), default=None
     )
+    "Filters the observations to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional observations match the WHERE clause they will be updated but not returned)."
 
 
 class UpdateObservationsTimesInput(BaseModel):
+    """Observation selection and times update description.  Use `SET` to specify the changes, `WHERE` to select the observations to update, and `LIMIT` to control the size of the return value."""
+
     set: "ObservationTimesInput" = Field(alias=str("SET"))
+    "Describes the observation time values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
+    "Filters the observations to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional observations match the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted observations."
 
 
 class UpdateProgramUsersInput(BaseModel):
+    """Parameters for the 'updateProgramUsers' mutation.  Use 'SET' to specify the
+    changes, 'WHERE' to select the program users to update, and 'LIMIT' to control
+    the size of the return value."""
+
     set: "ProgramUserPropertiesInput" = Field(alias=str("SET"))
+    "Defines the program user properties to modify."
     where: Optional["WhereProgramUser"] = Field(alias=str("WHERE"), default=None)
+    "Filters the program users according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional program\nusers match the 'WHERE' clause they will be updated not returned)."
 
 
 class UpdateProgramNotesInput(BaseModel):
+    """Program note selection and update description.  Use `SET" to specify the changes,
+    `WHERE` to select the programs to update, and `LIMIT` to control the size of the
+    return value."""
+
     set: "ProgramNotePropertiesInput" = Field(alias=str("SET"))
+    "Describes the program note values to modify."
     where: Optional["WhereProgramNote"] = Field(alias=str("WHERE"), default=None)
+    "Filters the program notes to be updated according to those that match the\ngiven constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional notes\nmatch the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted notes."
 
 
 class UpdateProgramsInput(BaseModel):
+    """Program selection and update description.  Use `SET` to specify the changes, `WHERE` to select the programs to update, and `LIMIT` to control the size of the return value."""
+
     set: "ProgramPropertiesInput" = Field(alias=str("SET"))
+    "Describes the program values to modify."
     where: Optional["WhereProgram"] = Field(alias=str("WHERE"), default=None)
+    "Filters the programs to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional programs match the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted programs."
 
 
 class UpdateProposalInput(BaseModel):
+    """Input for updating a proposal.  Identify the program to update with one
+    of `programId`, `proposalReference` or `programReference`.  If more than one of
+    these is specified, all must match.  Use `SET` to specify the new program
+    reference properties."""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -1421,13 +2045,21 @@ class UpdateProposalInput(BaseModel):
 
 
 class UpdateTargetsInput(BaseModel):
+    """Target selection and update description. Use `SET` to specify the changes, `WHERE` to select the targets to update, and `LIMIT` to control the size of the return value."""
+
     set: "TargetPropertiesInput" = Field(alias=str("SET"))
+    "Describes the target values to modify."
     where: Optional["WhereTarget"] = Field(alias=str("WHERE"), default=None)
+    "Filters the targets to be updated according to those that match the given constraints."
     limit: Optional[Any] = Field(alias=str("LIMIT"), default=None)
+    "Caps the number of results returned to the given value (if additional targets match the WHERE clause they will be updated but not returned)."
     include_deleted: Optional[bool] = Field(alias=str("includeDeleted"), default=False)
+    "Set to `true` to include deleted targets"
 
 
 class WavelengthInput(BaseModel):
+    """Wavelength, choose one of the available units"""
+
     picometers: Optional[Any] = None
     angstroms: Optional[Any] = None
     nanometers: Optional[Any] = None
@@ -1435,6 +2067,8 @@ class WavelengthInput(BaseModel):
 
 
 class WavelengthDitherInput(BaseModel):
+    """WavelengthDither, choose one of the available units"""
+
     picometers: Optional[int] = None
     angstroms: Optional[Any] = None
     nanometers: Optional[Any] = None
@@ -1443,10 +2077,15 @@ class WavelengthDitherInput(BaseModel):
 
 class AttachmentPropertiesInput(BaseModel):
     description: Optional[Any] = None
+    "The description field may be unset by assigning a null value, or ignored by skipping it altogether"
     checked: Optional[bool] = None
+    "The checked status can be set, or ignored by skipping it altogether"
 
 
 class WhereDatasetChronicleEntry(BaseModel):
+    """Allows filtering of DatasetChronicleEntry (see Query -> datasetChronicleEntries)
+    based on a number of criteria."""
+
     and_: Optional[List["WhereDatasetChronicleEntry"]] = Field(
         alias=str("AND"), default=None
     )
@@ -1455,45 +2094,65 @@ class WhereDatasetChronicleEntry(BaseModel):
     )
     not_: Optional["WhereDatasetChronicleEntry"] = Field(alias=str("NOT"), default=None)
     id: Optional["WhereOrderChronicleId"] = None
+    "Limits the results to those matching a chronicle id."
     user: Optional["WhereUser"] = None
+    "Limits the results to a particular user or users."
     operation: Optional["WhereEqDatabaseOperation"] = None
+    "Limits the results to particular database operations."
     timestamp: Optional["WhereOrderTimestamp"] = None
+    "Limits the results based on timestamp of the change."
     dataset: Optional["WhereOrderDatasetId"] = None
+    "Limits the results to specified datasets."
     mod_dataset_id: Optional["WhereBoolean"] = Field(
         alias=str("modDatasetId"), default=None
     )
+    "Add this item to match only when a dataset id is or isn't updated."
     mod_step_id: Optional["WhereBoolean"] = Field(alias=str("modStepId"), default=None)
+    "Add this item to match only when a step id is or isn't updated."
     mod_observation_id: Optional["WhereBoolean"] = Field(
         alias=str("modObservationId"), default=None
     )
+    "Add this item to match only when an observation id is or isn't updated."
     mod_visit_id: Optional["WhereBoolean"] = Field(
         alias=str("modVisitId"), default=None
     )
+    "Add this item to match only when a visit id is or isn't updated."
     mod_reference: Optional["WhereBoolean"] = Field(
         alias=str("modReference"), default=None
     )
+    "Add this item to match only when a dataset reference is or isn't updated."
     mod_filename: Optional["WhereBoolean"] = Field(
         alias=str("modFilename"), default=None
     )
+    "Add this item to match only when a dataset filename is or isn't updated."
     mod_qa_state: Optional["WhereBoolean"] = Field(
         alias=str("modQaState"), default=None
     )
+    "Add this item to match only when a dataset QA state is or isn't updated."
     mod_interval: Optional["WhereBoolean"] = Field(
         alias=str("modInterval"), default=None
     )
+    "Add this item to match only when a dataset time interval (the range of time\nduring which it was collected) is or isn't updated."
     mod_comment: Optional["WhereBoolean"] = Field(alias=str("modComment"), default=None)
+    "Add this item to match only when a dataset comment is or isn't updated."
 
 
 class Flamingos2StaticInput(BaseModel):
+    """Flamingos 2 static configuration input parameters"""
+
     mos_pre_imaging: Optional[MosPreImaging] = Field(
         alias=str("mosPreImaging"), default=None
     )
+    "Whether this is a MOS pre-imaging observation (defaults to IS_NOT_MOS_PRE_IMAGING)"
     use_electronic_offsetting: Optional[bool] = Field(
         alias=str("useElectronicOffsetting"), default=None
     )
+    "Whether to use electronic offsetting (defaults to false)"
 
 
 class RecordFlamingos2StepInput(BaseModel):
+    """Input parameters for creating a new Flamingos 2 StepRecord"""
+
     atom_id: Any = Field(alias=str("atomId"))
     flamingos_2: "Flamingos2DynamicInput" = Field(alias=str("flamingos2"))
     step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
@@ -1505,11 +2164,15 @@ class RecordFlamingos2StepInput(BaseModel):
 
 
 class RecordFlamingos2VisitInput(BaseModel):
+    """Input parameters for creating a new Flamingos 2 Visit"""
+
     observation_id: Any = Field(alias=str("observationId"))
     flamingos_2: "Flamingos2StaticInput" = Field(alias=str("flamingos2"))
 
 
 class Flamingos2DynamicInput(BaseModel):
+    """Flamingos 2 instrument configuration input."""
+
     exposure: "TimeSpanInput"
     disperser: Optional[Flamingos2Disperser] = None
     filter: Flamingos2Filter
@@ -1522,70 +2185,109 @@ class Flamingos2DynamicInput(BaseModel):
 
 
 class Flamingos2FpuMaskInput(BaseModel):
+    """Flamingos 2 mask input parameters (choose custom or builtin)."""
+
     custom_mask: Optional["Flamingos2CustomMaskInput"] = Field(
         alias=str("customMask"), default=None
     )
+    "Custom mask FPU option"
     builtin: Optional[Flamingos2Fpu] = None
+    "Builtin FPU option"
 
 
 class Flamingos2CustomMaskInput(BaseModel):
+    """Flamingos 2 custom mask input parameters"""
+
     filename: str
+    "Custom mask file name"
     slit_width: Flamingos2CustomSlitWidth = Field(alias=str("slitWidth"))
+    "Custom mask slit width"
 
 
 class Flamingos2LongSlitInput(BaseModel):
+    """Edit or create Flamingos2 Long Slit advanced configuration"""
+
     disperser: Optional[Flamingos2Disperser] = None
+    "The disperser field must be specified.  It cannot be unset with a null value."
     filter: Optional[Flamingos2Filter] = None
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[Flamingos2Fpu] = None
+    "The fpu field must be specified.  It cannot be unset with a null value."
     explicit_read_mode: Optional[Flamingos2ReadMode] = Field(
         alias=str("explicitReadMode"), default=None
     )
+    "The read mode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_reads: Optional[Flamingos2Reads] = Field(
         alias=str("explicitReads"), default=None
     )
+    "The reads field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_decker: Optional[Flamingos2Decker] = Field(
         alias=str("explicitDecker"), default=None
     )
+    "The decker field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
         alias=str("explicitReadoutMode"), default=None
     )
+    "The readoutMode field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_offsets: Optional[List["OffsetInput"]] = Field(
         alias=str("explicitOffsets"), default=None
     )
+    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class GoaPropertiesInput(BaseModel):
+    """Gemini Observatory Archive properties creation and editing input for a
+    particular program."""
+
     proprietary_months: Optional[Any] = Field(
         alias=str("proprietaryMonths"), default=None
     )
+    "How many months to withhold public access to the data.  This property is\napplicable to science programs, defaults to the proprietary period associated\nwith the Call for Proposals if any; 0 months otherwise."
     should_notify: Optional[bool] = Field(alias=str("shouldNotify"), default=None)
+    "Whether the PI wishes to be notified when new data are received. This property\nis applicable to science programs and defaults to true."
     private_header: Optional[bool] = Field(alias=str("privateHeader"), default=None)
+    "Whether the header (as well as the data itself) should remain private.  This\nproperty is applicable to science programs and defaults to false."
 
 
 class GroupElementInput(BaseModel):
+    """A group element identifier. Exactly one of groupId and observationId must be provided."""
+
     group_id: Optional[Any] = Field(alias=str("groupId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
 
 
 class GroupPropertiesInput(BaseModel):
     name: Optional[Any] = None
+    "Group name (optional)."
     description: Optional[Any] = None
+    "Group description (optional)."
     minimum_required: Optional[Any] = Field(alias=str("minimumRequired"), default=None)
+    "Minimum number of elements to be observed. If unspecified then all elements will be observed."
     ordered: Optional[bool] = None
+    "If true, elements will be observed in order. Defaults to false if left unspecified."
     minimum_interval: Optional["TimeSpanInput"] = Field(
         alias=str("minimumInterval"), default=None
     )
+    "If specified, elements will be separated by at least `minimumInterval`."
     maximum_interval: Optional["TimeSpanInput"] = Field(
         alias=str("maximumInterval"), default=None
     )
+    "If specified, elements will be separated by at most `maximumInterval`."
     parent_group: Optional[Any] = Field(alias=str("parentGroup"), default=None)
+    "Parent group (optional). If specified then parent index must also be specified."
     parent_group_index: Optional[Any] = Field(
         alias=str("parentGroupIndex"), default=None
     )
+    "Parent index. If unspecified then the element will appear first in the program or parent group (if specified). Cannot be set to null."
     existence: Optional[Existence] = None
+    "Existence. Defaults to 'present' on creation. Change this value to delete a group (must be empty)."
 
 
 class CreateGroupInput(BaseModel):
+    """Group creation parameters.  One of programId, programReference or
+    proposalReference is required. (If two or more are provided, they must refer to
+    the same program.)"""
+
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
         alias=str("proposalReference"), default=None
@@ -1597,13 +2299,20 @@ class CreateGroupInput(BaseModel):
     initial_contents: Optional[List[Optional["GroupElementInput"]]] = Field(
         alias=str("initialContents"), default=None
     )
+    "Group elements specified here, if any, will be moved into the created group in the specified order."
 
 
 class ImagingScienceRequirementsInput(BaseModel):
+    """Edit or create imaging science requirements"""
+
     minimum_fov: Optional["AngleInput"] = Field(alias=str("minimumFov"), default=None)
+    "minimumFov, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     narrow_filters: Optional[bool] = Field(alias=str("narrowFilters"), default=None)
+    "narrowFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     broad_filters: Optional[bool] = Field(alias=str("broadFilters"), default=None)
+    "broadFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     combined_filters: Optional[bool] = Field(alias=str("combinedFilters"), default=None)
+    "combinedFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
 
 
 class CreateConfigurationRequestInput(BaseModel):
@@ -1614,23 +2323,38 @@ class CreateConfigurationRequestInput(BaseModel):
 
 
 class TimeChargeCorrectionInput(BaseModel):
+    """Describes a manual correction to time accounting calculations."""
+
     charge_class: ChargeClass = Field(alias=str("chargeClass"))
+    "The charge class to be corrected."
     op: TimeChargeCorrectionOp
+    "The operation (add or subtract) to perform."
     amount: "TimeSpanInput"
+    "The amount of time to add or subtract (respecting the min and max time span)."
     comment: Optional[str] = None
+    "Optional justification for the correction."
 
 
 class TimeSpanInput(BaseModel):
+    """Equivalent time amount in several unit options (exactly one must be specified)"""
+
     microseconds: Optional[Any] = None
+    "TimeSpan in µs"
     milliseconds: Optional[Any] = None
+    "TimeSpan in ms"
     seconds: Optional[Any] = None
+    "TimeSpan in seconds"
     minutes: Optional[Any] = None
+    "TimeSpan in minutes"
     hours: Optional[Any] = None
+    "TimeSpan in hours"
     iso: Optional[str] = None
+    "TimeSpan as an ISO-8601 string"
 
 
 class UnlinkUserInput(BaseModel):
     program_user_id: Any = Field(alias=str("programUserId"))
+    "The program user to unlink the user from."
 
 
 class UserProfileInput(BaseModel):
@@ -1658,285 +2382,516 @@ class WhereAngle(BaseModel):
 
 class WhereBoolean(BaseModel):
     eq: Optional[bool] = Field(alias=str("EQ"), default=None)
+    "Matches if the boolean is the provided value."
 
 
 class WhereOptionBoolean(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "Matches if the value is not defined."
     eq: Optional[bool] = Field(alias=str("EQ"), default=None)
+    "Matches if the boolean is the provided value."
 
 
 class WhereCallForProposals(BaseModel):
     and_: Optional[List["WhereCallForProposals"]] = Field(
         alias=str("AND"), default=None
     )
+    "A list of nested call for proposals filters that all must match in order for\nthe AND group as a whole to match."
     or_: Optional[List["WhereCallForProposals"]] = Field(alias=str("OR"), default=None)
+    "A list of nested call for proposals filters where any one match causes the\nentire OR group as a whole to match."
     not_: Optional["WhereCallForProposals"] = Field(alias=str("NOT"), default=None)
+    "A nested call for proposals filter that must not match in order for the NOT\nitself to match."
     id: Optional["WhereOrderCallForProposalsId"] = None
+    "Matches the call for propsals id."
     type: Optional["WhereEqCallForProposalsType"] = None
+    "Matches the call for proposals type."
     semester: Optional["WhereOrderSemester"] = None
+    "Matches the call for proposals semester."
     active_start: Optional["WhereOrderDate"] = Field(
         alias=str("activeStart"), default=None
     )
+    "Matches the active period start."
     active_end: Optional["WhereOrderDate"] = Field(alias=str("activeEnd"), default=None)
+    "Matches the active period end."
     is_open: Optional["WhereBoolean"] = Field(alias=str("isOpen"), default=None)
+    "Matches whether the call is still open for some partner."
     allows_non_partner_pi: Optional["WhereBoolean"] = Field(
         alias=str("allowsNonPartnerPi"), default=None
     )
+    "Matches whether non-partner PIs may participate."
 
 
 class WhereAttachment(BaseModel):
+    """Attachment filter options. All specified items must match."""
+
     and_: Optional[List["WhereAttachment"]] = Field(alias=str("AND"), default=None)
+    "A list of nested attachment filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereAttachment"]] = Field(alias=str("OR"), default=None)
+    "A list of nested attachment filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereAttachment"] = Field(alias=str("NOT"), default=None)
+    "A nested attachment filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderAttachmentId"] = None
+    "Matches the attachment ID."
     file_name: Optional["WhereString"] = Field(alias=str("fileName"), default=None)
+    "Matches the attachment file name."
     description: Optional["WhereOptionString"] = None
+    "Matches the description."
     attachment_type: Optional["WhereAttachmentType"] = Field(
         alias=str("attachmentType"), default=None
     )
+    "Matches the attachment type"
     checked: Optional[bool] = None
+    "Matches whether the attachment has been checked or not"
     program: Optional["WhereProgram"] = None
+    "Matches the program containing the attachment."
 
 
 class WhereAttachmentType(BaseModel):
+    """Filters on equality of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'EQ: FINDER'"""
+
     eq: Optional[AttachmentType] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[AttachmentType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[AttachmentType]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[AttachmentType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOrderAttachmentId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereDataset(BaseModel):
+    """Dataset filter options.  All specified items must match."""
+
     and_: Optional[List["WhereDataset"]] = Field(alias=str("AND"), default=None)
+    "A list of nested dataset filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereDataset"]] = Field(alias=str("OR"), default=None)
+    "A list of nested dataset filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereDataset"] = Field(alias=str("NOT"), default=None)
+    "A nested dataset filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderDatasetId"] = None
+    "Matches indicated dataset(s)."
     reference: Optional["WhereDatasetReference"] = None
+    "Matches the dataset reference, if any."
     observation: Optional["WhereObservation"] = None
+    "Matches all datasets associated with the observation."
     step_id: Optional["WhereEqStepId"] = Field(alias=str("stepId"), default=None)
+    "Matches all datasets associated with the step."
     index: Optional["WhereOrderPosInt"] = None
+    "Matches the particular dataset index within the step."
     filename: Optional["WhereString"] = None
+    "Matches the dataset file name."
     qa_state: Optional["WhereOptionEqQaState"] = Field(
         alias=str("qaState"), default=None
     )
+    "Matches the dataset QA state."
     comment: Optional["WhereOptionString"] = None
+    "Matches the dataset comment."
     is_written: Optional["WhereBoolean"] = Field(alias=str("isWritten"), default=None)
+    "If `true`, matches when the dataset has been written (or not). In particular, a dataset\nis considered written when a corresponding `END_WRITE` dataset event has been\nrecieved."
 
 
 class WhereDatasetReference(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "Matches if the dataset reference is not defined."
     label: Optional["WhereString"] = None
+    "Matches the dataset reference label."
     observation: Optional["WhereObservationReference"] = None
+    "Matches the observation reference."
     step_index: Optional["WhereOrderPosInt"] = Field(
         alias=str("stepIndex"), default=None
     )
+    "Matches the step index."
     exposure_index: Optional["WhereOrderPosInt"] = Field(
         alias=str("exposureIndex"), default=None
     )
+    "Matches the exposure index."
 
 
 class WhereEqCallForProposalsType(BaseModel):
+    """Filters on equality (or not) of the call for proposals type.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[CallForProposalsType] = Field(alias=str("EQ"), default=None)
+    "Matches if the call for proposals type is exactly the supplied value."
     neq: Optional[CallForProposalsType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the call for proposals type is not the supplied value."
     in_: Optional[List[CallForProposalsType]] = Field(alias=str("IN"), default=None)
+    "Matches if the call for proposals type is any of the supplied options."
     nin: Optional[List[CallForProposalsType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the call for proposals type is none of the supplied values."
 
 
 class WhereEqDatabaseOperation(BaseModel):
+    """Filters on equality (or not) of the database operation.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[DatabaseOperation] = Field(alias=str("EQ"), default=None)
+    "Matches if the database operation is exactly the supplied value."
     neq: Optional[DatabaseOperation] = Field(alias=str("NEQ"), default=None)
+    "Matches if the database operation is not the supplied value."
     in_: Optional[List[DatabaseOperation]] = Field(alias=str("IN"), default=None)
+    "Matches if the database operation is any of the supplied options."
     nin: Optional[List[DatabaseOperation]] = Field(alias=str("NIN"), default=None)
+    "Matches if the database operation is none of the supplied values."
 
 
 class WhereOptionEqEducationalStatus(BaseModel):
+    """Filters on equality (or not) of the user educational status and the supplied
+    criteria. All supplied criteria must match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the QaState is not defined. When `false` matches if the QaState is defined."
     eq: Optional[EducationalStatus] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[EducationalStatus] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[EducationalStatus]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[EducationalStatus]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqExecutionEventType(BaseModel):
     eq: Optional[ExecutionEventType] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[ExecutionEventType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[ExecutionEventType]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[ExecutionEventType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOptionEqGender(BaseModel):
+    """Filters on equality (or not) of the user reported geender and the supplied
+    criteria. All supplied criteria must match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the QaState is not defined. When `false` matches if the QaState is defined."
     eq: Optional[Gender] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Gender] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Gender]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Gender]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOptionEqInstrument(BaseModel):
+    """Filters on equality (or not) of the instrument. All supplied criteria must
+    match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the instrument is not defined. When `false` matches if\nthe instrument is defined."
     eq: Optional[Instrument] = Field(alias=str("EQ"), default=None)
+    "Matches if the instrument is exactly the supplied value."
     neq: Optional[Instrument] = Field(alias=str("NEQ"), default=None)
+    "Matches if the instrument is not the supplied value."
     in_: Optional[List[Instrument]] = Field(alias=str("IN"), default=None)
+    "Matches if the instrument is any of the supplied options."
     nin: Optional[List[Instrument]] = Field(alias=str("NIN"), default=None)
+    "Matches if the instrument is none of the supplied values."
 
 
 class WhereEqPartner(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO"."""
+
     eq: Optional[Partner] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Partner] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Partner]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Partner]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqPartnerLinkType(BaseModel):
+    """Filters on equality (or not) of the partner link type. All supplied criteria
+    must match, but usually only one is selected."""
+
     eq: Optional[PartnerLinkType] = Field(alias=str("EQ"), default=None)
+    "Matches if the partner link type is exactly the supplied value."
     neq: Optional[PartnerLinkType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the partner link type is not the supplied value."
     in_: Optional[List[PartnerLinkType]] = Field(alias=str("IN"), default=None)
+    "Matches if the partner link type is any of the supplied options."
     nin: Optional[List[PartnerLinkType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the partner link type is none of the supplied values."
 
 
 class WhereEqProgramUserRole(BaseModel):
+    """Filters on equality (or not) of the program user role type and the supplied
+    criteria. All supplied criteria must match, but usually only one is selected."""
+
     eq: Optional[ProgramUserRole] = Field(alias=str("EQ"), default=None)
+    "Matches if the role is exactly the supplied value."
     neq: Optional[ProgramUserRole] = Field(alias=str("NEQ"), default=None)
+    "Matches if the role is not the supplied value."
     in_: Optional[List[ProgramUserRole]] = Field(alias=str("IN"), default=None)
+    "Matches if the role is any of the supplied options."
     nin: Optional[List[ProgramUserRole]] = Field(alias=str("NIN"), default=None)
+    "Matches if the role is none of the supplied values."
 
 
 class WhereEqProgramType(BaseModel):
+    """Filters on equality (or not) of the program type and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "CALIBRATION"' will match when the type is "CALIBRATION"."""
+
     eq: Optional[ProgramType] = Field(alias=str("EQ"), default=None)
+    "Matches if the program type is exactly the supplied value."
     neq: Optional[ProgramType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the program type is not the supplied value."
     in_: Optional[List[ProgramType]] = Field(alias=str("IN"), default=None)
+    "Matches if the program type is any of the supplied options."
     nin: Optional[List[ProgramType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the program type is none of the supplied values."
 
 
 class WhereEqProposalStatus(BaseModel):
+    """Filters on equality of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'EQ: "SUBMITTED'"""
+
     eq: Optional[ProposalStatus] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[ProposalStatus] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[ProposalStatus]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[ProposalStatus]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqSite(BaseModel):
+    """Filters on equality (or not) of the site property. All supplied criteria must
+    match, but usually only one is selected."""
+
     eq: Optional[Site] = Field(alias=str("EQ"), default=None)
+    "Matches if the site is exactly the supplied value."
     neq: Optional[Site] = Field(alias=str("NEQ"), default=None)
+    "Matches if the site is not the supplied value."
     in_: Optional[List[Site]] = Field(alias=str("IN"), default=None)
+    "Matches if the site is any of the supplied options."
     nin: Optional[List[Site]] = Field(alias=str("NIN"), default=None)
+    "Matches if the site is none of the supplied values."
 
 
 class WhereOptionEqSite(BaseModel):
+    """Filters on equality of an optional site property.  All supplied criteria must
+    match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the site is not defined. When `false` matches if the\nsite role is defined."
     eq: Optional[Site] = Field(alias=str("EQ"), default=None)
+    "Matches if the site is exactly the supplied value."
     neq: Optional[Site] = Field(alias=str("NEQ"), default=None)
+    "Matches if the site is not the supplied value."
     in_: Optional[List[Site]] = Field(alias=str("IN"), default=None)
+    "Matches if the site is any of the supplied options."
     nin: Optional[List[Site]] = Field(alias=str("NIN"), default=None)
+    "Matches if the site is none of the supplied values."
 
 
 class WhereEqStepId(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO"."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqToOActivation(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO"."""
+
     eq: Optional[ToOActivation] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[ToOActivation] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[ToOActivation]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[ToOActivation]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqUserType(BaseModel):
+    """Filters on equality (or not) of the user type value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected."""
+
     eq: Optional[UserType] = Field(alias=str("EQ"), default=None)
+    "Matches if the user type is exactly the supplied value."
     neq: Optional[UserType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the user type is not the supplied value."
     in_: Optional[List[UserType]] = Field(alias=str("IN"), default=None)
+    "Matches if the user type is any of the supplied options."
     nin: Optional[List[UserType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the user type is none of the supplied values."
 
 
 class WhereEqVisitId(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO"."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereExecutionEvent(BaseModel):
+    """ExecutionEvent filter options."""
+
     and_: Optional[List["WhereExecutionEvent"]] = Field(alias=str("AND"), default=None)
+    "A list of nested execution event filters that all must match in order for the\nAND group as a whole to match."
     or_: Optional[List["WhereExecutionEvent"]] = Field(alias=str("OR"), default=None)
+    "A list of nested execution event filters where any one match causes the\nentire OR group as a whole to match."
     not_: Optional["WhereExecutionEvent"] = Field(alias=str("NOT"), default=None)
+    "A nested execution event filter that must not match in order for the NOT\nitself to match."
     id: Optional["WhereOrderExecutionEventId"] = None
+    "Matches on the execution event id"
     visit_id: Optional["WhereEqVisitId"] = Field(alias=str("visitId"), default=None)
+    "Matches on the visit id"
     observation: Optional["WhereObservation"] = None
+    "Matches on observation"
     received: Optional["WhereOrderTimestamp"] = None
+    "Matches on event reception time"
     event_type: Optional["WhereEqExecutionEventType"] = Field(
         alias=str("eventType"), default=None
     )
+    "Matches on execution event type"
     slew_stage: Optional["WhereOrderSlewStage"] = Field(
         alias=str("slewStage"), default=None
     )
+    "Matches the slew stage, for slew events."
     sequence_command: Optional["WhereOrderSequenceCommand"] = Field(
         alias=str("sequenceCommand"), default=None
     )
+    "Matches the sequence command type, for sequence events."
     step_id: Optional["WhereEqStepId"] = Field(alias=str("stepId"), default=None)
+    "Matches on the step id, for step and dataset events."
     step_stage: Optional["WhereOrderStepStage"] = Field(
         alias=str("stepStage"), default=None
     )
+    "Matches on the step stage, for step events."
     dataset_id: Optional["WhereOrderDatasetId"] = Field(
         alias=str("datasetId"), default=None
     )
+    "Matches on the dataset id, for dataset events."
     dataset_stage: Optional["WhereOrderDatasetStage"] = Field(
         alias=str("datasetStage"), default=None
     )
+    "Matches on the dataset stage, for dataset events."
 
 
 class WhereObservation(BaseModel):
+    """Observation filter options.  All specified items must match."""
+
     and_: Optional[List["WhereObservation"]] = Field(alias=str("AND"), default=None)
+    "A list of nested observation filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereObservation"]] = Field(alias=str("OR"), default=None)
+    "A list of nested observation filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereObservation"] = Field(alias=str("NOT"), default=None)
+    "A nested observation filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderObservationId"] = None
+    "Matches the observation id."
     reference: Optional["WhereObservationReference"] = None
+    "Matches the observation reference, if any."
     program: Optional["WhereProgram"] = None
+    "Matches the associated program."
     subtitle: Optional["WhereOptionString"] = None
+    "Matches the subtitle of the observation."
     science_band: Optional["WhereOptionOrderScienceBand"] = Field(
         alias=str("scienceBand"), default=None
     )
+    "Matches the observation science band."
     instrument: Optional["WhereOptionEqInstrument"] = None
+    "Matches on the instrument in use, if any."
     site: Optional["WhereOptionEqSite"] = None
+    "Matches on the site associated with the observation's instrument, if any."
     workflow: Optional["WhereCalculatedObservationWorkflow"] = None
+    "Matches on the observation workflow state."
 
 
 class WhereConfigurationRequest(BaseModel):
+    """Configuration request filter options.  All specified items must match."""
+
     and_: Optional[List["WhereConfigurationRequest"]] = Field(
         alias=str("AND"), default=None
     )
+    "A list of nested filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereConfigurationRequest"]] = Field(
         alias=str("OR"), default=None
     )
+    "A list of nested filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereConfigurationRequest"] = Field(alias=str("NOT"), default=None)
+    "A nested filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderConfigurationRequestId"] = None
+    "Matches the configuration request id."
     program: Optional["WhereProgram"] = None
+    "Matches the associated program."
     status: Optional["WhereOrderConfigurationRequestStatus"] = None
+    "Matches the configuration request status."
 
 
 class WhereObservationReference(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "Matches if the observation reference is not defined."
     label: Optional["WhereString"] = None
+    "Matches the observation reference label."
     program: Optional["WhereProgramReference"] = None
+    "Matches the program reference."
     index: Optional["WhereOrderPosInt"] = None
+    "Matches the observation index."
 
 
 class WhereGroup(BaseModel):
     and_: Optional[List["WhereGroup"]] = Field(alias=str("AND"), default=None)
+    "A list of nested group filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereGroup"]] = Field(alias=str("OR"), default=None)
+    "A list of nested group filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereGroup"] = Field(alias=str("NOT"), default=None)
+    "A nested group filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderGroupId"] = None
     name: Optional["WhereOptionString"] = None
     description: Optional["WhereOptionString"] = None
@@ -1944,498 +2899,958 @@ class WhereGroup(BaseModel):
 
 class WhereOrderGroupId(BaseModel):
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereEqFocalPlane(BaseModel):
     eq: Optional[FocalPlane] = Field(alias=str("EQ"), default=None)
+    "Matches if the focal plane option is exactly the supplied value."
     neq: Optional[FocalPlane] = Field(alias=str("NEQ"), default=None)
+    "Matches if the focal plane option is not the supplied value."
     in_: Optional[List[FocalPlane]] = Field(alias=str("IN"), default=None)
+    "Matches if the focal plane option is any of the supplied values."
     nin: Optional[List[FocalPlane]] = Field(alias=str("NIN"), default=None)
+    "Matches if the focal plane option is none of the supplied values."
 
 
 class WhereEqInstrument(BaseModel):
+    """Filters on equality (or not) of the instrument and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "GMOS_SOUTH"' will match when the property value is "GMOS_SOUTH".
+    Defining, `EQ`, `NEQ` etc. implies `IS_NULL` is `false`."""
+
     eq: Optional[Instrument] = Field(alias=str("EQ"), default=None)
+    "Matches if the instrument is exactly the supplied value."
     neq: Optional[Instrument] = Field(alias=str("NEQ"), default=None)
+    "Matches if the instrument is not the supplied value."
     in_: Optional[List[Instrument]] = Field(alias=str("IN"), default=None)
+    "Matches if the instrument is any of the supplied options."
     nin: Optional[List[Instrument]] = Field(alias=str("NIN"), default=None)
+    "Matches if the instrument is none of the supplied values."
 
 
 class WhereOptionEqCalibrationRole(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO".  Defining, `EQ`,
+    `NEQ` etc. implies `IS_NULL` is `false`."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the calibration role is not defined. When `false`\nmatches if the calibration role is defined."
     eq: Optional[CalibrationRole] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[CalibrationRole] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[CalibrationRole]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[CalibrationRole]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOptionEqPartner(BaseModel):
+    """Filters on equality (or not) of the (optional) partner. All supplied criteria
+    must match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the partner is not defined. When `false` matches if\nthe partner is defined."
     eq: Optional[Partner] = Field(alias=str("EQ"), default=None)
+    "Matches if the partrner is exactly the supplied value."
     neq: Optional[Partner] = Field(alias=str("NEQ"), default=None)
+    "Matches if the partner is not the supplied value."
     in_: Optional[List[Partner]] = Field(alias=str("IN"), default=None)
+    "Matches if the partner is any of the supplied options."
     nin: Optional[List[Partner]] = Field(alias=str("NIN"), default=None)
+    "Matches if the partner is none of the supplied values."
 
 
 class WhereOptionEqQaState(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO".  Defining, `EQ`,
+    `NEQ` etc. implies `IS_NULL` is `false`."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the QaState is not defined. When `false` matches if the QaState is defined."
     eq: Optional[DatasetQaState] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[DatasetQaState] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[DatasetQaState]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[DatasetQaState]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereEqScienceSubtype(BaseModel):
+    """Filters on equality (or not) of the science subtype and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "QUEUE"' will match when the property value is "QUEUE".
+    Defining, `EQ`, `NEQ` etc. implies `IS_NULL` is `false`."""
+
     eq: Optional[ScienceSubtype] = Field(alias=str("EQ"), default=None)
+    "Matches if the subtype is exactly the supplied value."
     neq: Optional[ScienceSubtype] = Field(alias=str("NEQ"), default=None)
+    "Matches if the subtype is not the supplied value."
     in_: Optional[List[ScienceSubtype]] = Field(alias=str("IN"), default=None)
+    "Matches if the subtype is any of the supplied options."
     nin: Optional[List[ScienceSubtype]] = Field(alias=str("NIN"), default=None)
+    "Matches if the subtype is none of the supplied values."
 
 
 class WhereOptionEqSpectroscopyCapabilities(BaseModel):
+    """Filters on equality (or not) of the SpectroscopyCapabilities property. All
+    supplied criteria must match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the spectroscopy capability value is not defined."
     eq: Optional[SpectroscopyCapabilities] = Field(alias=str("EQ"), default=None)
+    "Matches if the spectroscopy capability is the supplied value."
     neq: Optional[SpectroscopyCapabilities] = Field(alias=str("NEQ"), default=None)
+    "Matches if the spectroscopy capability is anything other than the supplied\nvalue."
     in_: Optional[List[SpectroscopyCapabilities]] = Field(alias=str("IN"), default=None)
+    "Matches if the spectroscopy capability is any one of the supplied values."
     nin: Optional[List[SpectroscopyCapabilities]] = Field(
         alias=str("NIN"), default=None
     )
+    "Matches if the spectroscopy capability is not any one of the supplied values."
 
 
 class WhereOptionEqTacCategory(BaseModel):
+    """Filters on equality (or not) of the property value and the supplied criteria.
+    All supplied criteria must match, but usually only one is selected.  E.g.
+    'EQ = "Foo"' will match when the property value is "FOO".  Defining, `EQ`,
+    `NEQ` etc. implies `IS_NULL` is `false`."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the TacCategory is not defined. When `false` matches if the TacCategory is defined."
     eq: Optional[TacCategory] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[TacCategory] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[TacCategory]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[TacCategory]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOptionString(BaseModel):
+    """String matching options."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true` the string must not be defined.  When `false` the string must be defined."
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
     like: Optional[Any] = Field(alias=str("LIKE"), default=None)
+    "Performs string matching with wildcard patterns.  The entire string must be matched.  Use % to match a sequence of any characters and _ to match any single character."
     nlike: Optional[Any] = Field(alias=str("NLIKE"), default=None)
+    "Performs string matching with wildcard patterns.  The entire string must not match.  Use % to match a sequence of any characters and _ to match any single character."
     match_case: Optional[bool] = Field(alias=str("MATCH_CASE"), default=True)
+    "Set to `true` (the default) for case sensitive matches, `false` to ignore case."
 
 
 class WhereOrderBigDecimal(BaseModel):
+    """Filters on equality or order comparisons of BigDecimal properties.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the BigDecimal is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the BigDecimal is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the BigDecimal is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the BigDecimal is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the BigDecimal is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the BigDecimal is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the BigDecimal is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the BigDecimal is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderCallForProposalsId(BaseModel):
+    """Filters on equality or order comparisons of call for proposals ids.  All
+    supplied criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the id is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the id is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the id is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the id is none of the supplied options."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the id is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the id is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the id is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the id is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderChronicleId(BaseModel):
+    """Filters on equality or order comparisons of the chronicle id.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderDatasetId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderDatasetStage(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[DatasetStage] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[DatasetStage] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[DatasetStage]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[DatasetStage]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[DatasetStage] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[DatasetStage] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[DatasetStage] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[DatasetStage] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderDate(BaseModel):
+    """Filters on equality or order comparisons of the Date property.  All supplied
+    criteria must match, but usually only one is selected.  Dates are specified
+    in ISO 8601 format (e.g., YYYY-MM-DD)."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the date is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the date is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the date value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the date value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the date is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the date is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the date is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the date is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderExecutionEventId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderTimestamp(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderInt(BaseModel):
+    """Filters on equality or order comparisons of the integer property.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[int] = Field(alias=str("EQ"), default=None)
+    "Matches if the integer is exactly the supplied value."
     neq: Optional[int] = Field(alias=str("NEQ"), default=None)
+    "Matches if the integer is not the supplied value."
     in_: Optional[List[int]] = Field(alias=str("IN"), default=None)
+    "Matches if the integer is any of the supplied options."
     nin: Optional[List[int]] = Field(alias=str("NIN"), default=None)
+    "Matches if the integer is none of the supplied values."
     gt: Optional[int] = Field(alias=str("GT"), default=None)
+    "Matches if the integer is ordered after (>) the supplied value."
     lt: Optional[int] = Field(alias=str("LT"), default=None)
+    "Matches if the integer is ordered before (<) the supplied value."
     gte: Optional[int] = Field(alias=str("GTE"), default=None)
+    "Matches if the integer is ordered after or equal (>=) the supplied value."
     lte: Optional[int] = Field(alias=str("LTE"), default=None)
+    "Matches if the integer is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderLong(BaseModel):
+    """Filters on equality or order comparisons of long property.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the Long is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the Long is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the Long is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the Long is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the Long is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the Long is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the Long is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the Long is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderObservationId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderConfigurationRequestId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderConfigurationRequestStatus(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[ConfigurationRequestStatus] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[ConfigurationRequestStatus] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[ConfigurationRequestStatus]] = Field(
         alias=str("IN"), default=None
     )
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[ConfigurationRequestStatus]] = Field(
         alias=str("NIN"), default=None
     )
+    "Matches if the property value is none of the supplied values."
     gt: Optional[ConfigurationRequestStatus] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[ConfigurationRequestStatus] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[ConfigurationRequestStatus] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[ConfigurationRequestStatus] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderPosBigDecimal(BaseModel):
+    """Filters on equality or order comparisons of PosBigDecimal properties.  All
+    supplied criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the PosBigDecimal is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the PosBigDecimal is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the PosBigDecimal is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the PosBigDecimal is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the PosBigDecimal is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the PosBigDecimal is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the PosBigDecimal is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the PosBigDecimal is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderPosInt(BaseModel):
+    """Filters on equality or order comparisons of the PosInt property.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the PosInt is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the PosInt is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the PosInt is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the PosInt is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the PosInt is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the PosInt is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the PosInt is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the PosInt is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderProgramId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderProgramNoteId(BaseModel):
+    """Filters on equality or order comparisons of the program note Id. All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the program note id is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the program note id is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the program note id is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the program note id is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the program note id is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the program note is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the program note id is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the program note id is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderProgramUserId(BaseModel):
+    """Filters on equality or order comparisons of the program user id.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the program user id is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the program user id is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the program user id is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the program user id is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the program user id is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the program user id is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the program user id is ordered after or equal (>=) the supplied\nvalue."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the program user id is ordered before or equal (<=) the supplied\nvalue."
 
 
 class WhereOrderUserId(BaseModel):
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the user id is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the user id is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the user id is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the user id is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the user id is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the user id is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the user id is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the user id is ordered before or equal (<=) the supplied value."
 
 
 class WhereProposalReference(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "Matches if the proposal reference is not defined."
     label: Optional["WhereString"] = None
+    "Matches the proposal reference label."
     semester: Optional["WhereOrderSemester"] = None
+    "Matches the semester in the proposal reference."
     semester_index: Optional["WhereOrderPosInt"] = Field(
         alias=str("semesterIndex"), default=None
     )
+    "Matches the index in the proposal reference."
 
 
 class WhereOptionOrderScienceBand(BaseModel):
+    """Filters on equality or order comparisons of science bands.  All supplied
+    criteria must match, but usually only one is selected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the science band is not defined. When `false` matches\nif the science band is defined."
     eq: Optional[ScienceBand] = Field(alias=str("EQ"), default=None)
+    "Matches if the science band is exactly the supplied value."
     neq: Optional[ScienceBand] = Field(alias=str("NEQ"), default=None)
+    "Matches if the science band is not the supplied value."
     in_: Optional[List[ScienceBand]] = Field(alias=str("IN"), default=None)
+    "Matches if the science band is any of the supplied options."
     nin: Optional[List[ScienceBand]] = Field(alias=str("NIN"), default=None)
+    "Matches if the science band is none of the supplied values."
     gt: Optional[ScienceBand] = Field(alias=str("GT"), default=None)
+    "Matches if the science band is ordered after (>) the supplied value."
     lt: Optional[ScienceBand] = Field(alias=str("LT"), default=None)
+    "Matches if the science band is ordered before (<) the supplied value."
     gte: Optional[ScienceBand] = Field(alias=str("GTE"), default=None)
+    "Matches if the science band is ordered after or equal (>=) the supplied value."
     lte: Optional[ScienceBand] = Field(alias=str("LTE"), default=None)
+    "Matches if the science band is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderSemester(BaseModel):
+    """Filters on equality or order comparisons of Semester.  All supplied
+    criteria must match, but usually only one is selected.  E.g.,
+    'GT = "2024A"' will match when the value is "2024B" or later."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderSequenceCommand(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[SequenceCommand] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[SequenceCommand] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[SequenceCommand]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[SequenceCommand]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[SequenceCommand] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[SequenceCommand] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[SequenceCommand] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[SequenceCommand] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderSequenceType(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[SequenceType] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[SequenceType] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[SequenceType]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[SequenceType]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[SequenceType] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[SequenceType] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[SequenceType] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[SequenceType] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderSlewStage(BaseModel):
+    """Filters on equality or order comparisons of the SlewStage.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[SlewStage] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[SlewStage] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[SlewStage]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[SlewStage]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[SlewStage] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[SlewStage] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[SlewStage] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[SlewStage] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderStepStage(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[StepStage] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[StepStage] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[StepStage]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[StepStage]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[StepStage] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[StepStage] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[StepStage] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[StepStage] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderTargetId(BaseModel):
+    """Filters on equality or order comparisons of the property.  All supplied
+    criteria must match, but usually only one is selected.  E.g., 'GT = 2'
+    for an integer property will match when the value is 3 or more."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
     gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
     lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
     gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
 class WherePartnerLink(BaseModel):
+    """Partner link filter options.  All specified items much match."""
+
     link_type: Optional["WhereEqPartnerLinkType"] = Field(
         alias=str("linkType"), default=None
     )
+    "Matches on equality of the link type."
     partner: Optional["WhereOptionEqPartner"] = None
+    "Matches on the partner itself, if applicable.  Only `HAS_PARTNER` link types\nwill have a partner.  For other link types it will be `null`."
 
 
 class WhereProgram(BaseModel):
+    """Program filter options.  All specified items must match."""
+
     and_: Optional[List["WhereProgram"]] = Field(alias=str("AND"), default=None)
+    "A list of nested program filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereProgram"]] = Field(alias=str("OR"), default=None)
+    "A list of nested program filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereProgram"] = Field(alias=str("NOT"), default=None)
+    "A nested program filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderProgramId"] = None
+    "Matches the program ID."
     name: Optional["WhereOptionString"] = None
+    "Matches the program name."
     type: Optional["WhereEqProgramType"] = None
+    "Mathces the program type."
     reference: Optional["WhereProgramReference"] = None
+    "Matches the program reference (if any)."
     pi: Optional["WhereProgramUser"] = None
+    "Matches the PI."
     proposal_status: Optional["WhereEqProposalStatus"] = Field(
         alias=str("proposalStatus"), default=None
     )
+    "Matches the proposalStatus."
     proposal: Optional["WhereProposal"] = None
+    "Matches the proposal."
     calibration_role: Optional["WhereOptionEqCalibrationRole"] = Field(
         alias=str("calibrationRole"), default=None
     )
+    "Matches the calibration role."
     active_start: Optional["WhereOrderDate"] = Field(
         alias=str("activeStart"), default=None
     )
+    "Matches the active period start."
     active_end: Optional["WhereOrderDate"] = Field(alias=str("activeEnd"), default=None)
+    "Matches the active period end."
 
 
 class WhereProgramReference(BaseModel):
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "Matches if the program reference is not defined."
     label: Optional["WhereString"] = None
+    "Matches the program reference label."
     semester: Optional["WhereOrderSemester"] = None
+    "Matches the semester in the proposal reference, if any."
     semester_index: Optional["WhereOrderPosInt"] = Field(
         alias=str("semesterIndex"), default=None
     )
+    "Matches the index in the program reference, if any."
     instrument: Optional["WhereEqInstrument"] = None
+    "Matches the instrument in the program reference, if any."
     description: Optional["WhereString"] = None
+    "Matches the (library) description in the program reference, if any."
     science_subtype: Optional["WhereEqScienceSubtype"] = Field(
         alias=str("scienceSubtype"), default=None
     )
+    "Matches the science subtype in the program reference, if any."
 
 
 class WhereProgramNote(BaseModel):
+    """Program note filter options.  All specified items must match."""
+
     and_: Optional[List["WhereProgramNote"]] = Field(alias=str("AND"), default=None)
+    "A list of nested program note filters that all must match in order for the\nAND group as a whole to match."
     or_: Optional[List["WhereProgramNote"]] = Field(alias=str("OR"), default=None)
+    "A list of nested program note filters where any one match causes the entire\nOR group as a whole to match."
     not_: Optional["WhereProgramNote"] = Field(alias=str("NOT"), default=None)
+    "A nested program note filter that must not match in order for the NOT itself\nto match."
     id: Optional["WhereOrderProgramNoteId"] = None
+    "Matches the program note ID."
     program: Optional["WhereProgram"] = None
+    "Matches the program."
     title: Optional["WhereString"] = None
+    "Matches the program note title."
     text: Optional["WhereOptionString"] = None
+    "Mathces the program note text."
     is_private: Optional["WhereBoolean"] = Field(alias=str("isPrivate"), default=None)
+    "Matches the private status."
 
 
 class WhereProgramUser(BaseModel):
+    """Program user options.  All specified items must match."""
+
     and_: Optional[List["WhereProgramUser"]] = Field(alias=str("AND"), default=None)
+    "A list of nested program user filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereProgramUser"]] = Field(alias=str("OR"), default=None)
+    "A list of nested program user filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereProgramUser"] = Field(alias=str("NOT"), default=None)
+    "A nested program user filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderProgramUserId"] = None
+    "Matches the program user id."
     program: Optional["WhereProgram"] = None
+    "Matches the program."
     user: Optional["WhereUser"] = None
+    "Matches the user."
     role: Optional["WhereEqProgramUserRole"] = None
+    "Matches the role."
     partner_link: Optional["WherePartnerLink"] = Field(
         alias=str("partnerLink"), default=None
     )
+    "Matches the partner."
     preferred_profile: Optional["WhereUserProfile"] = Field(
         alias=str("preferredProfile"), default=None
     )
+    "Matches the preferred profile."
     educational_status: Optional["WhereOptionEqEducationalStatus"] = Field(
         alias=str("educationalStatus"), default=None
     )
+    "Matches the educational status."
     thesis: Optional["WhereOptionBoolean"] = None
+    "Matches the thesis flag."
     gender: Optional["WhereOptionEqGender"] = None
+    "Matches the gender status."
     has_data_access: Optional["WhereBoolean"] = Field(
         alias=str("hasDataAccess"), default=None
     )
+    "Matches the data access flag."
 
 
 class WhereProposal(BaseModel):
+    """Proposal filter options.  All specified items must match."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the proposal is not defined. When `false` matches if the proposal is defined."
     and_: Optional[List["WhereProposal"]] = Field(alias=str("AND"), default=None)
+    "A list of nested proposal filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereProposal"]] = Field(alias=str("OR"), default=None)
+    "A list of nested proposal filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereProposal"] = Field(alias=str("NOT"), default=None)
+    "A nested proposal filter that must not match in order for the NOT itself to match."
     title: Optional["WhereOptionString"] = None
+    "Matches the proposal title."
     reference: Optional["WhereProposalReference"] = None
+    "Matches on the proposal reference (if any)."
     call: Optional["WhereCallForProposals"] = None
+    "Matches on the CfP details (if any)."
 
 
 class WhereProposalPartnerEntry(BaseModel):
+    """Proposal partner entry filter options. The set of partners is scanned for a matching partner and percentage entry."""
+
     and_: Optional[List["WhereProposalPartnerEntry"]] = Field(
         alias=str("AND"), default=None
     )
+    "A list of nested partner entry filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereProposalPartnerEntry"]] = Field(
         alias=str("OR"), default=None
     )
+    "A list of nested partner entry filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereProposalPartnerEntry"] = Field(alias=str("NOT"), default=None)
+    "A nested partner entry filter that must not match in order for the NOT itself to match."
     partner: Optional["WhereEqPartner"] = None
+    "Matches on partner equality"
     percent: Optional["WhereOrderInt"] = None
+    "Matches on partner percentage"
 
 
 class WhereProposalPartners(BaseModel):
+    """Proposal partners matching.  Use `MATCH` for detailed matching options, `EQ` to just match against a partners list, and/or `isJoint` for checking joint vs individual proposals"""
+
     match: Optional["WhereProposalPartnerEntry"] = Field(
         alias=str("MATCH"), default=None
     )
+    "Detailed partner matching.  Use EQ instead of a simple exact match."
     eq: Optional[List[Partner]] = Field(alias=str("EQ"), default=None)
+    "A simple exact match for the supplied partners. Use `MATCH` instead for more advanced options."
     is_joint: Optional[bool] = Field(alias=str("isJoint"), default=None)
+    "Matching based on whether the proposal is a joint (i.e., multi-partner) proposal."
 
 
 class WhereSpectroscopyConfigOption(BaseModel):
+    """Spectroscopy instrument configuration option matcher.  Configure with the
+    properties of interest and pass it to the 'spectroscopyConfigOptions' query
+    to find the corresponding configuration options."""
+
     and_: Optional[List["WhereSpectroscopyConfigOption"]] = Field(
         alias=str("AND"), default=None
     )
@@ -2460,6 +3875,7 @@ class WhereSpectroscopyConfigOption(BaseModel):
     range_includes: Optional["WavelengthInput"] = Field(
         alias=str("rangeIncludes"), default=None
     )
+    "Matches configuration options that support the provided wavelength. In other\nwords, those for which the given wavelength falls between the min and max\nlimits of the configuration."
     wavelength_optimal: Optional["WhereWavelength"] = Field(
         alias=str("wavelengthOptimal"), default=None
     )
@@ -2469,6 +3885,10 @@ class WhereSpectroscopyConfigOption(BaseModel):
 
 
 class WhereImagingConfigOption(BaseModel):
+    """Imaging instrument configuration option matcher.  Configure with the
+    properties of interest and pass it to the 'imagingConfigOptions' query
+    to find the corresponding configuration options."""
+
     and_: Optional[List["WhereImagingConfigOption"]] = Field(
         alias=str("AND"), default=None
     )
@@ -2485,34 +3905,56 @@ class WhereImagingConfigOption(BaseModel):
 
 
 class WhereString(BaseModel):
+    """String matching options."""
+
     eq: Optional[Any] = Field(alias=str("EQ"), default=None)
     neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
     in_: Optional[List[Any]] = Field(alias=str("IN"), default=None)
     nin: Optional[List[Any]] = Field(alias=str("NIN"), default=None)
     like: Optional[Any] = Field(alias=str("LIKE"), default=None)
+    "Performs string matching with wildcard patterns.  The entire string must be\nmatched.  Use % to match a sequence of any characters and _ to match any\nsingle character."
     nlike: Optional[Any] = Field(alias=str("NLIKE"), default=None)
+    "Performs string matching with wildcard patterns.  The entire string must not\nmatch.  Use % to match a sequence of any characters and _ to match any single\ncharacter."
     match_case: Optional[bool] = Field(alias=str("MATCH_CASE"), default=True)
+    "Set to `true` (the default) for case sensitive matches, `false` to ignore case."
 
 
 class WhereTarget(BaseModel):
+    """Target filter options.  All specified items must match."""
+
     and_: Optional[List["WhereTarget"]] = Field(alias=str("AND"), default=None)
+    "A list of nested target filters that all must match in order for the AND group as a whole to match."
     or_: Optional[List["WhereTarget"]] = Field(alias=str("OR"), default=None)
+    "A list of nested target filters where any one match causes the entire OR group as a whole to match."
     not_: Optional["WhereTarget"] = Field(alias=str("NOT"), default=None)
+    "A nested target filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderTargetId"] = None
+    "Matches the target id."
     program: Optional["WhereProgram"] = None
+    "Matches the associated program."
     name: Optional["WhereString"] = None
+    "Matches the target name."
     calibration_role: Optional["WhereOptionEqCalibrationRole"] = Field(
         alias=str("calibrationRole"), default=None
     )
+    "Matches the calibration role."
 
 
 class WhereUser(BaseModel):
+    """User filter options.  All specified items must match."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the user is not defined. When `false` matches if the\nuser is defined."
     and_: Optional[List["WhereUser"]] = Field(alias=str("AND"), default=None)
+    "A list of nested user filters that all must match in order for the AND group\nas a whole to match."
     or_: Optional[List["WhereUser"]] = Field(alias=str("OR"), default=None)
+    "A list of nested user filters that all must match in order for the OR group\nas a whole to match."
     not_: Optional["WhereUser"] = Field(alias=str("NOT"), default=None)
+    "A nested user filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderUserId"] = None
+    "Matches the user Id."
     type: Optional["WhereEqUserType"] = None
+    "Matches the user type."
     orcid_id: Optional["WhereOptionString"] = Field(alias=str("orcidId"), default=None)
     profile: Optional["WhereUserProfile"] = None
 
@@ -2541,26 +3983,44 @@ class WhereWavelength(BaseModel):
 
 
 class WhereOrderObservationWorkflowState(BaseModel):
+    """Filters on equality or order comparisons of the workflow state.  All supplied
+    criteria must match, but usually only one is selected."""
+
     eq: Optional[ObservationWorkflowState] = Field(alias=str("EQ"), default=None)
+    "Matches if the workflow state is exactly the supplied value."
     neq: Optional[ObservationWorkflowState] = Field(alias=str("NEQ"), default=None)
+    "Matches if the workflow state is not the supplied value."
     in_: Optional[List[ObservationWorkflowState]] = Field(alias=str("IN"), default=None)
+    "Matches if the workflow state value is any of the supplied options."
     nin: Optional[List[ObservationWorkflowState]] = Field(
         alias=str("NIN"), default=None
     )
+    "Matches if the workflow state is none of the supplied values."
     gt: Optional[ObservationWorkflowState] = Field(alias=str("GT"), default=None)
+    "Matches if the workflow state is ordered after (>) the supplied value."
     lt: Optional[ObservationWorkflowState] = Field(alias=str("LT"), default=None)
+    "Matches if the workflow state is ordered before (<) the supplied value."
     gte: Optional[ObservationWorkflowState] = Field(alias=str("GTE"), default=None)
+    "Matches if the workflow state is ordered after or equal (>=) the supplied value."
     lte: Optional[ObservationWorkflowState] = Field(alias=str("LTE"), default=None)
+    "Matches if the workflow state is ordered before or equal (<=) the supplied value."
 
 
 class WhereCalculatedObservationWorkflow(BaseModel):
+    """Matches on the current state of the ObservationWorkflow, which may be in the
+    process of being updated on the server.  Use the 'calculationState' if, for
+    example, only interested in results for which no pending change is expected."""
+
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the calculated workflow is not defined. When `false`\nmatches if the calculated workflow is defined."
     calculation_state: Optional["WhereOrderCalculationState"] = Field(
         alias=str("calculationState"), default=None
     )
+    "Matches the current state of the background calculation."
     workflow_state: Optional["WhereOrderObservationWorkflowState"] = Field(
         alias=str("workflowState"), default=None
     )
+    "Matchs the workflow state itself."
 
 
 AddProgramUserInput.model_rebuild()
