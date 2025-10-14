@@ -160,7 +160,7 @@ wheels = [
 
 [[package]]
 name = "ariadne-codegen"
-version = "0.15.3"
+version = "0.16.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autoflake" },
@@ -172,9 +172,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/80/77efaec6129440d4c303e403e4fbf7196e02ac3f45cf72ab86614c8f944e/ariadne_codegen-0.15.3.tar.gz", hash = "sha256:30d8b876168411fb05eb52398ab319ce994b6d0b3fe6ae17056dc8a9f14aea6e", size = 66333, upload-time = "2025-09-19T10:24:15.629Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/40/cc08a3faed529af4684e91b7fa35cb4e6fed57db6bb6678a744c13b900c1/ariadne_codegen-0.16.0.tar.gz", hash = "sha256:d92b4b8bef1ac5dfb04eb808bb022ec0ab2c44e8c0f236e7c16eada6a61c21f7", size = 66902, upload-time = "2025-10-13T06:38:21.85Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/af/ce9774603c1f501b0e4a4e4796f48c05bbde2110e34d1479137711490c83/ariadne_codegen-0.15.3-py3-none-any.whl", hash = "sha256:7cd2cc68a7d3860422c8e03f5fe575ed6db22fca0a8a379779919fa08cf2a4f4", size = 95708, upload-time = "2025-09-19T10:24:13.247Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/de/6e5eba9bdc6f95ef3477d48d2120b2797aa4fb7488933e324c3f91b2aa4b/ariadne_codegen-0.16.0-py3-none-any.whl", hash = "sha256:cf24ef2ae7afc607ff3fcc117674201f242cf2e1c93774ebd28f16f7e78a7fd7", size = 96360, upload-time = "2025-10-13T06:38:20.535Z" },
 ]
 
 [[package]]
@@ -658,9 +658,9 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-codegen = [{ name = "ariadne-codegen", specifier = "==0.15.3" }]
+codegen = [{ name = "ariadne-codegen", specifier = "==0.16.0" }]
 dev = [
-    { name = "ariadne-codegen", specifier = "==0.15.3" },
+    { name = "ariadne-codegen", specifier = "==0.16.0" },
     { name = "pytest-asyncio", specifier = ">=1.2.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-mock", specifier = ">=3.15.1" },
