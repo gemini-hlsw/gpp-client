@@ -30,3 +30,9 @@ Coordinator Layer
    :undoc-members:
    :inherited-members:
    :show-inheritance:
+
+.. automodule:: gpp_client.directors.goats.coordinators.program
+   :members:
+   :undoc-members:
+   :inherited-members:
+   :show-inheritance:

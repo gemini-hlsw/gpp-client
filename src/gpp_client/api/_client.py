@@ -20,6 +20,7 @@ from .async_base_client import AsyncBaseClient
 from .base_model import UNSET, UnsetType
 from .base_operation import GraphQLField
 from .get_goats_observations import GetGOATSObservations
+from .get_goats_programs import GetGOATSPrograms
 from .get_scheduler_all_programs_id import GetSchedulerAllProgramsId
 from .get_scheduler_programs import GetSchedulerPrograms
 
@@ -29,6 +30,37 @@ def gql(q: str) -> str:
 
 
 class _GPPClient(AsyncBaseClient):
+    async def get_goats_programs(self, **kwargs: Any) -> GetGOATSPrograms:
+        query = gql(
+            """
+            query GetGOATSPrograms {
+              programs(includeDeleted: false, WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
+                matches {
+                  id
+                  name
+                  description
+                  reference {
+                    __typename
+                    label
+                  }
+                  proposalStatus
+                  type
+                }
+                hasMore
+              }
+            }
+            """
+        )
+        variables: Dict[str, object] = {}
+        response = await self.execute(
+            query=query,
+            operation_name="GetGOATSPrograms",
+            variables=variables,
+            **kwargs
+        )
+        data = self.get_data(response)
+        return GetGOATSPrograms.model_validate(data)
+
     async def get_goats_observations(
         self, program_id: Any, **kwargs: Any
     ) -> GetGOATSObservations:
@@ -162,17 +194,10 @@ class _GPPClient(AsyncBaseClient):
                     iso
                   }
                   observerNotes
-                  execution {
-                    executionState
-                  }
                   scienceRequirements {
                     mode
                     spectroscopy {
                       wavelength {
-                        nanometers
-                      }
-                      resolution
-                      wavelengthCoverage {
                         nanometers
                       }
                     }

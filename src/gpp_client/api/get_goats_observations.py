@@ -12,7 +12,6 @@ from .enums import (
     BrightnessIntegratedUnits,
     CalculationState,
     CloudExtinctionPreset,
-    ExecutionState,
     GmosAmpReadMode,
     GmosBinning,
     GmosNorthBuiltinFpu,
@@ -69,7 +68,6 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
         "GetGOATSObservationsObservationsMatchesObservationDuration"
     ] = Field(alias="observationDuration")
     observer_notes: Optional[Any] = Field(alias="observerNotes")
-    execution: "GetGOATSObservationsObservationsMatchesExecution"
     science_requirements: (
         "GetGOATSObservationsObservationsMatchesScienceRequirements"
     ) = Field(alias="scienceRequirements")
@@ -333,10 +331,6 @@ class GetGOATSObservationsObservationsMatchesObservationDuration(BaseModel):
     iso: str
 
 
-class GetGOATSObservationsObservationsMatchesExecution(BaseModel):
-    execution_state: ExecutionState = Field(alias="executionState")
-
-
 class GetGOATSObservationsObservationsMatchesScienceRequirements(BaseModel):
     mode: Optional[ScienceMode]
     spectroscopy: Optional[
@@ -351,19 +345,9 @@ class GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopy(Bas
     wavelength: Optional[
         "GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelength"
     ]
-    resolution: Optional[Any]
-    wavelength_coverage: Optional[
-        "GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelengthCoverage"
-    ] = Field(alias="wavelengthCoverage")
 
 
 class GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelength(
-    BaseModel
-):
-    nanometers: Any
-
-
-class GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelengthCoverage(
     BaseModel
 ):
     nanometers: Any
