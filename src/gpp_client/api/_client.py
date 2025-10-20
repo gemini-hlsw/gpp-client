@@ -142,6 +142,7 @@ class _GPPClient(AsyncBaseClient):
                       }
                     }
                     firstScienceTarget {
+                      id
                       sidereal {
                         ra {
                           hms
