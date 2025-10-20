@@ -12,6 +12,8 @@ from .enums import (
     BrightnessIntegratedUnits,
     CalculationState,
     CloudExtinctionPreset,
+    CoolStarTemperature,
+    GalaxySpectrum,
     GmosAmpReadMode,
     GmosBinning,
     GmosNorthBuiltinFpu,
@@ -21,15 +23,20 @@ from .enums import (
     GmosSouthBuiltinFpu,
     GmosSouthFilter,
     GmosSouthGrating,
+    HiiRegionSpectrum,
     ImageQualityPreset,
     Instrument,
     ObservationValidationCode,
     ObservationWorkflowState,
     ObservingModeType,
+    PlanetaryNebulaSpectrum,
+    PlanetSpectrum,
     PosAngleConstraintMode,
+    QuasarSpectrum,
     ScienceBand,
     ScienceMode,
     SkyBackground,
+    StellarLibrarySpectrum,
     TimingWindowInclusion,
     WaterVapor,
 )
@@ -305,6 +312,9 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
     brightnesses: List[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses"
     ]
+    sed: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed"
+    ]
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses(
@@ -313,6 +323,39 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
     band: Band
     value: Any
     units: BrightnessIntegratedUnits
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed(
+    BaseModel
+):
+    black_body_temp_k: Optional[Any] = Field(alias="blackBodyTempK")
+    cool_star: Optional[CoolStarTemperature] = Field(alias="coolStar")
+    flux_densities: Optional[
+        List[
+            "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities"
+        ]
+    ] = Field(alias="fluxDensities")
+    flux_densities_attachment: Optional[Any] = Field(alias="fluxDensitiesAttachment")
+    galaxy: Optional[GalaxySpectrum]
+    hii_region: Optional[HiiRegionSpectrum] = Field(alias="hiiRegion")
+    planet: Optional[PlanetSpectrum]
+    planetary_nebula: Optional[PlanetaryNebulaSpectrum] = Field(alias="planetaryNebula")
+    power_law: Optional[Any] = Field(alias="powerLaw")
+    quasar: Optional[QuasarSpectrum]
+    stellar_library: Optional[StellarLibrarySpectrum] = Field(alias="stellarLibrary")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities(
+    BaseModel
+):
+    wavelength: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength"
+    density: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength(
+    BaseModel
+):
+    nanometers: Any
 
 
 class GetGOATSObservationsObservationsMatchesPosAngleConstraint(BaseModel):
@@ -500,6 +543,8 @@ GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidere
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePoint.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities.model_rebuild()
 GetGOATSObservationsObservationsMatchesPosAngleConstraint.model_rebuild()
 GetGOATSObservationsObservationsMatchesScienceRequirements.model_rebuild()
 GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopy.model_rebuild()

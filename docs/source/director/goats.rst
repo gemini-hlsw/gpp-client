@@ -10,9 +10,9 @@ Usage Example
 .. code-block:: python
 
    from gpp_client import GPPClient
-   from gpp_client import Director
+   from gpp_client import GPPDirector
    client = GPPClient()
-   director = Director(client)
+   director = GPPDirector(client)
    observations = await director.goats.observation.get_all()
 
 

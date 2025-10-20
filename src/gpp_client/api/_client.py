@@ -175,6 +175,24 @@ class _GPPClient(AsyncBaseClient):
                               value
                               units
                             }
+                            sed {
+                              blackBodyTempK
+                              coolStar
+                              fluxDensities {
+                                wavelength {
+                                  nanometers
+                                }
+                                density
+                              }
+                              fluxDensitiesAttachment
+                              galaxy
+                              hiiRegion
+                              planet
+                              planetaryNebula
+                              powerLaw
+                              quasar
+                              stellarLibrary
+                            }
                           }
                         }
                       }
