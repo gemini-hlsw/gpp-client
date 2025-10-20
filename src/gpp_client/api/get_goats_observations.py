@@ -220,6 +220,7 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterismOpportunit
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget(
     BaseModel
 ):
+    id: Any
     sidereal: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal"
     ]

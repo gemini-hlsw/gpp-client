@@ -89,6 +89,7 @@ query GetGOATSObservations($programId: ProgramId!) {
           }
         }
         firstScienceTarget {
+          id
           sidereal {
             ra {
               hms
