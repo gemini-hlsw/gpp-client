@@ -11,7 +11,7 @@ from ..api.custom_fields import (
 )
 from ..api.custom_mutations import Mutation
 from ..api.custom_queries import Query
-from ..api.enums import ObservationWorkflowState
+from ..api.enums import ObservationWorkflowState, CalculationState
 from ..api.input_types import SetObservationWorkflowStateInput
 from .base import BaseManager
 from .utils import validate_single_identifier
@@ -25,7 +25,8 @@ class WorkflowStateManager(BaseManager):
         observation_reference: Optional[str] = None,
     ) -> dict[str, Any]:
         """
-        Get the workflow state of an observation by its ID or reference.
+        Get the workflow state and calculation state of an observation by its ID or
+        reference.
 
         Parameters
         ----------
@@ -68,12 +69,15 @@ class WorkflowStateManager(BaseManager):
         observation_id: str,
     ) -> dict[str, Any]:
         """
-        Update the workflow state of an observation by its ID or reference.
+        Update the workflow state of an observation by its ID, or return the current
+        workflow if already set.
 
         This function will:
             - Fetch the current observation and its workflow.
-            - Check if the calculation state is ``READY``.
-            - Validate the requested workflow state against ``validTransitions``.
+            - If the calculation state is not ``READY``, raise an error to retry later.
+            - If the desired state is already set, return the workflow as-is.
+            - Otherwise, validate the requested workflow state against
+              ``validTransitions``.
             - If valid, submit the mutation to update the workflow state.
 
         Parameters
@@ -87,17 +91,39 @@ class WorkflowStateManager(BaseManager):
         -------
         dict[str, Any]
             The returned workflow state for the observation.
+
+        Raises
+        ------
+        RuntimeError
+            If the observation calculation is not in the ``READY`` state. Retry later.
+        ValueError
+            If the requested workflow state transition is not allowed.
         """
         result = await self.get_by_id(observation_id=observation_id)
         workflow = result["workflow"]
+        calculation_state = workflow["state"]
+        current_state = workflow["value"]["state"]
 
-        if not self._can_transition_to(workflow_state, workflow):
-            valid_transitions = ", ".join(workflow["value"].get("validTransitions", []))
+        # If calculation is not 'READY', raise an error to retry later.
+        if calculation_state != CalculationState.READY.value:
+            raise RuntimeError(
+                "Observation calculation is not READY. Current state is "
+                f"'{calculation_state}'. Please retry after background processing is "
+                "complete."
+            )
 
+        # If the desired state is already set, return as-is.
+        if current_state == workflow_state.value:
+            # Return the same shape as other return paths.
+            return workflow["value"]
+
+        # Validate the requested workflow state against 'validTransitions'.
+        valid_transitions = workflow["value"].get("validTransitions", [])
+        if workflow_state.value not in valid_transitions:
+            valid_str = ", ".join(valid_transitions) or "None"
             raise ValueError(
-                f"Cannot transition to '{workflow_state.value}': "
-                f"calculation state = '{workflow['state']}', "
-                f"valid transitions = {valid_transitions}"
+                f"Cannot transition to '{workflow_state.value}'. "
+                f"Valid transitions are: {valid_str}."
             )
 
         input_data = SetObservationWorkflowStateInput(
@@ -113,32 +139,6 @@ class WorkflowStateManager(BaseManager):
         result = await self.client.mutation(fields, operation_name=operation_name)
 
         return result[operation_name]
-
-    @staticmethod
-    def _can_transition_to(
-        desired_state: ObservationWorkflowState,
-        workflow: dict[str, Any],
-    ) -> bool:
-        """
-        Check if the observation workflow can transition to the desired state.
-
-        Parameters
-        ----------
-        desired_state : ObservationWorkflowState
-            The target state you want to transition to.
-
-        workflow : dict[str, Any]
-            The current workflow data from the observation, including 'state',
-            'value', and its nested 'validTransitions'.
-
-        Returns
-        -------
-        bool
-            ``True`` if the transition is allowed and calculation state is ``READY``.
-        """
-        if workflow["state"] != "READY":
-            return False
-        return desired_state.value in workflow["value"].get("validTransitions", [])
 
     @staticmethod
     def _fields() -> tuple:
