@@ -129,76 +129,73 @@ async def test_update_by_id_invalid_transition(workflow_state_manager):
 
 
 @pytest.mark.parametrize(
-    "workflow, desired_state, expected, message",
+    "workflow, should_raise",
     [
-        # Case: Transition allowed.
+        ({"state": CalculationState.READY.value}, False),
+        ({"state": CalculationState.PENDING.value}, True),
+        ({"state": CalculationState.CALCULATING.value}, True),
+        ({"state": CalculationState.RETRY.value}, True),
+    ],
+)
+def test_check_ready(workflow: dict[str, str], should_raise: bool) -> None:
+    """Test _check_ready for correct RuntimeError behavior."""
+    if should_raise:
+        with pytest.raises(RuntimeError):
+            WorkflowStateManager._check_ready(workflow)
+    else:
+        WorkflowStateManager._check_ready(workflow)
+
+
+@pytest.mark.parametrize(
+    "workflow, workflow_state, expected",
+    [
         (
-            {
-                "state": CalculationState.READY.value,
-                "value": {
-                    "validTransitions": [
-                        ObservationWorkflowState.INACTIVE.value,
-                        ObservationWorkflowState.DEFINED.value,
-                    ]
-                },
-            },
-            ObservationWorkflowState.INACTIVE,
+            {"value": {"state": ObservationWorkflowState.DEFINED.value}},
+            ObservationWorkflowState.DEFINED,
             True,
-            "Transition to 'INACTIVE' should be allowed when in 'READY' state.",
         ),
-        # Case: Transition not allowed.
         (
-            {
-                "state": CalculationState.READY.value,
-                "value": {
-                    "validTransitions": [
-                        ObservationWorkflowState.INACTIVE.value,
-                        ObservationWorkflowState.DEFINED.value,
-                    ]
-                },
-            },
-            ObservationWorkflowState.ONGOING,
+            {"value": {"state": ObservationWorkflowState.INACTIVE.value}},
+            ObservationWorkflowState.DEFINED,
             False,
-            "Transition to 'ONGOING' should not be allowed when not in valid transitions.",
-        ),
-        # Case: State not READY.
-        (
-            {
-                "state": CalculationState.PENDING.value,
-                "value": {
-                    "validTransitions": [
-                        ObservationWorkflowState.INACTIVE.value,
-                        ObservationWorkflowState.DEFINED.value,
-                    ]
-                },
-            },
-            ObservationWorkflowState.INACTIVE,
-            False,
-            "Transition should not be allowed when state is not 'READY'.",
-        ),
-        # Case: No valid transitions.
-        (
-            {
-                "state": CalculationState.READY.value,
-                "value": {"validTransitions": []},
-            },
-            ObservationWorkflowState.INACTIVE,
-            False,
-            "Transition should not be allowed when there are no valid transitions.",
-        ),
-        # Case: Missing validTransitions key.
-        (
-            {
-                "state": CalculationState.READY.value,
-                "value": {},
-            },
-            ObservationWorkflowState.INACTIVE,
-            False,
-            "Transition should not be allowed when 'validTransitions' key is missing.",
         ),
     ],
 )
-def test_can_transition_to(workflow, desired_state, expected, message):
-    """Test the `_can_transition_to` static method with various scenarios."""
-    result = WorkflowStateManager._can_transition_to(desired_state, workflow)
-    assert result == expected, message
+def test_check_already_set(
+    workflow: dict[str, dict[str, str]],
+    workflow_state: ObservationWorkflowState,
+    expected: bool,
+) -> None:
+    """Test _check_already_set correctly matches state equality."""
+    result = WorkflowStateManager._check_already_set(workflow, workflow_state)
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    "workflow, workflow_state, should_raise",
+    [
+        (
+            {"value": {"validTransitions": ["READY", "DEFINED"]}},
+            ObservationWorkflowState.DEFINED,
+            False,
+        ),
+        (
+            {"value": {"validTransitions": ["INACTIVE"]}},
+            ObservationWorkflowState.DEFINED,
+            True,
+        ),
+        ({"value": {"validTransitions": []}}, ObservationWorkflowState.DEFINED, True),
+        ({"value": {}}, ObservationWorkflowState.INACTIVE, True),
+    ],
+)
+def test_check_valid_transition(
+    workflow: dict[str, dict[str, list[str]]],
+    workflow_state: ObservationWorkflowState,
+    should_raise: bool,
+) -> None:
+    """Test _check_valid_transition for valid and invalid transitions."""
+    if should_raise:
+        with pytest.raises(ValueError):
+            WorkflowStateManager._check_valid_transition(workflow, workflow_state)
+    else:
+        WorkflowStateManager._check_valid_transition(workflow, workflow_state)

@@ -101,30 +101,15 @@ class WorkflowStateManager(BaseManager):
         """
         result = await self.get_by_id(observation_id=observation_id)
         workflow = result["workflow"]
-        calculation_state = workflow["state"]
-        current_state = workflow["value"]["state"]
 
         # If calculation is not 'READY', raise an error to retry later.
-        if calculation_state != CalculationState.READY.value:
-            raise RuntimeError(
-                "Observation calculation is not READY. Current state is "
-                f"'{calculation_state}'. Please retry after background processing is "
-                "complete."
-            )
-
+        self._check_ready(workflow)
         # If the desired state is already set, return as-is.
-        if current_state == workflow_state.value:
+        if self._check_already_set(workflow, workflow_state):
             # Return the same shape as other return paths.
             return workflow["value"]
-
         # Validate the requested workflow state against 'validTransitions'.
-        valid_transitions = workflow["value"].get("validTransitions", [])
-        if workflow_state.value not in valid_transitions:
-            valid_str = ", ".join(valid_transitions) or "None"
-            raise ValueError(
-                f"Cannot transition to '{workflow_state.value}'. "
-                f"Valid transitions are: {valid_str}."
-            )
+        self._check_valid_transition(workflow, workflow_state)
 
         input_data = SetObservationWorkflowStateInput(
             observation_id=observation_id,
@@ -139,6 +124,80 @@ class WorkflowStateManager(BaseManager):
         result = await self.client.mutation(fields, operation_name=operation_name)
 
         return result[operation_name]
+
+    @staticmethod
+    def _check_ready(workflow: dict[str, Any]) -> None:
+        """
+        Raise an error if the observation calculation is not in the ``READY`` state.
+
+        Parameters
+        ----------
+        workflow : dict[str, Any]
+            The workflow data structure returned by ``get_by_id()``.
+
+        Raises
+        ------
+        RuntimeError
+            If the calculation state is not ``READY``.
+        """
+        if workflow["state"] != CalculationState.READY.value:
+            raise RuntimeError(
+                "Observation calculation is not READY (current state: "
+                f"{workflow['state']}). Please retry after background processing "
+                "is complete."
+            )
+
+    @staticmethod
+    def _check_already_set(
+        workflow: dict[str, Any],
+        workflow_state: ObservationWorkflowState,
+    ) -> bool:
+        """
+        Check if the workflow is already set to the desired state.
+
+        Parameters
+        ----------
+        workflow : dict[str, Any]
+            The workflow data structure returned by ``get_by_id()``.
+        workflow_state : ObservationWorkflowState
+            The desired workflow state.
+
+        Returns
+        -------
+        bool
+            ``True`` if the current workflow state matches the desired state,
+            otherwise ``False``.
+        """
+        return workflow["value"]["state"] == workflow_state.value
+
+    @staticmethod
+    def _check_valid_transition(
+        workflow: dict[str, Any],
+        workflow_state: ObservationWorkflowState,
+    ) -> None:
+        """
+        Validate that the desired workflow state is allowed as a transition.
+
+        Parameters
+        ----------
+        workflow : dict[str, Any]
+            The workflow data structure returned by ``get_by_id()``.
+        workflow_state : ObservationWorkflowState
+            The desired workflow state to transition to.
+
+        Raises
+        ------
+        ValueError
+            If the requested transition is not allowed based on
+            ``validTransitions``.
+        """
+        valid_transitions = workflow["value"].get("validTransitions", [])
+        if workflow_state.value not in valid_transitions:
+            valid_str = ", ".join(valid_transitions) or "None"
+            raise ValueError(
+                f"Cannot transition to '{workflow_state.value}'. "
+                f"Valid transitions are: {valid_str}."
+            )
 
     @staticmethod
     def _fields() -> tuple:
