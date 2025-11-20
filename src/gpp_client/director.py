@@ -1,7 +1,11 @@
 __all__ = ["GPPDirector"]
 
-from .client import GPPClient
-from .directors import GOATSDirector, SchedulerDirector
+import logging
+
+from gpp_client.client import GPPClient
+from gpp_client.directors import GOATSDirector, SchedulerDirector
+
+logger = logging.getLogger(__name__)
 
 
 class GPPDirector:
@@ -25,5 +29,7 @@ class GPPDirector:
     """
 
     def __init__(self, client: GPPClient):
+        logger.debug("Initializing GPPDirector")
+
         self.scheduler = SchedulerDirector(client)
         self.goats = GOATSDirector(client)

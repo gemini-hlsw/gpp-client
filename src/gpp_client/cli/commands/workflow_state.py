@@ -4,11 +4,11 @@ import typer
 from rich.console import Console
 from rich.json import JSON
 
-from ...api.enums import ObservationWorkflowState
-from ...cli.utils import (
+from gpp_client.api.enums import ObservationWorkflowState
+from gpp_client.cli.utils import (
     async_command,
 )
-from ...client import GPPClient
+from gpp_client.client import GPPClient
 
 console = Console()
 app = typer.Typer(name="wfs", help="Manage observation workflow states.")

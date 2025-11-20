@@ -5,7 +5,7 @@ __all__ = [
 
 from typing import Any, Set
 
-from ..api.base_operation import GraphQLField
+from gpp_client.api.base_operation import GraphQLField
 
 
 def patch_base_operations_graphql_field__format_variable_name() -> None:

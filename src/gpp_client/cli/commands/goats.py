@@ -4,9 +4,9 @@ import typer
 from rich.console import Console
 from rich.json import JSON
 
-from ...client import GPPClient
-from ...director import GPPDirector
-from ..utils import (
+from gpp_client.client import GPPClient
+from gpp_client.director import GPPDirector
+from gpp_client.cli.utils import (
     async_command,
 )
 

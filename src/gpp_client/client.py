@@ -1,9 +1,11 @@
-import os
+import logging
 from typing import Optional
 
-from .api._client import _GPPClient
-from .config import GPPConfig
-from .managers import (
+from gpp_client.api._client import _GPPClient
+from gpp_client.config import GPPConfig, GPPEnvironment
+from gpp_client.credentials import CredentialResolver
+from gpp_client.logging_utils import _enable_dev_console_logging
+from gpp_client.managers import (
     CallForProposalsManager,
     ConfigurationRequestManager,
     GroupManager,
@@ -14,8 +16,12 @@ from .managers import (
     TargetManager,
     WorkflowStateManager,
 )
-from .patches import patch_base_operations_graphql_field_get_formatted_variables
-from .rest import _GPPRESTClient
+from gpp_client.patches import (
+    patch_base_operations_graphql_field_get_formatted_variables,
+)
+from gpp_client.rest import _GPPRESTClient
+
+logger = logging.getLogger(__name__)
 
 # Apply patch to fix inner includeDelete bug.
 patch_base_operations_graphql_field_get_formatted_variables()
@@ -31,12 +37,18 @@ class GPPClient:
 
     Parameters
     ----------
-    url : str, optional
-        The base URL of the GPP GraphQL API. If not provided, it will be loaded from
-        the ``GPP_URL`` environment variable or the local configuration file.
+    env : GPPEnvironment | str, optional
+        The GPP environment to connect to (e.g., ``DEVELOPMENT``, ``STAGING``,
+        ``PRODUCTION``). If not provided, it will be loaded from the
+        local configuration file or defaults to ``PRODUCTION``.
     token : str, optional
         The bearer token used for authentication. If not provided, it will be loaded
         from the ``GPP_TOKEN`` environment variable or the local configuration file.
+    config : GPPConfig, optional
+        An optional GPPConfig instance to use for configuration management. If not
+        provided, a new instance will be created and loaded from the default path.
+    _debug : bool, default=True
+        If ``True``, enables debug-level console logging for development purposes.
 
     Attributes
     ----------
@@ -65,13 +77,27 @@ class GPPClient:
     def __init__(
         self,
         *,
-        url: Optional[str] = None,
-        token: Optional[str] = None,
+        env: GPPEnvironment | str | None = None,
+        token: str | None = None,
+        config: GPPConfig | None = None,
+        _debug: bool = True,
     ) -> None:
-        self.config = GPPConfig()
+        if _debug:
+            _enable_dev_console_logging()
+            logger.debug("Logging enabled for GPPClient")
 
-        # Determine which url and token to use.
-        resolved_url, resolved_token = self._resolve_credentials(url=url, token=token)
+        logger.debug("Initializing GPPClient")
+        self.config = config or GPPConfig()
+
+        # Normalize env to GPPEnvironment if provided as str.
+        if isinstance(env, str):
+            env = GPPEnvironment(env.upper())
+
+        # Resolve credentials.
+        resolved_url, resolved_token, resolved_env = CredentialResolver.resolve(
+            env=env, token=token, config=self.config
+        )
+        logger.info("Using environment: %s", resolved_env.value)
 
         headers = self._build_headers(resolved_token)
         self._client = _GPPClient(url=resolved_url, headers=headers)
@@ -90,69 +116,28 @@ class GPPClient:
         self.workflow_state = WorkflowStateManager(self)
 
     @staticmethod
-    def set_credentials(url: str, token: str) -> None:
+    def set_credentials(
+        env: GPPEnvironment | str, token: str, activate: bool = False, save: bool = True
+    ) -> None:
         """
-        Set and persist GPP credentials in the local configuration file.
-
-        This method creates or updates the stored credentials using the standard
-        configuration path defined by `typer.get_app_dir()`.
+        Set the token for a given environment and optionally activate it.
 
         Parameters
         ----------
-        url : str
-            The GraphQL API base URL to store.
+        env : GPPEnvironment | str
+            The environment to store the token for.
         token : str
-            The bearer token used for authentication.
+            The bearer token.
+        activate : bool, optional
+            Whether to set the given environment as active. Default is ``False``.
+        save : bool, optional
+            Whether to save the configuration to disk immediately. Default is ``True``.
         """
         config = GPPConfig()
-        config.set_credentials(url, token)
+        config.set_credentials(env, token, activate=activate, save=save)
 
     def _build_headers(self, token: str) -> dict[str, str]:
         return {"Authorization": f"Bearer {token}"}
-
-    def _resolve_credentials(
-        self,
-        url: Optional[str] = None,
-        token: Optional[str] = None,
-    ) -> tuple[str, str]:
-        """
-        Resolve the GPP GraphQL credentials using precedence rules.
-
-        This function looks for credentials in the following order:
-        1. Direct function arguments (`url`, `token`).
-        2. Environment variables `GPP_URL` and `GPP_TOKEN`.
-        3. Configuration file.
-
-        Parameters
-        ----------
-        url : str, optional
-            The GraphQL endpoint URL. Overrides env and config if provided.
-        token : str, optional
-            The bearer token for authentication. Overrides env and config if provided.
-
-        Returns
-        -------
-        str
-            The URL for the GraphQL endpoint.
-        str
-            The token for authentication.
-
-        Raises
-        ------
-        ValueError
-            If neither the `url` nor `token` could be resolved from any source.
-        """
-        config_url, config_token = self.config.get_credentials()
-        resolved_url = url or os.getenv("GPP_URL") or config_url
-        resolved_token = token or os.getenv("GPP_TOKEN") or config_token
-
-        if not resolved_url or not resolved_token:
-            raise ValueError(
-                "Missing GPP URL or GPP token. Provide via args, environment, or "
-                "in configuration file."
-            )
-
-        return resolved_url, resolved_token
 
     async def is_reachable(self) -> tuple[bool, Optional[str]]:
         """
@@ -165,6 +150,7 @@ class GPPClient:
         str, optional
             The error message if the connection failed.
         """
+        logger.debug("Checking if GPP GraphQL endpoint is reachable")
         query = """
             {
                 __schema {
@@ -180,4 +166,5 @@ class GPPClient:
             response.raise_for_status()
             return True, None
         except Exception as exc:
+            logger.debug("GPP GraphQL endpoint is not reachable: %s", exc)
             return False, str(exc)

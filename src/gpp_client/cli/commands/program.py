@@ -6,13 +6,13 @@ from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
 
-from ...api.input_types import ProgramPropertiesInput
-from ...client import GPPClient
-from ..utils import (
+from gpp_client.api.input_types import ProgramPropertiesInput
+from gpp_client.cli.utils import (
     async_command,
     print_not_found,
     truncate_short,
 )
+from gpp_client.client import GPPClient
 
 console = Console()
 app = typer.Typer(name="program", help="Manage programs.")

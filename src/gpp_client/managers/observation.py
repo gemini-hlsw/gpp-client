@@ -1,9 +1,10 @@
 __all__ = ["ObservationManager"]
 
+import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     AirMassRangeFields,
     CalculatedObservationWorkflowFields,
     CloneObservationResultFields,
@@ -38,10 +39,10 @@ from ..api.custom_fields import (
     UpdateObservationsResultFields,
     WavelengthFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import Existence
-from ..api.input_types import (
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import Existence
+from gpp_client.api.input_types import (
     CloneObservationInput,
     CreateObservationInput,
     ObservationPropertiesInput,
@@ -51,8 +52,9 @@ from ..api.input_types import (
     WhereOrderObservationId,
     WhereString,
 )
-from .base import BaseManager
-from .utils import load_properties, validate_single_identifier
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class ObservationManager(BaseManager):
@@ -85,10 +87,10 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If neither or both of `observation_id` and `observation_reference` are
-            provided.
-            - If both `properties` and `from_json` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
@@ -96,11 +98,16 @@ class ObservationManager(BaseManager):
         identify the observation to clone. Additionally, either `properties` or
         `from_json` may be supplied to specify overrides for the cloned observation.
         """
-        validate_single_identifier(
+        logger.debug(
+            "Cloning observation from observation with ID: %s or reference: %s",
+            observation_id,
+            observation_reference,
+        )
+        self.validate_single_identifier(
             observation_id=observation_id, observation_reference=observation_reference
         )
 
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ObservationPropertiesInput
         )
 
@@ -122,7 +129,7 @@ class ObservationManager(BaseManager):
         operation_name = "cloneObservation"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def create(
         self,
@@ -160,22 +167,30 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If no valid program identifier is provided.
-            - If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        validate_single_identifier(
+        logger.debug(
+            "Creating a new observation under a program ID: %s, proposal reference: %s, or program reference: %s",
+            program_id,
+            proposal_reference,
+            program_reference,
+        )
+
+        self.validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
         )
 
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ObservationPropertiesInput
         )
 
@@ -193,7 +208,7 @@ class ObservationManager(BaseManager):
         operation_name = "createObservation"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -229,15 +244,18 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        logger.debug("Updating observation(s)")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ObservationPropertiesInput
         )
 
@@ -258,7 +276,7 @@ class ObservationManager(BaseManager):
         operation_name = "updateObservations"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -295,17 +313,22 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If neither or both of `observation_id` and `observation_reference` are
-            provided.
-            - If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        validate_single_identifier(
+        logger.debug(
+            "Updating observation by ID: %s or reference: %s",
+            observation_id,
+            observation_reference,
+        )
+        self.validate_single_identifier(
             observation_id=observation_id,
             observation_reference=observation_reference,
         )
@@ -327,7 +350,7 @@ class ObservationManager(BaseManager):
             from_json=from_json,
         )
 
-        return result["observations"][0]
+        return self.get_single_result(result, "observations")
 
     async def get_by_id(
         self,
@@ -359,11 +382,17 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither or both of `observation_id` and `observation_reference` are
-            provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
-        validate_single_identifier(
+        logger.debug(
+            "Fetching observation by ID: %s or reference: %s",
+            observation_id,
+            observation_reference,
+        )
+        self.validate_single_identifier(
             observation_id=observation_id, observation_reference=observation_reference
         )
 
@@ -374,7 +403,7 @@ class ObservationManager(BaseManager):
         operation_name = "observation"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -402,7 +431,13 @@ class ObservationManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary with the results.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Retrieving observation(s)")
         fields = Query.observations(
             include_deleted=include_deleted, where=where, offset=offset, limit=limit
         ).fields(
@@ -413,8 +448,7 @@ class ObservationManager(BaseManager):
         )
         operation_name = "observations"
         result = await self.client.query(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def restore_by_id(
         self,
@@ -439,9 +473,16 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither or both of `observation_id` and `observation_reference` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(
+            "Restoring observation with ID: %s or reference: %s",
+            observation_id,
+            observation_reference,
+        )
         properties = ObservationPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             observation_id=observation_id,
@@ -473,9 +514,16 @@ class ObservationManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither or both of `observation_id` and `observation_reference` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(
+            "Deleting observation with ID: %s or reference: %s",
+            observation_id,
+            observation_reference,
+        )
         properties = ObservationPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             observation_id=observation_id,

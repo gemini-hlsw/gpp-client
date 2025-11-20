@@ -1,6 +1,7 @@
-import pytest
+import pytest  # type: ignore
 
 from gpp_client.api.enums import CalculationState, ObservationWorkflowState
+from gpp_client.exceptions import GPPValidationError
 from gpp_client.managers.workflow_state import WorkflowStateManager
 
 
@@ -119,7 +120,7 @@ async def test_update_by_id_invalid_transition(workflow_state_manager):
     }
     mock_client.query.return_value = mock_get_result
 
-    with pytest.raises(ValueError):
+    with pytest.raises(GPPValidationError):
         await workflow_state_manager.update_by_id(
             workflow_state=ObservationWorkflowState.ONGOING, observation_id="o-145"
         )
