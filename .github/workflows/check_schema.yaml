@@ -45,30 +45,14 @@ jobs:
 
       - name: Install GraphQL Inspector CI
         run: |
-          npm install -g @graphql-inspector/ci \
-                        @graphql-inspector/diff-command \
-                        @graphql-inspector/graphql-loader \
-                        graphql
+          npm install -g \
+            @graphql-inspector/ci \
+            @graphql-inspector/diff-command \
+            @graphql-inspector/graphql-loader graphql
 
       - name: Compare schema (${{ matrix.env_name }})
         continue-on-error: ${{ matrix.continue_on_error }}
         run: |
-          graphql-inspector diff ${{ matrix.env_name }}.schema.graphql \
-              ci_schemas/${{ matrix.env_name }}.schema.graphql \
-              --fail-on ${{ matrix.fail_on }}
-
-      - name: Generate diff report
-        if: always()
-        run: |
-          graphql-inspector diff ${{ matrix.env_name }}.schema.graphql \
-              ci_schemas/${{ matrix.env_name }}.schema.graphql \
-              --format markdown \
-              > schema_diff_${{ matrix.env_name }}.md \
-              || true
-
-      - name: Upload diff report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: schema-diff-${{ matrix.env_name }}
-          path: schema_diff_${{ matrix.env_name }}.md
+          graphql-inspector diff \
+            ${{ matrix.env_name }}.schema.graphql \
+            ci_schemas/${{ matrix.env_name }}.schema.graphql
