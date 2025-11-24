@@ -1,8 +1,7 @@
 import typer
-from rich import print
+from rich.console import Console
 
-from ..client import GPPClient
-from .commands import (
+from gpp_client.cli.commands import (
     call_for_proposals,
     config,
     configuration_request,
@@ -16,7 +15,12 @@ from .commands import (
     target,
     workflow_state,
 )
-from .utils import async_command
+from gpp_client.cli.utils import async_command
+from gpp_client.client import GPPClient
+from gpp_client.exceptions import GPPClientError
+
+console = Console()
+
 
 app = typer.Typer(
     name="GPP Client", no_args_is_help=False, help="Client to communicate with GPP."
@@ -42,12 +46,9 @@ async def ping() -> None:
     client = GPPClient()
     success, error = await client.is_reachable()
     if success:
-        print("[green]GPP is reachable. Credentials are valid.[/green]")
+        typer.secho("GPP is reachable. Credentials are valid.")
     else:
-        print("[red]Failed to reach GPP or credentials are invalid.[/red]")
-        if error:
-            print(f"[red]Details: {error}[/red]")
-        raise typer.Exit(code=1)
+        raise GPPClientError(f"Failed to reach GPP: {error}")
 
 
 def main():

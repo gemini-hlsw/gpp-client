@@ -1,11 +1,17 @@
+"""
+REST API client for non-GraphQL requests.
+"""
+
+__all__ = ["_GPPRESTClient"]
+
 import aiohttp
 import asyncio
 import certifi
 import gzip
 import ssl
+import logging
 
-
-__all__ = ["_GPPRESTClient"]
+logger = logging.getLogger(__name__)
 
 
 class _GPPRESTClient:
@@ -21,6 +27,7 @@ class _GPPRESTClient:
     """
 
     def __init__(self, resolved_url: str, gpp_token: str) -> None:
+        logger.debug("Initializing _GPPRESTClient")
         self.base_url = resolved_url.rstrip("/odb")
         self.gpp_token = gpp_token
         self._session = None

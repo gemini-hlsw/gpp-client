@@ -4,9 +4,9 @@ import typer
 from rich.console import Console
 from rich.json import JSON
 
-from ...client import GPPClient
-from ...managers.site_status import Site
-from ..utils import async_command
+from gpp_client.client import GPPClient
+from gpp_client.managers.site_status import Site
+from gpp_client.cli.utils import async_command
 
 console = Console()
 app = typer.Typer(name="site", help="Retrieve site status.")

@@ -5,9 +5,9 @@ import typer
 from rich.console import Console
 from rich.json import JSON
 
-from ...api import GroupPropertiesInput
-from ...cli.utils import async_command
-from ...client import GPPClient
+from gpp_client.api import GroupPropertiesInput
+from gpp_client.cli.utils import async_command
+from gpp_client.client import GPPClient
 
 
 console = Console()

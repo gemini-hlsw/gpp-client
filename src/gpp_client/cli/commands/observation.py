@@ -6,15 +6,14 @@ from rich.console import Console
 from rich.json import JSON
 from rich.table import Table
 
-from ...api.input_types import ObservationPropertiesInput
-from ...cli.utils import (
+from gpp_client.api.input_types import ObservationPropertiesInput
+from gpp_client.cli.utils import (
     async_command,
     print_not_found,
     truncate_long,
     truncate_short,
 )
-from ...client import GPPClient
-from ...managers.utils import validate_single_identifier
+from gpp_client.client import GPPClient
 
 console = Console()
 app = typer.Typer(name="obs", help="Manage observations.")
@@ -76,9 +75,6 @@ async def get(
     ] = False,
 ):
     """Get an observation by ID or reference."""
-    validate_single_identifier(
-        observation_id=observation_id, observation_reference=observation_reference
-    )
     client = GPPClient()
     result = await client.observation.get_by_id(
         observation_id=observation_id,
@@ -99,9 +95,6 @@ async def delete(
     ] = None,
 ):
     """Delete an observation by ID or reference."""
-    validate_single_identifier(
-        observation_id=observation_id, observation_reference=observation_reference
-    )
     client = GPPClient()
     result = await client.observation.delete_by_id(
         observation_id=observation_id,
@@ -121,9 +114,6 @@ async def restore(
     ] = None,
 ):
     """Restore an observation by ID or reference."""
-    validate_single_identifier(
-        observation_id=observation_id, observation_reference=observation_reference
-    )
     client = GPPClient()
     result = await client.observation.restore_by_id(
         observation_id=observation_id,

@@ -2,7 +2,7 @@ __all__ = ["ConfigurationRequestManager"]
 
 from typing import Any
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     ConfigurationConditionsFields,
     ConfigurationFields,
     ConfigurationGmosNorthLongSlitFields,
@@ -15,15 +15,15 @@ from ..api.custom_fields import (
     DeclinationFields,
     RightAscensionFields,
 )
-from ..api.custom_queries import Query
-from ..api.enums import ConfigurationRequestStatus
-from ..api.input_types import (
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import ConfigurationRequestStatus
+from gpp_client.api.input_types import (
     WhereConfigurationRequest,
     WhereOrderConfigurationRequestStatus,
     WhereOrderProgramId,
     WhereProgram,
 )
-from .base import BaseManager
+from gpp_client.managers.base import BaseManager
 
 
 class ConfigurationRequestManager(BaseManager):
@@ -56,6 +56,11 @@ class ConfigurationRequestManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary with the results.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         # Start with user-provided where, or an empty one
         where = where or WhereConfigurationRequest()
@@ -76,7 +81,7 @@ class ConfigurationRequestManager(BaseManager):
         operation_name = "configurationRequests"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all_approved_by_program_id(
         self,
@@ -104,6 +109,11 @@ class ConfigurationRequestManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary with the results.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         return await self.get_all(
             program_id=program_id,

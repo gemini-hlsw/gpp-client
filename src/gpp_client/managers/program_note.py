@@ -1,25 +1,27 @@
+import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     CreateProgramNoteResultFields,
     ProgramFields,
     ProgramNoteFields,
     ProgramNoteSelectResultFields,
     UpdateProgramNotesResultFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import Existence
-from ..api.input_types import (
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import Existence
+from gpp_client.api.input_types import (
     CreateProgramNoteInput,
     ProgramNotePropertiesInput,
     UpdateProgramNotesInput,
     WhereOrderProgramNoteId,
     WhereProgramNote,
 )
-from .base import BaseManager
-from .utils import load_properties, validate_single_identifier
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class ProgramNoteManager(BaseManager):
@@ -58,22 +60,24 @@ class ProgramNoteManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If none of the program identifiers are provided.
-            - If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        validate_single_identifier(
+        logger.debug("Creating a new program note")
+        self.validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
         )
 
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
         )
 
@@ -91,7 +95,7 @@ class ProgramNoteManager(BaseManager):
         operation_name = "createProgramNote"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -128,16 +132,18 @@ class ProgramNoteManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-
-        properties = load_properties(
+        logger.debug("Updating program note(s)")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ProgramNotePropertiesInput
         )
 
@@ -158,7 +164,7 @@ class ProgramNoteManager(BaseManager):
         operation_name = "updateProgramNotes"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -191,14 +197,17 @@ class ProgramNoteManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
+        logger.debug(f"Updating program note with ID: {program_note_id}")
         where = WhereProgramNote(id=WhereOrderProgramNoteId(eq=program_note_id))
 
         results = await self.update_all(
@@ -210,7 +219,7 @@ class ProgramNoteManager(BaseManager):
         )
 
         # Since it returns one item, discard the 'matches' and return the item.
-        return results["programNotes"][0]
+        return self.get_single_result(results, "programNotes")
 
     async def get_by_id(
         self, program_note_id: str, *, include_deleted: bool = False
@@ -229,7 +238,13 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             The program note data.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Fetching program note with ID: {program_note_id}")
         fields = Query.program_note(program_note_id=program_note_id).fields(
             *self._fields(include_deleted=include_deleted)
         )
@@ -237,7 +252,7 @@ class ProgramNoteManager(BaseManager):
         operation_name = "programNote"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -265,7 +280,13 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             A dictionary with `matches` and `hasMore` keys.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Fetching program note(s)")
         fields = Query.program_notes(
             include_deleted=include_deleted, where=where, offset=offset, limit=limit
         ).fields(
@@ -277,7 +298,7 @@ class ProgramNoteManager(BaseManager):
         operation_name = "programNotes"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def restore_by_id(self, program_note_id: str) -> dict[str, Any]:
         """
@@ -292,7 +313,15 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             The restored note.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Restoring program note with ID: {program_note_id}")
         properties = ProgramNotePropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             program_note_id, properties=properties, include_deleted=True
@@ -311,7 +340,15 @@ class ProgramNoteManager(BaseManager):
         -------
         dict[str, Any]
             The deleted note.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Deleting program note with ID: {program_note_id}")
         properties = ProgramNotePropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             program_note_id,

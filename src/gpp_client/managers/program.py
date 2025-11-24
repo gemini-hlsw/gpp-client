@@ -2,33 +2,34 @@ __all__ = ["ProgramManager"]
 
 from pathlib import Path
 from typing import Any, Optional
-
-from ..api.custom_fields import (
+import logging
+from gpp_client.api.custom_fields import (
+    CallForProposalsFields,
     CreateProgramResultFields,
     DateIntervalFields,
-    ProgramFields,
-    ProgramSelectResultFields,
-    ProgramUserFields,
-    UpdateProgramsResultFields,
     GroupElementFields,
     GroupFields,
     ObservationFields,
-    TimeSpanFields,
+    ProgramFields,
+    ProgramSelectResultFields,
+    ProgramUserFields,
     ProposalFields,
-    CallForProposalsFields,
+    TimeSpanFields,
+    UpdateProgramsResultFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import Existence
-from ..api.input_types import (
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import Existence
+from gpp_client.api.input_types import (
     CreateProgramInput,
     ProgramPropertiesInput,
     UpdateProgramsInput,
     WhereOrderProgramId,
     WhereProgram,
 )
-from .base import BaseManager
-from .utils import load_properties
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class ProgramManager(BaseManager):
@@ -58,15 +59,18 @@ class ProgramManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        logger.debug("Creating a new program")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ProgramPropertiesInput
         )
 
@@ -81,7 +85,7 @@ class ProgramManager(BaseManager):
         operation_name = "createProgram"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -118,15 +122,18 @@ class ProgramManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        logger.debug("Updating program(s)")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=ProgramPropertiesInput
         )
 
@@ -147,7 +154,7 @@ class ProgramManager(BaseManager):
         operation_name = "updatePrograms"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -180,14 +187,17 @@ class ProgramManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
+        logger.debug(f"Updating program with ID: {program_id}")
         where = WhereProgram(id=WhereOrderProgramId(eq=program_id))
 
         results = await self.update_all(
@@ -199,7 +209,7 @@ class ProgramManager(BaseManager):
         )
 
         # Since it returns one item, discard the 'matches' and return the item.
-        return results["programs"][0]
+        return self.get_single_result(results, "programs")
 
     async def get_by_id(
         self, program_id: str, *, include_deleted: bool = False
@@ -218,7 +228,13 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             Retrieved program.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Fetching program with ID: {program_id}")
         fields = Query.program(program_id=program_id).fields(
             *self._fields(include_deleted=include_deleted)
         )
@@ -226,7 +242,7 @@ class ProgramManager(BaseManager):
         operation_name = "program"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -254,7 +270,13 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             Dictionary with `matches` and `hasMore`.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Fetching program(s)")
         fields = Query.programs(
             include_deleted=include_deleted, where=where, offset=offset, limit=limit
         ).fields(
@@ -266,7 +288,7 @@ class ProgramManager(BaseManager):
         operation_name = "programs"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def restore_by_id(self, program_id: str) -> dict[str, Any]:
         """
@@ -281,7 +303,15 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             The restored program.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Restoring program with ID: {program_id}")
         properties = ProgramPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             program_id, properties=properties, include_deleted=True
@@ -300,7 +330,15 @@ class ProgramManager(BaseManager):
         -------
         dict[str, Any]
             The deleted program payload.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Deleting program with ID: {program_id}")
         properties = ProgramPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             program_id,

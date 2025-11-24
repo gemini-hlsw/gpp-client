@@ -3,25 +3,24 @@ __all__ = ["CallForProposalsManager"]
 from pathlib import Path
 from typing import Any, Optional
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     CallForProposalsFields,
     CallsForProposalsSelectResultFields,
     CreateCallForProposalsResultFields,
     DateIntervalFields,
     UpdateCallsForProposalsResultFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import Existence
-from ..api.input_types import (
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import Existence
+from gpp_client.api.input_types import (
     CallForProposalsPropertiesInput,
     CreateCallForProposalsInput,
     UpdateCallsForProposalsInput,
     WhereCallForProposals,
     WhereOrderCallForProposalsId,
 )
-from .base import BaseManager
-from .utils import load_properties
+from gpp_client.managers.base import BaseManager
 
 
 class CallForProposalsManager(BaseManager):
@@ -51,15 +50,17 @@ class CallForProposalsManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties,
             from_json=from_json,
             cls=CallForProposalsPropertiesInput,
@@ -76,7 +77,7 @@ class CallForProposalsManager(BaseManager):
         operation_name = "createCallForProposals"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -113,15 +114,17 @@ class CallForProposalsManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties,
             from_json=from_json,
             cls=CallForProposalsPropertiesInput,
@@ -144,7 +147,7 @@ class CallForProposalsManager(BaseManager):
         operation_name = "updateCallsForProposals"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -177,13 +180,15 @@ class CallForProposalsManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
         where = WhereCallForProposals(
             id=WhereOrderCallForProposalsId(eq=call_for_proposals_id)
@@ -198,7 +203,7 @@ class CallForProposalsManager(BaseManager):
         )
 
         # Since it returns one item, discard the 'matches' and return the item.
-        return results["callsForProposals"][0]
+        return self.get_single_result(results, "callsForProposals")
 
     async def get_by_id(
         self, call_for_proposals_id: str, *, include_deleted: bool = False
@@ -217,6 +222,11 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             Retrieved call for proposals.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         fields = Query.call_for_proposals(
             call_for_proposals_id=call_for_proposals_id
@@ -225,7 +235,7 @@ class CallForProposalsManager(BaseManager):
         operation_name = "callForProposals"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -253,6 +263,11 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             Dictionary with `matches` and `hasMore`.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         fields = Query.calls_for_proposals(
             include_deleted=include_deleted, where=where, offset=offset, limit=limit
@@ -265,7 +280,7 @@ class CallForProposalsManager(BaseManager):
         operation_name = "callsForProposals"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def restore_by_id(self, call_for_proposals_id: str) -> dict[str, Any]:
         """
@@ -280,6 +295,13 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             The restored call for proposals.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         properties = CallForProposalsPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
@@ -299,6 +321,13 @@ class CallForProposalsManager(BaseManager):
         -------
         dict[str, Any]
             The deleted call for proposals payload.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         properties = CallForProposalsPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(

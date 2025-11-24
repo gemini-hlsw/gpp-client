@@ -1,27 +1,28 @@
 __all__ = ["TargetManager"]
 
+import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     CloneTargetResultFields,
     CreateTargetResultFields,
-    ProgramFields,
-    TargetFields,
-    TargetSelectResultFields,
-    UpdateTargetsResultFields,
+    DeclinationArcFields,
+    DeclinationFields,
     OpportunityFields,
-    SiderealFields,
+    ProgramFields,
     RegionFields,
     RightAscensionArcFields,
     RightAscensionFields,
-    DeclinationFields,
-    DeclinationArcFields,
+    SiderealFields,
+    TargetFields,
+    TargetSelectResultFields,
+    UpdateTargetsResultFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import Existence
-from ..api.input_types import (
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import Existence
+from gpp_client.api.input_types import (
     CloneTargetInput,
     CreateTargetInput,
     TargetPropertiesInput,
@@ -29,8 +30,9 @@ from ..api.input_types import (
     WhereOrderTargetId,
     WhereTarget,
 )
-from .base import BaseManager
-from .utils import load_properties, validate_single_identifier
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class TargetManager(BaseManager):
@@ -63,8 +65,16 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             The original and newly created target data.
+
+        Raises
+        ------
+        GPPValidationError
+            If an error is encountered validating the input properties.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
-        properties = load_properties(
+        logger.debug("Cloning target from target with ID: %s", target_id)
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=TargetPropertiesInput
         )
 
@@ -81,8 +91,7 @@ class TargetManager(BaseManager):
 
         operation_name = "cloneTarget"
         result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def create(
         self,
@@ -119,9 +128,10 @@ class TargetManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If no valid program identifier is provided.
-            - If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If an error is encountered validating the input properties or identifiers.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
@@ -129,15 +139,16 @@ class TargetManager(BaseManager):
         must be specified to associate with a valid program.
 
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        validate_single_identifier(
+        logger.debug("Creating a new target")
+        self.validate_single_identifier(
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
         )
 
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=TargetPropertiesInput
         )
 
@@ -154,8 +165,7 @@ class TargetManager(BaseManager):
 
         operation_name = "createTarget"
         result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -194,15 +204,18 @@ class TargetManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If an error is encountered validating the input properties.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-        properties = load_properties(
+        logger.debug("Updating target(s)")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=TargetPropertiesInput
         )
 
@@ -223,7 +236,7 @@ class TargetManager(BaseManager):
         operation_name = "updateTargets"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -257,16 +270,18 @@ class TargetManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If an error is encountered validating the input properties.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
+        logger.debug(f"Updating target with ID: {target_id}")
         where = WhereTarget(id=WhereOrderTargetId(eq=target_id))
-
         results = await self.update_all(
             where=where,
             limit=1,
@@ -274,9 +289,8 @@ class TargetManager(BaseManager):
             from_json=from_json,
             include_deleted=include_deleted,
         )
-
         # Since it returns one item, discard the 'matches' and return the item.
-        return results["targets"][0]
+        return self.get_single_result(results, "targets")
 
     async def get_by_id(
         self, target_id: str, *, include_deleted: bool = False
@@ -295,6 +309,11 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             Retrieved data.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
         fields = Query.target(target_id=target_id).fields(
             *self._fields(include_deleted=include_deleted)
@@ -303,7 +322,7 @@ class TargetManager(BaseManager):
         operation_name = "target"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -331,7 +350,13 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             Dictionary with `matches` and `hasMore` keys.
+
+        Raises
+        ------
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Fetching target(s)")
         fields = Query.targets(
             include_deleted=include_deleted, where=where, offset=offset, limit=limit
         ).fields(
@@ -343,7 +368,7 @@ class TargetManager(BaseManager):
         operation_name = "targets"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def restore_by_id(self, target_id: str) -> dict[str, Any]:
         """
@@ -358,7 +383,15 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             The restore result payload.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Restoring target with ID: {target_id}")
         properties = TargetPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             target_id, properties=properties, include_deleted=True
@@ -377,7 +410,15 @@ class TargetManager(BaseManager):
         -------
         dict[str, Any]
             The delete result payload.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug(f"Deleting target with ID: {target_id}")
         properties = TargetPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             target_id,

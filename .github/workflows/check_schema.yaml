@@ -6,30 +6,69 @@ on:
   workflow_dispatch:
 
 jobs:
-  check_schema:
-    name: Detect schema changes
-    runs-on: [ubuntu-latest]
+  schema_checks:
+    name: Check ${{ matrix.env_name }} schema
+    runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        python-version:
-          - "3.12"
+        include:
+          - env_name: production
+            token_var: GPP_PRODUCTION_TOKEN
+            fail_on: breaking
+            continue_on_error: false
+          - env_name: development
+            token_var: GPP_DEVELOPMENT_TOKEN
+            fail_on: none
+            continue_on_error: true
+
     steps:
       - uses: actions/checkout@v5
-      - name: Install uv and set the python version
+
+      - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
 
-      - name: Install the project and requirements
+      - name: Install schema dependencies
         run: uv sync --locked --group schema
 
-      - name: Download latest schema
-        env:
-          GPP_URL: ${{ secrets.GPP_URL }}
-          GPP_TOKEN: ${{ secrets.GPP_TOKEN }}
+      - name: Export correct token env var
         run: |
-          uv run python scripts/download_schema.py
+          echo "${{ matrix.token_var }}=${{ secrets[matrix.token_var] }}" >> $GITHUB_ENV
 
-      - name: Check for schema drift
+      - name: Download schema (${{ matrix.env_name }})
+        env:
+          GPP_ENV: ${{ matrix.env_name }}
         run: |
-          git diff --exit-code schema.graphql
+          uv run python scripts/download_schema.py ${{ matrix.env_name }} --output-dir ci_schemas
+
+      - name: Install GraphQL Inspector CI
+        run: |
+          npm install -g @graphql-inspector/ci \
+                        @graphql-inspector/diff-command \
+                        @graphql-inspector/graphql-loader \
+                        graphql
+
+      - name: Compare schema (${{ matrix.env_name }})
+        continue-on-error: ${{ matrix.continue_on_error }}
+        run: |
+          graphql-inspector diff ${{ matrix.env_name }}.schema.graphql \
+              ci_schemas/${{ matrix.env_name }}.schema.graphql \
+              --fail-on ${{ matrix.fail_on }}
+
+      - name: Generate diff report
+        if: always()
+        run: |
+          graphql-inspector diff ${{ matrix.env_name }}.schema.graphql \
+              ci_schemas/${{ matrix.env_name }}.schema.graphql \
+              --format markdown \
+              > schema_diff_${{ matrix.env_name }}.md \
+              || true
+
+      - name: Upload diff report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-diff-${{ matrix.env_name }}
+          path: schema_diff_${{ matrix.env_name }}.md

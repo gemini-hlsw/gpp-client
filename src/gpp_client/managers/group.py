@@ -1,30 +1,32 @@
 __all__ = ["GroupManager"]
 
+import logging
 from pathlib import Path
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
-from ..api import (
+from gpp_client.api import (
     CreateGroupInput,
-    GroupPropertiesInput,
-    WhereGroup,
-    UpdateObservationsInput,
-    WhereOrderGroupId,
-    WhereOptionString,
     Existence,
     GroupElementInput,
+    GroupPropertiesInput,
+    UpdateObservationsInput,
+    WhereGroup,
+    WhereOptionString,
+    WhereOrderGroupId,
 )
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     CreateGroupResultFields,
-    UpdateGroupsResultFields,
+    GroupElementFields,
     GroupFields,
     ProgramFields,
-    GroupElementFields,
     TimeSpanFields,
+    UpdateGroupsResultFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from .base import BaseManager
-from .utils import validate_single_identifier, load_properties
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class GroupManager(BaseManager):
@@ -69,14 +71,27 @@ class GroupManager(BaseManager):
         -------
         dict[str, Any]
             The created group.
+
+        Raises
+        ------
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
-        validate_single_identifier(
+        logger.debug(
+            "Creating a new group under a program ID: %s, proposal reference: %s, or program reference: %s",
+            program_id,
+            proposal_reference,
+            program_reference,
+        )
+        self.validate_single_identifier(
             program_id=program_id,
             program_reference=program_reference,
             proposal_reference=proposal_reference,
         )
 
-        properties = load_properties(
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=GroupPropertiesInput
         )
 
@@ -93,7 +108,7 @@ class GroupManager(BaseManager):
         operation_name = "createGroup"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_all(
         self,
@@ -128,11 +143,13 @@ class GroupManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
-
-        properties = load_properties(
+        logger.debug("Updating group(s)")
+        properties = self.load_properties(
             properties=properties, from_json=from_json, cls=GroupPropertiesInput
         )
 
@@ -151,7 +168,7 @@ class GroupManager(BaseManager):
         operation_name = "updateGroups"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -188,17 +205,17 @@ class GroupManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            - If neither nor both of `group_id` and `group_name` are
-            provided.
-            - If zero or both of ``properties`` and ``from_json`` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
 
         Notes
         -----
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
-        both or neither raises ``ValueError``.
+        both or neither raises ``GPPValidationError``.
         """
-
+        logger.debug("Updating group by ID: %s or name: %s", group_id, group_name)
         if group_id:
             where = WhereGroup(id=WhereOrderGroupId(eq=group_id))
         else:
@@ -235,10 +252,13 @@ class GroupManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither nor both of `group_id` and `group_name` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
-        validate_single_identifier(
+        logger.debug("Getting group by ID: %s or name: %s", group_id, group_name)
+        self.validate_single_identifier(
             group_id=group_id,
             group_name=group_name,
         )
@@ -250,7 +270,7 @@ class GroupManager(BaseManager):
 
         operation_name = "group"
         result = await self.client.query(fields, operation_name=operation_name)
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def get_all(
         self,
@@ -272,9 +292,8 @@ class GroupManager(BaseManager):
 
         Parameters
         ----------
-
         group_id : str, optional
-            Unique internal ID of the observation.
+            Unique internal ID of the group.
         group_name : str, optional
             Unique name of the group.
 
@@ -285,9 +304,12 @@ class GroupManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither nor both of `group_id` and `group_name` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Restoring group by ID: %s or name: %s", group_id, group_name)
         properties = GroupPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             group_id=group_id,
@@ -308,7 +330,7 @@ class GroupManager(BaseManager):
         Parameters
         ----------
         group_id: str, optional
-            Unique internal ID of the observation.
+            Unique internal ID of the group.
         group_name: str, optional
             Unique name of the group.
 
@@ -319,9 +341,12 @@ class GroupManager(BaseManager):
 
         Raises
         ------
-        ValueError
-            If neither nor both of `group_id` and `group_name` are provided.
+        GPPValidationError
+            If a validation error occurs.
+        GPPClientError
+            If an unexpected error occurs unpacking the response.
         """
+        logger.debug("Deleting group by ID: %s or name: %s", group_id, group_name)
         properties = GroupPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             group_id=group_id,

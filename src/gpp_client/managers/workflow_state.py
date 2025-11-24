@@ -1,20 +1,24 @@
 __all__ = ["WorkflowStateManager"]
 
+import asyncio
+import logging
 from typing import Any, Optional
 
-from ..api.custom_fields import (
+from gpp_client.api.custom_fields import (
     CalculatedObservationWorkflowFields,
     ObservationFields,
     ObservationReferenceFields,
     ObservationValidationFields,
     ObservationWorkflowFields,
 )
-from ..api.custom_mutations import Mutation
-from ..api.custom_queries import Query
-from ..api.enums import ObservationWorkflowState, CalculationState
-from ..api.input_types import SetObservationWorkflowStateInput
-from .base import BaseManager
-from .utils import validate_single_identifier
+from gpp_client.api.custom_mutations import Mutation
+from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import CalculationState, ObservationWorkflowState
+from gpp_client.api.input_types import SetObservationWorkflowStateInput
+from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
+from gpp_client.managers.base import BaseManager
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowStateManager(BaseManager):
@@ -39,9 +43,24 @@ class WorkflowStateManager(BaseManager):
         -------
         dict[str, Any]
             The returned workflow state for the observation.
+
+        Raises
+        ------
+        GPPValidationError
+            If neither or both of ``observation_id`` and ``observation_reference``
+            are provided.
+        GPPClientError
+            If neither or both of ``observation_id`` and ``observation_reference``
+            are provided, or if the observation cannot be found.
         """
-        validate_single_identifier(
-            observation_id=observation_id, observation_reference=observation_reference
+        logger.debug(
+            "Fetching workflow state for observation ID %s or reference %s",
+            observation_id,
+            observation_reference,
+        )
+        self.validate_single_identifier(
+            observation_id=observation_id,
+            observation_reference=observation_reference,
         )
 
         fields = Query.observation(
@@ -60,7 +79,7 @@ class WorkflowStateManager(BaseManager):
         operation_name = "observation"
         result = await self.client.query(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
 
     async def update_by_id(
         self,
@@ -94,22 +113,41 @@ class WorkflowStateManager(BaseManager):
 
         Raises
         ------
-        RuntimeError
-            If the observation calculation is not in the ``READY`` state. Retry later.
-        ValueError
-            If the requested workflow state transition is not allowed.
+        GPPClientError
+            If there are general client-side errors.
+        GPPValidationError
+            If the requested workflow state transition is invalid.
+        GPPRetryableError
+            If the observation calculation is not ``READY``.
         """
+        logger.debug(
+            "Updating workflow state for observation ID %s to %s",
+            observation_id,
+            workflow_state.value,
+        )
         result = await self.get_by_id(observation_id=observation_id)
         workflow = result["workflow"]
 
         # If calculation is not 'READY', raise an error to retry later.
-        self._check_ready(workflow)
+        try:
+            self._check_ready(workflow)
+        except RuntimeError as exc:
+            self.raise_error(GPPRetryableError, exc)
+
         # If the desired state is already set, return as-is.
         if self._check_already_set(workflow, workflow_state):
             # Return the same shape as other return paths.
+            logger.debug(
+                "Workflow state for observation ID %s is already %s; no update needed.",
+                observation_id,
+                workflow_state.value,
+            )
             return workflow["value"]
         # Validate the requested workflow state against 'validTransitions'.
-        self._check_valid_transition(workflow, workflow_state)
+        try:
+            self._check_valid_transition(workflow, workflow_state)
+        except ValueError as exc:
+            self.raise_error(GPPValidationError, exc)
 
         input_data = SetObservationWorkflowStateInput(
             observation_id=observation_id,
@@ -123,7 +161,80 @@ class WorkflowStateManager(BaseManager):
         operation_name = "setObservationWorkflowState"
         result = await self.client.mutation(fields, operation_name=operation_name)
 
-        return result[operation_name]
+        return self.get_result(result, operation_name)
+
+    async def update_by_id_with_retry(
+        self,
+        *,
+        workflow_state: ObservationWorkflowState,
+        observation_id: str,
+        max_attempts: int = 10,
+        initial_delay: float = 0.0,
+        retry_delay: float = 1.0,
+    ) -> dict[str, Any]:
+        """
+        Update the workflow state of an observation by its ID, retrying if the
+        observation is not ready.
+
+        This function wraps ``update_by_id`` with retry logic to handle cases where
+        the observation calculation is not yet in the ``READY`` state.
+
+        Parameters
+        ----------
+        workflow_state : ObservationWorkflowState
+            The desired workflow state to transition to.
+        observation_id : str
+            The observation ID.
+        max_attempts : int, default=10
+            Maximum number of retry attempts.
+        initial_delay : float, default=0.0
+            Initial delay in seconds before first attempt.
+        retry_delay : float, default=1.0
+            Delay in seconds between retry attempts.
+
+        Returns
+        -------
+        dict[str, Any]
+            The returned workflow state for the observation.
+
+        Raises
+        ------
+        GPPClientError
+            If the maximum number of retry attempts is exceeded without success.
+        GPPValidationError
+            If the requested workflow state transition is invalid.
+        """
+        logger.debug(
+            "Updating workflow state for observation ID %s to %s with up to %d retries",
+            observation_id,
+            workflow_state.value,
+            max_attempts,
+        )
+        logger.debug("Initial delay before first attempt: %.1f seconds", initial_delay)
+        await asyncio.sleep(initial_delay)
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                logger.debug(
+                    "Attempt %d/%d: Updating workflow state for observation ID %s to %s",
+                    attempt,
+                    max_attempts,
+                    observation_id,
+                    workflow_state.value,
+                )
+                result = await self.update_by_id(
+                    observation_id=observation_id,
+                    workflow_state=workflow_state,
+                )
+                return result
+            except GPPRetryableError:
+                # This is the only retryable case: calculation state not READY.
+                await asyncio.sleep(retry_delay)
+            except (GPPValidationError, GPPClientError) as exc:
+                self.raise_error(type(exc), exc)
+
+        exc = GPPClientError("Failed to set workflow state after multiple retries.")
+        self.raise_error(type(exc), exc)
 
     @staticmethod
     def _check_ready(workflow: dict[str, Any]) -> None:

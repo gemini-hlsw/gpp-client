@@ -1,76 +1,107 @@
 #!/usr/bin/env python3
-"""Handles downloading the schema for the graphQL endpoint."""
+"""
+Download GraphQL schema for a specific GPP environment.
+"""
 
-import os
 import subprocess
-import sys
-import logging
+from pathlib import Path
+from typing import Annotated, NoReturn
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+import typer
+from rich.console import Console
+
+from gpp_client.config import GPPDefaults, GPPEnvironment
+from gpp_client.credentials import EnvVarReader
+
+console = Console()
+
+app = typer.Typer(
+    help="Download the GraphQL schema for a given GPP environment.",
+    add_completion=False,
 )
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
+    console.print(f"[bold]Error:[/bold] {message}", style="red")
+    raise typer.Exit(code=1)
+
+
+@app.command()
+def main(
+    env: Annotated[
+        GPPEnvironment,
+        typer.Argument(
+            help="Environment to download schema for.",
+            case_sensitive=False,
+        ),
+    ],
+    output_dir: Annotated[
+        Path,
+        typer.Option(
+            "--output-dir",
+            "-o",
+            help="Directory where the schema file will be saved.",
+            exists=False,
+            file_okay=False,
+            dir_okay=True,
+        ),
+    ] = Path("schemas"),
+) -> None:
     """
-    Log message and exit when failure.
+    Download the GraphQL schema for a specific environment.
 
     Parameters
     ----------
-    message : str
-        The message to log.
+    env : GPPEnvironment
+        The GPP environment to download the schema for.
+    output_dir : Path, optional
+        The directory where the schema file will be saved.
     """
-    logging.error(message)
-    sys.exit(1)
+    typer.echo(f"Downloading schema for environment: {env.value}")
 
+    token = EnvVarReader.get_env_token(env)
+    if not token:
+        expected_key = GPPDefaults.env_var_env_tokens.get(env)
+        fail(
+            f"No token found for environment {env.value}. "
+            f"Make sure the environment variable '{expected_key}' is set."
+        )
+    typer.echo("Token found in environment variables.")
 
-def main() -> None:
-    """Download the schema."""
-    logging.info("Downloading GPP Graphql schema.")
+    url = GPPDefaults.url.get(env)
+    if not url:
+        fail(f"No URL defined for environment {env.value}")
+    typer.echo(f"Using URL: {url}")
 
-    # Check for required Python modules.
-    try:
-        import aiohttp  # noqa: F401
-        import gql  # noqa: F401
-    except ImportError:
-        fail('Missing required modules "gql" and "aiohttp"')
+    output_dir.mkdir(exist_ok=True)
+    output_file = output_dir / f"{env.value.lower()}.schema.graphql"
 
-    # Read environment variables.
-    GPP_URL = os.getenv("GPP_URL")
-    GPP_TOKEN = os.getenv("GPP_TOKEN")
-
-    if not GPP_URL or not GPP_TOKEN:
-        fail("GPP_URL and GPP_TOKEN environment variables must be set.")
-
-    # Compose command.
     cmd = [
         "gql-cli",
-        GPP_URL,
+        url,
         "--transport",
         "aiohttp",
         "--print-schema",
         "--schema-download",
-        # "input_value_deprecation:true",
         "-H",
-        f"Authorization:Bearer {GPP_TOKEN}",
+        f"Authorization:Bearer {token}",
     ]
+    with console.status("Downloading schema..."):
+        try:
+            result = subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            output_file.write_bytes(result.stdout)
 
-    try:
-        result = subprocess.run(
-            cmd,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        with open("schema.graphql", "wb") as f:
-            f.write(result.stdout)
+        except subprocess.CalledProcessError as exc:
+            fail(exc.stderr.decode())
 
-        logging.info("Schema downloaded successfully.")
-    except subprocess.CalledProcessError as e:
-        fail(e.stderr.decode())
+    typer.echo("Schema download completed successfully")
+    typer.echo(f"Schema saved to {output_file}")
 
 
 if __name__ == "__main__":
-    main()
+    app()
