@@ -54,5 +54,5 @@ jobs:
         continue-on-error: ${{ matrix.continue_on_error }}
         run: |
           graphql-inspector diff \
-            ${{ matrix.env_name }}.schema.graphql \
+            schemas/${{ matrix.env_name }}.schema.graphql \
             ci_schemas/${{ matrix.env_name }}.schema.graphql
