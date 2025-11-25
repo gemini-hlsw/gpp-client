@@ -120,7 +120,8 @@ class GPPClient:
         env: GPPEnvironment | str, token: str, activate: bool = False, save: bool = True
     ) -> None:
         """
-        Set the token for a given environment and optionally activate it.
+        Helper to set the token for a given environment and optionally activate it.
+        This gets around having to create a ``GPPConfig`` instance manually.
 
         Parameters
         ----------

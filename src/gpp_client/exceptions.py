@@ -9,6 +9,8 @@ __all__ = [
     "GPPNetworkError",
     "GPPTimeoutError",
     "GPPResponseError",
+    "GPPValidationError",
+    "GPPRetryableError",
 ]
 
 
