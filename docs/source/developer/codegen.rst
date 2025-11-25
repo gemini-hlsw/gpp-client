@@ -1,7 +1,7 @@
 Code Generation
 ===============
 
-The GPP Client uses `ariadne-codegen` to generate all GraphQL models, enums,
+The GPP Client uses `ariadne-codegen <https://github.com/mirumee/ariadne-codegen>`_ to generate all GraphQL models, enums,
 inputs, fragments, and the underlying ``_GPPClient`` transport layer.
 
 All generated code lives in:
