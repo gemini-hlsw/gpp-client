@@ -1,5 +1,4 @@
-name: Schema Checks (CI)
-
+name: CI Schema Drift Check
 on:
   schedule:
     - cron: "0 0 * * *"

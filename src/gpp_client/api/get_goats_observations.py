@@ -221,12 +221,22 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
     BaseModel
 ):
     id: Any
+    name: Any
+    opportunity: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetOpportunity"
+    ]
     sidereal: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal"
     ]
     source_profile: (
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile"
     ) = Field(alias="sourceProfile")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetOpportunity(
+    BaseModel
+):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal(
@@ -456,9 +466,6 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(Base
     grating: GmosNorthGrating
     filter: Optional[GmosNorthFilter]
     fpu: GmosNorthBuiltinFpu
-    spatial_offsets: List[
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitSpatialOffsets"
-    ] = Field(alias="spatialOffsets")
     central_wavelength: (
         "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength"
     ) = Field(alias="centralWavelength")
@@ -469,12 +476,12 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(Base
     y_bin: GmosBinning = Field(alias="yBin")
     amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
     roi: GmosRoi
-
-
-class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitSpatialOffsets(
-    BaseModel
-):
-    arcseconds: Any
+    exposure_time_mode: (
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode"
+    ) = Field(alias="exposureTimeMode")
+    offsets: List[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets"
+    ]
 
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength(
@@ -489,13 +496,60 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitWavel
     nanometers: Any
 
 
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode(
+    BaseModel
+):
+    signal_to_noise: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise(
+    BaseModel
+):
+    value: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoiseAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoiseAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount(
+    BaseModel
+):
+    time: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountTime(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets(
+    BaseModel
+):
+    arcseconds: Any
+
+
 class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(BaseModel):
     grating: GmosSouthGrating
     filter: Optional[GmosSouthFilter]
     fpu: GmosSouthBuiltinFpu
-    spatial_offsets: List[
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitSpatialOffsets"
-    ] = Field(alias="spatialOffsets")
     central_wavelength: (
         "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength"
     ) = Field(alias="centralWavelength")
@@ -506,12 +560,12 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(Base
     y_bin: GmosBinning = Field(alias="yBin")
     amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
     roi: GmosRoi
-
-
-class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitSpatialOffsets(
-    BaseModel
-):
-    arcseconds: Any
+    exposure_time_mode: (
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode"
+    ) = Field(alias="exposureTimeMode")
+    offsets: List[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets"
+    ]
 
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength(
@@ -524,6 +578,56 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitWavel
     BaseModel
 ):
     nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode(
+    BaseModel
+):
+    signal_to_noise: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise(
+    BaseModel
+):
+    value: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoiseAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoiseAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount(
+    BaseModel
+):
+    time: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountTime(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets(
+    BaseModel
+):
+    arcseconds: Any
 
 
 GetGOATSObservations.model_rebuild()
@@ -554,4 +658,10 @@ GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignal
 GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCount.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingMode.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
