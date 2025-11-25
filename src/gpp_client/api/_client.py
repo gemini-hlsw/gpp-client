@@ -143,6 +143,10 @@ class _GPPClient(AsyncBaseClient):
                     }
                     firstScienceTarget {
                       id
+                      name
+                      opportunity {
+                        __typename
+                      }
                       sidereal {
                         ra {
                           hms
@@ -245,9 +249,6 @@ class _GPPClient(AsyncBaseClient):
                       grating
                       filter
                       fpu
-                      spatialOffsets {
-                        arcseconds
-                      }
                       centralWavelength {
                         nanometers
                       }
@@ -258,14 +259,31 @@ class _GPPClient(AsyncBaseClient):
                       yBin
                       ampReadMode
                       roi
+                      exposureTimeMode {
+                        signalToNoise {
+                          value
+                          at {
+                            nanometers
+                          }
+                        }
+                        timeAndCount {
+                          time {
+                            seconds
+                          }
+                          count
+                          at {
+                            nanometers
+                          }
+                        }
+                      }
+                      offsets {
+                        arcseconds
+                      }
                     }
                     gmosSouthLongSlit {
                       grating
                       filter
                       fpu
-                      spatialOffsets {
-                        arcseconds
-                      }
                       centralWavelength {
                         nanometers
                       }
@@ -276,6 +294,26 @@ class _GPPClient(AsyncBaseClient):
                       yBin
                       ampReadMode
                       roi
+                      exposureTimeMode {
+                        signalToNoise {
+                          value
+                          at {
+                            nanometers
+                          }
+                        }
+                        timeAndCount {
+                          time {
+                            seconds
+                          }
+                          count
+                          at {
+                            nanometers
+                          }
+                        }
+                      }
+                      offsets {
+                        arcseconds
+                      }
                     }
                   }
                 }
