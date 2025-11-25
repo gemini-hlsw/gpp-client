@@ -2,14 +2,14 @@ name: Run Lint and Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - "src/**/*.py"
       - "tests/**/*.py"
       - "pyproject.toml"
       - ".github/workflows/run_tests.yaml"
   push:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   run_linter:
