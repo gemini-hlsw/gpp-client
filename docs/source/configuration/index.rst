@@ -7,7 +7,7 @@ The GPP Client stores user-specific settings in a local TOML file. This includes
 - API tokens for each environment
 - A flag that controls whether OS environment variables may be used
 
-The configuration system is composed of three layers:
+The configuration system is implemented in the following modules:
 
 1. :doc:`config` — the high-level interface used by the client and CLI
 2. :doc:`defaults` — built-in default values (paths, filenames, baseline environment)
