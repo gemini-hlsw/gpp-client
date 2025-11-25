@@ -65,6 +65,14 @@ A matching CLI namespace is also available:
 
     gpp sched program list
 
+Availabe Directors
+~~~~~~~~~~~~~~~~~~
+
+The following directors are available as attributes on the director:
+
+- :attr:`~gpp_client.GPPDirector.goats` → :class:`~gpp_client.directors.goats.GOATSDirector`
+- :attr:`~gpp_client.GPPDirector.scheduler` → :class:`~gpp_client.directors.scheduler.SchedulerDirector`
+
 API Reference
 -------------
 .. automodule:: gpp_client.director

@@ -42,7 +42,7 @@ and the client will automatically select the active environment and token.
 
    For advanced credential setup—including disabling environment variable resolution,
    configuring per-environment tokens, and managing the active environment—see
-   :doc:`config`.
+   :doc:`configuration/index`.
 
 
 Available Managers
@@ -140,7 +140,7 @@ or by passing in the :class:`~gpp_client.config.GPPConfig` instance when creatin
 
    For advanced credential setup—including disabling environment variable resolution,
    configuring per-environment tokens, and managing the active environment—see
-   :doc:`config`.
+   :doc:`configuration/index`.
 
 
 Checking Connectivity

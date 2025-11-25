@@ -27,7 +27,7 @@ The :class:`~gpp_client.GPPClient` automatically resolves:
 3. The authentication token
 
 The available environments (``DEVELOPMENT``, ``STAGING``, ``PRODUCTION``) match
-the corresponding GPP deployments. See :doc:`config` for details on configuring them.
+the corresponding GPP deployments. See :doc:`configuration/index` for details on configuring them.
 
 Credential resolution follows a strict priority order:
 
@@ -212,7 +212,7 @@ Next Steps
 ----------
 
 - See :doc:`client` for details on the client and how to use to communicate with different resources.
-- See :doc:`config` for the TOML configuration file format.
+- See :doc:`configuration/index` for the TOML configuration file format.
 - See :doc:`credentials` for environment variable conventions and resolving credentials.
 - See :doc:`managers/index` for available resource managers.
 - See :doc:`api/index` for available API types and enums to use with the client for requests and responses.
