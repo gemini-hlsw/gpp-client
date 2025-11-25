@@ -104,6 +104,7 @@ from .custom_typing_fields import (
     Flamingos2ExecutionConfigGraphQLField,
     Flamingos2ExecutionSequenceGraphQLField,
     Flamingos2FpuMaskGraphQLField,
+    Flamingos2LongSlitAcquisitionGraphQLField,
     Flamingos2LongSlitGraphQLField,
     Flamingos2StaticGraphQLField,
     Flamingos2StepGraphQLField,
@@ -120,7 +121,9 @@ from .custom_typing_fields import (
     GmosNorthExecutionSequenceGraphQLField,
     GmosNorthFpuGraphQLField,
     GmosNorthGratingConfigGraphQLField,
+    GmosNorthImagingFilterGraphQLField,
     GmosNorthImagingGraphQLField,
+    GmosNorthLongSlitAcquisitionGraphQLField,
     GmosNorthLongSlitGraphQLField,
     GmosNorthStaticGraphQLField,
     GmosNorthStepGraphQLField,
@@ -130,7 +133,9 @@ from .custom_typing_fields import (
     GmosSouthExecutionSequenceGraphQLField,
     GmosSouthFpuGraphQLField,
     GmosSouthGratingConfigGraphQLField,
+    GmosSouthImagingFilterGraphQLField,
     GmosSouthImagingGraphQLField,
+    GmosSouthLongSlitAcquisitionGraphQLField,
     GmosSouthLongSlitGraphQLField,
     GmosSouthStaticGraphQLField,
     GmosSouthStepGraphQLField,
@@ -224,6 +229,7 @@ from .custom_typing_fields import (
     TargetGroupSelectResultGraphQLField,
     TargetSelectResultGraphQLField,
     TelescopeConfigGraphQLField,
+    TelluricTypeGraphQLField,
     TimeAndCountExposureTimeModeGraphQLField,
     TimeChargeCorrectionGraphQLField,
     TimeChargeInvoiceGraphQLField,
@@ -682,7 +688,8 @@ class AtomEventFields(GraphQLField):
     atom_stage: "AtomEventGraphQLField" = AtomEventGraphQLField("atomStage")
     "Atom execution stage."
     client_id: "AtomEventGraphQLField" = AtomEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "AtomEventGraphQLField" = AtomEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -744,6 +751,8 @@ class AtomRecordFields(GraphQLField):
 
     generated_id: "AtomRecordGraphQLField" = AtomRecordGraphQLField("generatedId")
     "Atom ID from the generated atom, if any, that produced this atom record."
+    idempotency_key: "AtomRecordGraphQLField" = AtomRecordGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe atom is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -2194,6 +2203,8 @@ class DatasetFields(GraphQLField):
     "Dataset QA state, if any has been set."
     comment: "DatasetGraphQLField" = DatasetGraphQLField("comment")
     "Dataset comment, if any has been set."
+    idempotency_key: "DatasetGraphQLField" = DatasetGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe dataset is created and is used to enable problem-free retry in the case of\nfailure."
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
@@ -2428,7 +2439,10 @@ class DatasetEventFields(GraphQLField):
         return DatasetFields("dataset")
 
     client_id: "DatasetEventGraphQLField" = DatasetEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "DatasetEventGraphQLField" = DatasetEventGraphQLField(
+        "idempotencyKey"
+    )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -3024,7 +3038,10 @@ class ExecutionEventInterface(GraphQLField):
     event_type: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("eventType")
     "Event type."
     client_id: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
+        "idempotencyKey"
+    )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -3338,6 +3355,12 @@ class Flamingos2LongSlitFields(GraphQLField):
     "Flamingos2 Filter"
     fpu: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("fpu")
     "Flamingos2 FPU"
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
     explicit_read_mode: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("explicitReadMode")
     )
@@ -3386,6 +3409,16 @@ class Flamingos2LongSlitFields(GraphQLField):
         the default."""
         return OffsetFields("explicitOffsets")
 
+    @classmethod
+    def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
+        return TelluricTypeFields("telluricType")
+
+    @classmethod
+    def acquisition(cls) -> "Flamingos2LongSlitAcquisitionFields":
+        """Acquisition properties."""
+        return Flamingos2LongSlitAcquisitionFields("acquisition")
+
     initial_disperser: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("initialDisperser")
     )
@@ -3400,13 +3433,43 @@ class Flamingos2LongSlitFields(GraphQLField):
     "The FPU as it was initially selected.  See the `fpu` field for the FPU that\nwill be used in the observation."
 
     def fields(
-        self, *subfields: Union[Flamingos2LongSlitGraphQLField, "OffsetFields"]
+        self,
+        *subfields: Union[
+            Flamingos2LongSlitGraphQLField,
+            "ExposureTimeModeFields",
+            "Flamingos2LongSlitAcquisitionFields",
+            "OffsetFields",
+            "TelluricTypeFields",
+        ]
     ) -> "Flamingos2LongSlitFields":
         """Subfields should come from the Flamingos2LongSlitFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "Flamingos2LongSlitFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2LongSlitAcquisitionFields(GraphQLField):
+    """Flamingos2 Long Slit acquisition settings."""
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2LongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ]
+    ) -> "Flamingos2LongSlitAcquisitionFields":
+        """Subfields should come from the Flamingos2LongSlitAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2LongSlitAcquisitionFields":
         self._alias = alias
         return self
 
@@ -3871,12 +3934,15 @@ class GmosNorthGratingConfigFields(GraphQLField):
 class GmosNorthImagingFields(GraphQLField):
     """GMOS North Imaging mode"""
 
-    filters: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField("filters")
-    "GMOS North Filters for imaging mode (multiple filters allowed)"
-    initial_filters: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
-        "initialFilters"
-    )
-    "Initial GMOS North Filters that were used when creating the imaging mode"
+    @classmethod
+    def filters(cls) -> "GmosNorthImagingFilterFields":
+        """GMOS North Filters for imaging mode (multiple filters allowed)"""
+        return GmosNorthImagingFilterFields("filters")
+
+    @classmethod
+    def initial_filters(cls) -> "GmosNorthImagingFilterFields":
+        """Initial GMOS North Filters that were used when creating the imaging mode"""
+        return GmosNorthImagingFilterFields("initialFilters")
 
     @classmethod
     def offsets(cls) -> "OffsetFields":
@@ -3939,13 +4005,40 @@ class GmosNorthImagingFields(GraphQLField):
     "Optional explicitly specified GMOS ROI.  If set it overrides the default."
 
     def fields(
-        self, *subfields: Union[GmosNorthImagingGraphQLField, "OffsetFields"]
+        self,
+        *subfields: Union[
+            GmosNorthImagingGraphQLField, "GmosNorthImagingFilterFields", "OffsetFields"
+        ]
     ) -> "GmosNorthImagingFields":
         """Subfields should come from the GmosNorthImagingFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GmosNorthImagingFields":
+        self._alias = alias
+        return self
+
+
+class GmosNorthImagingFilterFields(GraphQLField):
+    """Imaging filters combine an actual filter with an exposure time mode."""
+
+    filter: "GmosNorthImagingFilterGraphQLField" = GmosNorthImagingFilterGraphQLField(
+        "filter"
+    )
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[GmosNorthImagingFilterGraphQLField, "ExposureTimeModeFields"]
+    ) -> "GmosNorthImagingFilterFields":
+        """Subfields should come from the GmosNorthImagingFilterFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosNorthImagingFilterFields":
         self._alias = alias
         return self
 
@@ -3965,6 +4058,11 @@ class GmosNorthLongSlitFields(GraphQLField):
         """The central wavelength, either explicitly specified in `explicitCentralWavelength`
         or else taken from the `defaultCentralWavelength`."""
         return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("xBin")
     "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
@@ -4057,23 +4155,24 @@ class GmosNorthLongSlitFields(GraphQLField):
     @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
         """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-        or else taken from defaultSpatialOffsets
-        @deprecated(reason: "Use 'offsets', 'defaultOffsets', and 'explicitOffsets' instead.")
-        """
+        or else taken from defaultSpatialOffsets"""
         return OffsetQFields("spatialOffsets")
 
     @classmethod
     def default_spatial_offsets(cls) -> "OffsetQFields":
-        """Default spatial offsets.
-        @deprecated(reason: "Use 'defaultOffsets' instead.")"""
+        """Default spatial offsets."""
         return OffsetQFields("defaultSpatialOffsets")
 
     @classmethod
     def explicit_spatial_offsets(cls) -> "OffsetQFields":
         """Optional explicitly specified spatial q offsets. If set it overrides the
-        the default.
-        @deprecated(reason: "Use 'explicitOffsets' instead.")"""
+        the default."""
         return OffsetQFields("explicitSpatialOffsets")
+
+    @classmethod
+    def acquisition(cls) -> "GmosNorthLongSlitAcquisitionFields":
+        """Settings that apply to the acquisition sequence."""
+        return GmosNorthLongSlitAcquisitionFields("acquisition")
 
     initial_grating: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "initialGrating"
@@ -4098,6 +4197,8 @@ class GmosNorthLongSlitFields(GraphQLField):
         self,
         *subfields: Union[
             GmosNorthLongSlitGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosNorthLongSlitAcquisitionFields",
             "OffsetQFields",
             "WavelengthDitherFields",
             "WavelengthFields",
@@ -4108,6 +4209,54 @@ class GmosNorthLongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosNorthLongSlitFields":
+        self._alias = alias
+        return self
+
+
+class GmosNorthLongSlitAcquisitionFields(GraphQLField):
+    """Acquisition settings for GMOS North long slit acquisition."""
+
+    filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("filter")
+    )
+    "The GMOS North filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("defaultFilter")
+    )
+    "The GMOS Nouth filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
+    explicit_filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified GMOS North filter to use in acquisition (if any)."
+    roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("roi")
+    )
+    "The ROI(s) that will be used for the acquisition sequence.  In the case of a\ncompound ROI such as `CCD2_STAMP`, the first will be used for the imaging step\nand the second for the remainder of the steps."
+    default_roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("defaultRoi")
+    )
+    "The acquisition ROI(s) that will be used by default, if an explicit ROI was\nnot specified."
+    explicit_roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+        GmosNorthLongSlitAcquisitionGraphQLField("explicitRoi")
+    )
+    "An explicitly specified ROI to use in acquisition (if any)."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosNorthLongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ]
+    ) -> "GmosNorthLongSlitAcquisitionFields":
+        """Subfields should come from the GmosNorthLongSlitAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosNorthLongSlitAcquisitionFields":
         self._alias = alias
         return self
 
@@ -4400,12 +4549,15 @@ class GmosSouthGratingConfigFields(GraphQLField):
 class GmosSouthImagingFields(GraphQLField):
     """GMOS South Imaging mode"""
 
-    filters: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("filters")
-    "GMOS South Filters for imaging mode (multiple filters allowed)"
-    initial_filters: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
-        "initialFilters"
-    )
-    "Initial GMOS South Filters that were used when creating the imaging mode"
+    @classmethod
+    def filters(cls) -> "GmosSouthImagingFilterFields":
+        """GMOS South Filters for imaging mode (multiple filters allowed)"""
+        return GmosSouthImagingFilterFields("filters")
+
+    @classmethod
+    def initial_filters(cls) -> "GmosSouthImagingFilterFields":
+        """Initial GMOS South Filters that were used when creating the imaging mode"""
+        return GmosSouthImagingFilterFields("initialFilters")
 
     @classmethod
     def offsets(cls) -> "OffsetFields":
@@ -4468,13 +4620,40 @@ class GmosSouthImagingFields(GraphQLField):
     "Optional explicitly specified GMOS ROI.  If set it overrides the default."
 
     def fields(
-        self, *subfields: Union[GmosSouthImagingGraphQLField, "OffsetFields"]
+        self,
+        *subfields: Union[
+            GmosSouthImagingGraphQLField, "GmosSouthImagingFilterFields", "OffsetFields"
+        ]
     ) -> "GmosSouthImagingFields":
         """Subfields should come from the GmosSouthImagingFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GmosSouthImagingFields":
+        self._alias = alias
+        return self
+
+
+class GmosSouthImagingFilterFields(GraphQLField):
+    """Imaging filters combine an actual filter with an exposure time mode."""
+
+    filter: "GmosSouthImagingFilterGraphQLField" = GmosSouthImagingFilterGraphQLField(
+        "filter"
+    )
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[GmosSouthImagingFilterGraphQLField, "ExposureTimeModeFields"]
+    ) -> "GmosSouthImagingFilterFields":
+        """Subfields should come from the GmosSouthImagingFilterFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosSouthImagingFilterFields":
         self._alias = alias
         return self
 
@@ -4494,6 +4673,11 @@ class GmosSouthLongSlitFields(GraphQLField):
         """The central wavelength, either explicitly specified in `explicitCentralWavelength`
         or else taken from the `defaultCentralWavelength`."""
         return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("xBin")
     "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
@@ -4586,23 +4770,24 @@ class GmosSouthLongSlitFields(GraphQLField):
     @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
         """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-        or else taken from defaultSpatialOffsets
-        @deprecated(reason: "Use 'offsets', 'defaultOffsets', and 'explicitOffsets' instead.")
-        """
+        or else taken from defaultSpatialOffsets"""
         return OffsetQFields("spatialOffsets")
 
     @classmethod
     def default_spatial_offsets(cls) -> "OffsetQFields":
-        """Default spatial offsets.
-        @deprecated(reason: "Use 'defaultOffsets' instead.")"""
+        """Default spatial offsets."""
         return OffsetQFields("defaultSpatialOffsets")
 
     @classmethod
     def explicit_spatial_offsets(cls) -> "OffsetQFields":
         """Optional explicitly specified spatial q offsets. If set it overrides the
-        the default.
-        @deprecated(reason: "Use 'explicitOffsets' instead.")"""
+        the default."""
         return OffsetQFields("explicitSpatialOffsets")
+
+    @classmethod
+    def acquisition(cls) -> "GmosSouthLongSlitAcquisitionFields":
+        """Settings that apply to the acquisition sequence."""
+        return GmosSouthLongSlitAcquisitionFields("acquisition")
 
     initial_grating: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "initialGrating"
@@ -4627,6 +4812,8 @@ class GmosSouthLongSlitFields(GraphQLField):
         self,
         *subfields: Union[
             GmosSouthLongSlitGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosSouthLongSlitAcquisitionFields",
             "OffsetQFields",
             "WavelengthDitherFields",
             "WavelengthFields",
@@ -4637,6 +4824,54 @@ class GmosSouthLongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosSouthLongSlitFields":
+        self._alias = alias
+        return self
+
+
+class GmosSouthLongSlitAcquisitionFields(GraphQLField):
+    """Acquisition settings for GMOS South long slit acquisition."""
+
+    filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("filter")
+    )
+    "The GMOS South filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("defaultFilter")
+    )
+    "The GMOS South filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
+    explicit_filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified GMOS South filter to use in acquisition (if any)."
+    roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("roi")
+    )
+    "The ROI(s) that will be used for the acquisition sequence.  In the case of a\ncompound ROI such as `CCD2_STAMP`, the first will be used for the imaging step\nand the second for the remainder of the steps."
+    default_roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("defaultRoi")
+    )
+    "The acquisition ROI(s) that will be used by default, if an explicit ROI was\nnot specified."
+    explicit_roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+        GmosSouthLongSlitAcquisitionGraphQLField("explicitRoi")
+    )
+    "An explicitly specified ROI to use in acquisition (if any)."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosSouthLongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ]
+    ) -> "GmosSouthLongSlitAcquisitionFields":
+        """Subfields should come from the GmosSouthLongSlitAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosSouthLongSlitAcquisitionFields":
         self._alias = alias
         return self
 
@@ -4810,6 +5045,9 @@ class GroupFields(GraphQLField):
 
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
+    "This group is managed by the system and not user-editable"
+    calibration_roles: "GroupGraphQLField" = GroupGraphQLField("calibrationRoles")
+    "Calibration roles supported by this group (system groups only).\nThis field is system-managed and not user-editable."
 
     def fields(
         self,
@@ -6672,7 +6910,10 @@ class SequenceEventFields(GraphQLField):
     command: "SequenceEventGraphQLField" = SequenceEventGraphQLField("command")
     "Sequence event data."
     client_id: "SequenceEventGraphQLField" = SequenceEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
+        "idempotencyKey"
+    )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -6945,7 +7186,8 @@ class SlewEventFields(GraphQLField):
     slew_stage: "SlewEventGraphQLField" = SlewEventGraphQLField("slewStage")
     "Slew event data."
     client_id: "SlewEventGraphQLField" = SlewEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "SlewEventGraphQLField" = SlewEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -7345,7 +7587,8 @@ class StepEventFields(GraphQLField):
     step_stage: "StepEventGraphQLField" = StepEventGraphQLField("stepStage")
     "Step execution stage."
     client_id: "StepEventGraphQLField" = StepEventGraphQLField("clientId")
-    "Client id, if any."
+    idempotency_key: "StepEventGraphQLField" = StepEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -7447,6 +7690,8 @@ class StepRecordFields(GraphQLField):
 
     generated_id: "StepRecordGraphQLField" = StepRecordGraphQLField("generatedId")
     "Step ID of the generated step, if any, that produced this step record."
+    idempotency_key: "StepRecordGraphQLField" = StepRecordGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe step is created and is used to enable problem-free retry in the case of\nfailure."
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2DynamicFields":
@@ -7537,6 +7782,8 @@ class TargetFields(GraphQLField):
 
     name: "TargetGraphQLField" = TargetGraphQLField("name")
     "Target name."
+    disposition: "TargetGraphQLField" = TargetGraphQLField("disposition")
+    "Target disposition. See TargetDisposition for more information."
     calibration_role: "TargetGraphQLField" = TargetGraphQLField("calibrationRole")
     "calibration role"
 
@@ -7662,6 +7909,20 @@ class TargetEnvironmentFields(GraphQLField):
         "guideTargetName"
     )
     "The name of the guide target, if any, set by `setGuideTargetName`.\nIf the name is no longer valid or a sequence cannot be generated, null will\nbe returned."
+    use_blind_offset: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
+        "useBlindOffset"
+    )
+    "Whether blind offset is enabled for this observation"
+
+    @classmethod
+    def blind_offset_target(cls) -> "TargetFields":
+        """The target used for blind offset acquisition, if any"""
+        return TargetFields("blindOffsetTarget")
+
+    blind_offset_type: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
+        "blindOffsetType"
+    )
+    "The type of blind offset (automatic or manual) if a blind offset exists."
 
     def fields(
         self,
@@ -7800,6 +8061,22 @@ class TelescopeConfigFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "TelescopeConfigFields":
+        self._alias = alias
+        return self
+
+
+class TelluricTypeFields(GraphQLField):
+    """Telluric calibration type"""
+
+    tag: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("tag")
+    star_types: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("starTypes")
+
+    def fields(self, *subfields: TelluricTypeGraphQLField) -> "TelluricTypeFields":
+        """Subfields should come from the TelluricTypeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TelluricTypeFields":
         self._alias = alias
         return self
 
@@ -8591,6 +8868,9 @@ class VisitFields(GraphQLField):
     def time_charge_invoice(cls) -> "TimeChargeInvoiceFields":
         """Time accounting details for this visit."""
         return TimeChargeInvoiceFields("timeChargeInvoice")
+
+    idempotency_key: "VisitGraphQLField" = VisitGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2StaticFields":
