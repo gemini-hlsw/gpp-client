@@ -10,6 +10,7 @@ from gpp_client.api.custom_fields import (
     ObservationReferenceFields,
     ObservationValidationFields,
     ObservationWorkflowFields,
+    ProgramFields,
 )
 from gpp_client.api.custom_mutations import Mutation
 from gpp_client.api.custom_queries import Query
@@ -69,6 +70,9 @@ class WorkflowStateManager(BaseManager):
             ObservationFields.id,
             ObservationFields.reference().fields(
                 ObservationReferenceFields.label,
+            ),
+            ObservationFields.program().fields(
+                ProgramFields.id,
             ),
             ObservationFields.workflow().fields(
                 CalculatedObservationWorkflowFields.state,
