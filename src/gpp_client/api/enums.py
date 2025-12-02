@@ -211,6 +211,14 @@ class MosPreImaging(str, Enum):
     IS_NOT_MOS_PRE_IMAGING = "IS_NOT_MOS_PRE_IMAGING"
 
 
+class OffsetGeneratorType(str, Enum):
+    NONE = "NONE"
+    ENUMERATED = "ENUMERATED"
+    RANDOM = "RANDOM"
+    SPIRAL = "SPIRAL"
+    UNIFORM = "UNIFORM"
+
+
 class Partner(str, Enum):
     AR = "AR"
     BR = "BR"

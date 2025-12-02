@@ -1,4 +1,4 @@
-exclude: ^(tests/|src/gpp_client/api/|docs/|schema.graphql|LICENSE)
+exclude: ^(tests/|src/gpp_client/api/|docs/|schemas/|LICENSE)
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v5.0.0"

@@ -91,6 +91,7 @@ from .custom_typing_fields import (
     EmissionLinesIntegratedGraphQLField,
     EmissionLinesSurfaceGraphQLField,
     EmissionLineSurfaceGraphQLField,
+    EnumeratedOffsetGeneratorGraphQLField,
     ExecutionConfigGraphQLField,
     ExecutionDigestGraphQLField,
     ExecutionEventGraphQLField,
@@ -165,6 +166,7 @@ from .custom_typing_fields import (
     ObservingModeGraphQLField,
     ObservingModeGroupGraphQLField,
     ObservingModeGroupSelectResultGraphQLField,
+    OffsetGeneratorGraphQLField,
     OffsetGraphQLField,
     OffsetPGraphQLField,
     OffsetQGraphQLField,
@@ -184,6 +186,7 @@ from .custom_typing_fields import (
     ProposalReferenceGraphQLField,
     ProposalStatusMetaGraphQLField,
     RadialVelocityGraphQLField,
+    RandomOffsetGeneratorGraphQLField,
     RecordAtomResultGraphQLField,
     RecordDatasetResultGraphQLField,
     RecordFlamingos2StepResultGraphQLField,
@@ -219,6 +222,7 @@ from .custom_typing_fields import (
     SpectroscopyConfigOptionGmosSouthGraphQLField,
     SpectroscopyConfigOptionGraphQLField,
     SpectroscopyScienceRequirementsGraphQLField,
+    SpiralOffsetGeneratorGraphQLField,
     StepEstimateGraphQLField,
     StepEventGraphQLField,
     StepRecordGraphQLField,
@@ -240,6 +244,7 @@ from .custom_typing_fields import (
     TimingWindowEndUnion,
     TimingWindowGraphQLField,
     TimingWindowRepeatGraphQLField,
+    UniformOffsetGeneratorGraphQLField,
     UnlinkUserResultGraphQLField,
     UnnormalizedSedGraphQLField,
     UpdateAsterismsResultGraphQLField,
@@ -2833,6 +2838,28 @@ class EmissionLinesSurfaceFields(GraphQLField):
         return self
 
 
+class EnumeratedOffsetGeneratorFields(GraphQLField):
+    """In the `ENUMERATED` option offsets are explicitly specified instead of calculated."""
+
+    @classmethod
+    def values(cls) -> "TelescopeConfigFields":
+        return TelescopeConfigFields("values")
+
+    def fields(
+        self,
+        *subfields: Union[
+            EnumeratedOffsetGeneratorGraphQLField, "TelescopeConfigFields"
+        ]
+    ) -> "EnumeratedOffsetGeneratorFields":
+        """Subfields should come from the EnumeratedOffsetGeneratorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "EnumeratedOffsetGeneratorFields":
+        self._alias = alias
+        return self
+
+
 class ExecutionFields(GraphQLField):
     @classmethod
     def digest(cls) -> "CalculatedExecutionDigestFields":
@@ -3949,6 +3976,16 @@ class GmosNorthImagingFields(GraphQLField):
         """Spatial offsets"""
         return OffsetFields("offsets")
 
+    @classmethod
+    def object_offset_generator(cls) -> "OffsetGeneratorFields":
+        """Temporary, WIP -- will be moved."""
+        return OffsetGeneratorFields("objectOffsetGenerator")
+
+    @classmethod
+    def sky_offset_generator(cls) -> "OffsetGeneratorFields":
+        """Temporary, WIP -- will be moved."""
+        return OffsetGeneratorFields("skyOffsetGenerator")
+
     multiple_filters_mode: "GmosNorthImagingGraphQLField" = (
         GmosNorthImagingGraphQLField("multipleFiltersMode")
     )
@@ -4007,7 +4044,10 @@ class GmosNorthImagingFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            GmosNorthImagingGraphQLField, "GmosNorthImagingFilterFields", "OffsetFields"
+            GmosNorthImagingGraphQLField,
+            "GmosNorthImagingFilterFields",
+            "OffsetFields",
+            "OffsetGeneratorFields",
         ]
     ) -> "GmosNorthImagingFields":
         """Subfields should come from the GmosNorthImagingFields class"""
@@ -4564,6 +4604,16 @@ class GmosSouthImagingFields(GraphQLField):
         """Spatial offsets"""
         return OffsetFields("offsets")
 
+    @classmethod
+    def object_offset_generator(cls) -> "OffsetGeneratorFields":
+        """Temporary, WIP -- will be moved."""
+        return OffsetGeneratorFields("objectOffsetGenerator")
+
+    @classmethod
+    def sky_offset_generator(cls) -> "OffsetGeneratorFields":
+        """Temporary, WIP -- will be moved."""
+        return OffsetGeneratorFields("skyOffsetGenerator")
+
     multiple_filters_mode: "GmosSouthImagingGraphQLField" = (
         GmosSouthImagingGraphQLField("multipleFiltersMode")
     )
@@ -4622,7 +4672,10 @@ class GmosSouthImagingFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            GmosSouthImagingGraphQLField, "GmosSouthImagingFilterFields", "OffsetFields"
+            GmosSouthImagingGraphQLField,
+            "GmosSouthImagingFilterFields",
+            "OffsetFields",
+            "OffsetGeneratorFields",
         ]
     ) -> "GmosSouthImagingFields":
         """Subfields should come from the GmosSouthImagingFields class"""
@@ -5886,6 +5939,52 @@ class OffsetFields(GraphQLField):
         return self
 
 
+class OffsetGeneratorFields(GraphQLField):
+    """An offset generator produces a series of offsets according to generator-specific
+    parameters.  Only (at most) one of `enumerated`, `random`, `spiral` or `uniform`
+    will be defined.  All others will be `null`.  The `generatorType` corresponds to
+    the entry (if any) that is defined.  If the generator type of `NONE`, then none
+    of the entries will be defined."""
+
+    generator_type: "OffsetGeneratorGraphQLField" = OffsetGeneratorGraphQLField(
+        "generatorType"
+    )
+
+    @classmethod
+    def enumerated(cls) -> "EnumeratedOffsetGeneratorFields":
+        return EnumeratedOffsetGeneratorFields("enumerated")
+
+    @classmethod
+    def random(cls) -> "RandomOffsetGeneratorFields":
+        return RandomOffsetGeneratorFields("random")
+
+    @classmethod
+    def spiral(cls) -> "SpiralOffsetGeneratorFields":
+        return SpiralOffsetGeneratorFields("spiral")
+
+    @classmethod
+    def uniform(cls) -> "UniformOffsetGeneratorFields":
+        return UniformOffsetGeneratorFields("uniform")
+
+    def fields(
+        self,
+        *subfields: Union[
+            OffsetGeneratorGraphQLField,
+            "EnumeratedOffsetGeneratorFields",
+            "RandomOffsetGeneratorFields",
+            "SpiralOffsetGeneratorFields",
+            "UniformOffsetGeneratorFields",
+        ]
+    ) -> "OffsetGeneratorFields":
+        """Subfields should come from the OffsetGeneratorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "OffsetGeneratorFields":
+        self._alias = alias
+        return self
+
+
 class OffsetPFields(GraphQLField):
     microarcseconds: "OffsetPGraphQLField" = OffsetPGraphQLField("microarcseconds")
     "p offset in µas"
@@ -6518,6 +6617,30 @@ class RadialVelocityFields(GraphQLField):
         return self
 
 
+class RandomOffsetGeneratorFields(GraphQLField):
+    @classmethod
+    def size(cls) -> "AngleFields":
+        return AngleFields("size")
+
+    @classmethod
+    def center(cls) -> "OffsetFields":
+        return OffsetFields("center")
+
+    def fields(
+        self,
+        *subfields: Union[
+            RandomOffsetGeneratorGraphQLField, "AngleFields", "OffsetFields"
+        ]
+    ) -> "RandomOffsetGeneratorFields":
+        """Subfields should come from the RandomOffsetGeneratorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RandomOffsetGeneratorFields":
+        self._alias = alias
+        return self
+
+
 class RecordAtomResultFields(GraphQLField):
     """The result of recording an atom."""
 
@@ -6861,9 +6984,9 @@ class SequenceDigestFields(GraphQLField):
         return CategorizedTimeFields("timeEstimate")
 
     @classmethod
-    def offsets(cls) -> "OffsetFields":
-        """Unique offsets that occur in the sequence."""
-        return OffsetFields("offsets")
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """TelescopeConfig (offset + guiding) for each step."""
+        return TelescopeConfigFields("telescopeConfigs")
 
     atom_count: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField("atomCount")
     "Total count of anticipated atoms, including the 'nextAtom', 'possibleFuture'\nand any remaining atoms not included in 'possibleFuture'."
@@ -6875,7 +6998,7 @@ class SequenceDigestFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            SequenceDigestGraphQLField, "CategorizedTimeFields", "OffsetFields"
+            SequenceDigestGraphQLField, "CategorizedTimeFields", "TelescopeConfigFields"
         ]
     ) -> "SequenceDigestFields":
         """Subfields should come from the SequenceDigestFields class"""
@@ -7510,6 +7633,30 @@ class SpectroscopyScienceRequirementsFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SpectroscopyScienceRequirementsFields":
+        self._alias = alias
+        return self
+
+
+class SpiralOffsetGeneratorFields(GraphQLField):
+    @classmethod
+    def size(cls) -> "AngleFields":
+        return AngleFields("size")
+
+    @classmethod
+    def center(cls) -> "OffsetFields":
+        return OffsetFields("center")
+
+    def fields(
+        self,
+        *subfields: Union[
+            SpiralOffsetGeneratorGraphQLField, "AngleFields", "OffsetFields"
+        ]
+    ) -> "SpiralOffsetGeneratorFields":
+        """Subfields should come from the SpiralOffsetGeneratorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SpiralOffsetGeneratorFields":
         self._alias = alias
         return self
 
@@ -8345,6 +8492,30 @@ class TimingWindowRepeatFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "TimingWindowRepeatFields":
+        self._alias = alias
+        return self
+
+
+class UniformOffsetGeneratorFields(GraphQLField):
+    """Defines a region of the sky using two corners.  Exposures are
+    then distributed across this region as evenly as possible."""
+
+    @classmethod
+    def corner_a(cls) -> "OffsetFields":
+        return OffsetFields("cornerA")
+
+    @classmethod
+    def corner_b(cls) -> "OffsetFields":
+        return OffsetFields("cornerB")
+
+    def fields(
+        self, *subfields: Union[UniformOffsetGeneratorGraphQLField, "OffsetFields"]
+    ) -> "UniformOffsetGeneratorFields":
+        """Subfields should come from the UniformOffsetGeneratorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "UniformOffsetGeneratorFields":
         self._alias = alias
         return self
 
