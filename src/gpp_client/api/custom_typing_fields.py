@@ -357,6 +357,12 @@ class GmosSouthGratingConfigGraphQLField(GraphQLField):
         return self
 
 
+class GmosSouthImagingFilterGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthImagingFilterGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosSouthStaticGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosSouthStaticGraphQLField":
         self._alias = alias
@@ -419,6 +425,36 @@ class ConfigurationRequestEditGraphQLField(GraphQLField):
 
 class OffsetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "OffsetGraphQLField":
+        self._alias = alias
+        return self
+
+
+class OffsetGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "OffsetGeneratorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class EnumeratedOffsetGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "EnumeratedOffsetGeneratorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RandomOffsetGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RandomOffsetGeneratorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SpiralOffsetGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SpiralOffsetGeneratorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class UniformOffsetGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "UniformOffsetGeneratorGraphQLField":
         self._alias = alias
         return self
 
@@ -987,6 +1023,18 @@ class Flamingos2CustomMaskGraphQLField(GraphQLField):
         return self
 
 
+class TelluricTypeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TelluricTypeGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2LongSlitAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2LongSlitAcquisitionGraphQLField":
+        self._alias = alias
+        return self
+
+
 class Flamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2LongSlitGraphQLField":
         self._alias = alias
@@ -1029,14 +1077,32 @@ class GaussianSourceGraphQLField(GraphQLField):
         return self
 
 
+class GmosNorthLongSlitAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthLongSlitAcquisitionGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosNorthLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosNorthLongSlitGraphQLField":
         self._alias = alias
         return self
 
 
+class GmosNorthImagingFilterGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthImagingFilterGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosNorthImagingGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosNorthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosSouthLongSlitAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthLongSlitAcquisitionGraphQLField":
         self._alias = alias
         return self
 
@@ -1641,18 +1707,6 @@ class RegionGraphQLField(GraphQLField):
 
 class TargetEnvironmentGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "TargetEnvironmentGraphQLField":
-        self._alias = alias
-        return self
-
-
-class TargetEnvironmentGroupGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "TargetEnvironmentGroupGraphQLField":
-        self._alias = alias
-        return self
-
-
-class TargetEnvironmentGroupSelectResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "TargetEnvironmentGroupSelectResultGraphQLField":
         self._alias = alias
         return self
 
