@@ -85,7 +85,9 @@ exclude = [
 ]
 
 [dependency-groups]
-codegen = ["ariadne-codegen==0.16.0"]
+codegen = [
+    "ariadne-codegen==0.17.1",
+]
 dev = [
     { include-group = "codegen" },
     "polyfactory>=3.2.0",
