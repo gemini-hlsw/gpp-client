@@ -166,7 +166,7 @@ def main(
                 if backup_dir.exists():
                     backup_dir.rename(api_dir)
 
-                fail(exc.stderr.decode())
+                fail(exc.stderr)
 
         typer.echo("Codegen completed successfully")
 
