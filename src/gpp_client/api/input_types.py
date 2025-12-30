@@ -119,6 +119,7 @@ class AddAtomEventInput(BaseModel):
 
     atom_id: Any = Field(alias=str("atomId"))
     atom_stage: AtomStage = Field(alias=str("atomStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -130,6 +131,7 @@ class AddDatasetEventInput(BaseModel):
     "Dataset id"
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
     "Dataset execution stage."
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -145,6 +147,7 @@ class AddSequenceEventInput(BaseModel):
 
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -154,6 +157,7 @@ class AddSlewEventInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -163,6 +167,7 @@ class AddStepEventInput(BaseModel):
 
     step_id: Any = Field(alias=str("stepId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -756,6 +761,10 @@ class GmosNorthLongSlitInput(BaseModel):
         alias=str("explicitOffsets"), default=None
     )
     "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosNorthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -916,6 +925,10 @@ class GmosSouthLongSlitInput(BaseModel):
         alias=str("explicitOffsets"), default=None
     )
     "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosSouthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -1046,7 +1059,7 @@ class SetObservationWorkflowStateInput(BaseModel):
 
 
 class NonsiderealInput(BaseModel):
-    """Nonsidereal target parameters.  Supply `keyType` and `des` or `key`"""
+    """Nonsidereal target parameters.  Supply (`keyType` and `des`) or (`key`)"""
 
     key_type: Optional[EphemerisKeyType] = Field(alias=str("keyType"), default=None)
     "The keyType field must be either specified or skipped altogether.  It cannot be unset with a null value."
