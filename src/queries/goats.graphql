@@ -9,6 +9,24 @@ query GetGOATSPrograms {
       }
       proposalStatus
       type
+      timeCharge {
+        band
+        time {
+          nonCharged {
+            hours
+          }
+        }
+      }
+      timeEstimateBanded {
+        value {
+          band
+          time {
+            nonCharged {
+              hours
+            }
+          }
+        }
+      }
     }
     hasMore
   }
