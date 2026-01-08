@@ -28,9 +28,7 @@ class GetGOATSProgramsProgramsMatches(BaseModel):
     time_charge: List["GetGOATSProgramsProgramsMatchesTimeCharge"] = Field(
         alias="timeCharge"
     )
-    time_estimate_banded: List["GetGOATSProgramsProgramsMatchesTimeEstimateBanded"] = (
-        Field(alias="timeEstimateBanded")
-    )
+    allocations: List["GetGOATSProgramsProgramsMatchesAllocations"]
 
 
 class GetGOATSProgramsProgramsMatchesReference(BaseModel):
@@ -54,31 +52,19 @@ class GetGOATSProgramsProgramsMatchesTimeCharge(BaseModel):
 
 
 class GetGOATSProgramsProgramsMatchesTimeChargeTime(BaseModel):
-    non_charged: "GetGOATSProgramsProgramsMatchesTimeChargeTimeNonCharged" = Field(
-        alias="nonCharged"
-    )
+    program: "GetGOATSProgramsProgramsMatchesTimeChargeTimeProgram"
 
 
-class GetGOATSProgramsProgramsMatchesTimeChargeTimeNonCharged(BaseModel):
+class GetGOATSProgramsProgramsMatchesTimeChargeTimeProgram(BaseModel):
     hours: Any
 
 
-class GetGOATSProgramsProgramsMatchesTimeEstimateBanded(BaseModel):
-    value: Optional["GetGOATSProgramsProgramsMatchesTimeEstimateBandedValue"]
+class GetGOATSProgramsProgramsMatchesAllocations(BaseModel):
+    science_band: ScienceBand = Field(alias="scienceBand")
+    duration: "GetGOATSProgramsProgramsMatchesAllocationsDuration"
 
 
-class GetGOATSProgramsProgramsMatchesTimeEstimateBandedValue(BaseModel):
-    band: Optional[ScienceBand]
-    time: "GetGOATSProgramsProgramsMatchesTimeEstimateBandedValueTime"
-
-
-class GetGOATSProgramsProgramsMatchesTimeEstimateBandedValueTime(BaseModel):
-    non_charged: (
-        "GetGOATSProgramsProgramsMatchesTimeEstimateBandedValueTimeNonCharged"
-    ) = Field(alias="nonCharged")
-
-
-class GetGOATSProgramsProgramsMatchesTimeEstimateBandedValueTimeNonCharged(BaseModel):
+class GetGOATSProgramsProgramsMatchesAllocationsDuration(BaseModel):
     hours: Any
 
 
@@ -87,6 +73,4 @@ GetGOATSProgramsPrograms.model_rebuild()
 GetGOATSProgramsProgramsMatches.model_rebuild()
 GetGOATSProgramsProgramsMatchesTimeCharge.model_rebuild()
 GetGOATSProgramsProgramsMatchesTimeChargeTime.model_rebuild()
-GetGOATSProgramsProgramsMatchesTimeEstimateBanded.model_rebuild()
-GetGOATSProgramsProgramsMatchesTimeEstimateBandedValue.model_rebuild()
-GetGOATSProgramsProgramsMatchesTimeEstimateBandedValueTime.model_rebuild()
+GetGOATSProgramsProgramsMatchesAllocations.model_rebuild()
