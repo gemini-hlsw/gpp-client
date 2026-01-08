@@ -45,6 +45,24 @@ class _GPPClient(AsyncBaseClient):
                   }
                   proposalStatus
                   type
+                  timeCharge {
+                    band
+                    time {
+                      nonCharged {
+                        hours
+                      }
+                    }
+                  }
+                  timeEstimateBanded {
+                    value {
+                      band
+                      time {
+                        nonCharged {
+                          hours
+                        }
+                      }
+                    }
+                  }
                 }
                 hasMore
               }
