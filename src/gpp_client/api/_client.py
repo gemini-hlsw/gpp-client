@@ -48,15 +48,19 @@ class _GPPClient(AsyncBaseClient):
                   timeCharge {
                     band
                     time {
-                      program {
+                      nonCharged {
                         hours
                       }
                     }
                   }
-                  allocations {
-                    scienceBand
-                    duration {
-                      hours
+                  timeEstimateBanded {
+                    value {
+                      band
+                      time {
+                        nonCharged {
+                          hours
+                        }
+                      }
                     }
                   }
                 }
