@@ -1,5 +1,5 @@
 query GetGOATSPrograms {
-  programs(includeDeleted: false, WHERE: { proposalStatus: { EQ: ACCEPTED } }) {
+  programs(includeDeleted: false, WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
     matches {
       id
       name
@@ -12,26 +12,21 @@ query GetGOATSPrograms {
       timeCharge {
         band
         time {
-          nonCharged {
+          program {
             hours
           }
         }
       }
-      timeEstimateBanded {
-        value {
-          band
-          time {
-            nonCharged {
-              hours
-            }
-          }
+      allocations {
+        scienceBand
+        duration {
+          hours
         }
       }
     }
     hasMore
   }
 }
-
 query GetGOATSObservations($programId: ProgramId!) {
   observations(
     includeDeleted: false
