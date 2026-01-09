@@ -57,4 +57,4 @@ API Reference
 .. autoclass:: gpp_client.config.defaults._GPPDefaults
    :members:
    :show-inheritance:
-   :noindex:
+   :no-index:
