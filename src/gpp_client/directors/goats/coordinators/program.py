@@ -1,11 +1,11 @@
-__all__ = ["ProgramCoordinator"]
+__all__ = ["GOATSProgramCoordinator"]
 
 from typing import Any
 
 from ....coordinator import BaseCoordinator
 
 
-class ProgramCoordinator(BaseCoordinator):
+class GOATSProgramCoordinator(BaseCoordinator):
     """
     Modifies the return of the program manager to return the GOATS payload.
     """

@@ -1,4 +1,4 @@
-__all__ = ["ObservationCoordinator"]
+__all__ = ["GOATSObservationCoordinator"]
 
 import logging
 from typing import Any
@@ -9,7 +9,7 @@ from gpp_client.exceptions import GPPClientError
 logger = logging.getLogger(__name__)
 
 
-class ObservationCoordinator(BaseCoordinator):
+class GOATSObservationCoordinator(BaseCoordinator):
     """
     Modifies the return of the observation manager to return the GOATS payload.
     """
