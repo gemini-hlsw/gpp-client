@@ -9,20 +9,6 @@ query GetGOATSPrograms {
       }
       proposalStatus
       type
-      timeCharge {
-        band
-        time {
-          program {
-            hours
-          }
-        }
-      }
-      allocations {
-        scienceBand
-        duration {
-          hours
-        }
-      }
     }
     hasMore
   }
@@ -30,7 +16,7 @@ query GetGOATSPrograms {
 query GetGOATSObservations($programId: ProgramId!) {
   observations(
     includeDeleted: false
-    WHERE: { program: { id: { EQ: $programId }, proposalStatus: { EQ: ACCEPTED } } }
+    WHERE: {program: {id: {EQ: $programId}, proposalStatus: {EQ: ACCEPTED}}}
   ) {
     matches {
       id
@@ -62,7 +48,6 @@ query GetGOATSObservations($programId: ProgramId!) {
           validTransitions
           validationErrors {
             code
-            messages
           }
         }
       }
@@ -273,6 +258,22 @@ query GetGOATSObservations($programId: ProgramId!) {
           }
           offsets {
             arcseconds
+          }
+        }
+      }
+      program {
+        allocations {
+          scienceBand
+          duration {
+            hours
+          }
+        }
+        timeCharge {
+          band
+          time {
+            program {
+              hours
+            }
           }
         }
       }

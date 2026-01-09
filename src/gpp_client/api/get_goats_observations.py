@@ -81,6 +81,7 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     observing_mode: Optional["GetGOATSObservationsObservationsMatchesObservingMode"] = (
         Field(alias="observingMode")
     )
+    program: "GetGOATSObservationsObservationsMatchesProgram"
 
 
 class GetGOATSObservationsObservationsMatchesReference(BaseModel):
@@ -135,7 +136,6 @@ class GetGOATSObservationsObservationsMatchesWorkflowValue(BaseModel):
 
 class GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors(BaseModel):
     code: ObservationValidationCode
-    messages: List[str]
 
 
 class GetGOATSObservationsObservationsMatchesAttachments(BaseModel):
@@ -630,6 +630,35 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffse
     arcseconds: Any
 
 
+class GetGOATSObservationsObservationsMatchesProgram(BaseModel):
+    allocations: List["GetGOATSObservationsObservationsMatchesProgramAllocations"]
+    time_charge: List["GetGOATSObservationsObservationsMatchesProgramTimeCharge"] = (
+        Field(alias="timeCharge")
+    )
+
+
+class GetGOATSObservationsObservationsMatchesProgramAllocations(BaseModel):
+    science_band: ScienceBand = Field(alias="scienceBand")
+    duration: "GetGOATSObservationsObservationsMatchesProgramAllocationsDuration"
+
+
+class GetGOATSObservationsObservationsMatchesProgramAllocationsDuration(BaseModel):
+    hours: Any
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeCharge(BaseModel):
+    band: Optional[ScienceBand]
+    time: "GetGOATSObservationsObservationsMatchesProgramTimeChargeTime"
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeChargeTime(BaseModel):
+    program: "GetGOATSObservationsObservationsMatchesProgramTimeChargeTimeProgram"
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeChargeTimeProgram(BaseModel):
+    hours: Any
+
+
 GetGOATSObservations.model_rebuild()
 GetGOATSObservationsObservations.model_rebuild()
 GetGOATSObservationsObservationsMatches.model_rebuild()
@@ -665,3 +694,7 @@ GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit.model_rebu
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgram.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramAllocations.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramTimeCharge.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramTimeChargeTime.model_rebuild()

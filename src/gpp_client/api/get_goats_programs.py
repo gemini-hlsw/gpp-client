@@ -6,7 +6,7 @@ from typing import Any, List, Literal, Optional
 from pydantic import Field
 
 from .base_model import BaseModel
-from .enums import ProgramType, ProposalStatus, ScienceBand
+from .enums import ProgramType, ProposalStatus
 
 
 class GetGOATSPrograms(BaseModel):
@@ -25,10 +25,6 @@ class GetGOATSProgramsProgramsMatches(BaseModel):
     reference: Optional["GetGOATSProgramsProgramsMatchesReference"]
     proposal_status: ProposalStatus = Field(alias="proposalStatus")
     type: ProgramType
-    time_charge: List["GetGOATSProgramsProgramsMatchesTimeCharge"] = Field(
-        alias="timeCharge"
-    )
-    allocations: List["GetGOATSProgramsProgramsMatchesAllocations"]
 
 
 class GetGOATSProgramsProgramsMatchesReference(BaseModel):
@@ -46,31 +42,6 @@ class GetGOATSProgramsProgramsMatchesReference(BaseModel):
     label: Any
 
 
-class GetGOATSProgramsProgramsMatchesTimeCharge(BaseModel):
-    band: Optional[ScienceBand]
-    time: "GetGOATSProgramsProgramsMatchesTimeChargeTime"
-
-
-class GetGOATSProgramsProgramsMatchesTimeChargeTime(BaseModel):
-    program: "GetGOATSProgramsProgramsMatchesTimeChargeTimeProgram"
-
-
-class GetGOATSProgramsProgramsMatchesTimeChargeTimeProgram(BaseModel):
-    hours: Any
-
-
-class GetGOATSProgramsProgramsMatchesAllocations(BaseModel):
-    science_band: ScienceBand = Field(alias="scienceBand")
-    duration: "GetGOATSProgramsProgramsMatchesAllocationsDuration"
-
-
-class GetGOATSProgramsProgramsMatchesAllocationsDuration(BaseModel):
-    hours: Any
-
-
 GetGOATSPrograms.model_rebuild()
 GetGOATSProgramsPrograms.model_rebuild()
 GetGOATSProgramsProgramsMatches.model_rebuild()
-GetGOATSProgramsProgramsMatchesTimeCharge.model_rebuild()
-GetGOATSProgramsProgramsMatchesTimeChargeTime.model_rebuild()
-GetGOATSProgramsProgramsMatchesAllocations.model_rebuild()
