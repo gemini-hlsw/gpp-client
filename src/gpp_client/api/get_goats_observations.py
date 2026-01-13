@@ -136,10 +136,6 @@ class GetGOATSObservationsObservationsMatchesWorkflowValue(BaseModel):
 
 class GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors(BaseModel):
     code: ObservationValidationCode
-<<<<<<< HEAD
-=======
-    messages: list[str]
->>>>>>> 878e21c (Bump ariadne-codegen in the codegen-dependencies group)
 
 
 class GetGOATSObservationsObservationsMatchesAttachments(BaseModel):
@@ -635,8 +631,8 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffse
 
 
 class GetGOATSObservationsObservationsMatchesProgram(BaseModel):
-    allocations: List["GetGOATSObservationsObservationsMatchesProgramAllocations"]
-    time_charge: List["GetGOATSObservationsObservationsMatchesProgramTimeCharge"] = (
+    allocations: list["GetGOATSObservationsObservationsMatchesProgramAllocations"]
+    time_charge: list["GetGOATSObservationsObservationsMatchesProgramTimeCharge"] = (
         Field(alias="timeCharge")
     )
 
