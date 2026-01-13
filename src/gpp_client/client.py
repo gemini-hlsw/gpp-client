@@ -6,6 +6,7 @@ from gpp_client.config import GPPConfig, GPPEnvironment
 from gpp_client.credentials import CredentialResolver
 from gpp_client.logging_utils import _enable_dev_console_logging
 from gpp_client.managers import (
+    AttachmentManager,
     CallForProposalsManager,
     ConfigurationRequestManager,
     GroupManager,
@@ -66,6 +67,8 @@ class GPPClient:
         Manager for configuration requests.
     workflow_state : WorkflowStateManager
         Manager for observation workflow states.
+    attachment : AttachmentManager
+        Manager for attachments associated with proposals and observations.
     """
 
     def __init__(
@@ -108,6 +111,7 @@ class GPPClient:
         self.group = GroupManager(self)
         self.configuration_request = ConfigurationRequestManager(self)
         self.workflow_state = WorkflowStateManager(self)
+        self.attachment = AttachmentManager(self)
 
     @staticmethod
     def set_credentials(
@@ -163,3 +167,16 @@ class GPPClient:
         except Exception as exc:
             logger.debug("GPP GraphQL endpoint is not reachable: %s", exc)
             return False, str(exc)
+
+    async def close(self) -> None:
+        """
+        Close any underlying connections held by the client.
+        """
+        logger.debug("Closing GPPClient connections")
+        await self._restapi.close()
+
+    async def __aenter__(self) -> "GPPClient":
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        await self.close()
