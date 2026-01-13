@@ -54,6 +54,7 @@ API Reference
    :maxdepth: 1
 
    base
+   attachment
    call-for-proposals
    configuration-request
    program

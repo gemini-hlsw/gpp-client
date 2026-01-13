@@ -23,7 +23,6 @@ async def download_by_id(
         Path | None,
         typer.Option(
             "--save-to",
-            "-o",
             help="Destination directory for the download (default: ~/).",
             file_okay=False,
             dir_okay=True,
@@ -35,7 +34,6 @@ async def download_by_id(
         bool,
         typer.Option(
             "--overwrite",
-            "-f",
             help="Overwrite the file if it already exists.",
         ),
     ] = False,

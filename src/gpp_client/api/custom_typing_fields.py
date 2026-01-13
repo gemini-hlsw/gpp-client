@@ -429,32 +429,32 @@ class OffsetGraphQLField(GraphQLField):
         return self
 
 
-class OffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "OffsetGeneratorGraphQLField":
+class TelescopeConfigGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TelescopeConfigGeneratorGraphQLField":
         self._alias = alias
         return self
 
 
-class EnumeratedOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "EnumeratedOffsetGeneratorGraphQLField":
+class EnumeratedTelescopeConfigGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "EnumeratedTelescopeConfigGeneratorGraphQLField":
         self._alias = alias
         return self
 
 
-class RandomOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RandomOffsetGeneratorGraphQLField":
+class RandomTelescopeConfigGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RandomTelescopeConfigGeneratorGraphQLField":
         self._alias = alias
         return self
 
 
-class SpiralOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SpiralOffsetGeneratorGraphQLField":
+class SpiralTelescopeConfigGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SpiralTelescopeConfigGeneratorGraphQLField":
         self._alias = alias
         return self
 
 
-class UniformOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "UniformOffsetGeneratorGraphQLField":
+class UniformTelescopeConfigGeneratorGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "UniformTelescopeConfigGeneratorGraphQLField":
         self._alias = alias
         return self
 
@@ -1089,6 +1089,30 @@ class GmosNorthLongSlitGraphQLField(GraphQLField):
         return self
 
 
+class GmosImagingVariantGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosImagingVariantGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosGroupedImagingVariantGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosGroupedImagingVariantGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosInterleavedImagingVariantGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosInterleavedImagingVariantGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosPreImagingVariantGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosPreImagingVariantGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosNorthImagingFilterGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosNorthImagingFilterGraphQLField":
         self._alias = alias
@@ -1215,20 +1239,56 @@ class ImagingConfigOptionGmosSouthGraphQLField(GraphQLField):
         return self
 
 
+class ItcResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ItcResultSetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcResultSetGraphQLField":
         self._alias = alias
         return self
 
 
-class SignalToNoiseAtGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SignalToNoiseAtGraphQLField":
+class ItcGmosNorthImagingResultSetGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGmosNorthImagingResultSetGraphQLField":
         self._alias = alias
         return self
 
 
-class ItcResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ItcResultGraphQLField":
+class ItcGmosSouthImagingResultSetGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGmosSouthImagingResultSetGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcGmosNorthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGmosNorthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcGmosSouthImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGmosSouthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcSpectroscopyGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcSpectroscopyGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SignalToNoiseAtGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SignalToNoiseAtGraphQLField":
         self._alias = alias
         return self
 
@@ -1347,12 +1407,6 @@ class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
 
 class ConfigurationRequestGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationRequestGraphQLField":
-        self._alias = alias
-        return self
-
-
-class ItcGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ItcGraphQLField":
         self._alias = alias
         return self
 
