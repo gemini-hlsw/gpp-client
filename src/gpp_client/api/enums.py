@@ -211,7 +211,7 @@ class MosPreImaging(str, Enum):
     IS_NOT_MOS_PRE_IMAGING = "IS_NOT_MOS_PRE_IMAGING"
 
 
-class OffsetGeneratorType(str, Enum):
+class TelescopeConfigGeneratorType(str, Enum):
     NONE = "NONE"
     ENUMERATED = "ENUMERATED"
     RANDOM = "RANDOM"
@@ -648,6 +648,17 @@ class GmosNorthGrating(str, Enum):
     R150_G5308 = "R150_G5308"
 
 
+class WavelengthOrder(str, Enum):
+    DECREASING = "DECREASING"
+    INCREASING = "INCREASING"
+
+
+class GmosImagingVariantType(str, Enum):
+    GROUPED = "GROUPED"
+    INTERLEAVED = "INTERLEAVED"
+    PRE_IMAGING = "PRE_IMAGING"
+
+
 class GmosRoi(str, Enum):
     FULL_FRAME = "FULL_FRAME"
     CCD2 = "CCD2"
@@ -765,6 +776,12 @@ class Instrument(str, Enum):
     ZORRO = "ZORRO"
 
 
+class ItcType(str, Enum):
+    SPECTROSCOPY = "SPECTROSCOPY"
+    GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
+    GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
+
+
 class LineFluxIntegratedUnits(str, Enum):
     W_PER_M_SQUARED = "W_PER_M_SQUARED"
     ERG_PER_S_PER_CM_SQUARED = "ERG_PER_S_PER_CM_SQUARED"
@@ -811,11 +828,6 @@ class ConfigurationRequestStatus(str, Enum):
     APPROVED = "APPROVED"
     DENIED = "DENIED"
     WITHDRAWN = "WITHDRAWN"
-
-
-class MultipleFiltersMode(str, Enum):
-    GROUPED = "GROUPED"
-    INTERLEAVED = "INTERLEAVED"
 
 
 class ObservationValidationCode(str, Enum):
