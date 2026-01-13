@@ -16,15 +16,9 @@ from gpp_client.managers import (
     TargetManager,
     WorkflowStateManager,
 )
-from gpp_client.patches import (
-    patch_base_operations_graphql_field_get_formatted_variables,
-)
 from gpp_client.rest import _GPPRESTClient
 
 logger = logging.getLogger(__name__)
-
-# Apply patch to fix inner includeDelete bug.
-patch_base_operations_graphql_field_get_formatted_variables()
 
 
 class GPPClient:
