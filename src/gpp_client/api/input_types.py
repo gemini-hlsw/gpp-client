@@ -1032,8 +1032,24 @@ class SetObservationWorkflowStateInput(BaseModel):
     state: ObservationWorkflowState
 
 
+class UserSuppliedEphemerisElement(BaseModel):
+    """Input for an element in a user-supplied ephemeris. All values must be specified."""
+
+    when: Optional[Any] = None
+    coordinates: Optional["CoordinatesInput"] = None
+    velocity: Optional["OffsetInput"] = None
+
+
+class UserSuppliedEphemeris(BaseModel):
+    """Input for a user-supplied ephemeris. Both sites must be specified (but may be empty)."""
+
+    gn: list["UserSuppliedEphemerisElement"]
+    gs: list["UserSuppliedEphemerisElement"]
+
+
 class NonsiderealInput(BaseModel):
-    """Nonsidereal target parameters.  Supply (`keyType` and `des`) or (`key`)"""
+    """Nonsidereal target parameters.
+    For the key, if specified, provide either (`keyType` and `des`) or `key`."""
 
     key_type: Optional[EphemerisKeyType] = Field(alias=str("keyType"), default=None)
     "The keyType field must be either specified or skipped altogether.  It cannot be unset with a null value."
@@ -1041,6 +1057,8 @@ class NonsiderealInput(BaseModel):
     "The des field must be either specified or skipped altogether.  It cannot be unset with a null value."
     key: Optional[Any] = None
     "The key field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    ephemeris: Optional["UserSuppliedEphemeris"] = None
+    "Ephemeris must be specified if (and only if) the key type is USER_SUPPLIED."
 
 
 class ConfigurationRequestProperties(BaseModel):
@@ -4308,6 +4326,9 @@ GmosSouthImagingFilterInput.model_rebuild()
 GmosSouthImagingInput.model_rebuild()
 GmosSouthStaticInput.model_rebuild()
 CloneGroupInput.model_rebuild()
+UserSuppliedEphemerisElement.model_rebuild()
+UserSuppliedEphemeris.model_rebuild()
+NonsiderealInput.model_rebuild()
 ObservationPropertiesInput.model_rebuild()
 ObservationTimesInput.model_rebuild()
 OffsetInput.model_rebuild()
