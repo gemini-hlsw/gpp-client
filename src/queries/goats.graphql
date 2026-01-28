@@ -90,10 +90,6 @@ query GetGOATSObservations($programId: ProgramId!) {
         }
         firstScienceTarget {
           id
-          name
-          opportunity {
-            __typename
-          }
           sidereal {
             ra {
               hms
@@ -196,6 +192,9 @@ query GetGOATSObservations($programId: ProgramId!) {
           grating
           filter
           fpu
+          spatialOffsets {
+            arcseconds
+          }
           centralWavelength {
             nanometers
           }
@@ -206,31 +205,14 @@ query GetGOATSObservations($programId: ProgramId!) {
           yBin
           ampReadMode
           roi
-          exposureTimeMode {
-            signalToNoise {
-              value
-              at {
-                nanometers
-              }
-            }
-            timeAndCount {
-              time {
-                seconds
-              }
-              count
-              at {
-                nanometers
-              }
-            }
-          }
-          offsets {
-            arcseconds
-          }
         }
         gmosSouthLongSlit {
           grating
           filter
           fpu
+          spatialOffsets {
+            arcseconds
+          }
           centralWavelength {
             nanometers
           }
@@ -241,26 +223,6 @@ query GetGOATSObservations($programId: ProgramId!) {
           yBin
           ampReadMode
           roi
-          exposureTimeMode {
-            signalToNoise {
-              value
-              at {
-                nanometers
-              }
-            }
-            timeAndCount {
-              time {
-                seconds
-              }
-              count
-              at {
-                nanometers
-              }
-            }
-          }
-          offsets {
-            arcseconds
-          }
         }
       }
     }

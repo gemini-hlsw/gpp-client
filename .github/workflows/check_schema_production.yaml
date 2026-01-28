@@ -1,9 +1,8 @@
-name: Production Schema Drift Check
+name: Check Schema (Production)
 
 on:
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   production:
