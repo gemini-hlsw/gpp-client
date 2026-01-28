@@ -38,14 +38,6 @@ from gpp_client.api.custom_fields import (
     TimingWindowRepeatFields,
     UpdateObservationsResultFields,
     WavelengthFields,
-    Flamingos2LongSlitFields,
-    TelluricTypeFields,
-    ExposureTimeModeFields,
-    SignalToNoiseExposureTimeModeFields,
-    TimeAndCountExposureTimeModeFields,
-    OffsetFields,
-    OffsetPFields,
-    Flamingos2LongSlitAcquisitionFields,
 )
 from gpp_client.api.custom_mutations import Mutation
 from gpp_client.api.custom_queries import Query
@@ -600,77 +592,6 @@ class ObservationManager(BaseManager):
                     GmosSouthLongSlitFields.spatial_offsets().fields(
                         OffsetQFields.arcseconds
                     ),
-                ),
-                ObservingModeFields.flamingos_2_long_slit().fields(
-                    Flamingos2LongSlitFields.decker,
-                    Flamingos2LongSlitFields.default_decker,
-                    Flamingos2LongSlitFields.default_offsets().fields(
-                        OffsetFields.q().fields(
-                            OffsetQFields.arcseconds,
-                        ),
-                        OffsetFields.p().fields(
-                            OffsetPFields.arcseconds,
-                        ),
-                    ),
-                    Flamingos2LongSlitFields.disperser,
-                    Flamingos2LongSlitFields.filter,
-                    Flamingos2LongSlitFields.fpu,
-                    Flamingos2LongSlitFields.telluric_type().fields(
-                        TelluricTypeFields.tag, TelluricTypeFields.star_types
-                    ),
-                    Flamingos2LongSlitFields.exposure_time_mode().fields(
-                        ExposureTimeModeFields.signal_to_noise().fields(
-                            SignalToNoiseExposureTimeModeFields.value,
-                            SignalToNoiseExposureTimeModeFields.at().fields(
-                                WavelengthFields.nanometers
-                            ),
-                        ),
-                        ExposureTimeModeFields.time_and_count().fields(
-                            TimeAndCountExposureTimeModeFields.time().fields(
-                                TimeSpanFields.seconds
-                            ),
-                            TimeAndCountExposureTimeModeFields.count,
-                            TimeAndCountExposureTimeModeFields.at().fields(
-                                WavelengthFields.nanometers
-                            ),
-                        ),
-                    ),
-                    Flamingos2LongSlitFields.explicit_read_mode,
-                    Flamingos2LongSlitFields.explicit_reads,
-                    Flamingos2LongSlitFields.explicit_decker,
-                    Flamingos2LongSlitFields.readout_mode,
-                    Flamingos2LongSlitFields.default_readout_mode,
-                    Flamingos2LongSlitFields.explicit_read_mode,
-                    Flamingos2LongSlitFields.offsets().fields(
-                        OffsetFields.q().fields(
-                            OffsetQFields.arcseconds,
-                        ),
-                        OffsetFields.p().fields(
-                            OffsetPFields.arcseconds,
-                        ),
-                    ),
-                    Flamingos2LongSlitFields.acquisition().fields(
-                        Flamingos2LongSlitAcquisitionFields.exposure_time_mode().fields(
-                            ExposureTimeModeFields.signal_to_noise().fields(
-                                SignalToNoiseExposureTimeModeFields.value,
-                                SignalToNoiseExposureTimeModeFields.at().fields(
-                                    WavelengthFields.nanometers
-                                ),
-                            ),
-                            ExposureTimeModeFields.time_and_count().fields(
-                                TimeAndCountExposureTimeModeFields.time().fields(
-                                    TimeSpanFields.seconds,
-                                ),
-                                TimeAndCountExposureTimeModeFields.count,
-                                TimeAndCountExposureTimeModeFields.at().fields(
-                                    WavelengthFields.nanometers
-                                ),
-                            ),
-                        )
-                    ),
-                    Flamingos2LongSlitFields.initial_disperser,
-                    Flamingos2LongSlitFields.initial_filter,
-                    Flamingos2LongSlitFields.initial_fpu,
                 ),
             ),
             ObservationFields.constraint_set().fields(

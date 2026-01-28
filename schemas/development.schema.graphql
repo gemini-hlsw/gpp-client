@@ -5463,9 +5463,6 @@ enum CatalogName {
 
   """CatalogName Gaia"""
   GAIA
-
-  """CatalogName Telluric"""
-  TELLURIC
 }
 
 """Who is charged for time, if anyone."""

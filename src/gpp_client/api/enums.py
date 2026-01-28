@@ -365,7 +365,6 @@ class CatalogName(str, Enum):
     SIMBAD = "SIMBAD"
     IMPORT = "IMPORT"
     GAIA = "GAIA"
-    TELLURIC = "TELLURIC"
 
 
 class ChargeClass(str, Enum):
