@@ -45,6 +45,20 @@ class _GPPClient(AsyncBaseClient):
                   }
                   proposalStatus
                   type
+                  timeCharge {
+                    band
+                    time {
+                      program {
+                        hours
+                      }
+                    }
+                  }
+                  allocations {
+                    scienceBand
+                    duration {
+                      hours
+                    }
+                  }
                 }
                 hasMore
               }
@@ -101,6 +115,7 @@ class _GPPClient(AsyncBaseClient):
                       validTransitions
                       validationErrors {
                         code
+                        messages
                       }
                     }
                   }
@@ -312,22 +327,6 @@ class _GPPClient(AsyncBaseClient):
                       }
                       offsets {
                         arcseconds
-                      }
-                    }
-                  }
-                  program {
-                    allocations {
-                      scienceBand
-                      duration {
-                        hours
-                      }
-                    }
-                    timeCharge {
-                      band
-                      time {
-                        program {
-                          hours
-                        }
                       }
                     }
                   }
