@@ -2,7 +2,7 @@ __all__ = ["AttachmentManager"]
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import urlparse
 
 from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
@@ -13,20 +13,190 @@ from gpp_client.api.custom_fields import (
     ProgramFields,
 )
 from gpp_client.api.custom_queries import Query
+from gpp_client.api.enums import AttachmentType
 from gpp_client.exceptions import GPPClientError
 from gpp_client.managers.base import BaseManager
 
 logger = logging.getLogger(__name__)
-if TYPE_CHECKING:
-    from gpp_client.client import GPPClient
 
 
 class AttachmentManager(BaseManager):
-    def __init__(self, client: "GPPClient") -> None:
-        super().__init__(client)
+    async def upload(
+        self,
+        program_id: str,
+        *,
+        attachment_type: AttachmentType,
+        file_name: str,
+        description: str | None = None,
+        file_path: str | Path | None = None,
+        content: bytes | None = None,
+    ) -> str:
+        """
+        Upload a new attachment for a program.
 
-        self.rest_client = client._restapi
-        self.url = f"{self.rest_client.base_url}/attachment/url"
+        Parameters
+        ----------
+        program_id : str
+            The program ID to associate the attachment with.
+        attachment_type : AttachmentType
+            The attachment type.
+        file_name : str
+            The file name to store for the attachment.
+        description : str | None, optional
+            Optional attachment description.
+        file_path : str | Path | None, optional
+            Path to a file whose contents will be uploaded. Mutually exclusive with ``content``.
+        content : bytes | None, optional
+            Raw bytes to upload. Mutually exclusive with ``file_path``.
+
+        Returns
+        -------
+        str
+            The created attachment ID.
+
+        Raises
+        ------
+        GPPClientError
+            If the upload fails or the response is invalid.
+        GPPValidationError
+            If a validation error occurs.
+        """
+        logger.debug(
+            "Uploading attachment for program %s (type=%s, file_name=%s)",
+            program_id,
+            attachment_type,
+            file_name,
+        )
+
+        body = self.resolve_content(file_path=file_path, content=content)
+
+        params: dict[str, str] = {
+            "programId": program_id,
+            "fileName": file_name,
+            "attachmentType": attachment_type.value,
+        }
+        if description and description.strip():
+            params["description"] = description.strip()
+
+        session = await self.rest_client._get_session()
+        url = "/attachment"
+
+        try:
+            async with session.post(url, params=params, data=body) as response:
+                text = await response.text()
+
+                if response.status not in {200, 201}:
+                    raise GPPClientError(
+                        "Failed to upload attachment "
+                        f"(status={response.status}): {text}"
+                    )
+
+                attachment_id = text.strip()
+                if not attachment_id:
+                    raise GPPClientError(
+                        "Upload attachment returned an empty attachment id."
+                    )
+
+                logger.debug("Uploaded attachment id=%s", attachment_id)
+                return attachment_id
+
+        except Exception as exc:
+            self.raise_error(GPPClientError, exc)
+
+    async def delete_by_id(self, attachment_id: str) -> None:
+        """
+        Delete an attachment by its ID.
+
+        Parameters
+        ----------
+        attachment_id : str
+            The ID of the attachment to delete.
+
+        Raises
+        ------
+        GPPClientError
+            If the deletion fails.
+        """
+        logger.debug("Deleting attachment %s", attachment_id)
+        session = await self.rest_client._get_session()
+        url = f"/attachment/{attachment_id}"
+
+        try:
+            async with session.delete(url) as response:
+                text = await response.text()
+
+                if response.status not in {200, 204}:
+                    raise GPPClientError(
+                        f"Failed to delete attachment {attachment_id} "
+                        f"(status={response.status}): {text}"
+                    )
+
+                logger.debug(
+                    "Deleted attachment %s",
+                    attachment_id,
+                )
+        except Exception as exc:
+            self.raise_error(GPPClientError, exc)
+
+    async def update_by_id(
+        self,
+        attachment_id: str,
+        *,
+        file_name: str,
+        description: str | None = None,
+        file_path: str | Path | None = None,
+        content: bytes | None = None,
+    ) -> None:
+        """
+        Update an attachment by its ID.
+
+        Parameters
+        ----------
+        attachment_id : str
+            The ID of the attachment to update.
+        file_name : str
+            The new file name for the attachment. This is required.
+        description : str | None, optional
+            The new description for the attachment.
+        file_path : str | Path | None, optional
+            The path to the new file content for the attachment.
+        content : bytes | None, optional
+            The new file content as bytes.
+
+        Raises
+        ------
+        GPPClientError
+            If the update fails.
+        GPPValidationError
+            If a validation error occurs.
+        """
+        logger.debug("Updating attachment %s", attachment_id)
+        body = self.resolve_content(file_path=file_path, content=content)
+        # File name is required.
+        params: dict[str, str] = {"fileName": file_name}
+
+        if description is not None and description.strip() != "":
+            params["description"] = description.strip()
+
+        session = await self.rest_client._get_session()
+        url = f"/attachment/{attachment_id}"
+
+        try:
+            async with session.put(url, params=params, data=body) as response:
+                text = await response.text()
+
+                if response.status not in {200, 201}:
+                    raise GPPClientError(
+                        f"Failed to update attachment {attachment_id} "
+                        f"(status={response.status}): {text}"
+                    )
+                logger.debug(
+                    "Updated attachment %s with status %s",
+                    attachment_id,
+                    response.status,
+                )
+        except Exception as exc:
+            self.raise_error(GPPClientError, exc)
 
     async def get_download_url_by_id(self, attachment_id: str) -> str:
         """
@@ -44,13 +214,13 @@ class AttachmentManager(BaseManager):
         """
         logger.debug("Getting download URL for attachment %s", attachment_id)
         session = await self.rest_client._get_session()
-        url = f"{self.url}/{attachment_id}"
+        url = f"/attachment/url/{attachment_id}"
 
         try:
             async with session.get(url, raise_for_status=True) as response:
                 download_url = await response.text()
         except Exception as exc:
-            self.raise_error(GPPClientError, exc, include_traceback=True)
+            self.raise_error(GPPClientError, exc)
 
         return download_url
 
@@ -60,7 +230,7 @@ class AttachmentManager(BaseManager):
         save_to: str | Path | None = None,
         overwrite: bool = False,
         chunk_size: int = 1024 * 1024,
-    ) -> None:
+    ) -> Path:
         """
         Download an attachment by its ID.
 
@@ -74,6 +244,11 @@ class AttachmentManager(BaseManager):
             Whether to overwrite the file if it already exists. Default is ``False``.
         chunk_size : int, optional
             The chunk size for downloading the file in bytes. Default is 1 MB.
+
+        Returns
+        -------
+        Path
+            The path to the downloaded file.
         """
         logger.debug("Downloading attachment %s", attachment_id)
         session = await self.rest_client._get_session()
@@ -110,6 +285,8 @@ class AttachmentManager(BaseManager):
                         fh.write(chunk)
 
                 logger.info("Downloaded %s", path)
+
+            return path
 
         except Exception as exc:
             self.raise_error(GPPClientError, exc, include_traceback=True)

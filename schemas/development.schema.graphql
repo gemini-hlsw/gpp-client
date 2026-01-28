@@ -375,7 +375,10 @@ type BandedTime {
 """A BandedTime that is automatically updated by a background process."""
 type CalculatedBandedTime {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: BandedTime
 }
 
@@ -722,7 +725,10 @@ A CategorizedTimeRange that is automatically updated by a background process.
 """
 type CalculatedCategorizedTimeRange {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: CategorizedTimeRange
 }
 
@@ -2769,7 +2775,7 @@ input UserSuppliedEphemeris {
 }
 
 """
-Nonsidereal target parameters. 
+Nonsidereal target parameters.
 For the key, if specified, provide either (`keyType` and `des`) or `key`.
 """
 input NonsiderealInput {
@@ -4413,8 +4419,10 @@ new states to limit events to only those transitions.
 input ObscalcUpdateInput {
   programId: ProgramId
   observationId: ObservationId
-  oldState: WhereOptionEqCalculationState
-  newState: WhereOptionEqCalculationState
+  oldCalculationState: WhereOptionEqCalculationState
+  oldState: WhereOptionEqCalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
+  newCalculationState: WhereOptionEqCalculationState
+  newState: WhereOptionEqCalculationState @deprecated(reason: "Use `newCalculationState` instead.")
 }
 
 input WhereOrderCalculationState {
@@ -4477,10 +4485,16 @@ type ObscalcUpdate {
   editType: EditType!
 
   """Old calculation state, if any."""
-  oldState: CalculationState
+  oldCalculationState: CalculationState
+
+  """Old calculation state, if any."""
+  oldState: CalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
 
   """New calculation state, if any."""
-  newState: CalculationState
+  newCalculationState: CalculationState
+
+  """New calculation state, if any."""
+  newState: CalculationState @deprecated(reason: "Use `newCalculationState` instead.")
 
   """Id of the observation that was updated."""
   observationId: ObservationId!
@@ -6197,7 +6211,10 @@ type ExecutionDigest {
 """Wraps an ExecutionDigest with the background calculation state."""
 type CalculatedExecutionDigest {
   """Background calculation state."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """Background calculation state."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
 
   """The current execution digest itself."""
   value: ExecutionDigest
@@ -14186,6 +14203,9 @@ input WhereCalculatedObservationWorkflow {
   """Matches the current state of the background calculation."""
   calculationState: WhereOrderCalculationState
 
+  """Matches the current state of the background calculation."""
+  state: WhereOrderCalculationState @deprecated(reason: "Use `calculationState` instead.")
+
   """Matchs the workflow state itself."""
   workflowState: WhereOrderObservationWorkflowState
 }
@@ -14229,6 +14249,9 @@ type ObservationWorkflow {
 
 type CalculatedObservationWorkflow {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: ObservationWorkflow!
 }

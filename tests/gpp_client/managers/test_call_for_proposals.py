@@ -37,6 +37,7 @@ class TestCallForProposalsCreate:
             """
 
             _client = internal
+            _rest_client = internal
 
         return Wrapper()
 
