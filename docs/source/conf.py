@@ -70,47 +70,6 @@ html_theme_options = {
         },
     ],
 }
-# Dynamic announcement banner based on RTD build context.
-if os.environ.get("READTHEDOCS") == "True":
-    version_slug = os.environ.get("READTHEDOCS_VERSION", "")
-    version_type = os.environ.get("READTHEDOCS_VERSION_TYPE", "")
-    version_name = os.environ.get("READTHEDOCS_VERSION_NAME", "")
-    stable_version = os.environ.get("READTHEDOCS_STABLE_VERSION", "")
-
-    announcement = ""
-
-    # Development builds: either .devN or 'latest'.
-    if (version_type == "tag" and ".dev" in version_slug) or version_slug == "latest":
-        announcement = (
-            "<strong>Development Documentation:</strong> "
-            "This documentation corresponds to a development build of "
-            "<code>gpp-client</code>. It is intended for GPP "
-            "<strong>development environments only</strong> and is "
-            "<strong>not suitable for production use</strong>."
-        )
-
-    # PR previews.
-    elif version_type == "external":
-        announcement = (
-            "<strong>Preview Build:</strong> "
-            "This documentation reflects an unmerged pull request and is "
-            "<strong>not a stable or production</strong> version."
-        )
-
-    # Outdated tagged releases (older stable versions).
-    elif version_type == "tag" and version_slug != "stable":
-        if ".dev" not in version_slug:
-            announcement = (
-                "<strong>Outdated Documentation:</strong> "
-                "This version of <code>gpp-client</code> is no longer the "
-                "current stable release. See the "
-                '<a href="https://gpp-client.readthedocs.io/en/stable/">'
-                "latest stable documentation</a>."
-            )
-
-    if announcement:
-        html_theme_options["announcement"] = announcement
-
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
