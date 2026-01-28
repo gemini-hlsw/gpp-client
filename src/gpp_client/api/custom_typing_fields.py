@@ -429,36 +429,6 @@ class OffsetGraphQLField(GraphQLField):
         return self
 
 
-class OffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "OffsetGeneratorGraphQLField":
-        self._alias = alias
-        return self
-
-
-class EnumeratedOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "EnumeratedOffsetGeneratorGraphQLField":
-        self._alias = alias
-        return self
-
-
-class RandomOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RandomOffsetGeneratorGraphQLField":
-        self._alias = alias
-        return self
-
-
-class SpiralOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SpiralOffsetGeneratorGraphQLField":
-        self._alias = alias
-        return self
-
-
-class UniformOffsetGeneratorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "UniformOffsetGeneratorGraphQLField":
-        self._alias = alias
-        return self
-
-
 class PartnerLinkGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "PartnerLinkGraphQLField":
         self._alias = alias

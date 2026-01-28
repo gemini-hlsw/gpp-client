@@ -119,6 +119,8 @@ class AddAtomEventInput(BaseModel):
 
     atom_id: Any = Field(alias=str("atomId"))
     atom_stage: AtomStage = Field(alias=str("atomStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
+    "@deprecated: use idempotencyKey instead"
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -130,6 +132,8 @@ class AddDatasetEventInput(BaseModel):
     "Dataset id"
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
     "Dataset execution stage."
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
+    "@deprecated: use idempotencyKey instead"
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -145,6 +149,8 @@ class AddSequenceEventInput(BaseModel):
 
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
+    "@deprecated: use idempotencyKey instead"
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -154,6 +160,8 @@ class AddSlewEventInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
+    "@deprecated: use idempotencyKey instead"
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -163,6 +171,8 @@ class AddStepEventInput(BaseModel):
 
     step_id: Any = Field(alias=str("stepId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
+    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
+    "@deprecated: use idempotencyKey instead"
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -756,6 +766,10 @@ class GmosNorthLongSlitInput(BaseModel):
         alias=str("explicitOffsets"), default=None
     )
     "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether\n@deprecated(reason: \"Use 'explicitOffsets' instead.\")"
     acquisition: Optional["GmosNorthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -767,14 +781,6 @@ class GmosNorthImagingInput(BaseModel):
     "The filters field must be specified with at least one filter. It cannot be unset with a null value."
     offsets: Optional[List["OffsetInput"]] = None
     "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
-    object_offset_generator: Optional["OffsetGeneratorInput"] = Field(
-        alias=str("objectOffsetGenerator"), default=None
-    )
-    "Temporary, WIP -- will be moved."
-    sky_offset_generator: Optional["OffsetGeneratorInput"] = Field(
-        alias=str("skyOffsetGenerator"), default=None
-    )
-    "Temporary, WIP -- will be moved."
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
@@ -916,6 +922,10 @@ class GmosSouthLongSlitInput(BaseModel):
         alias=str("explicitOffsets"), default=None
     )
     "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_spatial_offsets: Optional[List["OffsetComponentInput"]] = Field(
+        alias=str("explicitSpatialOffsets"), default=None
+    )
+    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether\n@deprecated(reason: \"Use 'explicitOffsets' instead.\")"
     acquisition: Optional["GmosSouthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -938,14 +948,6 @@ class GmosSouthImagingInput(BaseModel):
     "The filters field must be specified with at least one filter. It cannot be unset with a null value."
     offsets: Optional[List["OffsetInput"]] = None
     "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
-    object_offset_generator: Optional["OffsetGeneratorInput"] = Field(
-        alias=str("objectOffsetGenerator"), default=None
-    )
-    "Temporary, WIP -- will be moved."
-    sky_offset_generator: Optional["OffsetGeneratorInput"] = Field(
-        alias=str("skyOffsetGenerator"), default=None
-    )
-    "Temporary, WIP -- will be moved."
     explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
         alias=str("explicitMultipleFiltersMode"), default=None
     )
@@ -1135,39 +1137,6 @@ class OffsetInput(BaseModel):
     "Offset in p"
     q: "OffsetComponentInput"
     "Offset in q"
-
-
-class OffsetGeneratorInput(BaseModel):
-    """An offset generator is specified by defining one of the `enumerated`, `random`,
-    `spiral` or `uniform` options.  If none are defined, the generator type will be
-    `NONE`."""
-
-    enumerated: Optional["EnumeratedOffsetGeneratorInput"] = None
-    random: Optional["RandomOffsetGeneratorInput"] = None
-    spiral: Optional["SpiralOffsetGeneratorInput"] = None
-    uniform: Optional["UniformOffsetGeneratorInput"] = None
-
-
-class EnumeratedOffsetGeneratorInput(BaseModel):
-    values: List["TelescopeConfigInput"]
-
-
-class RandomOffsetGeneratorInput(BaseModel):
-    size: "AngleInput"
-    center: Optional["OffsetInput"] = None
-
-
-class SpiralOffsetGeneratorInput(BaseModel):
-    size: "AngleInput"
-    center: Optional["OffsetInput"] = None
-
-
-class UniformOffsetGeneratorInput(BaseModel):
-    """Defines the region over which the pattern of offsets will be distributed.
-    The number of points is determined by integration time calculator results."""
-
-    corner_a: "OffsetInput" = Field(alias=str("cornerA"))
-    corner_b: "OffsetInput" = Field(alias=str("cornerB"))
 
 
 class ParallaxInput(BaseModel):
@@ -4264,11 +4233,6 @@ CloneGroupInput.model_rebuild()
 ObservationPropertiesInput.model_rebuild()
 ObservationTimesInput.model_rebuild()
 OffsetInput.model_rebuild()
-OffsetGeneratorInput.model_rebuild()
-EnumeratedOffsetGeneratorInput.model_rebuild()
-RandomOffsetGeneratorInput.model_rebuild()
-SpiralOffsetGeneratorInput.model_rebuild()
-UniformOffsetGeneratorInput.model_rebuild()
 PosAngleConstraintInput.model_rebuild()
 ProgramPropertiesInput.model_rebuild()
 ProgramUserPropertiesInput.model_rebuild()
