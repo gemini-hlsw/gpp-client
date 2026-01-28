@@ -74,7 +74,6 @@ scalar EmailAddress
 input AddAtomEventInput {
   atomId: AtomId!
   atomStage: AtomStage!
-  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -97,7 +96,6 @@ input AddDatasetEventInput {
 
   """Dataset execution stage."""
   datasetStage: DatasetStage!
-  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -127,7 +125,6 @@ type AddProgramUserResult {
 input AddSequenceEventInput {
   visitId: VisitId!
   command: SequenceCommand!
-  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -147,7 +144,6 @@ type AddSequenceEventResult {
 input AddSlewEventInput {
   observationId: ObservationId!
   slewStage: SlewStage!
-  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -167,7 +163,6 @@ type AddSlewEventResult {
 input AddStepEventInput {
   stepId: StepId!
   stepStage: StepStage!
-  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -562,7 +557,7 @@ input CallForProposalsPropertiesInput {
   Active period start date (inclusive) for this call.  The date is considered to
   be the local date at each observation site.  Observations may begin the
   evening of the indicated date at the site of the observation.
-  
+
   The start date is required on create and must be before the `activeEnd` date.
   Not nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -572,7 +567,7 @@ input CallForProposalsPropertiesInput {
   Active period end date (exclusive) for this call.  The date is considered to
   be the local date at each observation site.  Observations may end the
   morning of the indicated date at the site of the observation.
-  
+
   The end date is required on create and must be after the `activeStart` date.
   Not nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -1807,11 +1802,6 @@ input GmosNorthLongSlitInput {
   """
   explicitOffsets: [OffsetComponentInput!]
 
-  """
-  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
-
   """Parameters that override acquisition defaults."""
   acquisition: GmosNorthLongSlitAcquisitionInput
 }
@@ -2164,11 +2154,6 @@ input GmosSouthLongSlitInput {
   The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
   """
   explicitOffsets: [OffsetComponentInput!]
-
-  """
-  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosSouthLongSlitAcquisitionInput
@@ -2779,9 +2764,7 @@ input SetObservationWorkflowStateInput {
   state: ObservationWorkflowState!
 }
 
-"""
-Nonsidereal target parameters.  Supply (`keyType` and `des`) or (`key`)
-"""
+"""Nonsidereal target parameters.  Supply `keyType` and `des` or `key`"""
 input NonsiderealInput {
   """
   The keyType field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -3200,7 +3183,7 @@ input ProgramPropertiesInput {
   Active period start date (inclusive) for this program.  The date is considered
   to be the local date at each observation site.  Observations may begin the
   evening of the indicated date at the site of the observation.
-  
+
   This property is avaliable only to those with staff access or better. Not
   nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -3210,7 +3193,7 @@ input ProgramPropertiesInput {
   Active period end date (exclusive) for this program.  The date is considered
   to be the local date at each observation site.  Observations may end the
   morning of the indicated date at the site of the observation.
-  
+
   This property is avaliable only to those with staff access or better. Not
   nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -5527,7 +5510,7 @@ enum ObservingModeType {
   GMOS_SOUTH_LONG_SLIT
 
   """ObservingModeType Flamingos2LongSlit"""
-  FLAMINGOS_2_LONG_SLIT
+  FLAMINGOS_2LONG_SLIT
 
   """ObservingModeType GmosNorthImaging"""
   GMOS_NORTH_IMAGING
@@ -9472,7 +9455,7 @@ type Query {
   Obtains a list of program references for which the user with ORCiD `orcidId`
   has GOA data-download access privileges.  These will be those for which the
   user is a ProgramUser of any role with the `hasDataAccess` flag set.
-  
+
   This query is for use by staff and the GOA and will fail for other users.
   """
   goaDataDownloadAccess(orcidId: String!): [ProgramReferenceLabel!]!

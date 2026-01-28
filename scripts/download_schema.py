@@ -97,7 +97,7 @@ def main(
             output_file.write_bytes(result.stdout)
 
         except subprocess.CalledProcessError as exc:
-            fail(exc.stderr)
+            fail(exc.stderr.decode())
 
     typer.echo("Schema download completed successfully")
     typer.echo(f"Schema saved to {output_file}")

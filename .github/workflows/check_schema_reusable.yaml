@@ -60,5 +60,4 @@ jobs:
         run: |
           graphql-inspector diff \
             schemas/${{ inputs.gpp_env }}.schema.graphql \
-            ci_schemas/${{ inputs.gpp_env }}.schema.graphql \
-            --rule suppressRemovalOfDeprecatedField
+            ci_schemas/${{ inputs.gpp_env }}.schema.graphql
