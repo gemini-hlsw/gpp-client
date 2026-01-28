@@ -24,7 +24,6 @@ updates:
         patterns:
           - "pytest*"
           - "ruff"
-          - "polyfactory"
       documentation-dependencies:
         patterns:
           - "furo"

@@ -21,9 +21,6 @@ jobs:
     name: Check Schema - ${{ inputs.gpp_env }}
     runs-on: ubuntu-latest
 
-    # Skip entirely for Dependabot PRs
-    if: github.actor != 'dependabot[bot]'
-
     steps:
       - uses: actions/checkout@v5
 

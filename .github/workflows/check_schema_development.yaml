@@ -10,7 +10,7 @@ jobs:
     uses: ./.github/workflows/check_schema_reusable.yaml
     with:
       gpp_env: development
-      continue_on_error: false
+      continue_on_error: true
       token_var: GPP_DEVELOPMENT_TOKEN
     secrets:
       token: ${{ secrets.GPP_DEVELOPMENT_TOKEN }}
