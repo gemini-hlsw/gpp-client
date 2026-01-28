@@ -27,7 +27,6 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinxcontrib.typer",
     "sphinx_copybutton",
-    "sphinx.ext.intersphinx",
 ]
 
 source_suffix = {".rst": "restructuredtext"}
@@ -35,6 +34,7 @@ master_doc = "index"
 
 templates_path = ["_templates"]
 exclude_patterns = []
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

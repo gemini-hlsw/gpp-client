@@ -85,11 +85,7 @@ After the workflow completes:
 1. Open **Releases** on GitHub.
 2. Select the draft release created for the tag.
 3. Review the generated notes.
-4. If this is a development release, check the **Pre-release** box. Else, check the box to mark as the latest release.
-5. Click **Publish**.
-
-   .. note::
-      If this is a development release, ensure the **Pre-release** box is checked. Else, if a production release, ensure it is unchecked and marked as the latest release.
+4. Click **Publish**.
 
 PyPI publication is handled separately (for example, via a dedicated publish
 workflow), but is fully automated once triggered.

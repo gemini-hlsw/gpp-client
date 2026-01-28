@@ -1,4 +1,4 @@
-from .observation import GOATSObservationCoordinator
-from .program import GOATSProgramCoordinator
+from .observation import ObservationCoordinator
+from .program import ProgramCoordinator
 
-__all__ = ["GOATSObservationCoordinator", "GOATSProgramCoordinator"]
+__all__ = ["ObservationCoordinator", "ProgramCoordinator"]

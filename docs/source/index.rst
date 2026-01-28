@@ -89,7 +89,5 @@ Contents
    developer/schema
    developer/codegen
    developer/workflow
-   developer/documentation
-   developer/pull-requests
    developer/releases
    contributing

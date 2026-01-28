@@ -1,8 +1,8 @@
 <!--
 Thank you for contributing to gpp-client!
 
-Please select the appropriate pull request template below by clicking preview and
-selecting the link. This helps maintain project consistency and ensures PRs go through
+Please select the appropriate pull request template below.
+This helps maintain project consistency and ensures PRs go through
 the correct checks and release workflow.
 -->
 

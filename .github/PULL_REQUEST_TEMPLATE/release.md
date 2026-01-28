@@ -28,6 +28,6 @@ After this pull request is merged:
 - The workflow will create:
   - A properly versioned Git tag
   - A draft GitHub Release with auto-generated notes
-- Make sure to publish the release and properly mark if a pre-release if development
+  - Make sure to publish the release!
 
 No additional commits should be pushed to the branch between merging this PR and running the release workflow.
