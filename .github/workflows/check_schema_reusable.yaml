@@ -21,14 +21,10 @@ jobs:
     name: Check Schema - ${{ inputs.gpp_env }}
     runs-on: ubuntu-latest
 
-    steps:
-      # Skip entirely for Dependabot PRs.
-      - name: Skip for Dependabot
-        if: github.actor == 'dependabot[bot]'
-        run: |
-          echo "Skipping workflow for Dependabot"
-          exit 0
+    # Skip entirely for Dependabot PRs
+    if: github.actor != 'dependabot[bot]'
 
+    steps:
       - uses: actions/checkout@v6
 
       - name: Install uv
