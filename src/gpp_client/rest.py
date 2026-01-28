@@ -10,6 +10,7 @@ import certifi
 import gzip
 import ssl
 import logging
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ class _GPPRESTClient:
     """
 
     def __init__(self, resolved_url: str, gpp_token: str) -> None:
-        logger.debug("Initializing _GPPRESTClient")
-        self.base_url = resolved_url.rstrip("/odb")
+        self.base_url = self.get_base_url(resolved_url)
         self.gpp_token = gpp_token
         self._session = None
         self._lock = asyncio.Lock()
@@ -63,6 +63,23 @@ class _GPPRESTClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+    def get_base_url(self, url: str) -> str:
+        """
+        Get the base URL from a full URL.
+
+        Parameters
+        ----------
+        url : str
+            Full URL string.
+
+        Returns
+        -------
+        str
+            Base URL string.
+        """
+        parsed = urlparse(url)
+        return f"{parsed.scheme}://{parsed.netloc}"
 
     async def get_atom_digests(
         self, observation_ids: list, accept_gzip: bool = True

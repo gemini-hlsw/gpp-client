@@ -991,6 +991,10 @@ class BandedTimeFields(GraphQLField):
 class CalculatedBandedTimeFields(GraphQLField):
     """A BandedTime that is automatically updated by a background process."""
 
+    calculation_state: "CalculatedBandedTimeGraphQLField" = (
+        CalculatedBandedTimeGraphQLField("calculationState")
+    )
+    "The current state of the background calculation."
     state: "CalculatedBandedTimeGraphQLField" = CalculatedBandedTimeGraphQLField(
         "state"
     )
@@ -1015,6 +1019,10 @@ class CalculatedBandedTimeFields(GraphQLField):
 class CalculatedCategorizedTimeRangeFields(GraphQLField):
     """A CategorizedTimeRange that is automatically updated by a background process."""
 
+    calculation_state: "CalculatedCategorizedTimeRangeGraphQLField" = (
+        CalculatedCategorizedTimeRangeGraphQLField("calculationState")
+    )
+    "The current state of the background calculation."
     state: "CalculatedCategorizedTimeRangeGraphQLField" = (
         CalculatedCategorizedTimeRangeGraphQLField("state")
     )
@@ -1042,6 +1050,10 @@ class CalculatedCategorizedTimeRangeFields(GraphQLField):
 class CalculatedExecutionDigestFields(GraphQLField):
     """Wraps an ExecutionDigest with the background calculation state."""
 
+    calculation_state: "CalculatedExecutionDigestGraphQLField" = (
+        CalculatedExecutionDigestGraphQLField("calculationState")
+    )
+    "Background calculation state."
     state: "CalculatedExecutionDigestGraphQLField" = (
         CalculatedExecutionDigestGraphQLField("state")
     )
@@ -1068,6 +1080,10 @@ class CalculatedExecutionDigestFields(GraphQLField):
 
 
 class CalculatedObservationWorkflowFields(GraphQLField):
+    calculation_state: "CalculatedObservationWorkflowGraphQLField" = (
+        CalculatedObservationWorkflowGraphQLField("calculationState")
+    )
+    "The current state of the background calculation."
     state: "CalculatedObservationWorkflowGraphQLField" = (
         CalculatedObservationWorkflowGraphQLField("state")
     )
