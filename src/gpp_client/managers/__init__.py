@@ -1,4 +1,3 @@
-from .attachment import AttachmentManager
 from .call_for_proposals import CallForProposalsManager
 from .configuration_request import ConfigurationRequestManager
 from .group import GroupManager
@@ -18,6 +17,5 @@ __all__ = [
     "SiteStatusManager",
     "GroupManager",
     "ConfigurationRequestManager",
-    "AttachmentManager",
     "WorkflowStateManager",
 ]

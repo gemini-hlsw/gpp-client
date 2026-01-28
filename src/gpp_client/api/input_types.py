@@ -78,6 +78,7 @@ from .enums import (
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
     MosPreImaging,
+    MultipleFiltersMode,
     ObservationWorkflowState,
     ObserveClass,
     Partner,
@@ -110,7 +111,6 @@ from .enums import (
     ToOActivation,
     UserType,
     WaterVapor,
-    WavelengthOrder,
 )
 
 
@@ -772,9 +772,22 @@ class GmosNorthLongSlitInput(BaseModel):
 class GmosNorthImagingInput(BaseModel):
     """Edit or create GMOS North Imaging advanced configuration"""
 
-    variant: Optional["GmosImagingVariantInput"] = None
     filters: Optional[list["GmosNorthImagingFilterInput"]] = None
-    "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
+    "The filters field must be specified with at least one filter. It cannot be unset with a null value."
+    offsets: Optional[list["OffsetInput"]] = None
+    "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    object_offset_generator: Optional["OffsetGeneratorInput"] = Field(
+        alias=str("objectOffsetGenerator"), default=None
+    )
+    "Temporary, WIP -- will be moved."
+    sky_offset_generator: Optional["OffsetGeneratorInput"] = Field(
+        alias=str("skyOffsetGenerator"), default=None
+    )
+    "Temporary, WIP -- will be moved."
+    explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
+        alias=str("explicitMultipleFiltersMode"), default=None
+    )
+    "How sequences are generated when multiple filters are specified.\nDefaults to GROUPED."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
     "The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
@@ -934,9 +947,22 @@ class GmosSouthImagingFilterInput(BaseModel):
 class GmosSouthImagingInput(BaseModel):
     """Edit or create GMOS South Imaging advanced configuration"""
 
-    variant: Optional["GmosImagingVariantInput"] = None
     filters: Optional[list["GmosSouthImagingFilterInput"]] = None
-    "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
+    "The filters field must be specified with at least one filter. It cannot be unset with a null value."
+    offsets: Optional[list["OffsetInput"]] = None
+    "The offsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    object_offset_generator: Optional["OffsetGeneratorInput"] = Field(
+        alias=str("objectOffsetGenerator"), default=None
+    )
+    "Temporary, WIP -- will be moved."
+    sky_offset_generator: Optional["OffsetGeneratorInput"] = Field(
+        alias=str("skyOffsetGenerator"), default=None
+    )
+    "Temporary, WIP -- will be moved."
+    explicit_multiple_filters_mode: Optional[MultipleFiltersMode] = Field(
+        alias=str("explicitMultipleFiltersMode"), default=None
+    )
+    "How sequences are generated when multiple filters are specified.\nDefaults to GROUPED."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
     "The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether"
     explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
@@ -1124,40 +1150,32 @@ class OffsetInput(BaseModel):
     "Offset in q"
 
 
-class TelescopeConfigGeneratorInput(BaseModel):
+class OffsetGeneratorInput(BaseModel):
     """An offset generator is specified by defining one of the `enumerated`, `random`,
     `spiral` or `uniform` options.  If none are defined, the generator type will be
     `NONE`."""
 
-    enumerated: Optional["EnumeratedTelescopeConfigGeneratorInput"] = None
-    random: Optional["RandomTelescopeConfigGeneratorInput"] = None
-    spiral: Optional["SpiralTelescopeConfigGeneratorInput"] = None
-    uniform: Optional["UniformTelescopeConfigGeneratorInput"] = None
+    enumerated: Optional["EnumeratedOffsetGeneratorInput"] = None
+    random: Optional["RandomOffsetGeneratorInput"] = None
+    spiral: Optional["SpiralOffsetGeneratorInput"] = None
+    uniform: Optional["UniformOffsetGeneratorInput"] = None
 
 
-class EnumeratedTelescopeConfigGeneratorInput(BaseModel):
+class EnumeratedOffsetGeneratorInput(BaseModel):
     values: list["TelescopeConfigInput"]
 
 
-class RandomTelescopeConfigGeneratorInput(BaseModel):
+class RandomOffsetGeneratorInput(BaseModel):
     size: "AngleInput"
-    "Radius defining the circular area in which all offsets will be placed."
     center: Optional["OffsetInput"] = None
-    "Center of the random pattern.  Defaults to (0, 0)."
-    seed: Optional[Any] = None
-    "Random generator seed, which will default to a random value if not specified."
 
 
-class SpiralTelescopeConfigGeneratorInput(BaseModel):
+class SpiralOffsetGeneratorInput(BaseModel):
     size: "AngleInput"
-    "Radius defining the circular area in which all offsets will be placed."
     center: Optional["OffsetInput"] = None
-    "Center of the spiral pattern.  Defaults to (0, 0)."
-    seed: Optional[Any] = None
-    "Random generator seed, which will default to a random value if not specified."
 
 
-class UniformTelescopeConfigGeneratorInput(BaseModel):
+class UniformOffsetGeneratorInput(BaseModel):
     """Defines the region over which the pattern of offsets will be distributed.
     The number of points is determined by integration time calculator results."""
 
@@ -2391,58 +2409,6 @@ class Flamingos2LongSlitInput(BaseModel):
     "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value."
     acquisition: Optional["Flamingos2LongSlitAcquisitionInput"] = None
     "Acquisition properties that, when set, override default values."
-
-
-class GmosImagingVariantInput(BaseModel):
-    """Input that specifies which imaging sub-type is desired along with its configuration
-    details.  Exactly one of the options should be defined and the other two left
-    unspecified."""
-
-    grouped: Optional["GmosGroupedImagingVariantInput"] = None
-    "Grouped mode collects all datasets for each filter before changing filters."
-    interleaved: Optional["GmosInterleavedImagingVariantInput"] = None
-    "Interleaved mode cycles through all filters repeatedly."
-    pre_imaging: Optional["GmosPreImagingVariantInput"] = Field(
-        alias=str("preImaging"), default=None
-    )
-    "PreImaging mode is used for MOS mask creation."
-
-
-class GmosGroupedImagingVariantInput(BaseModel):
-    """Input used for specifying GMOS grouped filter imaging."""
-
-    order: Optional[WavelengthOrder] = None
-    "Whether the filters should appear in the sequence in increasing or decreasing\norder by their wavelength.  Defaults to `INCREASING` on create, absent (i.e.,\nnot modified) on update."
-    offsets: Optional["TelescopeConfigGeneratorInput"] = None
-    "Offset generator for the science object datasets. The same offset sequence is\ncreated for each filter using the specified generator.  If not specified, no\noffsets will be used."
-    sky_count: Optional[Any] = Field(alias=str("skyCount"), default=None)
-    "Number of sky positions to collect before and after object datasets. For\nexample, if set to 2 there will be two sky positions before a group of object\nexposures and two more after using the same filter as the object datasets.\nDefaults to 0 on creation, absent (i.e., not modified) on update."
-    sky_offsets: Optional["TelescopeConfigGeneratorInput"] = Field(
-        alias=str("skyOffsets"), default=None
-    )
-    "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used."
-
-
-class GmosInterleavedImagingVariantInput(BaseModel):
-    """Input used for specifying GMOS interleaved filter imaging."""
-
-    offsets: Optional["TelescopeConfigGeneratorInput"] = None
-    "Offset generator for the science object datasets. The offset pattern is\ncreated for the sequence of science datasets as a whole."
-    sky_count: Optional[Any] = Field(alias=str("skyCount"), default=None)
-    "Number of sky positions to collect, per filter, before and after a series of\nobject datasets. Defaults to 0 on creation, absent (i.e., not modified) on\nupdate."
-    sky_offsets: Optional["TelescopeConfigGeneratorInput"] = Field(
-        alias=str("skyOffsets"), default=None
-    )
-    "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used.  When specifying an offset generator, the skyCount should be set to\na value greater than 0."
-
-
-class GmosPreImagingVariantInput(BaseModel):
-    """MOS pre-imaging offsets, each of which default to (0, 0)."""
-
-    offset_1: Optional["OffsetInput"] = Field(alias=str("offset1"), default=None)
-    offset_2: Optional["OffsetInput"] = Field(alias=str("offset2"), default=None)
-    offset_3: Optional["OffsetInput"] = Field(alias=str("offset3"), default=None)
-    offset_4: Optional["OffsetInput"] = Field(alias=str("offset4"), default=None)
 
 
 class GmosNorthImagingFilterInput(BaseModel):
@@ -4311,11 +4277,11 @@ CloneGroupInput.model_rebuild()
 ObservationPropertiesInput.model_rebuild()
 ObservationTimesInput.model_rebuild()
 OffsetInput.model_rebuild()
-TelescopeConfigGeneratorInput.model_rebuild()
-EnumeratedTelescopeConfigGeneratorInput.model_rebuild()
-RandomTelescopeConfigGeneratorInput.model_rebuild()
-SpiralTelescopeConfigGeneratorInput.model_rebuild()
-UniformTelescopeConfigGeneratorInput.model_rebuild()
+OffsetGeneratorInput.model_rebuild()
+EnumeratedOffsetGeneratorInput.model_rebuild()
+RandomOffsetGeneratorInput.model_rebuild()
+SpiralOffsetGeneratorInput.model_rebuild()
+UniformOffsetGeneratorInput.model_rebuild()
 PosAngleConstraintInput.model_rebuild()
 ProgramPropertiesInput.model_rebuild()
 ProgramUserPropertiesInput.model_rebuild()
@@ -4374,10 +4340,6 @@ Flamingos2DynamicInput.model_rebuild()
 Flamingos2FpuMaskInput.model_rebuild()
 Flamingos2LongSlitAcquisitionInput.model_rebuild()
 Flamingos2LongSlitInput.model_rebuild()
-GmosImagingVariantInput.model_rebuild()
-GmosGroupedImagingVariantInput.model_rebuild()
-GmosInterleavedImagingVariantInput.model_rebuild()
-GmosPreImagingVariantInput.model_rebuild()
 GmosNorthImagingFilterInput.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()

@@ -59,7 +59,6 @@ The following managers are available as attributes on the client:
 - :attr:`~gpp_client.GPPClient.configuration_request` → :class:`~gpp_client.managers.configuration_request.ConfigurationRequestManager`
 - :attr:`~gpp_client.GPPClient.group` → :class:`~gpp_client.managers.group.GroupManager`
 - :attr:`~gpp_client.GPPClient.workflow_state` → :class:`~gpp_client.managers.workflow_state.WorkflowStateManager`
-- :attr:`~gpp_client.GPPClient.attachment` → :class:`~gpp_client.managers.attachment.AttachmentManager`
 
 .. note::
 

@@ -2,7 +2,6 @@ import typer
 from rich.console import Console
 
 from gpp_client.cli.commands import (
-    attachment,
     call_for_proposals,
     config,
     configuration_request,
@@ -38,7 +37,6 @@ app.add_typer(configuration_request.app)
 app.add_typer(workflow_state.app)
 app.add_typer(scheduler.app)
 app.add_typer(goats.app)
-app.add_typer(attachment.app)
 
 
 @app.command("ping")

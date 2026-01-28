@@ -20,7 +20,6 @@ Individual commands are documented below:
     :maxdepth: 1
 
     config
-    attachment
     call-for-proposals
     program-note
     observation
