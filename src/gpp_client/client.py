@@ -98,7 +98,7 @@ class GPPClient:
 
         headers = self._build_headers(resolved_token)
         self._client = _GPPClient(url=resolved_url, headers=headers)
-        self._restapi = _GPPRESTClient(resolved_url, resolved_token)
+        self._rest_client = _GPPRESTClient(resolved_url, resolved_token)
 
         # Initialize the managers.
         self.program_note = ProgramNoteManager(self)
@@ -173,7 +173,7 @@ class GPPClient:
         Close any underlying connections held by the client.
         """
         logger.debug("Closing GPPClient connections")
-        await self._restapi.close()
+        await self._rest_client.close()
 
     async def __aenter__(self) -> "GPPClient":
         return self
