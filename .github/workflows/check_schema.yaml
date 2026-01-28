@@ -1,0 +1,58 @@
+name: Check Schema Changes
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  schema_checks:
+    name: Check ${{ matrix.env_name }} schema
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - env_name: production
+            token_var: GPP_PRODUCTION_TOKEN
+            fail_on: breaking
+            continue_on_error: false
+          - env_name: development
+            token_var: GPP_DEVELOPMENT_TOKEN
+            fail_on: none
+            continue_on_error: true
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install schema dependencies
+        run: uv sync --locked --group schema
+
+      - name: Export correct token env var
+        run: |
+          echo "${{ matrix.token_var }}=${{ secrets[matrix.token_var] }}" >> $GITHUB_ENV
+
+      - name: Download schema (${{ matrix.env_name }})
+        env:
+          GPP_ENV: ${{ matrix.env_name }}
+        run: |
+          uv run python scripts/download_schema.py ${{ matrix.env_name }} --output-dir ci_schemas
+
+      - name: Install GraphQL Inspector CI
+        run: |
+          npm install -g \
+            @graphql-inspector/ci \
+            @graphql-inspector/diff-command \
+            @graphql-inspector/graphql-loader graphql
+
+      - name: Compare schema (${{ matrix.env_name }})
+        continue-on-error: ${{ matrix.continue_on_error }}
+        run: |
+          graphql-inspector diff \
+            schemas/${{ matrix.env_name }}.schema.graphql \
+            ci_schemas/${{ matrix.env_name }}.schema.graphql
