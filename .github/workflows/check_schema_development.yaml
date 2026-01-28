@@ -7,6 +7,7 @@ on:
 
 jobs:
   development:
+    name: Check development schema
     uses: ./.github/workflows/check_schema_reusable.yaml
     with:
       gpp_env: development
