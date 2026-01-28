@@ -3,8 +3,9 @@
 
 ## Versioning
 - [ ] Bump the version using `uv version <VERSION>` (this updates `pyproject.toml` and `uv.lock`).
+
 - [ ] For production releases: version follows `YY.MM.PATCH` (e.g., `25.11.0`).
-- [ ] For development releases: version must have `devN` suffix. (e.g., `25.11.0.dev1`).
+- [ ] For development releases: version must have `devN` suffix. (e.g., `25.11.0-dev1`).
 
 ## Documentation
 - [ ] Build documentation locally and confirm no warnings or link issues.
