@@ -11,8 +11,9 @@ import functools
 from typing import Any, Callable, Optional
 
 import typer
-from gpp_client.cli import output
-from click import get_current_context
+from rich.console import Console
+
+console = Console()
 
 
 def async_command(func: Callable[..., Any]) -> Callable[..., None]:
@@ -22,19 +23,9 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
     def wrapper(*args, **kwargs):
         try:
             return asyncio.run(func(*args, **kwargs))
-        except typer.Exit:
-            raise
         except Exception as exc:
-            # On exception, check if debug mode is enabled to print full traceback.
-            ctx = get_current_context(silent=True)
-            debug = bool(getattr(getattr(ctx, "obj", None), "debug", False))
-            if debug:
-                output.print_exception()
-            else:
-                # Print a simple error message.
-                output.fail(str(exc))
-
-            raise typer.Exit(code=1) from exc
+            console.print(f"[bold red]Error:[/bold red] {exc}", style="red")
+            raise typer.Exit(code=1)
 
     return wrapper
 
@@ -93,4 +84,4 @@ def truncate_long(value: Optional[str]) -> str:
 
 def print_not_found() -> None:
     """Print not found message in yellow."""
-    output.warning("No items found.")
+    console.print("[bold yellow]No items found.[/bold yellow]")

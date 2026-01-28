@@ -169,6 +169,6 @@ class CredentialResolver:
             return token
 
         raise GPPAuthError(
-            f"No valid token found for environment '{env.value}'. "
+            f"No valid token found for environment '{env.value}'.\n"
             "Check your config file or environment variables."
         )

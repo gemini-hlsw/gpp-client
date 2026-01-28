@@ -22,7 +22,7 @@ class DummyClient:
 
     def __init__(self) -> None:
         self._client = object()
-        self._rest_client = object()
+
 
 @pytest.fixture
 def manager() -> BaseManager:

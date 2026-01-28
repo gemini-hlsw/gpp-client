@@ -195,7 +195,7 @@ class ProgramCoordinator(BaseCoordinator):
         obs_mapping = {o["id"]: o for o in obs_response["matches"]}
 
         # Get sequence
-        async with self.client._rest_client as client:
+        async with self.client._restapi as client:
             atom_digest_response = (await client.get_atom_digests(observations)).split(
                 "\n"
             )

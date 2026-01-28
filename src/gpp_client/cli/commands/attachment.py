@@ -1,23 +1,18 @@
-"""
-CLI commands for managing attachments.
-"""
-
-__all__ = ["app"]
-
 from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich.console import Console
+from rich.json import JSON
 
-from gpp_client.api.enums import AttachmentType
-from gpp_client.cli import output
 from gpp_client.cli.utils import async_command
 from gpp_client.client import GPPClient
 
+console = Console()
 app = typer.Typer(name="att", help="Manage attachments.")
 
 
-@app.command("download")
+@app.command("dl")
 @async_command
 async def download_by_id(
     attachment_id: Annotated[
@@ -44,113 +39,15 @@ async def download_by_id(
     ] = False,
 ) -> None:
     """Download an attachment by ID."""
-    async with GPPClient() as client:
-        path = await client.attachment.download_by_id(
+    client = GPPClient()
+    try:
+        await client.attachment.download_by_id(
             attachment_id,
             save_to=save_to,
             overwrite=overwrite,
         )
-
-    if path is not None:
-        output.info(f"Attachment downloaded to: {path}")
-
-
-@app.command("update")
-@async_command
-async def update_by_id(
-    attachment_id: Annotated[
-        str,
-        typer.Argument(help="Attachment ID.", case_sensitive=False),
-    ],
-    file_name: Annotated[
-        str,
-        typer.Option("--file-name", help="File name for the attachment."),
-    ],
-    file_path: Annotated[
-        Path,
-        typer.Option(
-            "--file-path",
-            help="Path to the new file content for the attachment.",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            resolve_path=True,
-        ),
-    ],
-    description: Annotated[
-        str | None,
-        typer.Option("--description", help="New description for the attachment."),
-    ] = None,
-) -> None:
-    """Update an attachment by ID."""
-    async with GPPClient() as client:
-        await client.attachment.update_by_id(
-            attachment_id,
-            file_name=file_name,
-            description=description,
-            file_path=file_path,
-        )
-    output.info(f"Attachment with ID {attachment_id} has been updated.")
-
-
-@app.command("delete")
-@async_command
-async def delete_by_id(
-    attachment_id: Annotated[
-        str,
-        typer.Argument(help="Attachment ID.", case_sensitive=False),
-    ],
-) -> None:
-    """Delete an attachment by ID."""
-    async with GPPClient() as client:
-        await client.attachment.delete_by_id(attachment_id)
-    output.info(f"Attachment with ID {attachment_id} has been deleted.")
-
-
-@app.command("upload")
-@async_command
-async def upload(
-    file_path: Annotated[
-        Path,
-        typer.Option(
-            "--file-path",
-            help="Path to the file content for the attachment.",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            resolve_path=True,
-        ),
-    ],
-    program_id: Annotated[
-        str,
-        typer.Option("--program-id", help="Program ID.", case_sensitive=False),
-    ],
-    attachment_type: Annotated[
-        AttachmentType,
-        typer.Option("--attachment-type", help="Attachment type."),
-    ],
-    file_name: Annotated[
-        str,
-        typer.Option("--file-name", help="File name for the attachment."),
-    ],
-    description: Annotated[
-        str | None,
-        typer.Option("--description", help="Description for the attachment."),
-    ] = None,
-) -> None:
-    """Upload an attachment to a program."""
-    async with GPPClient() as client:
-        attachment_id = await client.attachment.upload(
-            program_id=program_id,
-            attachment_type=attachment_type,
-            file_name=file_name,
-            description=description,
-            file_path=file_path,
-        )
-
-    output.info(f"Attachment uploaded with ID: {attachment_id}")
+    finally:
+        await client.close()
 
 
 @app.command("list")
@@ -227,4 +124,4 @@ async def list_attachments(
                 proposal_reference=proposal_reference,
             )
 
-    output.json(result)
+    console.print(JSON.from_data(result))

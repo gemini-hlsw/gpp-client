@@ -1838,14 +1838,8 @@ class ObscalcUpdateInput(BaseModel):
 
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
-    old_calculation_state: Optional["WhereOptionEqCalculationState"] = Field(
-        alias=str("oldCalculationState"), default=None
-    )
     old_state: Optional["WhereOptionEqCalculationState"] = Field(
         alias=str("oldState"), default=None
-    )
-    new_calculation_state: Optional["WhereOptionEqCalculationState"] = Field(
-        alias=str("newCalculationState"), default=None
     )
     new_state: Optional["WhereOptionEqCalculationState"] = Field(
         alias=str("newState"), default=None
@@ -4277,8 +4271,6 @@ class WhereCalculatedObservationWorkflow(BaseModel):
     calculation_state: Optional["WhereOrderCalculationState"] = Field(
         alias=str("calculationState"), default=None
     )
-    "Matches the current state of the background calculation."
-    state: Optional["WhereOrderCalculationState"] = None
     "Matches the current state of the background calculation."
     workflow_state: Optional["WhereOrderObservationWorkflowState"] = Field(
         alias=str("workflowState"), default=None
