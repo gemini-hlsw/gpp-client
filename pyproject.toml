@@ -27,7 +27,7 @@ dependencies = [
     "httpx>=0.23",
     "pydantic>=2.0.0",
     "toml>=0.10",
-    "typer>=0.18.0",
+    "typer>=0.21.1",
     "websockets>=14.2",
 ]
 version = "26.1.0"

@@ -98,11 +98,6 @@ def main(
 ) -> None:
     """
     Run the codegen for a specific GPP environment.
-
-    Parameters
-    ----------
-    env : GPPEnvironment
-        The GPP environment to run codegen for.
     """
     output.info(f"Running codegen for environment: {env.value}")
 
