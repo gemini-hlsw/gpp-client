@@ -13,7 +13,6 @@ uv run --group docs sphinx-autobuild docs/source docs/build
 ```
 
 ## Validation
-- [ ] Schema drift checks pass for the target branch.
 - [ ] Generated types (`ariadne-codegen`) are up to date.
 - [ ] All tests pass on CI.
 

@@ -34,7 +34,7 @@ repos:
     rev: "v1.8.0"
     hooks:
       - id: numpydoc-validation
-        exclude: ^(src/gpp_client/cli/|src/custom_plugins/|src/gpp_client/directors/|src/gpp_client/managers/group.py)
+        exclude: ^(src/gpp_client/cli/|src/custom_plugins/|src/gpp_client/directors/|src/gpp_client/managers/group.py|scripts/)
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.7.17

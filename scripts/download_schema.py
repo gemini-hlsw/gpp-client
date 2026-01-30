@@ -42,13 +42,6 @@ def main(
 ) -> None:
     """
     Download the GraphQL schema for a specific environment.
-
-    Parameters
-    ----------
-    env : GPPEnvironment
-        The GPP environment to download the schema for.
-    output_dir : Path, optional
-        The directory where the schema file will be saved.
     """
     output.info(f"Downloading schema for environment: {env.value}")
 
@@ -79,6 +72,7 @@ def main(
         "aiohttp",
         "--print-schema",
         "--schema-download",
+        "input_value_deprecation:true",
         "-H",
         f"Authorization:Bearer {token}",
     ]

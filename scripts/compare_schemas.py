@@ -42,13 +42,6 @@ def main(
 ) -> None:
     """
     Compare two GraphQL schema files.
-
-    Parameters
-    ----------
-    schema1 : Path
-        Path to the first schema file.
-    schema2 : Path
-        Path to the second schema file.
     """
     # Check if graphql-inspector is installed.
     output.info("Checking for graphql-inspector installation.")
