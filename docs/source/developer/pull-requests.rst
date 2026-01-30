@@ -71,8 +71,6 @@ Use the **Default** template for:
 
 Key rules enforced by this template:
 
-- Development-only changes must target ``dev``.
-- Production-ready changes must target ``main``.
 - **Do not bump versions** in default PRs.
 - GraphQL changes require local code generation.
 - Documentation changes must build cleanly.
@@ -102,7 +100,7 @@ Key rules enforced by this template:
 
 - Documentation must build without warnings.
 - Schema drift and generated types must be validated.
-- The PR must be correctly labeled and target the appropriate branch.
+- The PR must be correctly labeled.
 
 This template directly supports the automated release workflow.
 

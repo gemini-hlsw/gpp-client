@@ -82,19 +82,15 @@ if os.environ.get("READTHEDOCS") == "True":
     # Development builds: either .devN or 'latest'.
     if (version_type == "tag" and ".dev" in version_slug) or version_slug == "latest":
         announcement = (
-            "<strong>Development Documentation:</strong> "
-            "This documentation corresponds to a development build of "
-            "<code>gpp-client</code>. It is intended for GPP "
-            "<strong>development environments only</strong> and is "
-            "<strong>not suitable for production use</strong>."
+            "<strong>Development Build:</strong> Intended for GPP development "
+            "environments; production compatibility not guaranteed."
         )
 
     # PR previews.
     elif version_type == "external":
         announcement = (
             "<strong>Preview Build:</strong> "
-            "This documentation reflects an unmerged pull request and is "
-            "<strong>not a stable or production</strong> version."
+            "This documentation reflects an unmerged pull request."
         )
 
     # Outdated tagged releases (older stable versions).
@@ -102,8 +98,7 @@ if os.environ.get("READTHEDOCS") == "True":
         if ".dev" not in version_slug:
             announcement = (
                 "<strong>Outdated Documentation:</strong> "
-                "This version of <code>gpp-client</code> is no longer the "
-                "current stable release. See the "
+                "This version is no longer current. See the "
                 '<a href="https://gpp-client.readthedocs.io/en/stable/">'
                 "latest stable documentation</a>."
             )

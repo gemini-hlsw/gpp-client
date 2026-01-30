@@ -1,8 +1,6 @@
 name: Development Schema Drift Check
 
 on:
-  pull_request:
-    branches: [dev]
   workflow_dispatch:
 
 jobs:
