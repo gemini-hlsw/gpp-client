@@ -5,25 +5,18 @@ Download GraphQL schema for a specific GPP environment.
 
 import subprocess
 from pathlib import Path
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 import typer
-from rich.console import Console
 
+from gpp_client.cli import output
 from gpp_client.config import GPPDefaults, GPPEnvironment
 from gpp_client.credentials import EnvVarReader
-
-console = Console()
 
 app = typer.Typer(
     help="Download the GraphQL schema for a given GPP environment.",
     add_completion=False,
 )
-
-
-def fail(message: str) -> NoReturn:
-    console.print(f"[bold]Error:[/bold] {message}", style="red")
-    raise typer.Exit(code=1)
 
 
 @app.command()
@@ -57,21 +50,24 @@ def main(
     output_dir : Path, optional
         The directory where the schema file will be saved.
     """
-    typer.echo(f"Downloading schema for environment: {env.value}")
+    output.info(f"Downloading schema for environment: {env.value}")
 
     token = EnvVarReader.get_env_token(env)
     if not token:
         expected_key = GPPDefaults.env_var_env_tokens.get(env)
-        fail(
+        output.fail(
             f"No token found for environment {env.value}. "
             f"Make sure the environment variable '{expected_key}' is set."
         )
-    typer.echo("Token found in environment variables.")
+        raise typer.Exit(code=1)
 
+    output.info("Token found in environment variables.")
     url = GPPDefaults.url.get(env)
     if not url:
-        fail(f"No URL defined for environment {env.value}")
-    typer.echo(f"Using URL: {url}")
+        output.fail(f"No URL defined for environment {env.value}")
+        raise typer.Exit(code=1)
+
+    output.info(f"Using URL: {url}")
 
     output_dir.mkdir(exist_ok=True)
     output_file = output_dir / f"{env.value.lower()}.schema.graphql"
@@ -86,7 +82,7 @@ def main(
         "-H",
         f"Authorization:Bearer {token}",
     ]
-    with console.status("Downloading schema..."):
+    with output.status("Downloading schema..."):
         try:
             result = subprocess.run(
                 cmd,
@@ -97,10 +93,11 @@ def main(
             output_file.write_bytes(result.stdout)
 
         except subprocess.CalledProcessError as exc:
-            fail(exc.stderr)
+            output.fail(exc.stderr)
+            raise typer.Exit(code=1) from exc
 
-    typer.echo("Schema download completed successfully")
-    typer.echo(f"Schema saved to {output_file}")
+    output.info(f"Schema saved to {output_file}")
+    output.success("Schema download completed successfully")
 
 
 if __name__ == "__main__":

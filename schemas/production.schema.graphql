@@ -1,3 +1,8 @@
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
 enum ConditionsMeasurementSource {
   """Observer"""
   OBSERVER
@@ -69,9 +74,7 @@ scalar EmailAddress
 input AddAtomEventInput {
   atomId: AtomId!
   atomStage: AtomStage!
-
-  """@deprecated: use idempotencyKey instead"""
-  clientId: ClientId
+  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -94,9 +97,7 @@ input AddDatasetEventInput {
 
   """Dataset execution stage."""
   datasetStage: DatasetStage!
-
-  """@deprecated: use idempotencyKey instead"""
-  clientId: ClientId
+  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -126,9 +127,7 @@ type AddProgramUserResult {
 input AddSequenceEventInput {
   visitId: VisitId!
   command: SequenceCommand!
-
-  """@deprecated: use idempotencyKey instead"""
-  clientId: ClientId
+  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -148,9 +147,7 @@ type AddSequenceEventResult {
 input AddSlewEventInput {
   observationId: ObservationId!
   slewStage: SlewStage!
-
-  """@deprecated: use idempotencyKey instead"""
-  clientId: ClientId
+  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -170,9 +167,7 @@ type AddSlewEventResult {
 input AddStepEventInput {
   stepId: StepId!
   stepStage: StepStage!
-
-  """@deprecated: use idempotencyKey instead"""
-  clientId: ClientId
+  clientId: ClientId @deprecated(reason: "Use idempotencyKey instead")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -380,7 +375,10 @@ type BandedTime {
 """A BandedTime that is automatically updated by a background process."""
 type CalculatedBandedTime {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: BandedTime
 }
 
@@ -567,7 +565,7 @@ input CallForProposalsPropertiesInput {
   Active period start date (inclusive) for this call.  The date is considered to
   be the local date at each observation site.  Observations may begin the
   evening of the indicated date at the site of the observation.
-
+  
   The start date is required on create and must be before the `activeEnd` date.
   Not nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -577,7 +575,7 @@ input CallForProposalsPropertiesInput {
   Active period end date (exclusive) for this call.  The date is considered to
   be the local date at each observation site.  Observations may end the
   morning of the indicated date at the site of the observation.
-
+  
   The end date is required on create and must be after the `activeStart` date.
   Not nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -727,7 +725,10 @@ A CategorizedTimeRange that is automatically updated by a background process.
 """
 type CalculatedCategorizedTimeRange {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: CategorizedTimeRange
 }
 
@@ -1814,9 +1815,8 @@ input GmosNorthLongSlitInput {
 
   """
   The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  @deprecated(reason: "Use 'explicitOffsets' instead.")
   """
-  explicitSpatialOffsets: [OffsetComponentInput!]
+  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosNorthLongSlitAcquisitionInput
@@ -1824,21 +1824,13 @@ input GmosNorthLongSlitInput {
 
 """Edit or create GMOS North Imaging advanced configuration"""
 input GmosNorthImagingInput {
+  variant: GmosImagingVariantInput
+
   """
-  The filters field must be specified with at least one filter. It cannot be unset with a null value.
+  The filters field must be specified with at least one filter. It cannot be
+  unset with a null value.
   """
   filters: [GmosNorthImagingFilterInput!]
-
-  """
-  The offsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  offsets: [OffsetInput!]
-
-  """
-  How sequences are generated when multiple filters are specified.
-  Defaults to GROUPED.
-  """
-  explicitMultipleFiltersMode: MultipleFiltersMode
 
   """
   The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether
@@ -2167,9 +2159,8 @@ input GmosSouthLongSlitInput {
 
   """
   The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  @deprecated(reason: "Use 'explicitOffsets' instead.")
   """
-  explicitSpatialOffsets: [OffsetComponentInput!]
+  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosSouthLongSlitAcquisitionInput
@@ -2193,21 +2184,13 @@ input GmosSouthImagingFilterInput {
 
 """Edit or create GMOS South Imaging advanced configuration"""
 input GmosSouthImagingInput {
+  variant: GmosImagingVariantInput
+
   """
-  The filters field must be specified with at least one filter. It cannot be unset with a null value.
+  The filters field must be specified with at least one filter. It cannot be
+  unset with a null value.
   """
   filters: [GmosSouthImagingFilterInput!]
-
-  """
-  The offsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  offsets: [OffsetInput!]
-
-  """
-  How sequences are generated when multiple filters are specified.
-  Defaults to GROUPED.
-  """
-  explicitMultipleFiltersMode: MultipleFiltersMode
 
   """
   The explicitBin field may be unset by assigning a null value, or ignored by skipping it altogether
@@ -2774,7 +2757,27 @@ input SetObservationWorkflowStateInput {
   state: ObservationWorkflowState!
 }
 
-"""Nonsidereal target parameters.  Supply `keyType` and `des` or `key`"""
+"""
+Input for an element in a user-supplied ephemeris. All values must be specified.
+"""
+input UserSuppliedEphemerisElement {
+  when: Timestamp
+  coordinates: CoordinatesInput
+  velocity: OffsetInput
+}
+
+"""
+Input for a user-supplied ephemeris. Both sites must be specified (but may be empty).
+"""
+input UserSuppliedEphemeris {
+  gn: [UserSuppliedEphemerisElement!]!
+  gs: [UserSuppliedEphemerisElement!]!
+}
+
+"""
+Nonsidereal target parameters.
+For the key, if specified, provide either (`keyType` and `des`) or `key`.
+"""
 input NonsiderealInput {
   """
   The keyType field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -2790,6 +2793,11 @@ input NonsiderealInput {
   The key field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   key: NonEmptyString
+
+  """
+  Ephemeris must be specified if (and only if) the key type is USER_SUPPLIED.
+  """
+  ephemeris: UserSuppliedEphemeris
 }
 
 """Event sent when a new object is created or updated"""
@@ -2929,6 +2937,108 @@ input OffsetInput {
 
   """Offset in q"""
   q: OffsetComponentInput!
+}
+
+"""
+An offset generator produces a series of offsets according to generator-specific
+parameters.  Only (at most) one of `enumerated`, `random`, `spiral` or `uniform`
+will be defined.  All others will be `null`.  The `generatorType` corresponds to
+the entry (if any) that is defined.  If the generator type of `NONE`, then none
+of the entries will be defined.
+"""
+type TelescopeConfigGenerator {
+  generatorType: TelescopeConfigGeneratorType!
+  enumerated: EnumeratedTelescopeConfigGenerator
+  random: RandomTelescopeConfigGenerator
+  spiral: SpiralTelescopeConfigGenerator
+  uniform: UniformTelescopeConfigGenerator
+}
+
+"""
+An offset generator is specified by defining one of the `enumerated`, `random`,
+`spiral` or `uniform` options.  If none are defined, the generator type will be
+`NONE`.
+"""
+input TelescopeConfigGeneratorInput {
+  enumerated: EnumeratedTelescopeConfigGeneratorInput
+  random: RandomTelescopeConfigGeneratorInput
+  spiral: SpiralTelescopeConfigGeneratorInput
+  uniform: UniformTelescopeConfigGeneratorInput
+}
+
+enum TelescopeConfigGeneratorType {
+  NONE
+  ENUMERATED
+  RANDOM
+  SPIRAL
+  UNIFORM
+}
+
+"""
+In the `ENUMERATED` option offsets are explicitly specified instead of calculated.
+"""
+type EnumeratedTelescopeConfigGenerator {
+  values: [TelescopeConfig!]!
+}
+
+input EnumeratedTelescopeConfigGeneratorInput {
+  values: [TelescopeConfigInput!]!
+}
+
+type RandomTelescopeConfigGenerator {
+  size: Angle!
+  center: Offset!
+  seed: Long!
+}
+
+input RandomTelescopeConfigGeneratorInput {
+  """Radius defining the circular area in which all offsets will be placed."""
+  size: AngleInput!
+
+  """Center of the random pattern.  Defaults to (0, 0)."""
+  center: OffsetInput
+
+  """
+  Random generator seed, which will default to a random value if not specified.
+  """
+  seed: Long
+}
+
+type SpiralTelescopeConfigGenerator {
+  size: Angle!
+  center: Offset!
+  seed: Long!
+}
+
+input SpiralTelescopeConfigGeneratorInput {
+  """Radius defining the circular area in which all offsets will be placed."""
+  size: AngleInput!
+
+  """Center of the spiral pattern.  Defaults to (0, 0)."""
+  center: OffsetInput
+
+  """
+  Random generator seed, which will default to a random value if not specified.
+  """
+  seed: Long
+}
+
+"""
+Defines a region of the sky using two corners.  Exposures are
+then distributed across this region as evenly as possible.
+"""
+type UniformTelescopeConfigGenerator {
+  cornerA: Offset!
+  cornerB: Offset!
+}
+
+"""
+Defines the region over which the pattern of offsets will be distributed.
+The number of points is determined by integration time calculator results.
+"""
+input UniformTelescopeConfigGeneratorInput {
+  cornerA: OffsetInput!
+  cornerB: OffsetInput!
 }
 
 """Parallax, choose one of the available units"""
@@ -3109,7 +3219,7 @@ input ProgramPropertiesInput {
   Active period start date (inclusive) for this program.  The date is considered
   to be the local date at each observation site.  Observations may begin the
   evening of the indicated date at the site of the observation.
-
+  
   This property is avaliable only to those with staff access or better. Not
   nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -3119,7 +3229,7 @@ input ProgramPropertiesInput {
   Active period end date (exclusive) for this program.  The date is considered
   to be the local date at each observation site.  Observations may end the
   morning of the indicated date at the site of the observation.
-
+  
   This property is avaliable only to those with staff access or better. Not
   nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
@@ -4309,8 +4419,10 @@ new states to limit events to only those transitions.
 input ObscalcUpdateInput {
   programId: ProgramId
   observationId: ObservationId
-  oldState: WhereOptionEqCalculationState
-  newState: WhereOptionEqCalculationState
+  oldCalculationState: WhereOptionEqCalculationState
+  oldState: WhereOptionEqCalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
+  newCalculationState: WhereOptionEqCalculationState
+  newState: WhereOptionEqCalculationState @deprecated(reason: "Use `newCalculationState` instead.")
 }
 
 input WhereOrderCalculationState {
@@ -4373,10 +4485,16 @@ type ObscalcUpdate {
   editType: EditType!
 
   """Old calculation state, if any."""
-  oldState: CalculationState
+  oldCalculationState: CalculationState
+
+  """Old calculation state, if any."""
+  oldState: CalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
 
   """New calculation state, if any."""
-  newState: CalculationState
+  newCalculationState: CalculationState
+
+  """New calculation state, if any."""
+  newState: CalculationState @deprecated(reason: "Use `newCalculationState` instead.")
 
   """Id of the observation that was updated."""
   observationId: ObservationId!
@@ -5389,6 +5507,9 @@ enum CatalogName {
 
   """CatalogName Gaia"""
   GAIA
+
+  """CatalogName Telluric"""
+  TELLURIC
 }
 
 """Who is charged for time, if anyone."""
@@ -5433,7 +5554,7 @@ enum ObservingModeType {
   GMOS_SOUTH_LONG_SLIT
 
   """ObservingModeType Flamingos2LongSlit"""
-  FLAMINGOS_2LONG_SLIT
+  FLAMINGOS_2_LONG_SLIT
 
   """ObservingModeType GmosNorthImaging"""
   GMOS_NORTH_IMAGING
@@ -6090,7 +6211,10 @@ type ExecutionDigest {
 """Wraps an ExecutionDigest with the background calculation state."""
 type CalculatedExecutionDigest {
   """Background calculation state."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """Background calculation state."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
 
   """The current execution digest itself."""
   value: ExecutionDigest
@@ -7195,6 +7319,184 @@ type GmosNorthLongSlit {
   initialCentralWavelength: Wavelength!
 }
 
+"""
+Wavength observation order, either decreasing or increasing by wavelength.
+"""
+enum WavelengthOrder {
+  DECREASING
+  INCREASING
+}
+
+"""
+The available GMOS imaging categories.  Each category will produce a distinct
+sequence.
+"""
+enum GmosImagingVariantType {
+  GROUPED
+  INTERLEAVED
+  PRE_IMAGING
+}
+
+"""
+The specific imaging sub-type, one of which will be defined and the remaining
+options null.
+"""
+type GmosImagingVariant {
+  variantType: GmosImagingVariantType!
+
+  """
+  Grouped mode collects all datasets for each filter before changing filters.
+  """
+  grouped: GmosGroupedImagingVariant
+
+  """Interleaved mode cycles through all filters repeatedly."""
+  interleaved: GmosInterleavedImagingVariant
+
+  """PreImaging mode is used for MOS mask creation."""
+  preImaging: GmosPreImagingVariant
+}
+
+"""
+Input that specifies which imaging sub-type is desired along with its configuration
+details.  Exactly one of the options should be defined and the other two left
+unspecified.
+"""
+input GmosImagingVariantInput {
+  """
+  Grouped mode collects all datasets for each filter before changing filters.
+  """
+  grouped: GmosGroupedImagingVariantInput
+
+  """Interleaved mode cycles through all filters repeatedly."""
+  interleaved: GmosInterleavedImagingVariantInput
+
+  """PreImaging mode is used for MOS mask creation."""
+  preImaging: GmosPreImagingVariantInput
+}
+
+"""
+When doing "grouped" filter imaging, datasets associated with a particular
+filter are collected consecutively before moving on to other filters (if any).
+Sky datasets may be collected before and after each group of object datasets.
+"""
+type GmosGroupedImagingVariant {
+  """
+  Whether the filters should appear in the sequence in increasing or decreasing
+  order by their wavelength.
+  """
+  order: WavelengthOrder!
+
+  """
+  Offset generator for the science object datasets. The same offset sequence is
+  created for each filter using the specified generator.
+  """
+  offsets: TelescopeConfigGenerator!
+
+  """
+  Number of sky positions to collect before and after object datasets. For
+  example, if set to 2 there will be two sky positions before a group of object
+  exposures and two more after using the same filter as the object datasets.
+  """
+  skyCount: NonNegInt!
+
+  """Offset generator to use for the sky datasets."""
+  skyOffsets: TelescopeConfigGenerator!
+}
+
+"""Input used for specifying GMOS grouped filter imaging."""
+input GmosGroupedImagingVariantInput {
+  """
+  Whether the filters should appear in the sequence in increasing or decreasing
+  order by their wavelength.  Defaults to `INCREASING` on create, absent (i.e.,
+  not modified) on update.
+  """
+  order: WavelengthOrder
+
+  """
+  Offset generator for the science object datasets. The same offset sequence is
+  created for each filter using the specified generator.  If not specified, no
+  offsets will be used.
+  """
+  offsets: TelescopeConfigGeneratorInput
+
+  """
+  Number of sky positions to collect before and after object datasets. For
+  example, if set to 2 there will be two sky positions before a group of object
+  exposures and two more after using the same filter as the object datasets.
+  Defaults to 0 on creation, absent (i.e., not modified) on update.
+  """
+  skyCount: NonNegInt
+
+  """
+  Offset generator to use for sky positions.  If not specified, no offsets will
+  be used.
+  """
+  skyOffsets: TelescopeConfigGeneratorInput
+}
+
+"""
+When doing "interleaved" filter imaging, the sequence repeatedly alternates
+through the set of filters in use.
+"""
+type GmosInterleavedImagingVariant {
+  """
+  Offset generator for the science object datasets. The offset pattern is
+  applied to the sequence of science datasets as a whole.
+  """
+  offsets: TelescopeConfigGenerator!
+
+  """
+  Number of sky positions to collect, per filter, before and after a series of
+  object datasets.  For example, if set to 2 and 2 filters are in use, there
+  would be 4 sky positions before (2 per filter) and 4 after (2 per filter).
+  """
+  skyCount: NonNegInt!
+
+  """Offset generator to use for the sky datasets."""
+  skyOffsets: TelescopeConfigGenerator!
+}
+
+"""Input used for specifying GMOS interleaved filter imaging."""
+input GmosInterleavedImagingVariantInput {
+  """
+  Offset generator for the science object datasets. The offset pattern is
+  created for the sequence of science datasets as a whole.
+  """
+  offsets: TelescopeConfigGeneratorInput
+
+  """
+  Number of sky positions to collect, per filter, before and after a series of
+  object datasets. Defaults to 0 on creation, absent (i.e., not modified) on
+  update.
+  """
+  skyCount: NonNegInt
+
+  """
+  Offset generator to use for sky positions.  If not specified, no offsets will
+  be used.  When specifying an offset generator, the skyCount should be set to
+  a value greater than 0.
+  """
+  skyOffsets: TelescopeConfigGeneratorInput
+}
+
+"""
+A special imaging case, MOS pre-imaging is defined by an offset region.
+"""
+type GmosPreImagingVariant {
+  offset1: Offset!
+  offset2: Offset!
+  offset3: Offset!
+  offset4: Offset!
+}
+
+"""MOS pre-imaging offsets, each of which default to (0, 0)."""
+input GmosPreImagingVariantInput {
+  offset1: OffsetInput
+  offset2: OffsetInput
+  offset3: OffsetInput
+  offset4: OffsetInput
+}
+
 """Imaging filters combine an actual filter with an exposure time mode."""
 type GmosNorthImagingFilter {
   filter: GmosNorthFilter!
@@ -7213,31 +7515,19 @@ input GmosNorthImagingFilterInput {
 
 """GMOS North Imaging mode"""
 type GmosNorthImaging {
-  """GMOS North Filters for imaging mode (multiple filters allowed)"""
+  """Details specific to the type of imaging being performed."""
+  variant: GmosImagingVariant!
+
+  """
+  The filters (at least one is required) to be used for data collection. How
+  they are used depends on the imaging variant configuration.
+  """
   filters: [GmosNorthImagingFilter!]!
 
   """
-  Initial GMOS North Filters that were used when creating the imaging mode
+  Initial GMOS North Filters that were used when creating the imaging mode.
   """
   initialFilters: [GmosNorthImagingFilter!]!
-
-  """Spatial offsets"""
-  offsets: [Offset!]!
-
-  """
-  MultipleFiltersMode, either explicitly specified in explicitMultipleFiltersMode or else taken
-  from the defaultMultipleFiltersMode.
-  """
-  multipleFiltersMode: MultipleFiltersMode!
-
-  """Default MultipleFiltersMode (GROUPED)."""
-  defaultMultipleFiltersMode: MultipleFiltersMode!
-
-  """
-  Optional explictly specified MultipleFiltersMode. If set it overrides the
-  default.
-  """
-  explicitMultipleFiltersMode: MultipleFiltersMode
 
   """
   GMOS Binning, either explicitly specified in explicitBin or else taken
@@ -7700,31 +7990,19 @@ type GmosSouthLongSlit {
 
 """GMOS South Imaging mode"""
 type GmosSouthImaging {
-  """GMOS South Filters for imaging mode (multiple filters allowed)"""
+  """Details specific to the type of imaging being performed."""
+  variant: GmosImagingVariant!
+
+  """
+  The filters (at least one is required) to be used for data collection. How
+  they are used depends on the imaging variant configuration.
+  """
   filters: [GmosSouthImagingFilter!]!
 
   """
-  Initial GMOS South Filters that were used when creating the imaging mode
+  Initial GMOS North Filters that were used when creating the imaging mode.
   """
   initialFilters: [GmosSouthImagingFilter!]!
-
-  """Spatial offsets"""
-  offsets: [Offset!]!
-
-  """
-  MultipleFiltersMode, either explicitly specified in explicitMultipleFiltersMode or else taken
-  from the defaultMultipleFiltersMode.
-  """
-  multipleFiltersMode: MultipleFiltersMode!
-
-  """Default MultipleFiltersMode (GROUPED)."""
-  defaultMultipleFiltersMode: MultipleFiltersMode!
-
-  """
-  Optional explictly specified MultipleFiltersMode. If set it overrides the
-  default.
-  """
-  explicitMultipleFiltersMode: MultipleFiltersMode
 
   """
   GMOS Binning, either explicitly specified in explicitBin or else taken
@@ -8298,19 +8576,86 @@ type ImagingConfigOptionGmosSouth {
 """An 'Int` in the range 0 to 100"""
 scalar IntPercent
 
+"""An ITC result for a single target."""
+type ItcResult {
+  targetId: TargetId!
+  exposureTime: TimeSpan!
+  exposureCount: NonNegInt!
+  signalToNoiseAt: SignalToNoiseAt
+}
+
+"""A discriminator for the types of ITC results."""
+enum ItcType {
+  SPECTROSCOPY
+  GMOS_NORTH_IMAGING
+  GMOS_SOUTH_IMAGING
+}
+
 """
-Contains the result of calling the ITC for a particular observation.  Since
-the observation may contain multiple targets, there may be multiple results.
-The "result" field contains the selected, representative, result for all
-targets.  If there are multiple successful results, this will be the one that
-prescribes the longest observation. If there is a mix of failures and
-successes, the overall "result" will be a failure. The "all" field contains
-results for all targets regardless.
+Contains the result of calling the ITC for all targets, but a single instrument
+configuration.  Since the observation may contain multiple targets, there may
+be multiple results. The "result" field contains the selected, representative,
+result for all targets.  If there are multiple successful results, this will
+be the one that prescribes the longest observation. If there is a mix of
+failures and successes, the overall "result" will be a failure. The "all" field
+contains results for all targets regardless.
 """
 type ItcResultSet {
   selected: ItcResult!
   all: [ItcResult!]
   index: NonNegInt!
+}
+
+"""
+Combines a GMOS North filter with an `ItcResultSet`. In other words, ITC
+results for all targets but a single filter.
+"""
+type ItcGmosNorthImagingResultSet {
+  filter: GmosNorthFilter!
+  results: ItcResultSet!
+}
+
+"""
+Combines a GMOS South filter with an `ItcResultSet`. In other words, ITC
+results for all targets but a single filter.
+"""
+type ItcGmosSouthImagingResultSet {
+  filter: GmosSouthFilter!
+  results: ItcResultSet!
+}
+
+"""
+ITC results for a particular observation, including relevant instrument
+configurations and targets.  There are specific instances for each `ItcType`.
+"""
+interface Itc {
+  """The type of the Itc results."""
+  itcType: ItcType!
+}
+
+"""
+GMOS North imaging ITC results.  Here each filter is paired with its result
+set.
+"""
+type ItcGmosNorthImaging implements Itc {
+  itcType: ItcType!
+  gmosNorthImagingScience: [ItcGmosNorthImagingResultSet!]!
+}
+
+"""
+GMOS South imaging ITC results.  Here each filter is paired with its result
+set.
+"""
+type ItcGmosSouthImaging implements Itc {
+  itcType: ItcType!
+  gmosSouthImagingScience: [ItcGmosSouthImagingResultSet!]!
+}
+
+"""ITC results for spectroscopy observations."""
+type ItcSpectroscopy implements Itc {
+  itcType: ItcType!
+  acquisition: ItcResultSet!
+  spectroscopyScience: ItcResultSet!
 }
 
 """Calculated signal to noise at a specific wavelength"""
@@ -8323,14 +8668,6 @@ type SignalToNoiseAt {
 
   """Wavelength sn was calculated at"""
   wavelength: Wavelength!
-}
-
-"""A single ITC call result."""
-type ItcResult {
-  targetId: TargetId!
-  exposureTime: TimeSpan!
-  exposureCount: NonNegInt!
-  signalToNoiseAt: SignalToNoiseAt
 }
 
 type LineFluxIntegrated {
@@ -8679,14 +9016,6 @@ input CreateConfigurationRequestInput {
   SET: ConfigurationRequestProperties
 }
 
-type Itc {
-  """The ITC result for the science part of the sequence"""
-  science: ItcResultSet!
-
-  """The ITC result for the acquisition part of the sequence"""
-  acquisition: ItcResultSet!
-}
-
 """ObservationId id formatted as `o-[1-9a-f][0-9a-f]*`"""
 scalar ObservationId
 
@@ -8710,15 +9039,6 @@ type ConfigurationRequestSelectResult {
 
   """`true` when there were additional matches that were not returned."""
   hasMore: Boolean!
-}
-
-"""How sequences are generated when multiple filters are specified."""
-enum MultipleFiltersMode {
-  """Grouped filters"""
-  GROUPED
-
-  """Interleaved filters"""
-  INTERLEAVED
 }
 
 """
@@ -9366,7 +9686,7 @@ type Query {
   Obtains a list of program references for which the user with ORCiD `orcidId`
   has GOA data-download access privileges.  These will be those for which the
   user is a ProgramUser of any role with the `hasDataAccess` flag set.
-
+  
   This query is for use by staff and the GOA and will fail for other users.
   """
   goaDataDownloadAccess(orcidId: String!): [ProgramReferenceLabel!]!
@@ -9801,8 +10121,8 @@ type SequenceDigest {
   """Time estimate for the whole sequence."""
   timeEstimate: CategorizedTime!
 
-  """Unique offsets that occur in the sequence."""
-  offsets: [Offset!]!
+  """TelescopeConfig (offset + guiding) for each step."""
+  telescopeConfigs: [TelescopeConfig!]!
 
   """
   Total count of anticipated atoms, including the 'nextAtom', 'possibleFuture'
@@ -13883,6 +14203,9 @@ input WhereCalculatedObservationWorkflow {
   """Matches the current state of the background calculation."""
   calculationState: WhereOrderCalculationState
 
+  """Matches the current state of the background calculation."""
+  state: WhereOrderCalculationState @deprecated(reason: "Use `calculationState` instead.")
+
   """Matchs the workflow state itself."""
   workflowState: WhereOrderObservationWorkflowState
 }
@@ -13926,6 +14249,9 @@ type ObservationWorkflow {
 
 type CalculatedObservationWorkflow {
   """The current state of the background calculation."""
-  state: CalculationState!
+  calculationState: CalculationState!
+
+  """The current state of the background calculation."""
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
   value: ObservationWorkflow!
 }

@@ -18,7 +18,6 @@ uv run --group docs sphinx-autobuild docs/source docs/build
 - [ ] All tests pass on CI.
 
 ## Final Checks
-- [ ] This PR targets the correct branch (`main` for production, `dev` for development).
 - [ ] PR is labeled as a release-preparation PR.
 
 ## Post-Merge (informational)

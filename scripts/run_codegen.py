@@ -8,16 +8,13 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 import toml
 import typer
-from rich.console import Console
 
+from gpp_client.cli import output
 from gpp_client.config import GPPEnvironment
-
-console = Console()
-
 
 app = typer.Typer(
     help="Run the code generator for a given GPP environment.",
@@ -44,6 +41,7 @@ class _Defaults:
     plugins: tuple[str] = ("custom_plugins.AliasStrWrapperPlugin",)
     enable_custom_operations: bool = True
     convert_to_snake_case: bool = True
+    include_comments: str = "none"
 
     @property
     def schema(self) -> Path:
@@ -84,15 +82,11 @@ class _Defaults:
                         "plugins": list(self.plugins),
                         "enable_custom_operations": self.enable_custom_operations,
                         "convert_to_snake_case": self.convert_to_snake_case,
+                        "include_comments": self.include_comments,
                     }
                 }
             }
         )
-
-
-def fail(message: str) -> NoReturn:
-    console.print(f"[bold]Error:[/bold] {message}", style="red")
-    raise typer.Exit(code=1)
 
 
 @app.command()
@@ -110,20 +104,21 @@ def main(
     env : GPPEnvironment
         The GPP environment to run codegen for.
     """
-    typer.echo(f"Running codegen for environment: {env.value}")
+    output.info(f"Running codegen for environment: {env.value}")
 
     # Prepare the defaults.
     defaults = _Defaults(env=env)
     if defaults.schema and not defaults.schema.exists():
-        fail(
+        output.fail(
             f"Schema file for environment {env.value} does not exist: {defaults.schema}"
         )
+        raise typer.Exit(code=1)
 
     with tempfile.TemporaryDirectory() as tmp:
         # Write the temporary TOML config file.
         config_path = Path(tmp) / "codegen.toml"
         config_path.write_text(defaults.to_toml())
-        typer.echo(f"Using temporary config file: {config_path}")
+        output.info(f"Using temporary config file: {config_path}")
 
         # Create backup of existing generated files.
         api_dir = defaults.output_dir
@@ -134,10 +129,10 @@ def main(
             shutil.rmtree(backup_dir)
 
         if api_dir.exists():
-            typer.echo(f"Creating backup of existing generated client: {backup_dir}")
+            output.info(f"Creating backup of existing generated client: {backup_dir}")
             api_dir.rename(backup_dir)
 
-        with console.status("Running codegen..."):
+        with output.status("Running codegen..."):
             try:
                 process = subprocess.run(
                     [
@@ -149,16 +144,14 @@ def main(
                     capture_output=True,
                     text=True,
                 )
-                console.print(process.stdout, style="dim")
+                output.dim_info(process.stdout)
                 # Codegen succeeded, remove backup.
                 if backup_dir.exists():
                     shutil.rmtree(backup_dir)
 
             except subprocess.CalledProcessError as exc:
                 # Remove partial generated files.
-                typer.secho(
-                    "Codegen failed, restoring backup of existing client", fg="yellow"
-                )
+                output.warning("Codegen failed, restoring backup of existing client")
                 if api_dir.exists():
                     shutil.rmtree(api_dir)
 
@@ -166,9 +159,10 @@ def main(
                 if backup_dir.exists():
                     backup_dir.rename(api_dir)
 
-                fail(exc.stderr)
+                output.fail(exc.stderr)
+                raise typer.Exit(code=1) from exc
 
-        typer.echo("Codegen completed successfully")
+        output.success("Codegen completed successfully")
 
 
 if __name__ == "__main__":

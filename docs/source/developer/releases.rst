@@ -34,10 +34,7 @@ Release Workflow
 
 Releases in ``gpp-client`` follow a **pull request-based workflow**.
 
-1. Create a PR targeting either:
-
-   - ``dev`` for a development (``.devN``) release, or
-   - ``main`` for a production release.
+1. Create a PR called **Release <VERSION>**.
 
 2. In the PR, bump the version using:
 
@@ -64,7 +61,6 @@ To trigger:
 3. Enter:
 
    - ``version`` (e.g., ``25.11.0`` or ``25.11.0.dev1``)
-   - ``base_branch`` (``main`` or ``dev``)
 
 4. Click **Run workflow**.
 
