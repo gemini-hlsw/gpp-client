@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy",
 ]
 dependencies = [
-    "aiohttp>=3.12.13",
+    "aiohttp>=3.13.3",
     "beautifulsoup4>=4.11.0",
     "graphql-core>=3.2.0",
     "httpx>=0.23",
@@ -102,7 +102,10 @@ docs = [
     "sphinx-copybutton>=0.5.2",
     "sphinxcontrib-typer>=0.7.2",
 ]
-schema = ["aiohttp>=3.12.13", "gql>=3.5.0,<4.0.0"]
+schema = [
+    "aiohttp>=3.13.3",
+    "gql>=3.5.0,<4.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/gemini-hlsw/gpp-client"
