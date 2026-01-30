@@ -1,3 +1,5 @@
+import pytest
+
 from gpp_client.config import GPPEnvironment
 
 
@@ -32,3 +34,41 @@ class TestGPPEnvironment:
             GPPEnvironment.STAGING,
             GPPEnvironment.PRODUCTION,
         ]
+
+    def test_missing_case_insensitive_match(self):
+        """
+        Test that _missing_ handles case-insensitive matches correctly.
+        """
+        assert GPPEnvironment("development") == GPPEnvironment.DEVELOPMENT
+        assert GPPEnvironment("staging") == GPPEnvironment.STAGING
+        assert GPPEnvironment("production") == GPPEnvironment.PRODUCTION
+        assert GPPEnvironment("DeVeLoPmEnT") == GPPEnvironment.DEVELOPMENT
+
+    def test_missing_invalid_value(self):
+        """
+        Test that _missing_ returns None for invalid values.
+        """
+        assert GPPEnvironment._missing_("invalid") is None
+        assert GPPEnvironment._missing_(123) is None
+        assert GPPEnvironment._missing_(None) is None
+
+    def test_invalid_enum_value_raises_value_error(self):
+        """
+        Test that invalid enum construction raises ValueError.
+        """
+        with pytest.raises(ValueError):
+            GPPEnvironment("invalid")
+
+    def test_missing_does_not_strip_whitespace(self):
+        """
+        Test that leading/trailing whitespace is not accepted.
+        """
+        with pytest.raises(ValueError):
+            GPPEnvironment(" development ")
+
+    def test_non_string_enum_construction(self):
+        """
+        Test non-string inputs raise ValueError.
+        """
+        with pytest.raises(ValueError):
+            GPPEnvironment(123)

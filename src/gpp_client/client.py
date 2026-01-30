@@ -88,7 +88,7 @@ class GPPClient:
 
         # Normalize env to GPPEnvironment if provided as str.
         if isinstance(env, str):
-            env = GPPEnvironment(env.upper())
+            env = GPPEnvironment(env)
 
         # Resolve credentials.
         resolved_url, resolved_token, resolved_env = CredentialResolver.resolve(
