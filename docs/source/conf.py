@@ -86,23 +86,6 @@ if os.environ.get("READTHEDOCS") == "True":
             "environments; production compatibility not guaranteed."
         )
 
-    # PR previews.
-    elif version_type == "external":
-        announcement = (
-            "<strong>Preview Build:</strong> "
-            "This documentation reflects an unmerged pull request."
-        )
-
-    # Outdated tagged releases (older stable versions).
-    elif version_type == "tag" and version_slug != "stable":
-        if ".dev" not in version_slug:
-            announcement = (
-                "<strong>Outdated Documentation:</strong> "
-                "This version is no longer current. See the "
-                '<a href="https://gpp-client.readthedocs.io/en/stable/">'
-                "latest stable documentation</a>."
-            )
-
     if announcement:
         html_theme_options["announcement"] = announcement
 
