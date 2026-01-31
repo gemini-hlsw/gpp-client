@@ -32,3 +32,29 @@ def gs_json_payload(test_data_dir: Path) -> dict:
     import json
 
     return json.loads((test_data_dir / "gs_status.json").read_text(encoding="utf-8"))
+
+
+class DummyClient:
+    """Mock public-facing client exposing internal clients."""
+
+    def __init__(self, internal) -> None:
+        self._client = internal
+        self._rest_client = internal
+
+
+@pytest.fixture
+def internal(mocker):
+    """
+    Internal client with async query/mutation methods. This matches the minimal
+    interface expected by all managers.
+    """
+    internal = mocker.MagicMock()
+    internal.query = mocker.AsyncMock()
+    internal.mutation = mocker.AsyncMock()
+    return internal
+
+
+@pytest.fixture
+def dummy_client(internal) -> DummyClient:
+    """Public-facing dummy client wrapper."""
+    return DummyClient(internal)
