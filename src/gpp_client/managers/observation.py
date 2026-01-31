@@ -1,3 +1,7 @@
+"""
+Manager for interacting with observation resources.
+"""
+
 __all__ = ["ObservationManager"]
 
 import logging
@@ -13,6 +17,9 @@ from gpp_client.api.custom_fields import (
     CreateObservationResultFields,
     DeclinationFields,
     ElevationRangeFields,
+    ExposureTimeModeFields,
+    Flamingos2LongSlitAcquisitionFields,
+    Flamingos2LongSlitFields,
     GmosNorthLongSlitFields,
     GmosSouthLongSlitFields,
     HourAngleRangeFields,
@@ -21,6 +28,8 @@ from gpp_client.api.custom_fields import (
     ObservationReferenceFields,
     ObservationSelectResultFields,
     ObservingModeFields,
+    OffsetFields,
+    OffsetPFields,
     OffsetQFields,
     ProgramFields,
     ProperMotionDeclinationFields,
@@ -29,8 +38,11 @@ from gpp_client.api.custom_fields import (
     RightAscensionFields,
     ScienceRequirementsFields,
     SiderealFields,
+    SignalToNoiseExposureTimeModeFields,
     TargetEnvironmentFields,
     TargetFields,
+    TelluricTypeFields,
+    TimeAndCountExposureTimeModeFields,
     TimeSpanFields,
     TimingWindowEndAfterFields,
     TimingWindowEndAtFields,
@@ -38,14 +50,6 @@ from gpp_client.api.custom_fields import (
     TimingWindowRepeatFields,
     UpdateObservationsResultFields,
     WavelengthFields,
-    Flamingos2LongSlitFields,
-    TelluricTypeFields,
-    ExposureTimeModeFields,
-    SignalToNoiseExposureTimeModeFields,
-    TimeAndCountExposureTimeModeFields,
-    OffsetFields,
-    OffsetPFields,
-    Flamingos2LongSlitAcquisitionFields,
 )
 from gpp_client.api.custom_mutations import Mutation
 from gpp_client.api.custom_queries import Query
@@ -66,6 +70,10 @@ logger = logging.getLogger(__name__)
 
 
 class ObservationManager(BaseManager):
+    """
+    Manager for interacting with observation resources.
+    """
+
     async def clone(
         self,
         *,
@@ -286,6 +294,23 @@ class ObservationManager(BaseManager):
 
         return self.get_result(result, operation_name)
 
+    @staticmethod
+    def _build_where_for_identifier(
+        *,
+        observation_id: str | None,
+        observation_reference: str | None,
+    ) -> WhereObservation:
+        """Build the ``WhereObservation`` filter for exactly one identifier."""
+        if observation_id is not None:
+            return WhereObservation(id=WhereOrderObservationId(eq=observation_id))
+
+        # At this point, observation_reference must be not ``None`` due to validation.
+        return WhereObservation(
+            reference=WhereObservationReference(
+                label=WhereString(eq=observation_reference)
+            )
+        )
+
     async def update_by_id(
         self,
         *,
@@ -341,14 +366,9 @@ class ObservationManager(BaseManager):
             observation_reference=observation_reference,
         )
 
-        if observation_id:
-            where = WhereObservation(id=WhereOrderObservationId(eq=observation_id))
-        else:
-            where = WhereObservation(
-                reference=WhereObservationReference(
-                    label=WhereString(eq=observation_reference)
-                )
-            )
+        where = self._build_where_for_identifier(
+            observation_id=observation_id, observation_reference=observation_reference
+        )
 
         result = await self.update_all(
             where=where,

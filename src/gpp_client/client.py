@@ -1,3 +1,9 @@
+"""
+This module provides the main entry point for interacting with GPP.
+"""
+
+__all__ = ["GPPClient"]
+
 import logging
 from typing import Optional
 
@@ -80,27 +86,60 @@ class GPPClient:
         _debug: bool = True,
     ) -> None:
         if _debug:
-            _enable_dev_console_logging()
-            logger.debug("Logging enabled for GPPClient")
+            self._enable_dev_logging()
 
         logger.debug("Initializing GPPClient")
-        self.config = config or GPPConfig()
+        self.config = config or self._create_config()
 
         # Normalize env to GPPEnvironment if provided as str.
         if isinstance(env, str):
             env = GPPEnvironment(env)
 
         # Resolve credentials.
-        resolved_url, resolved_token, resolved_env = CredentialResolver.resolve(
+        resolved_url, resolved_token, resolved_env = self._resolve_credentials(
             env=env, token=token, config=self.config
         )
         logger.info("Using environment: %s", resolved_env.value)
 
-        headers = self._build_headers(resolved_token)
-        self._client = _GPPClient(url=resolved_url, headers=headers)
-        self._rest_client = _GPPRESTClient(resolved_url, resolved_token)
+        self._client = self._create_graphql_client(
+            url=resolved_url, token=resolved_token
+        )
+        self._rest_client = self._create_rest_client(
+            url=resolved_url, token=resolved_token
+        )
 
         # Initialize the managers.
+        self._init_managers()
+
+    def _create_config(self) -> GPPConfig:
+        """
+        Create a new GPPConfig instance.
+        """
+        return GPPConfig()
+
+    def _create_graphql_client(self, *, url: str, token: str) -> _GPPClient:
+        """
+        Create a new _GPPClient instance for GraphQL requests.
+        """
+        return _GPPClient(url=url, headers=self._build_headers(token))
+
+    def _create_rest_client(self, *, url: str, token: str) -> _GPPRESTClient:
+        """
+        Create a new _GPPRESTClient instance for REST requests.
+        """
+        return _GPPRESTClient(url, token)
+
+    def _enable_dev_logging(self) -> None:
+        """
+        Enable debug-level console logging for development purposes.
+        """
+        _enable_dev_console_logging()
+        logger.debug("Logging enabled for GPPClient")
+
+    def _init_managers(self) -> None:
+        """
+        Initialize all manager instances for the client.
+        """
         self.program_note = ProgramNoteManager(self)
         self.target = TargetManager(self)
         self.program = ProgramManager(self)
@@ -135,8 +174,24 @@ class GPPClient:
         config = GPPConfig()
         config.set_credentials(env, token, activate=activate, save=save)
 
-    def _build_headers(self, token: str) -> dict[str, str]:
+    @staticmethod
+    def _build_headers(token: str) -> dict[str, str]:
+        """
+        Build the headers for the GraphQL endpoint request.
+        """
         return {"Authorization": f"Bearer {token}"}
+
+    def _resolve_credentials(
+        self,
+        *,
+        env: GPPEnvironment | None,
+        token: str | None,
+        config: GPPConfig,
+    ) -> tuple[str, str, GPPEnvironment]:
+        """
+        Resolve the credentials for the given environment and token.
+        """
+        return CredentialResolver.resolve(env=env, token=token, config=config)
 
     async def is_reachable(self) -> tuple[bool, Optional[str]]:
         """

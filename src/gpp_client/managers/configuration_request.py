@@ -1,3 +1,7 @@
+"""
+Manager for interacting with configuration request resources.
+"""
+
 __all__ = ["ConfigurationRequestManager"]
 
 from typing import Any
@@ -27,6 +31,37 @@ from gpp_client.managers.base import BaseManager
 
 
 class ConfigurationRequestManager(BaseManager):
+    """
+    Manager for interacting with configuration request resources.
+    """
+
+    _OP_LIST: str = "configurationRequests"
+
+    @staticmethod
+    def _build_where(
+        *,
+        program_id: str | None,
+        status: ConfigurationRequestStatus | None,
+        where: WhereConfigurationRequest | None,
+    ) -> WhereConfigurationRequest:
+        """
+        Build a ``WhereConfigurationRequest`` applying explicit overrides.
+        """
+        built = where.model_copy() if where is not None else WhereConfigurationRequest()
+
+        updates: dict[str, Any] = {}
+
+        if program_id is not None:
+            updates["program"] = WhereProgram(id=WhereOrderProgramId(eq=program_id))
+
+        if status is not None:
+            updates["status"] = WhereOrderConfigurationRequestStatus(eq=status)
+
+        if updates:
+            built = built.model_copy(update=updates)
+
+        return built
+
     async def get_all(
         self,
         *,
@@ -62,26 +97,19 @@ class ConfigurationRequestManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        # Start with user-provided where, or an empty one
-        where = where or WhereConfigurationRequest()
-
-        # Apply overrides
-        if program_id is not None:
-            where.program = WhereProgram(id=WhereOrderProgramId(eq=program_id))
-
-        if status is not None:
-            where.status = WhereOrderConfigurationRequestStatus(eq=status)
+        built_where = self._build_where(
+            program_id=program_id, status=status, where=where
+        )
 
         fields = Query.configuration_requests(
-            where=where, offset=offset, limit=limit
+            where=built_where, offset=offset, limit=limit
         ).fields(
             ConfigurationRequestSelectResultFields.has_more,
             ConfigurationRequestSelectResultFields.matches().fields(*self._fields()),
         )
-        operation_name = "configurationRequests"
-        result = await self.client.query(fields, operation_name=operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_LIST)
 
-        return self.get_result(result, operation_name)
+        return self.get_result(result, self._OP_LIST)
 
     async def get_all_approved_by_program_id(
         self,

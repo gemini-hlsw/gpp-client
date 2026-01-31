@@ -1,3 +1,7 @@
+"""
+Manager for interacting with group resources.
+"""
+
 __all__ = ["GroupManager"]
 
 import logging
@@ -30,6 +34,10 @@ logger = logging.getLogger(__name__)
 
 
 class GroupManager(BaseManager):
+    """
+    Manager for interacting with group resources.
+    """
+
     GROUPS_RESULT_KEY = "groups"
     FIRST_INDEX = 0
 

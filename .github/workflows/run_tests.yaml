@@ -47,13 +47,13 @@ jobs:
 
       - name: Run tests and calculate coverage
         run: |
-          uv run pytest -r A -v -n auto --cov=src --cov-report=xml --cov=tests --cov-branch
+          uv run pytest -r A -v -n auto --cov --cov-report=xml --cov-branch
 
-      # - name: Upload coverage to Codecov
-      #   if: matrix.python-version == "3.10"
-      #   uses: codecov/codecov-action@v5
-      #   with:
-      #     token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == "3.10"
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Minimize uv cache
         run: uv cache prune --ci

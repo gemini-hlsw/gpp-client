@@ -1,3 +1,7 @@
+"""
+Module providing the ``GPPDirector`` class for high-level access to service-specific directors.
+"""
+
 __all__ = ["GPPDirector"]
 
 import logging
@@ -30,6 +34,11 @@ class GPPDirector:
 
     def __init__(self, client: GPPClient):
         logger.debug("Initializing GPPDirector")
+        self._init_directors(client)
 
+    def _init_directors(self, client: GPPClient):
+        """
+        Initialize all service-specific directors with the provided client.
+        """
         self.scheduler = SchedulerDirector(client)
         self.goats = GOATSDirector(client)

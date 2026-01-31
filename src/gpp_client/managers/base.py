@@ -1,3 +1,7 @@
+"""
+Base class for all resource managers.
+"""
+
 __all__ = ["BaseManager"]
 
 import json
@@ -7,7 +11,12 @@ from typing import TYPE_CHECKING, Any, NoReturn, Optional, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from gpp_client.exceptions import GPPClientError, GPPError, GPPValidationError
+from gpp_client.exceptions import (
+    GPPClientError,
+    GPPError,
+    GPPResponseError,
+    GPPValidationError,
+)
 
 logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
@@ -63,8 +72,35 @@ class BaseManager:
 
         if include_traceback:
             raise exc_class(message) from exc
-        else:
-            raise exc_class(message) from None
+        raise exc_class(message) from None
+
+    async def raise_for_status(
+        self,
+        response,
+        *,
+        ok_statuses: set[int],
+        default_message: str = "Request failed",
+    ) -> None:
+        """
+        Raise an exception if the HTTP response status is not OK.
+
+        Parameters
+        ----------
+        response : aiohttp.ClientResponse
+            The HTTP response to check.
+        ok_statuses : set[int]
+            Set of acceptable HTTP status codes.
+        default_message : str, default="Request failed"
+            Default error message if the response has no content.
+
+        Raises
+        ------
+        GPPResponseError
+            If the response status is not in ``ok_statuses``.
+        """
+        if response.status not in ok_statuses:
+            text = await response.text()
+            raise GPPResponseError(response.status, text or default_message)
 
     def get_single_result(
         self,
