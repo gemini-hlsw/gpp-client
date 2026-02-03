@@ -2,6 +2,9 @@
 
 [![Run Tests](https://github.com/gemini-hlsw/gpp-client/actions/workflows/run_tests.yaml/badge.svg?branch=main)](https://github.com/gemini-hlsw/gpp-client/actions/workflows/run_tests.yaml)
 ![Docs Status](https://readthedocs.org/projects/gpp-client/badge/?version=latest)
+[![codecov](https://codecov.io/gh/gemini-hlsw/gpp-client/branch/main/graph/badge.svg?token=9V5TA510MF)](https://codecov.io/gh/gemini-hlsw/gpp-client)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gpp-client?color=green)
+![PyPI - Version](https://img.shields.io/pypi/v/gpp-client?color=green)
 
 ---
 
@@ -23,11 +26,13 @@ The GPP Client provides:
 
 All details—including installation, quickstart, configuration, credentials, managers, orchestration layer, and code generation are documented in the official documentation.
 
-👉 **Start here:** https://gpp-client.readthedocs.io/en/latest/
+**Start here:** https://gpp-client.readthedocs.io/en/latest/
 
 ## Development Status
 
-🚧 Alpha: the library is under heavy development. The public API and CLI flags may change between releases.
+The library is under active development.
+
+While core workflows are stable, some APIs and CLI flags may evolve between minor releases.
 
 ## Installation
 

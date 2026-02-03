@@ -1,21 +1,30 @@
 Getting Started
 ===============
 
+The GPP Python Client provides a fully asynchronous, high-level interface to the
+Gemini Program Platform (GPP). No GraphQL knowledge is required.
+
+Installation
+------------
+
+Install from PyPI:
+
 .. code-block:: bash
 
     pip install gpp-client
 
-Requirements:
+Requirements
+------------
 
-- ``python>=3.10``
-- ``toml``
-- ``typer``
-- ``aiohttp``
-- ``beautifulsoup4``
-- ``httpx``
-- ``graphql-core``
-- ``websockets``
+- Python **3.10-3.14**
+- Internet access to a GPP environment (DEVELOPMENT, STAGING, or PRODUCTION)
 
+All Python dependencies are installed automatically.
+
+.. note::
+
+   The client is fully asynchronous. All API calls must be executed inside an
+   event loop (for example using ``asyncio.run``).
 
 Basic Usage
 -----------
