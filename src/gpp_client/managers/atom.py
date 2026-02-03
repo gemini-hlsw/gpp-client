@@ -1,4 +1,8 @@
-__all__ = ["AttachmentManager"]
+"""
+Manager for interacting with atom resources.
+"""
+
+__all__ = ["AtomManager"]
 
 import gzip
 import logging
@@ -10,7 +14,11 @@ from gpp_client.managers.base import BaseManager
 logger = logging.getLogger(__name__)
 
 
-class AttachmentManager(BaseManager):
+class AtomManager(BaseManager):
+    """
+    Manager for interacting with atom resources.
+    """
+
     async def get_atom_digests(
         self, observation_ids: list[str], accept_gzip: bool = True
     ) -> str:
@@ -43,7 +51,7 @@ class AttachmentManager(BaseManager):
         # Prepare body - one observation ID per line.
         body = "\n".join(observation_ids)
 
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
 
         async with session.post(
             "/scheduler/atoms", data=body, headers=headers

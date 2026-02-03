@@ -1,3 +1,7 @@
+"""
+Manager for interacting with call for proposals resources.
+"""
+
 __all__ = ["CallForProposalsManager"]
 
 from pathlib import Path
@@ -24,6 +28,22 @@ from gpp_client.managers.base import BaseManager
 
 
 class CallForProposalsManager(BaseManager):
+    """
+    Manager for interacting with call for proposals resources.
+    """
+
+    _OP_CREATE: str = "createCallForProposals"
+    _OP_UPDATE: str = "updateCallsForProposals"
+    _OP_GET: str = "callForProposals"
+    _OP_LIST: str = "callsForProposals"
+
+    @staticmethod
+    def _build_where_for_id(*, call_for_proposals_id: str) -> WhereCallForProposals:
+        """Build a ``WhereCallForProposals`` filter for a ``call_for_proposals_id``."""
+        return WhereCallForProposals(
+            id=WhereOrderCallForProposalsId(eq=call_for_proposals_id)
+        )
+
     async def create(
         self,
         *,
@@ -74,10 +94,8 @@ class CallForProposalsManager(BaseManager):
             ),
         )
 
-        operation_name = "createCallForProposals"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_CREATE)
+        return self.get_result(result, self._OP_CREATE)
 
     async def update_all(
         self,
@@ -144,10 +162,8 @@ class CallForProposalsManager(BaseManager):
             ),
         )
 
-        operation_name = "updateCallsForProposals"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_UPDATE)
+        return self.get_result(result, self._OP_UPDATE)
 
     async def update_by_id(
         self,
@@ -190,9 +206,7 @@ class CallForProposalsManager(BaseManager):
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``GPPValidationError``.
         """
-        where = WhereCallForProposals(
-            id=WhereOrderCallForProposalsId(eq=call_for_proposals_id)
-        )
+        where = self._build_where_for_id(call_for_proposals_id=call_for_proposals_id)
 
         results = await self.update_all(
             where=where,
@@ -203,7 +217,7 @@ class CallForProposalsManager(BaseManager):
         )
 
         # Since it returns one item, discard the 'matches' and return the item.
-        return self.get_single_result(results, "callsForProposals")
+        return self.get_single_result(results, self._OP_LIST)
 
     async def get_by_id(
         self, call_for_proposals_id: str, *, include_deleted: bool = False
@@ -232,10 +246,8 @@ class CallForProposalsManager(BaseManager):
             call_for_proposals_id=call_for_proposals_id
         ).fields(*self._fields(include_deleted=include_deleted))
 
-        operation_name = "callForProposals"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_GET)
+        return self.get_result(result, self._OP_GET)
 
     async def get_all(
         self,
@@ -277,10 +289,8 @@ class CallForProposalsManager(BaseManager):
                 *self._fields(include_deleted=include_deleted)
             ),
         )
-        operation_name = "callsForProposals"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_LIST)
+        return self.get_result(result, self._OP_LIST)
 
     async def restore_by_id(self, call_for_proposals_id: str) -> dict[str, Any]:
         """

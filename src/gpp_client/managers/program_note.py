@@ -1,3 +1,9 @@
+"""
+Manager for interacting with program note resources.
+"""
+
+__all__ = ["ProgramNoteManager"]
+
 import logging
 from pathlib import Path
 from typing import Any, Optional
@@ -25,6 +31,15 @@ logger = logging.getLogger(__name__)
 
 
 class ProgramNoteManager(BaseManager):
+    """
+    Manager for interacting with program note resources.
+    """
+
+    @staticmethod
+    def _build_where_for_id(*, program_note_id: str) -> WhereProgramNote:
+        """Build a ``WhereProgramNote`` filter for the given program note id."""
+        return WhereProgramNote(id=WhereOrderProgramNoteId(eq=program_note_id))
+
     async def create(
         self,
         *,
@@ -207,8 +222,8 @@ class ProgramNoteManager(BaseManager):
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``GPPValidationError``.
         """
-        logger.debug(f"Updating program note with ID: {program_note_id}")
-        where = WhereProgramNote(id=WhereOrderProgramNoteId(eq=program_note_id))
+        logger.debug("Updating program note with ID: %s", program_note_id)
+        where = self._build_where_for_id(program_note_id=program_note_id)
 
         results = await self.update_all(
             where=where,
@@ -244,7 +259,7 @@ class ProgramNoteManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Fetching program note with ID: {program_note_id}")
+        logger.debug("Fetching program note with ID: %s", program_note_id)
         fields = Query.program_note(program_note_id=program_note_id).fields(
             *self._fields(include_deleted=include_deleted)
         )
@@ -321,7 +336,7 @@ class ProgramNoteManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Restoring program note with ID: {program_note_id}")
+        logger.debug("Restoring program note with ID: %s", program_note_id)
         properties = ProgramNotePropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             program_note_id, properties=properties, include_deleted=True
@@ -348,7 +363,7 @@ class ProgramNoteManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Deleting program note with ID: {program_note_id}")
+        logger.debug("Deleting program note with ID: %s", program_note_id)
         properties = ProgramNotePropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             program_note_id,

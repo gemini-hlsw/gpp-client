@@ -1,3 +1,7 @@
+"""
+Manager for interacting with target resources.
+"""
+
 __all__ = ["TargetManager"]
 
 import logging
@@ -36,6 +40,21 @@ logger = logging.getLogger(__name__)
 
 
 class TargetManager(BaseManager):
+    """
+    Manager for interacting with target resources.
+    """
+
+    _OP_CLONE: str = "cloneTarget"
+    _OP_CREATE: str = "createTarget"
+    _OP_UPDATE: str = "updateTargets"
+    _OP_GET: str = "target"
+    _OP_LIST: str = "targets"
+
+    @staticmethod
+    def _build_where_for_id(*, target_id: str) -> WhereTarget:
+        """Build a ``WhereTarget`` filter for a target ID."""
+        return WhereTarget(id=WhereOrderTargetId(eq=target_id))
+
     async def clone(
         self,
         *,
@@ -89,9 +108,8 @@ class TargetManager(BaseManager):
             CloneTargetResultFields.new_target().fields(*self._fields()),
         )
 
-        operation_name = "cloneTarget"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-        return self.get_result(result, operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_CLONE)
+        return self.get_result(result, self._OP_CLONE)
 
     async def create(
         self,
@@ -163,9 +181,8 @@ class TargetManager(BaseManager):
             CreateTargetResultFields.target().fields(*self._fields()),
         )
 
-        operation_name = "createTarget"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-        return self.get_result(result, operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_CREATE)
+        return self.get_result(result, self._OP_CREATE)
 
     async def update_all(
         self,
@@ -233,10 +250,8 @@ class TargetManager(BaseManager):
             ),
         )
 
-        operation_name = "updateTargets"
-        result = await self.client.mutation(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_UPDATE)
+        return self.get_result(result, self._OP_UPDATE)
 
     async def update_by_id(
         self,
@@ -280,8 +295,9 @@ class TargetManager(BaseManager):
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``GPPValidationError``.
         """
-        logger.debug(f"Updating target with ID: {target_id}")
-        where = WhereTarget(id=WhereOrderTargetId(eq=target_id))
+        logger.debug("Updating target with ID: %s", target_id)
+        where = self._build_where_for_id(target_id=target_id)
+
         results = await self.update_all(
             where=where,
             limit=1,
@@ -319,10 +335,8 @@ class TargetManager(BaseManager):
             *self._fields(include_deleted=include_deleted)
         )
 
-        operation_name = "target"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_GET)
+        return self.get_result(result, self._OP_GET)
 
     async def get_all(
         self,
@@ -365,10 +379,8 @@ class TargetManager(BaseManager):
                 *self._fields(include_deleted=include_deleted)
             ),
         )
-        operation_name = "targets"
-        result = await self.client.query(fields, operation_name=operation_name)
-
-        return self.get_result(result, operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_LIST)
+        return self.get_result(result, self._OP_LIST)
 
     async def restore_by_id(self, target_id: str) -> dict[str, Any]:
         """
@@ -391,7 +403,7 @@ class TargetManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Restoring target with ID: {target_id}")
+        logger.debug("Restoring target with ID: %s", target_id)
         properties = TargetPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             target_id, properties=properties, include_deleted=True
@@ -418,7 +430,7 @@ class TargetManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Deleting target with ID: {target_id}")
+        logger.debug("Deleting target with ID: %s", target_id)
         properties = TargetPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             target_id,

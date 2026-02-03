@@ -17,19 +17,12 @@ class DummyProps(BaseModel):
     b: str
 
 
-class DummyClient:
-    """Mock public-facing client that exposes _client internally."""
-
-    def __init__(self) -> None:
-        self._client = object()
-        self._rest_client = object()
-
 @pytest.fixture
-def manager() -> BaseManager:
+def manager(dummy_client) -> BaseManager:
     """
     Fixture that provides a BaseManager instance with a dummy client.
     """
-    return BaseManager(DummyClient())  # pyright: ignore[reportArgumentType]
+    return BaseManager(dummy_client)
 
 
 @pytest.mark.parametrize("include_traceback", [True, False])

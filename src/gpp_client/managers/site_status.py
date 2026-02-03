@@ -1,11 +1,15 @@
+"""
+Manager for interacting with site status resources.
+"""
+
 __all__ = ["SiteStatusManager"]
 
 import re
 from enum import Enum
 from typing import Any, Literal, Optional
 
-from httpx import AsyncClient
 from bs4 import BeautifulSoup
+from httpx import AsyncClient
 
 
 class Site(str, Enum):
@@ -32,6 +36,10 @@ SITE_CONFIG = {
 
 
 class SiteStatusManager:
+    """
+    Manager for interacting with site status resources.
+    """
+
     async def get_by_id(self, site_id: Literal["south", "north"]) -> dict[str, Any]:
         """
         Get the current site status payload for Gemini North or South.

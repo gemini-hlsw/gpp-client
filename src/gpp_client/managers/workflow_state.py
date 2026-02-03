@@ -1,3 +1,7 @@
+"""
+Manager for interacting with observation workflow state resources.
+"""
+
 __all__ = ["WorkflowStateManager"]
 
 import asyncio
@@ -23,6 +27,10 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowStateManager(BaseManager):
+    """
+    Manager for interacting with observation workflow state resources.
+    """
+
     async def get_by_id(
         self,
         *,

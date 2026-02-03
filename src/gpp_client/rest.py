@@ -4,20 +4,22 @@ REST API client for non-GraphQL requests.
 
 __all__ = ["_GPPRESTClient"]
 
-import aiohttp
 import asyncio
-import certifi
 import gzip
-import ssl
 import logging
+import ssl
 from urllib.parse import urlparse
+
+import aiohttp
+import certifi
 
 logger = logging.getLogger(__name__)
 
 
 class _GPPRESTClient:
     """
-    REST API client to non-GraphQL requests that help with the function of managers and coordinators.
+    REST API client to non-GraphQL requests that help with the function of managers and
+    coordinators.
 
     Attributes
     ----------
@@ -25,36 +27,62 @@ class _GPPRESTClient:
         Base URL of the REST API. Derived from GPPClient base_url.
     gpp_token : str
         GPP token to authenticate against the REST API. Same as GPPClient.
+    timeout : float
+        Timeout for REST API requests in seconds.
     """
 
-    def __init__(self, resolved_url: str, gpp_token: str) -> None:
+    _DEFAULT_TIMEOUT = 30.0  # Seconds.
+
+    def __init__(
+        self, resolved_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
+    ) -> None:
         self.base_url = self.get_base_url(resolved_url)
         self.gpp_token = gpp_token
-        self._session = None
+        self._timeout = timeout
+
+        self._session: aiohttp.ClientSession | None = None
         self._lock = asyncio.Lock()
 
-    def resolve_headers(self):
+    def resolve_headers(self) -> dict[str, str]:
+        """
+        Resolve the headers for the REST API requests.
+
+        Returns
+        -------
+        dict[str, str]
+            Headers dictionary.
+        """
         headers = {
             "Content-Type": "text/plain",
             "Authorization": f"Bearer {self.gpp_token}",
         }
         return headers
 
-    async def _get_session(self):
+    async def get_session(self) -> aiohttp.ClientSession:
+        """
+        Get or create an ``aiohttp.ClientSession`` for making REST API requests.
+
+        Returns
+        -------
+        aiohttp.ClientSession
+            The aiohttp ClientSession instance.
+        """
         async with self._lock:
             if self._session is None or self._session.closed:
                 ssl_context = ssl.create_default_context(cafile=certifi.where())
                 connector = aiohttp.TCPConnector(ssl=ssl_context)
-                headers = self.resolve_headers()
                 self._session = aiohttp.ClientSession(
                     base_url=self.base_url,
-                    timeout=aiohttp.ClientTimeout(total=30),
+                    timeout=aiohttp.ClientTimeout(total=self._timeout),
                     connector=connector,
-                    headers=headers,
+                    headers=self.resolve_headers(),
                 )
             return self._session
 
-    async def close(self):
+    async def close(self) -> None:
+        """
+        Close the session if it exists and is not already closed.
+        """
         if self._session and not self._session.closed:
             await self._session.close()
 
@@ -113,7 +141,7 @@ class _GPPRESTClient:
         # Prepare body - one observation ID per line
         body = "\n".join(observation_ids)
 
-        session = await self._get_session()
+        session = await self.get_session()
 
         async with session.post(
             "/scheduler/atoms", data=body, headers=headers

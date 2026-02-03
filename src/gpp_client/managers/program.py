@@ -1,8 +1,13 @@
+"""
+Manager for interacting with program resources.
+"""
+
 __all__ = ["ProgramManager"]
 
+import logging
 from pathlib import Path
 from typing import Any, Optional
-import logging
+
 from gpp_client.api.custom_fields import (
     CallForProposalsFields,
     CreateProgramResultFields,
@@ -33,6 +38,20 @@ logger = logging.getLogger(__name__)
 
 
 class ProgramManager(BaseManager):
+    """
+    Manager for interacting with program resources.
+    """
+
+    _OP_CREATE: str = "createProgram"
+    _OP_UPDATE: str = "updatePrograms"
+    _OP_GET: str = "program"
+    _OP_LIST: str = "programs"
+
+    @staticmethod
+    def _build_where_for_id(*, program_id: str) -> WhereProgram:
+        """Build a ``WhereProgram`` filter for a program ID."""
+        return WhereProgram(id=WhereOrderProgramId(eq=program_id))
+
     async def create(
         self,
         *,
@@ -82,10 +101,9 @@ class ProgramManager(BaseManager):
             CreateProgramResultFields.program().fields(*self._fields()),
         )
 
-        operation_name = "createProgram"
-        result = await self.client.mutation(fields, operation_name=operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_CREATE)
 
-        return self.get_result(result, operation_name)
+        return self.get_result(result, self._OP_CREATE)
 
     async def update_all(
         self,
@@ -151,10 +169,9 @@ class ProgramManager(BaseManager):
             ),
         )
 
-        operation_name = "updatePrograms"
-        result = await self.client.mutation(fields, operation_name=operation_name)
+        result = await self.client.mutation(fields, operation_name=self._OP_UPDATE)
 
-        return self.get_result(result, operation_name)
+        return self.get_result(result, self._OP_UPDATE)
 
     async def update_by_id(
         self,
@@ -197,8 +214,8 @@ class ProgramManager(BaseManager):
         Exactly one of ``properties`` or ``from_json`` must be supplied. Supplying
         both or neither raises ``GPPValidationError``.
         """
-        logger.debug(f"Updating program with ID: {program_id}")
-        where = WhereProgram(id=WhereOrderProgramId(eq=program_id))
+        logger.debug("Updating program with ID: %s", program_id)
+        where = self._build_where_for_id(program_id=program_id)
 
         results = await self.update_all(
             where=where,
@@ -234,15 +251,14 @@ class ProgramManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Fetching program with ID: {program_id}")
+        logger.debug("Fetching program with ID: %s", program_id)
         fields = Query.program(program_id=program_id).fields(
             *self._fields(include_deleted=include_deleted)
         )
 
-        operation_name = "program"
-        result = await self.client.query(fields, operation_name=operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_GET)
 
-        return self.get_result(result, operation_name)
+        return self.get_result(result, self._OP_GET)
 
     async def get_all(
         self,
@@ -285,10 +301,9 @@ class ProgramManager(BaseManager):
                 *self._fields(include_deleted=include_deleted)
             ),
         )
-        operation_name = "programs"
-        result = await self.client.query(fields, operation_name=operation_name)
+        result = await self.client.query(fields, operation_name=self._OP_LIST)
 
-        return self.get_result(result, operation_name)
+        return self.get_result(result, self._OP_LIST)
 
     async def restore_by_id(self, program_id: str) -> dict[str, Any]:
         """
@@ -311,7 +326,7 @@ class ProgramManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Restoring program with ID: {program_id}")
+        logger.debug("Restoring program with ID: %s", program_id)
         properties = ProgramPropertiesInput(existence=Existence.PRESENT)
         return await self.update_by_id(
             program_id, properties=properties, include_deleted=True
@@ -338,7 +353,7 @@ class ProgramManager(BaseManager):
         GPPClientError
             If an unexpected error occurs unpacking the response.
         """
-        logger.debug(f"Deleting program with ID: {program_id}")
+        logger.debug("Deleting program with ID: %s", program_id)
         properties = ProgramPropertiesInput(existence=Existence.DELETED)
         return await self.update_by_id(
             program_id,

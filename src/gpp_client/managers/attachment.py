@@ -1,3 +1,7 @@
+"""
+Manager for interacting with attachment resources.
+"""
+
 __all__ = ["AttachmentManager"]
 
 import logging
@@ -14,13 +18,82 @@ from gpp_client.api.custom_fields import (
 )
 from gpp_client.api.custom_queries import Query
 from gpp_client.api.enums import AttachmentType
-from gpp_client.exceptions import GPPClientError
+from gpp_client.exceptions import GPPClientError, GPPResponseError
 from gpp_client.managers.base import BaseManager
 
 logger = logging.getLogger(__name__)
 
 
 class AttachmentManager(BaseManager):
+    """
+    Manager for interacting with attachment resources.
+    """
+
+    _DEFAULT_OK: set[int] = {200}
+    _UPLOAD_OK: set[int] = {200, 201}
+    _UPDATE_OK: set[int] = {200, 201}
+    _DELETE_OK: set[int] = {200, 204}
+
+    @staticmethod
+    def _build_upload_params(
+        *,
+        program_id: str,
+        attachment_type: AttachmentType,
+        file_name: str,
+        description: str | None,
+    ) -> dict[str, str]:
+        """
+        Build upload parameters for attachment upload.
+
+        Parameters
+        ----------
+        program_id : str
+            The program ID to associate the attachment with.
+        attachment_type : AttachmentType
+            The attachment type.
+        file_name : str
+            The file name to store for the attachment.
+        description : str | None, optional
+            Optional attachment description.
+
+        Returns
+        -------
+        dict[str, str]
+            The parameters for the upload request.
+        """
+        params: dict[str, str] = {
+            "programId": program_id,
+            "fileName": file_name,
+            "attachmentType": attachment_type.value,
+        }
+        if description and description.strip():
+            params["description"] = description.strip()
+        return params
+
+    @staticmethod
+    def _build_update_params(
+        *, file_name: str, description: str | None
+    ) -> dict[str, str]:
+        """
+        Build update parameters for attachment update.
+
+        Parameters
+        ----------
+        file_name : str
+            The new file name for the attachment.
+        description : str | None
+            The new description for the attachment.
+
+        Returns
+        -------
+        dict[str, str]
+            The parameters for the update request.
+        """
+        params: dict[str, str] = {"fileName": file_name}
+        if description is not None and description.strip() != "":
+            params["description"] = description.strip()
+        return params
+
     async def upload(
         self,
         program_id: str,
@@ -70,26 +143,20 @@ class AttachmentManager(BaseManager):
 
         body = self.resolve_content(file_path=file_path, content=content)
 
-        params: dict[str, str] = {
-            "programId": program_id,
-            "fileName": file_name,
-            "attachmentType": attachment_type.value,
-        }
-        if description and description.strip():
-            params["description"] = description.strip()
+        params = self._build_upload_params(
+            program_id=program_id,
+            attachment_type=attachment_type,
+            file_name=file_name,
+            description=description,
+        )
 
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
         url = "/attachment"
 
         try:
             async with session.post(url, params=params, data=body) as response:
+                await self.raise_for_status(response, ok_statuses=self._UPLOAD_OK)
                 text = await response.text()
-
-                if response.status not in {200, 201}:
-                    raise GPPClientError(
-                        "Failed to upload attachment "
-                        f"(status={response.status}): {text}"
-                    )
 
                 attachment_id = text.strip()
                 if not attachment_id:
@@ -100,6 +167,8 @@ class AttachmentManager(BaseManager):
                 logger.debug("Uploaded attachment id=%s", attachment_id)
                 return attachment_id
 
+        except GPPResponseError:
+            raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
 
@@ -118,23 +187,19 @@ class AttachmentManager(BaseManager):
             If the deletion fails.
         """
         logger.debug("Deleting attachment %s", attachment_id)
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
         url = f"/attachment/{attachment_id}"
 
         try:
             async with session.delete(url) as response:
-                text = await response.text()
-
-                if response.status not in {200, 204}:
-                    raise GPPClientError(
-                        f"Failed to delete attachment {attachment_id} "
-                        f"(status={response.status}): {text}"
-                    )
+                await self.raise_for_status(response, ok_statuses=self._DELETE_OK)
 
                 logger.debug(
                     "Deleted attachment %s",
                     attachment_id,
                 )
+        except GPPResponseError:
+            raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
 
@@ -173,28 +238,21 @@ class AttachmentManager(BaseManager):
         logger.debug("Updating attachment %s", attachment_id)
         body = self.resolve_content(file_path=file_path, content=content)
         # File name is required.
-        params: dict[str, str] = {"fileName": file_name}
+        params = self._build_update_params(file_name=file_name, description=description)
 
-        if description is not None and description.strip() != "":
-            params["description"] = description.strip()
-
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
         url = f"/attachment/{attachment_id}"
 
         try:
             async with session.put(url, params=params, data=body) as response:
-                text = await response.text()
+                await self.raise_for_status(response, ok_statuses=self._UPDATE_OK)
 
-                if response.status not in {200, 201}:
-                    raise GPPClientError(
-                        f"Failed to update attachment {attachment_id} "
-                        f"(status={response.status}): {text}"
-                    )
                 logger.debug(
-                    "Updated attachment %s with status %s",
+                    "Updated attachment %s",
                     attachment_id,
-                    response.status,
                 )
+        except GPPResponseError:
+            raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
 
@@ -213,12 +271,15 @@ class AttachmentManager(BaseManager):
             The download URL for the attachment.
         """
         logger.debug("Getting download URL for attachment %s", attachment_id)
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
         url = f"/attachment/url/{attachment_id}"
 
         try:
-            async with session.get(url, raise_for_status=True) as response:
+            async with session.get(url) as response:
+                await self.raise_for_status(response, ok_statuses=self._DEFAULT_OK)
                 download_url = await response.text()
+        except GPPResponseError:
+            raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
 
@@ -251,7 +312,7 @@ class AttachmentManager(BaseManager):
             The path to the downloaded file.
         """
         logger.debug("Downloading attachment %s", attachment_id)
-        session = await self.rest_client._get_session()
+        session = await self.rest_client.get_session()
         download_url = await self.get_download_url_by_id(attachment_id)
 
         # Get the filename and resolve the destination directory.
@@ -277,8 +338,9 @@ class AttachmentManager(BaseManager):
             async with session.get(
                 download_url,
                 middlewares=(remove_headers_middleware,),
-                raise_for_status=True,
             ) as response:
+                await self.raise_for_status(response, ok_statuses=self._DEFAULT_OK)
+
                 # Download the file in chunks to avoid loading it all into memory.
                 with path.open("wb") as fh:
                     async for chunk in response.content.iter_chunked(chunk_size):
@@ -288,6 +350,8 @@ class AttachmentManager(BaseManager):
 
             return path
 
+        except GPPResponseError:
+            raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc, include_traceback=True)
 
