@@ -45,7 +45,13 @@ jobs:
       - name: Install the project
         run: uv sync --locked --dev
 
-      - name: Run tests and calculate coverage
+      - name: Run tests (no coverage)
+        if: matrix.python-version != '3.10'
+        run: |
+          uv run pytest -r A -v -n auto
+
+      - name: Run tests with coverage
+        if: matrix.python-version == '3.10'
         run: |
           uv run pytest -r A -v -n auto --cov --cov-report=xml --cov-branch
 

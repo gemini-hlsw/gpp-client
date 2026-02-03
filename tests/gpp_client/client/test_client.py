@@ -144,7 +144,7 @@ def test_init_constructs_clients_from_resolved_credentials(
     )
 
 
-def test_init_initializes_all_managers() -> None:
+def test_init_initializes_all_managers(patched_dependencies: dict[str, object]) -> None:
     """
     Test that all manager attributes are initialized.
     """
