@@ -11,29 +11,35 @@ class ObservationSubscriber(BaseManager):
     The subscriptions can be tracked by the id of the observation or the program they belong to.
     """
 
-    async def get_edits(
-        self, program_id: str | None = None, observation_id: str | None = None
-    ):
+    async def get_edits(self, program_id: str):
         """
         Bring any edits related to observations inside the program or a specific observation.
 
         Parameters
         ----------
-        program_id : str, optional
+        program_id : str
             Program id. It would show the edits for all the observations inside the program.
-        observation_id : str, optional
-            Observation id. It would show only the edits for that observation.
 
         Returns
         -------
-        AsyncIterator[Dict[str, Any]]:
+        AsyncIterator[Dict[str, Any]]
             Observation edit changes.
         """
-        if program_id is None and observation_id is None:
-            raise ValueError("Either `program_id` or `observation_id` must be provided")
-        if program_id is not None and observation_id is not None:
-            raise ValueError("Either `program_id` or `observation_id` must be provided")
 
-        return self.client.new_observation_edit(
-            program_id=program_id, observation_id=observation_id
-        )
+        return self.client.observation_edit(program_id=program_id)
+
+    async def get_calculations_updates(self, program_id: str):
+        """
+        Bring all the calculations updates related to observations inside the program.
+
+        Parameters
+        ----------
+        program_id : str, optional
+            Program id. It would show the calculations updates for all the observations inside the program.
+
+        Returns
+        -------
+        AsyncIterator[Dict[str, Any]]
+            Observation edit changes.
+        """
+        return self.client.observation_update_calculations(program_id=program_id)
