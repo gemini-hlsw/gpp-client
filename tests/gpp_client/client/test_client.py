@@ -16,6 +16,7 @@ def patched_dependencies(mocker) -> dict[str, object]:
     resolved_url = "https://example.com/graphql"
     resolved_token = "TEST_TOKEN"
     resolved_env = GPPEnvironment.DEVELOPMENT
+    ws_url = "ws://example.com/graphql"
 
     fake_graphql = mocker.MagicMock()
     fake_graphql.execute = mocker.AsyncMock()
@@ -26,7 +27,7 @@ def patched_dependencies(mocker) -> dict[str, object]:
     resolve_credentials = mocker.patch(
         "gpp_client.client.CredentialResolver.resolve",
         autospec=True,
-        return_value=(resolved_url, resolved_token, resolved_env),
+        return_value=(resolved_url, resolved_token, resolved_env, ws_url),
     )
     graphql_client = mocker.patch(
         "gpp_client.client._GPPClient",

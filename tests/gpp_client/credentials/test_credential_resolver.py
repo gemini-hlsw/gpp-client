@@ -116,7 +116,7 @@ def test_resolve_returns_correct_tuple(mock_config, mocker):
         CredentialResolver, "resolve_token", return_value="resolved_token"
     )
 
-    url, token, env = CredentialResolver.resolve(
+    url, token, env, ws_url = CredentialResolver.resolve(
         env=None, token=None, config=mock_config
     )
 
@@ -176,7 +176,7 @@ def test_resolve_all_combinations(
         expected_token = mock_config.active_token
 
     # Execute resolve
-    url, token, resolved_env = CredentialResolver.resolve(
+    url, token, resolved_env, ws_url = CredentialResolver.resolve(
         env=explicit_env,
         token=explicit_token,
         config=mock_config,
