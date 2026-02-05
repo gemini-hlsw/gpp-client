@@ -96,13 +96,13 @@ class GPPClient:
             env = GPPEnvironment(env)
 
         # Resolve credentials.
-        resolved_url, resolved_token, resolved_env = self._resolve_credentials(
+        resolved_url, resolved_token, resolved_env, ws_url = self._resolve_credentials(
             env=env, token=token, config=self.config
         )
         logger.info("Using environment: %s", resolved_env.value)
 
         self._client = self._create_graphql_client(
-            url=resolved_url, token=resolved_token
+            url=resolved_url, token=resolved_token, ws_url=ws_url
         )
         self._rest_client = self._create_rest_client(
             url=resolved_url, token=resolved_token
@@ -117,11 +117,16 @@ class GPPClient:
         """
         return GPPConfig()
 
-    def _create_graphql_client(self, *, url: str, token: str) -> _GPPClient:
+    def _create_graphql_client(
+        self, *, url: str, token: str, ws_url: str
+    ) -> _GPPClient:
         """
         Create a new _GPPClient instance for GraphQL requests.
         """
-        return _GPPClient(url=url, headers=self._build_headers(token))
+        headers = self._build_headers(token)
+        return _GPPClient(
+            url=url, headers=headers, ws_url=ws_url, ws_connection_init_payload=headers
+        )
 
     def _create_rest_client(self, *, url: str, token: str) -> _GPPRESTClient:
         """
@@ -187,7 +192,7 @@ class GPPClient:
         env: GPPEnvironment | None,
         token: str | None,
         config: GPPConfig,
-    ) -> tuple[str, str, GPPEnvironment]:
+    ) -> tuple[str, str, GPPEnvironment, str]:
         """
         Resolve the credentials for the given environment and token.
         """
