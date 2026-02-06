@@ -29,7 +29,7 @@ class CredentialResolver:
         env: GPPEnvironment | None = None,
         token: str | None = None,
         config: GPPConfig | None = None,
-    ) -> tuple[str, str, GPPEnvironment, str]:
+    ) -> tuple[str, str, GPPEnvironment]:
         """
         Resolve the effective GPP URL, token, and environment.
 
@@ -64,7 +64,6 @@ class CredentialResolver:
 
         # Resolve URL based on environment.
         resolved_url = GPPDefaults.url[resolved_env]
-
         return resolved_url, resolved_token, resolved_env
 
     @staticmethod
