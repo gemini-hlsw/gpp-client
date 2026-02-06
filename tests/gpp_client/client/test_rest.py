@@ -16,20 +16,6 @@ def rest_client() -> _GPPRESTClient:
     return _GPPRESTClient("https://example.invalid/graphql", "TOK", timeout=12.5)
 
 
-def test_get_base_url_extracts_scheme_and_netloc(rest_client: _GPPRESTClient) -> None:
-    """
-    Test that ``get_base_url`` extracts the base URL correctly.
-    """
-    assert (
-        rest_client.get_base_url("https://example.invalid/graphql")
-        == "https://example.invalid"
-    )
-    assert (
-        rest_client.get_base_url("http://example.invalid:8080/foo")
-        == "http://example.invalid:8080"
-    )
-
-
 def test_resolve_headers_includes_bearer_and_content_type(
     rest_client: _GPPRESTClient,
 ) -> None:

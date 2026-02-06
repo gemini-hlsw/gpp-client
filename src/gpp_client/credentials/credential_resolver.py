@@ -5,7 +5,6 @@ Credential resolution logic for the GPP client.
 __all__ = ["CredentialResolver"]
 
 import logging
-import re
 
 from gpp_client.config import GPPConfig, GPPDefaults, GPPEnvironment
 from gpp_client.credentials.env_var_reader import EnvVarReader
@@ -46,8 +45,8 @@ class CredentialResolver:
 
         Returns
         -------
-        tuple[str, str, GPPEnvironment, str]
-            A tuple containing (URL, token, environment, WS URL).
+        tuple[str, str, GPPEnvironment]
+            A tuple containing (URL, token, environment).
 
         Raises
         ------
@@ -65,9 +64,8 @@ class CredentialResolver:
 
         # Resolve URL based on environment.
         resolved_url = GPPDefaults.url[resolved_env]
-        ws_url = re.sub(r"^https?://([^/]+).*", r"wss://\1/ws", resolved_url)
 
-        return resolved_url, resolved_token, resolved_env, ws_url
+        return resolved_url, resolved_token, resolved_env
 
     @staticmethod
     def resolve_env(

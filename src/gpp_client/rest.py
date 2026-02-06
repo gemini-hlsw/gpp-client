@@ -8,7 +8,6 @@ import asyncio
 import gzip
 import logging
 import ssl
-from urllib.parse import urlparse
 
 import aiohttp
 import certifi
@@ -34,9 +33,9 @@ class _GPPRESTClient:
     _DEFAULT_TIMEOUT = 30.0  # Seconds.
 
     def __init__(
-        self, resolved_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
+        self, resolved_base_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
     ) -> None:
-        self.base_url = self.get_base_url(resolved_url)
+        self.base_url = resolved_base_url
         self.gpp_token = gpp_token
         self._timeout = timeout
 
@@ -91,23 +90,6 @@ class _GPPRESTClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
-
-    def get_base_url(self, url: str) -> str:
-        """
-        Get the base URL from a full URL.
-
-        Parameters
-        ----------
-        url : str
-            Full URL string.
-
-        Returns
-        -------
-        str
-            Base URL string.
-        """
-        parsed = urlparse(url)
-        return f"{parsed.scheme}://{parsed.netloc}"
 
     async def get_atom_digests(
         self, observation_ids: list, accept_gzip: bool = True

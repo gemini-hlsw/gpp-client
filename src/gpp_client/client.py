@@ -6,6 +6,7 @@ __all__ = ["GPPClient"]
 
 import logging
 from typing import Optional
+from urllib.parse import urlsplit, urlunsplit
 
 from gpp_client.api._client import _GPPClient
 from gpp_client.config import GPPConfig, GPPEnvironment
@@ -95,17 +96,19 @@ class GPPClient:
         if isinstance(env, str):
             env = GPPEnvironment(env)
 
-        # Resolve credentials.
-        resolved_url, resolved_token, resolved_env, ws_url = self._resolve_credentials(
+        # Resolve credentials and URLs based on the provided environment.
+        resolved_url, resolved_token, resolved_env = self._resolve_credentials(
             env=env, token=token, config=self.config
         )
+        resolved_base_url = self._get_base_url(resolved_url)
+        resolved_ws_url = self._get_ws_url(resolved_base_url)
         logger.info("Using environment: %s", resolved_env.value)
 
         self._client = self._create_graphql_client(
-            url=resolved_url, token=resolved_token, ws_url=ws_url
+            url=resolved_url, token=resolved_token, ws_url=resolved_ws_url
         )
         self._rest_client = self._create_rest_client(
-            url=resolved_url, token=resolved_token
+            url=resolved_base_url, token=resolved_token
         )
 
         # Initialize the managers.
@@ -180,6 +183,26 @@ class GPPClient:
         config.set_credentials(env, token, activate=activate, save=save)
 
     @staticmethod
+    def _get_base_url(url: str) -> str:
+        """
+        Get the base URL for the GraphQL endpoint by stripping any path components from
+        the given URL.
+        """
+        parsed = urlsplit(url)
+        # Remove any path components, keep scheme and netloc.
+        return urlunsplit((parsed.scheme, parsed.netloc, "", "", ""))
+
+    @staticmethod
+    def _get_ws_url(base_url: str) -> str:
+        """
+        Get the WebSocket URL corresponding to the given base URL.
+        """
+        parsed = urlsplit(base_url)
+        # Use wss for https and ws for http.
+        ws_scheme = "wss" if parsed.scheme == "https" else "ws"
+        return urlunsplit((ws_scheme, parsed.netloc, "/ws", "", ""))
+
+    @staticmethod
     def _build_headers(token: str) -> dict[str, str]:
         """
         Build the headers for the GraphQL endpoint request.
@@ -192,7 +215,7 @@ class GPPClient:
         env: GPPEnvironment | None,
         token: str | None,
         config: GPPConfig,
-    ) -> tuple[str, str, GPPEnvironment, str]:
+    ) -> tuple[str, str, GPPEnvironment]:
         """
         Resolve the credentials for the given environment and token.
         """
