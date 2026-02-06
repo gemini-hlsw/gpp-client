@@ -17,6 +17,9 @@ def patched_dependencies(mocker) -> dict[str, object]:
     resolved_token = "TEST_TOKEN"
     resolved_env = GPPEnvironment.DEVELOPMENT
 
+    base_url = GPPClient._get_base_url(resolved_url)
+    ws_url = GPPClient._get_ws_url(base_url)
+
     fake_graphql = mocker.MagicMock()
     fake_graphql.execute = mocker.AsyncMock()
 
@@ -47,6 +50,8 @@ def patched_dependencies(mocker) -> dict[str, object]:
         "resolved_url": resolved_url,
         "resolved_token": resolved_token,
         "resolved_env": resolved_env,
+        "base_url": base_url,
+        "ws_url": ws_url,
         "resolve_credentials": resolve_credentials,
         "graphql_client": graphql_client,
         "rest_client": rest_client,
@@ -137,9 +142,13 @@ def test_init_constructs_clients_from_resolved_credentials(
     assert gql_kwargs["headers"] == {
         "Authorization": f"Bearer {patched_dependencies['resolved_token']}"
     }
+    assert gql_kwargs["ws_url"] == patched_dependencies["ws_url"]
+    assert gql_kwargs["ws_connection_init_payload"] == {
+        "Authorization": f"Bearer {patched_dependencies['resolved_token']}"
+    }
 
     rest_client.assert_called_once_with(
-        patched_dependencies["resolved_url"],
+        patched_dependencies["base_url"],
         patched_dependencies["resolved_token"],
     )
 
@@ -252,3 +261,37 @@ def test_set_credentials_delegates_to_config(mocker) -> None:
         activate=True,
         save=False,
     )
+
+
+@pytest.mark.parametrize(
+    "url,expected_base_url",
+    [
+        ("https://example.com/graphql", "https://example.com"),
+        ("https://example.com/graphql?x=1", "https://example.com"),
+        ("https://example.com/graphql#frag", "https://example.com"),
+        ("http://localhost:8000/graphql", "http://localhost:8000"),
+        ("http://localhost:8000/api/graphql", "http://localhost:8000"),
+    ],
+)
+def test__get_base_url(url: str, expected_base_url: str) -> None:
+    """
+    Test that ``_get_base_url`` correctly extracts the base URL from various GraphQL
+    URLs.
+    """
+    assert GPPClient._get_base_url(url) == expected_base_url
+
+
+@pytest.mark.parametrize(
+    "base_url,expected_ws_url",
+    [
+        ("https://example.com", "wss://example.com/ws"),
+        ("https://example.com:8443", "wss://example.com:8443/ws"),
+        ("http://localhost:8000", "ws://localhost:8000/ws"),
+        ("http://127.0.0.1:8000", "ws://127.0.0.1:8000/ws"),
+    ],
+)
+def test__get_ws_url(base_url: str, expected_ws_url: str) -> None:
+    """
+    Test that ``_get_ws_url`` correctly constructs the WebSocket URL from the base URL.
+    """
+    assert GPPClient._get_ws_url(base_url) == expected_ws_url

@@ -1,5 +1,6 @@
 __all__ = ["ProgramCoordinator"]
 
+from dataclasses import dataclass
 from typing import Any
 
 
@@ -12,12 +13,18 @@ from ....api import (
 )
 
 from ....coordinator import BaseCoordinator
+from ....subscribers import ProgramSubscriber
 
 
+@dataclass
 class ProgramCoordinator(BaseCoordinator):
     """
     Combines multiple managers to return views of a program and its observations.
+    Includes subscriber to handle subscriptions related to programs.
     """
+
+    def __post_init__(self):
+        self.subscribe_to: ProgramSubscriber = ProgramSubscriber(client=self.client)
 
     @staticmethod
     def _parse_atom_digest(atom_digest_response: list) -> dict:

@@ -1,0 +1,187 @@
+# =============================================================================
+# Edit Subscriptions (Observation, Program, and Target)
+# Informs about any edit (creation, deletion or modification) that happens for
+# the element subscribed in the program given by input.
+# =============================================================================
+subscription ObservationEdit(
+  $programId: ProgramId
+) {
+  observationEdit(input: {programId: $programId}) {
+    editType
+    observationId
+    value {
+      id
+      existence
+      reference {
+        label
+      }
+      calibrationRole
+      instrument
+      index
+      title
+      subtitle
+      scienceRequirements {
+        mode
+      }
+      scienceBand
+      observingMode {
+        instrument
+        mode
+        gmosNorthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+        }
+        gmosSouthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+        }
+      }
+      constraintSet {
+        imageQuality
+        cloudExtinction
+        skyBackground
+        waterVapor
+        elevationRange {
+          airMass {
+            min
+            max
+          }
+          hourAngle {
+            minHours
+            maxHours
+          }
+        }
+      }
+      timingWindows {
+        inclusion
+        startUtc
+        end {
+          ... on TimingWindowEndAt {
+            atUtc
+          }
+          ... on TimingWindowEndAfter {
+            after {
+              seconds
+            }
+            repeat {
+              period {
+                seconds
+              }
+              times
+            }
+          }
+        }
+      }
+      targetEnvironment {
+        asterism {
+          sidereal {
+            ra {
+              hms
+            }
+            dec {
+              dms
+            }
+            epoch
+          }
+          nonsidereal {
+            des
+          }
+          name
+        }
+        explicitBase {
+          ra {
+            hms
+          }
+          dec {
+            dms
+          }
+        }
+      }
+    }
+  }
+}
+
+subscription ProgramEdit($programId: ProgramId) {
+  programEdit(input: {programId: $programId}) {
+    editType
+    value {
+      description
+      existence
+      name
+      id
+      allGroupElements {
+        observation {
+          id
+        }
+        group {
+          id
+        }
+      }
+    }
+  }
+}
+
+subscription TargetEdit($targetEdit: TargetId) {
+  targetEdit(input: {targetId: $targetEdit}) {
+    editType
+    targetId
+    value {
+      id
+      name
+      nonsidereal {
+        des
+        key
+      }
+      sidereal {
+        ra {
+          degrees
+        }
+        dec {
+          degrees
+        }
+      }
+    }
+  }
+}
+
+# =============================================================================
+# ObsCalculationUpdate Subscription
+# Checks the status of the calculation (that happens after an execution) done by
+# any observation in the program.
+# =============================================================================
+
+subscription ObsCalculationUpdate($programId: ProgramId) {
+  obscalcUpdate(input: {programId: $programId}) {
+    editType
+    newCalculationState
+    observationId
+    oldCalculationState
+    value {
+      id
+      observationTime
+      execution {
+        visits {
+          matches {
+            observation {
+              id
+            }
+            atomRecords {
+              matches {
+                executionState
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

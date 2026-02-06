@@ -3,7 +3,7 @@ __all__ = ["SchedulerDirector"]
 from dataclasses import dataclass
 
 from ..base import BaseDirector
-from .coordinators import ProgramCoordinator
+from .coordinators import ProgramCoordinator, ObservationCoordinator
 
 
 @dataclass
@@ -28,3 +28,4 @@ class SchedulerDirector(BaseDirector):
 
     def __post_init__(self) -> None:
         self.program: ProgramCoordinator = ProgramCoordinator(self.client)
+        self.observation: ObservationCoordinator = ObservationCoordinator(self.client)
