@@ -50,6 +50,10 @@ from gpp_client.api.custom_fields import (
     TimingWindowRepeatFields,
     UpdateObservationsResultFields,
     WavelengthFields,
+    GmosNorthImagingFields,
+    GmosNorthImagingFilterFields,
+    GmosSouthImagingFields,
+    GmosSouthImagingFilterFields,
 )
 from gpp_client.api.custom_mutations import Mutation
 from gpp_client.api.custom_queries import Query
@@ -620,6 +624,16 @@ class ObservationManager(BaseManager):
                     GmosSouthLongSlitFields.spatial_offsets().fields(
                         OffsetQFields.arcseconds
                     ),
+                ),
+                ObservingModeFields.gmos_north_imaging().fields(
+                    GmosNorthImagingFields.filters().fields(
+                        GmosNorthImagingFilterFields.filter
+                    )
+                ),
+                ObservingModeFields.gmos_south_imaging().fields(
+                    GmosSouthImagingFields.filters().fields(
+                        GmosSouthImagingFilterFields.filter
+                    )
                 ),
                 ObservingModeFields.flamingos_2_long_slit().fields(
                     Flamingos2LongSlitFields.decker,
