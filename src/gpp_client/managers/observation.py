@@ -757,6 +757,8 @@ class ObservationManager(BaseManager):
                     ),
                     TargetFields.nonsidereal().fields(
                         NonsiderealFields.des,
+                        NonsiderealFields.key_type,
+                        NonsiderealFields.key,
                     ),
                     TargetFields.name,
                 ),
