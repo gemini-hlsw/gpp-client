@@ -5,10 +5,10 @@ from pydantic import Field
 from .base_model import BaseModel
 from .enums import (
     ArcType,
-    AtomStage,
     AttachmentType,
     Band,
     BlindOffsetType,
+    Breakpoint,
     BrightnessIntegratedUnits,
     BrightnessSurfaceUnits,
     CalculationState,
@@ -70,6 +70,7 @@ from .enums import (
     GuideState,
     HiiRegionSpectrum,
     Ignore,
+    Igrins2OffsetMode,
     ImageQualityPreset,
     Instrument,
     LineFluxIntegratedUnits,
@@ -111,16 +112,6 @@ from .enums import (
 )
 
 
-class AddAtomEventInput(BaseModel):
-    """AtomEvent creation parameters."""
-
-    atom_id: Any = Field(alias=str("atomId"))
-    atom_stage: AtomStage = Field(alias=str("atomStage"))
-    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
-    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
-
-
 class AddDatasetEventInput(BaseModel):
     """DatasetEvent creation parameters."""
 
@@ -128,7 +119,6 @@ class AddDatasetEventInput(BaseModel):
     "Dataset id"
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
     "Dataset execution stage."
-    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -136,7 +126,7 @@ class AddDatasetEventInput(BaseModel):
 class AddProgramUserInput(BaseModel):
     program_id: Any = Field(alias=str("programId"))
     role: ProgramUserRole
-    set: Optional["ProgramUserPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["ProgramUserPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
 class AddSequenceEventInput(BaseModel):
@@ -144,7 +134,6 @@ class AddSequenceEventInput(BaseModel):
 
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
-    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -154,7 +143,6 @@ class AddSlewEventInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
-    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -163,8 +151,8 @@ class AddStepEventInput(BaseModel):
     """StepEvent creation parameters."""
 
     step_id: Any = Field(alias=str("stepId"))
+    visit_id: Any = Field(alias=str("visitId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
-    client_id: Optional[Any] = Field(alias=str("clientId"), default=None)
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -254,7 +242,7 @@ class BandNormalizedSurfaceInput(BaseModel):
 class CallForProposalsPropertiesInput(BaseModel):
     """The properties of a Call for Proposal in an input for creation and editing."""
 
-    type: Optional[CallForProposalsType] = None
+    type_: Optional[CallForProposalsType] = Field(alias=str("type"), default=None)
     "Type of the call. Required on create."
     semester: Optional[Any] = None
     "Semester associated with the call. Required on create."
@@ -343,14 +331,14 @@ class CloneObservationInput(BaseModel):
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
     )
-    set: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
 class CloneTargetInput(BaseModel):
     """Describes a target clone operation, making any edits in the `SET` parameter and replacing the target in the selected `REPLACE_IN` observations"""
 
     target_id: Any = Field(alias=str("targetId"))
-    set: Optional["TargetPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["TargetPropertiesInput"] = Field(alias=str("SET"), default=None)
     replace_in: Optional[list[Any]] = Field(alias=str("REPLACE_IN"), default=None)
 
 
@@ -397,7 +385,7 @@ class ConditionsIntuitionInput(BaseModel):
 
 
 class ConditionsExpectationInput(BaseModel):
-    type: ConditionsExpectationType
+    type_: ConditionsExpectationType = Field(alias=str("type"))
     timeframe: "TimeSpanInput"
 
 
@@ -409,7 +397,7 @@ class CoordinatesInput(BaseModel):
 
 
 class CreateCallForProposalsInput(BaseModel):
-    set: Optional["CallForProposalsPropertiesInput"] = Field(
+    set_: Optional["CallForProposalsPropertiesInput"] = Field(
         alias=str("SET"), default=None
     )
 
@@ -425,13 +413,13 @@ class CreateObservationInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
 class CreateProgramInput(BaseModel):
     """Program creation parameters"""
 
-    set: Optional["ProgramPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["ProgramPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
 class CreateProgramNoteInput(BaseModel):
@@ -442,14 +430,14 @@ class CreateProgramNoteInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: "ProgramNotePropertiesInput" = Field(alias=str("SET"))
+    set_: "ProgramNotePropertiesInput" = Field(alias=str("SET"))
 
 
 class CreateProposalInput(BaseModel):
     """Input for creating a proposal."""
 
     program_id: Any = Field(alias=str("programId"))
-    set: "ProposalPropertiesInput" = Field(alias=str("SET"))
+    set_: "ProposalPropertiesInput" = Field(alias=str("SET"))
 
 
 class CreateTargetInput(BaseModel):
@@ -463,7 +451,7 @@ class CreateTargetInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: "TargetPropertiesInput" = Field(alias=str("SET"))
+    set_: "TargetPropertiesInput" = Field(alias=str("SET"))
 
 
 class DatasetPropertiesInput(BaseModel):
@@ -669,7 +657,7 @@ class GmosNorthDynamicInput(BaseModel):
         alias=str("gratingConfig"), default=None
     )
     "GMOS North grating"
-    filter: Optional[GmosNorthFilter] = None
+    filter_: Optional[GmosNorthFilter] = Field(alias=str("filter"), default=None)
     "GMOS North filter"
     fpu: Optional["GmosNorthFpuInput"] = None
     "GMOS North FPU"
@@ -720,7 +708,7 @@ class GmosNorthLongSlitInput(BaseModel):
 
     grating: Optional[GmosNorthGrating] = None
     "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
-    filter: Optional[GmosNorthFilter] = None
+    filter_: Optional[GmosNorthFilter] = Field(alias=str("filter"), default=None)
     "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[GmosNorthBuiltinFpu] = None
     "The fpu field must be either specified or skipped altogether.  It cannot be unset with a null value."
@@ -820,7 +808,7 @@ class GmosSouthDynamicInput(BaseModel):
         alias=str("gratingConfig"), default=None
     )
     "GMOS South grating"
-    filter: Optional[GmosSouthFilter] = None
+    filter_: Optional[GmosSouthFilter] = Field(alias=str("filter"), default=None)
     "GMOS South filter"
     fpu: Optional["GmosSouthFpuInput"] = None
     "GMOS South FPU"
@@ -871,7 +859,7 @@ class GmosSouthLongSlitInput(BaseModel):
 
     grating: Optional[GmosSouthGrating] = None
     "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
-    filter: Optional[GmosSouthFilter] = None
+    filter_: Optional[GmosSouthFilter] = Field(alias=str("filter"), default=None)
     "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[GmosSouthBuiltinFpu] = None
     "The fpu field must be either specified or skipped altogether.  It cannot be unset with a null value."
@@ -922,7 +910,7 @@ class GmosSouthImagingFilterInput(BaseModel):
     exposure time mode is not specified, it is taken from the observation's
     requirements."""
 
-    filter: GmosSouthFilter
+    filter_: GmosSouthFilter = Field(alias=str("filter"))
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
@@ -969,7 +957,7 @@ class GmosSouthStaticInput(BaseModel):
 
 class CloneGroupInput(BaseModel):
     group_id: Any = Field(alias=str("groupId"))
-    set: Optional["GroupPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["GroupPropertiesInput"] = Field(alias=str("SET"), default=None)
 
 
 class HourAngleRangeInput(BaseModel):
@@ -1408,7 +1396,7 @@ class ProposalPropertiesInput(BaseModel):
     "The category field may be unset by assigning a null value, or ignored by skipping it altogether"
     call_id: Optional[Any] = Field(alias=str("callId"), default=None)
     "Sets the associated Call for Proposals. This is optional upon creation, but\nmust be set for a successful submission.  Also, the Call for Proposals type\nmust agree with the proposal type (see 'type' below).  For example a Queue\nproposal must be submitted to a Regular Semester Call and a Demo Science\nproposal must be submitted to a Demo Science Call, etc."
-    type: Optional["ProposalTypeInput"] = None
+    type_: Optional["ProposalTypeInput"] = Field(alias=str("type"), default=None)
     "Specifies the properties that depend on the call type. If not set on creation,\na regular semester queue proposal is assumed.  The selected call properties\nmust match the call (see 'callId' above) or a submission attempt will fail\nwith an error. Call properties can be edited, but when switching the call\ntype itself, all properties required for that type must be included."
 
 
@@ -1424,22 +1412,13 @@ class RadialVelocityInput(BaseModel):
     )
 
 
-class RecordAtomInput(BaseModel):
-    """Input parameters for creating a new atom record."""
-
-    visit_id: Any = Field(alias=str("visitId"))
-    instrument: Instrument
-    sequence_type: SequenceType = Field(alias=str("sequenceType"))
-    generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
-    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe atom is created and is used to enable problem-free retry in the case of\nfailure."
-
-
 class RecordDatasetInput(BaseModel):
     """Dataset creation parameters."""
 
     step_id: Any = Field(alias=str("stepId"))
     "Corresponding Step id."
+    visit_id: Any = Field(alias=str("visitId"))
+    "Visit associated with the dataset."
     filename: Any
     "Dataset filename."
     qa_state: Optional[DatasetQaState] = Field(alias=str("qaState"), default=None)
@@ -1450,21 +1429,6 @@ class RecordDatasetInput(BaseModel):
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe dataset is created and is used to enable problem-free retry in the case of\nfailure."
 
 
-class RecordGmosNorthStepInput(BaseModel):
-    """Input parameters for creating a new GmosNorth StepRecord"""
-
-    atom_id: Any = Field(alias=str("atomId"))
-    gmos_north: "GmosNorthDynamicInput" = Field(alias=str("gmosNorth"))
-    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
-    telescope_config: Optional["TelescopeConfigInput"] = Field(
-        alias=str("telescopeConfig"), default=None
-    )
-    observe_class: ObserveClass = Field(alias=str("observeClass"))
-    generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
-    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe step is created and is used to enable problem-free retry in the case of\nfailure."
-
-
 class RecordGmosNorthVisitInput(BaseModel):
     """Input parameters for creating a new GmosNorthVisit"""
 
@@ -1472,21 +1436,6 @@ class RecordGmosNorthVisitInput(BaseModel):
     gmos_north: "GmosNorthStaticInput" = Field(alias=str("gmosNorth"))
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
-
-
-class RecordGmosSouthStepInput(BaseModel):
-    """Input parameters for creating a new GmosSouth StepRecord"""
-
-    atom_id: Any = Field(alias=str("atomId"))
-    gmos_south: "GmosSouthDynamicInput" = Field(alias=str("gmosSouth"))
-    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
-    telescope_config: Optional["TelescopeConfigInput"] = Field(
-        alias=str("telescopeConfig"), default=None
-    )
-    observe_class: ObserveClass = Field(alias=str("observeClass"))
-    generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
-    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe step is created and is used to enable problem-free retry in the case of\nfailure."
 
 
 class RecordGmosSouthVisitInput(BaseModel):
@@ -1541,6 +1490,10 @@ class ObservingModeInput(BaseModel):
         alias=str("flamingos2LongSlit"), default=None
     )
     "The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    igrins_2_long_slit: Optional["Igrins2LongSlitInput"] = Field(
+        alias=str("igrins2LongSlit"), default=None
+    )
+    "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
 
 
 class ScienceRequirementsInput(BaseModel):
@@ -1599,7 +1552,7 @@ class SetProgramReferenceInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: "ProgramReferencePropertiesInput" = Field(alias=str("SET"))
+    set_: "ProgramReferencePropertiesInput" = Field(alias=str("SET"))
 
 
 class ProgramReferencePropertiesInput(BaseModel):
@@ -1722,13 +1675,13 @@ class RegionInput(BaseModel):
 
 
 class RightAscensionArcInput(BaseModel):
-    type: ArcType
+    type_: ArcType = Field(alias=str("type"))
     start: Optional["RightAscensionInput"] = None
     end: Optional["RightAscensionInput"] = None
 
 
 class DeclinationArcInput(BaseModel):
-    type: ArcType
+    type_: ArcType = Field(alias=str("type"))
     start: Optional["DeclinationInput"] = None
     end: Optional["DeclinationInput"] = None
 
@@ -1817,7 +1770,7 @@ class StepConfigGcalInput(BaseModel):
     arcs: Optional[list[GcalArc]] = None
     continuum: Optional[GcalContinuum] = None
     diffuser: GcalDiffuser
-    filter: GcalFilter
+    filter_: GcalFilter = Field(alias=str("filter"))
     shutter: GcalShutter
 
 
@@ -2038,7 +1991,7 @@ class UpdateAsterismsInput(BaseModel):
     with the 'WHERE' input and specify the changes in 'SET'.  All the selected
     observations must be in the same program."""
 
-    set: "EditAsterismsPatchInput" = Field(alias=str("SET"))
+    set_: "EditAsterismsPatchInput" = Field(alias=str("SET"))
     "Describes the values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
     "Filters the observations to be updated according to those that match the\ngiven constraints.  All must correspond to the same program."
@@ -2050,7 +2003,7 @@ class UpdateAsterismsInput(BaseModel):
 class UpdateAttachmentsInput(BaseModel):
     """Attachment selection and update description.  Use `SET` to specify the changes, `WHERE` to select the attachments to update, and `LIMIT` to control the size of the return value."""
 
-    set: "AttachmentPropertiesInput" = Field(alias=str("SET"))
+    set_: "AttachmentPropertiesInput" = Field(alias=str("SET"))
     "Describes the attachment values to modify."
     where: Optional["WhereAttachment"] = Field(alias=str("WHERE"), default=None)
     "Filters the attachments to be updated according to those that match the given constraints."
@@ -2063,7 +2016,7 @@ class UpdateCallsForProposalsInput(BaseModel):
     changes, `WHERE` to select the calls to update, and `LIMIT` to control the
     size of the return value."""
 
-    set: "CallForProposalsPropertiesInput" = Field(alias=str("SET"))
+    set_: "CallForProposalsPropertiesInput" = Field(alias=str("SET"))
     "Describes the call for proposals properties to modify."
     where: Optional["WhereCallForProposals"] = Field(alias=str("WHERE"), default=None)
     "Filters the calls to be updated according to those that match the given\nconstraints."
@@ -2076,7 +2029,7 @@ class UpdateCallsForProposalsInput(BaseModel):
 class UpdateDatasetsInput(BaseModel):
     """Dataset selection and update description. Use `SET` to specify the changes, `WHERE` to select the datasets to update, and `LIMIT` to control the size of the return value."""
 
-    set: "DatasetPropertiesInput" = Field(alias=str("SET"))
+    set_: "DatasetPropertiesInput" = Field(alias=str("SET"))
     "Describes the dataset values to modify."
     where: Optional["WhereDataset"] = Field(alias=str("WHERE"), default=None)
     "Filters the datasets to be updated according to those that match the given constraints."
@@ -2087,7 +2040,7 @@ class UpdateDatasetsInput(BaseModel):
 class UpdateGroupsInput(BaseModel):
     """Dataset selection and update description. Use `SET` to specify the changes, `WHERE` to select the groups to update, and `LIMIT` to control the size of the return value."""
 
-    set: "GroupPropertiesInput" = Field(alias=str("SET"))
+    set_: "GroupPropertiesInput" = Field(alias=str("SET"))
     "Describes the dataset values to modify."
     where: Optional["WhereGroup"] = Field(alias=str("WHERE"), default=None)
     "Filters the datasets to be updated according to those that match the given constraints."
@@ -2098,7 +2051,7 @@ class UpdateGroupsInput(BaseModel):
 class UpdateObservationsInput(BaseModel):
     """Observation selection and update description.  Use `SET` to specify the changes, `WHERE` to select the observations to update, and `LIMIT` to control the size of the return value."""
 
-    set: "ObservationPropertiesInput" = Field(alias=str("SET"))
+    set_: "ObservationPropertiesInput" = Field(alias=str("SET"))
     "Describes the observation values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
     "Filters the observations to be updated according to those that match the given constraints."
@@ -2111,7 +2064,7 @@ class UpdateObservationsInput(BaseModel):
 class UpdateConfigurationRequestsInput(BaseModel):
     """ConfigurationRequest selection and update description.  Use `SET` to specify the changes, `WHERE` to select the requests to update, and `LIMIT` to control the size of the return value."""
 
-    set: "ConfigurationRequestProperties" = Field(alias=str("SET"))
+    set_: "ConfigurationRequestProperties" = Field(alias=str("SET"))
     "Describes the observation values to modify."
     where: Optional["WhereConfigurationRequest"] = Field(
         alias=str("WHERE"), default=None
@@ -2124,7 +2077,7 @@ class UpdateConfigurationRequestsInput(BaseModel):
 class UpdateObservationsTimesInput(BaseModel):
     """Observation selection and times update description.  Use `SET` to specify the changes, `WHERE` to select the observations to update, and `LIMIT` to control the size of the return value."""
 
-    set: "ObservationTimesInput" = Field(alias=str("SET"))
+    set_: "ObservationTimesInput" = Field(alias=str("SET"))
     "Describes the observation time values to modify."
     where: Optional["WhereObservation"] = Field(alias=str("WHERE"), default=None)
     "Filters the observations to be updated according to those that match the given constraints."
@@ -2139,7 +2092,7 @@ class UpdateProgramUsersInput(BaseModel):
     changes, 'WHERE' to select the program users to update, and 'LIMIT' to control
     the size of the return value."""
 
-    set: "ProgramUserPropertiesInput" = Field(alias=str("SET"))
+    set_: "ProgramUserPropertiesInput" = Field(alias=str("SET"))
     "Defines the program user properties to modify."
     where: Optional["WhereProgramUser"] = Field(alias=str("WHERE"), default=None)
     "Filters the program users according to those that match the given constraints."
@@ -2152,7 +2105,7 @@ class UpdateProgramNotesInput(BaseModel):
     `WHERE` to select the programs to update, and `LIMIT` to control the size of the
     return value."""
 
-    set: "ProgramNotePropertiesInput" = Field(alias=str("SET"))
+    set_: "ProgramNotePropertiesInput" = Field(alias=str("SET"))
     "Describes the program note values to modify."
     where: Optional["WhereProgramNote"] = Field(alias=str("WHERE"), default=None)
     "Filters the program notes to be updated according to those that match the\ngiven constraints."
@@ -2165,7 +2118,7 @@ class UpdateProgramNotesInput(BaseModel):
 class UpdateProgramsInput(BaseModel):
     """Program selection and update description.  Use `SET` to specify the changes, `WHERE` to select the programs to update, and `LIMIT` to control the size of the return value."""
 
-    set: "ProgramPropertiesInput" = Field(alias=str("SET"))
+    set_: "ProgramPropertiesInput" = Field(alias=str("SET"))
     "Describes the program values to modify."
     where: Optional["WhereProgram"] = Field(alias=str("WHERE"), default=None)
     "Filters the programs to be updated according to those that match the given constraints."
@@ -2188,13 +2141,13 @@ class UpdateProposalInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: "ProposalPropertiesInput" = Field(alias=str("SET"))
+    set_: "ProposalPropertiesInput" = Field(alias=str("SET"))
 
 
 class UpdateTargetsInput(BaseModel):
     """Target selection and update description. Use `SET` to specify the changes, `WHERE` to select the targets to update, and `LIMIT` to control the size of the return value."""
 
-    set: "TargetPropertiesInput" = Field(alias=str("SET"))
+    set_: "TargetPropertiesInput" = Field(alias=str("SET"))
     "Describes the target values to modify."
     where: Optional["WhereTarget"] = Field(alias=str("WHERE"), default=None)
     "Filters the targets to be updated according to those that match the given constraints."
@@ -2297,21 +2250,6 @@ class Flamingos2StaticInput(BaseModel):
     "Whether to use electronic offsetting (defaults to false)"
 
 
-class RecordFlamingos2StepInput(BaseModel):
-    """Input parameters for creating a new Flamingos 2 StepRecord"""
-
-    atom_id: Any = Field(alias=str("atomId"))
-    flamingos_2: "Flamingos2DynamicInput" = Field(alias=str("flamingos2"))
-    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
-    telescope_config: Optional["TelescopeConfigInput"] = Field(
-        alias=str("telescopeConfig"), default=None
-    )
-    observe_class: ObserveClass = Field(alias=str("observeClass"))
-    generated_id: Optional[Any] = Field(alias=str("generatedId"), default=None)
-    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe step is created and is used to enable problem-free retry in the case of\nfailure."
-
-
 class RecordFlamingos2VisitInput(BaseModel):
     """Input parameters for creating a new Flamingos 2 Visit"""
 
@@ -2326,7 +2264,7 @@ class Flamingos2DynamicInput(BaseModel):
 
     exposure: "TimeSpanInput"
     disperser: Optional[Flamingos2Disperser] = None
-    filter: Flamingos2Filter
+    filter_: Flamingos2Filter = Field(alias=str("filter"))
     read_mode: Flamingos2ReadMode = Field(alias=str("readMode"))
     lyot_wheel: Flamingos2LyotWheel = Field(alias=str("lyotWheel"))
     fpu: Optional["Flamingos2FpuMaskInput"] = None
@@ -2375,7 +2313,7 @@ class Flamingos2LongSlitInput(BaseModel):
 
     disperser: Optional[Flamingos2Disperser] = None
     "The disperser field must be specified.  It cannot be unset with a null value."
-    filter: Optional[Flamingos2Filter] = None
+    filter_: Optional[Flamingos2Filter] = Field(alias=str("filter"), default=None)
     "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
     fpu: Optional[Flamingos2Fpu] = None
     "The fpu field must be specified.  It cannot be unset with a null value."
@@ -2404,14 +2342,28 @@ class Flamingos2LongSlitInput(BaseModel):
     )
     "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     telluric_type: Optional["TelluricTypeInput"] = Field(
-        alias=str("telluricType"),
-        default_factory=lambda: globals()["TelluricTypeInput"].model_validate(
-            {"tag": TelluricTypeInput.HOT}
-        ),
+        alias=str("telluricType"), default=None
     )
-    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value."
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
     acquisition: Optional["Flamingos2LongSlitAcquisitionInput"] = None
     "Acquisition properties that, when set, override default values."
+
+
+class Igrins2LongSlitInput(BaseModel):
+    """Edit or create IGRINS-2 Long Slit configuration"""
+
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "The exposureTimeMode field may be unset by assigning a null value, or ignored\nby skipping it altogether"
+    explicit_offset_mode: Optional[Igrins2OffsetMode] = Field(
+        alias=str("explicitOffsetMode"), default=None
+    )
+    "The offset mode field may be unset by assigning a null value, or ignored by\nskipping it altogether"
+    explicit_save_svc_images: Optional[bool] = Field(
+        alias=str("explicitSaveSVCImages"), default=None
+    )
+    "The save SVC images field may be unset by assigning a null value, or ignored\nby skipping it altogether"
 
 
 class GmosImagingVariantInput(BaseModel):
@@ -2471,7 +2423,7 @@ class GmosNorthImagingFilterInput(BaseModel):
     exposure time mode is not specified, it is taken from the observation's
     requirements."""
 
-    filter: GmosNorthFilter
+    filter_: GmosNorthFilter = Field(alias=str("filter"))
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
@@ -2537,7 +2489,7 @@ class CreateGroupInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    set: Optional["GroupPropertiesInput"] = Field(alias=str("SET"), default=None)
+    set_: Optional["GroupPropertiesInput"] = Field(alias=str("SET"), default=None)
     initial_contents: Optional[list[Optional["GroupElementInput"]]] = Field(
         alias=str("initialContents"), default=None
     )
@@ -2559,7 +2511,7 @@ class ImagingScienceRequirementsInput(BaseModel):
 
 class CreateConfigurationRequestInput(BaseModel):
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
-    set: Optional["ConfigurationRequestProperties"] = Field(
+    set_: Optional["ConfigurationRequestProperties"] = Field(
         alias=str("SET"), default=None
     )
 
@@ -2645,7 +2597,9 @@ class WhereCallForProposals(BaseModel):
     "A nested call for proposals filter that must not match in order for the NOT\nitself to match."
     id: Optional["WhereOrderCallForProposalsId"] = None
     "Matches the call for propsals id."
-    type: Optional["WhereEqCallForProposalsType"] = None
+    type_: Optional["WhereEqCallForProposalsType"] = Field(
+        alias=str("type"), default=None
+    )
     "Matches the call for proposals type."
     semester: Optional["WhereOrderSemester"] = None
     "Matches the call for proposals semester."
@@ -3946,7 +3900,7 @@ class WhereProgram(BaseModel):
     "Matches the program ID."
     name: Optional["WhereOptionString"] = None
     "Matches the program name."
-    type: Optional["WhereEqProgramType"] = None
+    type_: Optional["WhereEqProgramType"] = Field(alias=str("type"), default=None)
     "Mathces the program type."
     reference: Optional["WhereProgramReference"] = None
     "Matches the program reference (if any)."
@@ -4211,7 +4165,7 @@ class WhereUser(BaseModel):
     "A nested user filter that must not match in order for the NOT itself to match."
     id: Optional["WhereOrderUserId"] = None
     "Matches the user Id."
-    type: Optional["WhereEqUserType"] = None
+    type_: Optional["WhereEqUserType"] = Field(alias=str("type"), default=None)
     "Matches the user type."
     orcid_id: Optional["WhereOptionString"] = Field(alias=str("orcidId"), default=None)
     profile: Optional["WhereUserProfile"] = None
@@ -4283,6 +4237,96 @@ class WhereCalculatedObservationWorkflow(BaseModel):
     "Matchs the workflow state itself."
 
 
+class Flamingos2StepInput(BaseModel):
+    instrument_config: "Flamingos2DynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
+class GmosNorthStepInput(BaseModel):
+    instrument_config: "GmosNorthDynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
+class GmosSouthStepInput(BaseModel):
+    instrument_config: "GmosSouthDynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
+class Flamingos2AtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["Flamingos2StepInput"]
+
+
+class GmosNorthAtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["GmosNorthStepInput"]
+
+
+class GmosSouthAtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["GmosSouthStepInput"]
+
+
+class ReplaceFlamingos2SequenceInput(BaseModel):
+    """Replace Flamingos 2 sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["Flamingos2AtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
+class ReplaceGmosNorthSequenceInput(BaseModel):
+    """Replace GMOS North sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["GmosNorthAtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
+class ReplaceGmosSouthSequenceInput(BaseModel):
+    """Replace GMOS South sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["GmosSouthAtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
 AddProgramUserInput.model_rebuild()
 AddTimeChargeCorrectionInput.model_rebuild()
 AllocationInput.model_rebuild()
@@ -4351,9 +4395,7 @@ ClassicalInput.model_rebuild()
 LargeProgramInput.model_rebuild()
 QueueInput.model_rebuild()
 ProposalPropertiesInput.model_rebuild()
-RecordGmosNorthStepInput.model_rebuild()
 RecordGmosNorthVisitInput.model_rebuild()
-RecordGmosSouthStepInput.model_rebuild()
 RecordGmosSouthVisitInput.model_rebuild()
 ObservingModeInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
@@ -4394,12 +4436,12 @@ UpdateProgramsInput.model_rebuild()
 UpdateProposalInput.model_rebuild()
 UpdateTargetsInput.model_rebuild()
 WhereDatasetChronicleEntry.model_rebuild()
-RecordFlamingos2StepInput.model_rebuild()
 RecordFlamingos2VisitInput.model_rebuild()
 Flamingos2DynamicInput.model_rebuild()
 Flamingos2FpuMaskInput.model_rebuild()
 Flamingos2LongSlitAcquisitionInput.model_rebuild()
 Flamingos2LongSlitInput.model_rebuild()
+Igrins2LongSlitInput.model_rebuild()
 GmosImagingVariantInput.model_rebuild()
 GmosGroupedImagingVariantInput.model_rebuild()
 GmosInterleavedImagingVariantInput.model_rebuild()
@@ -4436,3 +4478,12 @@ WhereUser.model_rebuild()
 WhereUserProfile.model_rebuild()
 WhereWavelength.model_rebuild()
 WhereCalculatedObservationWorkflow.model_rebuild()
+Flamingos2StepInput.model_rebuild()
+GmosNorthStepInput.model_rebuild()
+GmosSouthStepInput.model_rebuild()
+Flamingos2AtomInput.model_rebuild()
+GmosNorthAtomInput.model_rebuild()
+GmosSouthAtomInput.model_rebuild()
+ReplaceFlamingos2SequenceInput.model_rebuild()
+ReplaceGmosNorthSequenceInput.model_rebuild()
+ReplaceGmosSouthSequenceInput.model_rebuild()

@@ -83,11 +83,11 @@ class ObservationEditObservationEditValueObservingMode(BaseModel):
 
 class ObservationEditObservationEditValueObservingModeGmosNorthLongSlit(BaseModel):
     grating: GmosNorthGrating
-    filter: Optional[GmosNorthFilter]
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
     fpu: GmosNorthBuiltinFpu
-    central_wavelength: (
-        "ObservationEditObservationEditValueObservingModeGmosNorthLongSlitCentralWavelength"
-    ) = Field(alias="centralWavelength")
+    central_wavelength: "ObservationEditObservationEditValueObservingModeGmosNorthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
 
 
 class ObservationEditObservationEditValueObservingModeGmosNorthLongSlitCentralWavelength(
@@ -98,11 +98,11 @@ class ObservationEditObservationEditValueObservingModeGmosNorthLongSlitCentralWa
 
 class ObservationEditObservationEditValueObservingModeGmosSouthLongSlit(BaseModel):
     grating: GmosSouthGrating
-    filter: Optional[GmosSouthFilter]
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
     fpu: GmosSouthBuiltinFpu
-    central_wavelength: (
-        "ObservationEditObservationEditValueObservingModeGmosSouthLongSlitCentralWavelength"
-    ) = Field(alias="centralWavelength")
+    central_wavelength: "ObservationEditObservationEditValueObservingModeGmosSouthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
 
 
 class ObservationEditObservationEditValueObservingModeGmosSouthLongSlitCentralWavelength(
@@ -116,9 +116,9 @@ class ObservationEditObservationEditValueConstraintSet(BaseModel):
     cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
     sky_background: SkyBackground = Field(alias="skyBackground")
     water_vapor: WaterVapor = Field(alias="waterVapor")
-    elevation_range: (
-        "ObservationEditObservationEditValueConstraintSetElevationRange"
-    ) = Field(alias="elevationRange")
+    elevation_range: "ObservationEditObservationEditValueConstraintSetElevationRange" = Field(
+        alias="elevationRange"
+    )
 
 
 class ObservationEditObservationEditValueConstraintSetElevationRange(BaseModel):

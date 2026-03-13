@@ -106,7 +106,7 @@ class GroupManager(BaseManager):
         input_data = CreateGroupInput(
             program_id=program_id,
             program_reference=program_reference,
-            set=properties,
+            set_=properties,
             initial_contents=initial_contents,
         )
 
@@ -162,7 +162,7 @@ class GroupManager(BaseManager):
         )
 
         input_data = UpdateObservationsInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,

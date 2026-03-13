@@ -40,9 +40,9 @@ class ObsCalculationUpdateObscalcUpdateValueExecutionVisitsMatches(BaseModel):
     observation: (
         "ObsCalculationUpdateObscalcUpdateValueExecutionVisitsMatchesObservation"
     )
-    atom_records: (
-        "ObsCalculationUpdateObscalcUpdateValueExecutionVisitsMatchesAtomRecords"
-    ) = Field(alias="atomRecords")
+    atom_records: "ObsCalculationUpdateObscalcUpdateValueExecutionVisitsMatchesAtomRecords" = Field(
+        alias="atomRecords"
+    )
 
 
 class ObsCalculationUpdateObscalcUpdateValueExecutionVisitsMatchesObservation(

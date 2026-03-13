@@ -26,7 +26,7 @@ class GetSchedulerProgramsProgramsMatches(BaseModel):
     name: Optional[Any]
     description: Optional[Any]
     existence: Existence
-    type: ProgramType
+    type_: ProgramType = Field(alias="type")
     reference: Optional["GetSchedulerProgramsProgramsMatchesReference"]
     active: "GetSchedulerProgramsProgramsMatchesActive"
     proposal_status: ProposalStatus = Field(alias="proposalStatus")
@@ -53,7 +53,7 @@ class GetSchedulerProgramsProgramsMatchesReference(BaseModel):
         "SystemProgramReference",
     ] = Field(alias="__typename")
     label: Any
-    type: ProgramType
+    type_: ProgramType = Field(alias="type")
 
 
 class GetSchedulerProgramsProgramsMatchesActive(BaseModel):
@@ -62,7 +62,7 @@ class GetSchedulerProgramsProgramsMatchesActive(BaseModel):
 
 
 class GetSchedulerProgramsProgramsMatchesProposal(BaseModel):
-    type: "GetSchedulerProgramsProgramsMatchesProposalType"
+    type_: "GetSchedulerProgramsProgramsMatchesProposalType" = Field(alias="type")
     call: Optional["GetSchedulerProgramsProgramsMatchesProposalCall"]
 
 

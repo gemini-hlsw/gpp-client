@@ -100,7 +100,7 @@ class ProgramNoteManager(BaseManager):
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
-            set=properties,
+            set_=properties,
         )
 
         fields = Mutation.create_program_note(input=input_data).fields(
@@ -163,7 +163,7 @@ class ProgramNoteManager(BaseManager):
         )
 
         input_data = UpdateProgramNotesInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,

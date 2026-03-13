@@ -33,8 +33,7 @@ def gql(q: str) -> str:
 
 class _GPPClient(AsyncBaseClient):
     async def get_goats_programs(self, **kwargs: Any) -> GetGOATSPrograms:
-        query = gql(
-            """
+        query = gql("""
             query GetGOATSPrograms {
               programs(includeDeleted: false, WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
                 matches {
@@ -51,14 +50,13 @@ class _GPPClient(AsyncBaseClient):
                 hasMore
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {}
         response = await self.execute(
             query=query,
             operation_name="GetGOATSPrograms",
             variables=variables,
-            **kwargs
+            **kwargs,
         )
         data = self.get_data(response)
         return GetGOATSPrograms.model_validate(data)
@@ -66,8 +64,7 @@ class _GPPClient(AsyncBaseClient):
     async def get_goats_observations(
         self, program_id: Any, **kwargs: Any
     ) -> GetGOATSObservations:
-        query = gql(
-            """
+        query = gql("""
             query GetGOATSObservations($programId: ProgramId!) {
               observations(
                 includeDeleted: false
@@ -337,14 +334,13 @@ class _GPPClient(AsyncBaseClient):
                 hasMore
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"programId": program_id}
         response = await self.execute(
             query=query,
             operation_name="GetGOATSObservations",
             variables=variables,
-            **kwargs
+            **kwargs,
         )
         data = self.get_data(response)
         return GetGOATSObservations.model_validate(data)
@@ -352,10 +348,9 @@ class _GPPClient(AsyncBaseClient):
     async def get_scheduler_programs(
         self,
         programs_list: Union[Optional[list[Any]], UnsetType] = UNSET,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> GetSchedulerPrograms:
-        query = gql(
-            """
+        query = gql("""
             query GetSchedulerPrograms($programsList: [ProgramId!]) {
               programs(WHERE: {id: {IN: $programsList}, proposalStatus: {EQ: ACCEPTED}}) {
                 matches {
@@ -433,14 +428,13 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"programsList": programs_list}
         response = await self.execute(
             query=query,
             operation_name="GetSchedulerPrograms",
             variables=variables,
-            **kwargs
+            **kwargs,
         )
         data = self.get_data(response)
         return GetSchedulerPrograms.model_validate(data)
@@ -448,8 +442,7 @@ class _GPPClient(AsyncBaseClient):
     async def get_scheduler_all_programs_id(
         self, **kwargs: Any
     ) -> GetSchedulerAllProgramsId:
-        query = gql(
-            """
+        query = gql("""
             query GetSchedulerAllProgramsId {
               programs(WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
                 matches {
@@ -457,14 +450,13 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {}
         response = await self.execute(
             query=query,
             operation_name="GetSchedulerAllProgramsId",
             variables=variables,
-            **kwargs
+            **kwargs,
         )
         data = self.get_data(response)
         return GetSchedulerAllProgramsId.model_validate(data)
@@ -472,8 +464,7 @@ class _GPPClient(AsyncBaseClient):
     async def observation_edit(
         self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
     ) -> AsyncIterator[ObservationEdit]:
-        query = gql(
-            """
+        query = gql("""
             subscription ObservationEdit($programId: ProgramId) {
               observationEdit(input: {programId: $programId}) {
                 editType
@@ -578,8 +569,7 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"programId": program_id}
         async for data in self.execute_ws(
             query=query, operation_name="ObservationEdit", variables=variables, **kwargs
@@ -589,8 +579,7 @@ class _GPPClient(AsyncBaseClient):
     async def program_edit(
         self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
     ) -> AsyncIterator[ProgramEdit]:
-        query = gql(
-            """
+        query = gql("""
             subscription ProgramEdit($programId: ProgramId) {
               programEdit(input: {programId: $programId}) {
                 editType
@@ -610,8 +599,7 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"programId": program_id}
         async for data in self.execute_ws(
             query=query, operation_name="ProgramEdit", variables=variables, **kwargs
@@ -621,8 +609,7 @@ class _GPPClient(AsyncBaseClient):
     async def target_edit(
         self, target_edit: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
     ) -> AsyncIterator[TargetEdit]:
-        query = gql(
-            """
+        query = gql("""
             subscription TargetEdit($targetEdit: TargetId) {
               targetEdit(input: {targetId: $targetEdit}) {
                 editType
@@ -645,8 +632,7 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"targetEdit": target_edit}
         async for data in self.execute_ws(
             query=query, operation_name="TargetEdit", variables=variables, **kwargs
@@ -656,8 +642,7 @@ class _GPPClient(AsyncBaseClient):
     async def obs_calculation_update(
         self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
     ) -> AsyncIterator[ObsCalculationUpdate]:
-        query = gql(
-            """
+        query = gql("""
             subscription ObsCalculationUpdate($programId: ProgramId) {
               obscalcUpdate(input: {programId: $programId}) {
                 editType
@@ -685,14 +670,13 @@ class _GPPClient(AsyncBaseClient):
                 }
               }
             }
-            """
-        )
+            """)
         variables: dict[str, object] = {"programId": program_id}
         async for data in self.execute_ws(
             query=query,
             operation_name="ObsCalculationUpdate",
             variables=variables,
-            **kwargs
+            **kwargs,
         ):
             yield ObsCalculationUpdate.model_validate(data)
 
@@ -777,5 +761,5 @@ class _GPPClient(AsyncBaseClient):
         return await self.execute_custom_operation(
             *fields,
             operation_type=OperationType.MUTATION,
-            operation_name=operation_name
+            operation_name=operation_name,
         )

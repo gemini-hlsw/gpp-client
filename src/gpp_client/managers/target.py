@@ -99,7 +99,7 @@ class TargetManager(BaseManager):
 
         input_data = CloneTargetInput(
             target_id=target_id,
-            set=properties,
+            set_=properties,
             replace_in=replace_in,
         )
 
@@ -174,7 +174,7 @@ class TargetManager(BaseManager):
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
-            set=properties,
+            set_=properties,
         )
 
         fields = Mutation.create_target(input=input_data).fields(
@@ -237,7 +237,7 @@ class TargetManager(BaseManager):
         )
 
         input_data = UpdateTargetsInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
