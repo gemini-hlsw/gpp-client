@@ -1,12 +1,6 @@
 from .base_operation import GraphQLField
 
 
-class AddAtomEventResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "AddAtomEventResultGraphQLField":
-        self._alias = alias
-        return self
-
-
 class AddDatasetEventResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "AddDatasetEventResultGraphQLField":
         self._alias = alias
@@ -553,32 +547,14 @@ class SystemVerificationGraphQLField(GraphQLField):
         return self
 
 
-class RecordAtomResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RecordAtomResultGraphQLField":
-        self._alias = alias
-        return self
-
-
 class RecordDatasetResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "RecordDatasetResultGraphQLField":
         self._alias = alias
         return self
 
 
-class RecordGmosNorthStepResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RecordGmosNorthStepResultGraphQLField":
-        self._alias = alias
-        return self
-
-
 class RecordGmosNorthVisitResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "RecordGmosNorthVisitResultGraphQLField":
-        self._alias = alias
-        return self
-
-
-class RecordGmosSouthStepResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RecordGmosSouthStepResultGraphQLField":
         self._alias = alias
         return self
 
@@ -979,12 +955,6 @@ class Flamingos2StaticGraphQLField(GraphQLField):
         return self
 
 
-class RecordFlamingos2StepResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "RecordFlamingos2StepResultGraphQLField":
-        self._alias = alias
-        return self
-
-
 class RecordFlamingos2VisitResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "RecordFlamingos2VisitResultGraphQLField":
         self._alias = alias
@@ -1035,6 +1005,12 @@ class Flamingos2LongSlitAcquisitionGraphQLField(GraphQLField):
 
 class Flamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2LongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2LongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2LongSlitGraphQLField":
         self._alias = alias
         return self
 
@@ -1399,6 +1375,12 @@ class ConfigurationGmosSouthImagingGraphQLField(GraphQLField):
 
 class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationIgrins2LongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationIgrins2LongSlitGraphQLField":
         self._alias = alias
         return self
 
@@ -1897,5 +1879,23 @@ class ObservationWorkflowGraphQLField(GraphQLField):
 
 class CalculatedObservationWorkflowGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CalculatedObservationWorkflowGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ReplaceFlamingos2SequenceResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ReplaceFlamingos2SequenceResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ReplaceGmosNorthSequenceResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ReplaceGmosNorthSequenceResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ReplaceGmosSouthSequenceResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ReplaceGmosSouthSequenceResultGraphQLField":
         self._alias = alias
         return self

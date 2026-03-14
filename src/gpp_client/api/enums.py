@@ -386,6 +386,7 @@ class ObservingModeType(str, Enum):
     FLAMINGOS_2_LONG_SLIT = "FLAMINGOS_2_LONG_SLIT"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
+    IGRINS_2_LONG_SLIT = "IGRINS_2_LONG_SLIT"
 
 
 class CoolStarTemperature(str, Enum):
@@ -535,6 +536,11 @@ class TelluricTag(str, Enum):
     A0V = "A0V"
     SOLAR = "SOLAR"
     MANUAL = "MANUAL"
+
+
+class Igrins2OffsetMode(str, Enum):
+    NOD_ALONG_SLIT = "NOD_ALONG_SLIT"
+    NOD_TO_SKY = "NOD_TO_SKY"
 
 
 class FluxDensityContinuumIntegratedUnits(str, Enum):

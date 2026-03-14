@@ -2,7 +2,6 @@ from typing import Any, Optional, Union
 
 from .base_operation import GraphQLField
 from .custom_typing_fields import (
-    AddAtomEventResultGraphQLField,
     AddConditionsEntryResultGraphQLField,
     AddDatasetEventResultGraphQLField,
     AddProgramUserResultGraphQLField,
@@ -27,10 +26,12 @@ from .custom_typing_fields import (
     BandNormalizedGraphQLField,
     BandNormalizedIntegratedGraphQLField,
     BandNormalizedSurfaceGraphQLField,
+    BiasGraphQLField,
     CalculatedBandedTimeGraphQLField,
     CalculatedCategorizedTimeRangeGraphQLField,
     CalculatedExecutionDigestGraphQLField,
     CalculatedObservationWorkflowGraphQLField,
+    CalibrationProgramReferenceGraphQLField,
     CallForProposalsGraphQLField,
     CallForProposalsPartnerGraphQLField,
     CallsForProposalsSelectResultGraphQLField,
@@ -38,9 +39,11 @@ from .custom_typing_fields import (
     CategorizedTimeGraphQLField,
     CategorizedTimeRangeGraphQLField,
     ChangeProgramUserRoleResultGraphQLField,
+    ClassicalGraphQLField,
     CloneGroupResultGraphQLField,
     CloneObservationResultGraphQLField,
     CloneTargetResultGraphQLField,
+    CommissioningProgramReferenceGraphQLField,
     ConditionsEntryGraphQLField,
     ConditionsExpectationGraphQLField,
     ConditionsIntuitionGraphQLField,
@@ -53,6 +56,7 @@ from .custom_typing_fields import (
     ConfigurationGmosSouthImagingGraphQLField,
     ConfigurationGmosSouthLongSlitGraphQLField,
     ConfigurationGraphQLField,
+    ConfigurationIgrins2LongSlitGraphQLField,
     ConfigurationObservingModeGraphQLField,
     ConfigurationRequestGraphQLField,
     ConfigurationRequestSelectResultGraphQLField,
@@ -70,6 +74,7 @@ from .custom_typing_fields import (
     CreateProposalResultGraphQLField,
     CreateTargetResultGraphQLField,
     CreateUserInvitationResultGraphQLField,
+    DarkGraphQLField,
     DatasetChronicleEntryGraphQLField,
     DatasetChronicleEntrySelectResultGraphQLField,
     DatasetEstimateGraphQLField,
@@ -82,20 +87,25 @@ from .custom_typing_fields import (
     DeclinationGraphQLField,
     DeleteProgramUserResultGraphQLField,
     DeleteProposalResultGraphQLField,
+    DemoScienceGraphQLField,
     DetectorEstimateGraphQLField,
+    DirectorsTimeGraphQLField,
     ElevationRangeGraphQLField,
     EmailGraphQLField,
     EmissionLineIntegratedGraphQLField,
     EmissionLinesIntegratedGraphQLField,
     EmissionLinesSurfaceGraphQLField,
     EmissionLineSurfaceGraphQLField,
+    EngineeringProgramReferenceGraphQLField,
     EnumeratedTelescopeConfigGeneratorGraphQLField,
+    ExampleProgramReferenceGraphQLField,
     ExecutionConfigGraphQLField,
     ExecutionDigestGraphQLField,
     ExecutionEventGraphQLField,
     ExecutionEventSelectResultGraphQLField,
     ExecutionGraphQLField,
     ExposureTimeModeGraphQLField,
+    FastTurnaroundGraphQLField,
     FilterTypeMetaGraphQLField,
     Flamingos2AtomGraphQLField,
     Flamingos2CustomMaskGraphQLField,
@@ -111,6 +121,7 @@ from .custom_typing_fields import (
     FluxDensityContinuumSurfaceGraphQLField,
     FluxDensityEntryGraphQLField,
     GaussianSourceGraphQLField,
+    GcalGraphQLField,
     GmosCcdModeGraphQLField,
     GmosCustomMaskGraphQLField,
     GmosGroupedImagingVariantGraphQLField,
@@ -148,14 +159,29 @@ from .custom_typing_fields import (
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
+    HasNonPartnerGraphQLField,
+    HasPartnerGraphQLField,
+    HasUnspecifiedPartnerGraphQLField,
     HourAngleRangeGraphQLField,
+    Igrins2LongSlitGraphQLField,
     ImagingConfigOptionGmosNorthGraphQLField,
     ImagingConfigOptionGmosSouthGraphQLField,
     ImagingConfigOptionGraphQLField,
     ImagingScienceRequirementsGraphQLField,
+    ItcGmosNorthImagingGraphQLField,
+    ItcGmosNorthImagingResultSetGraphQLField,
+    ItcGmosSouthImagingGraphQLField,
+    ItcGmosSouthImagingResultSetGraphQLField,
+    ItcGraphQLField,
+    ItcResultGraphQLField,
+    ItcResultSetGraphQLField,
+    ItcSpectroscopyGraphQLField,
+    LargeProgramGraphQLField,
+    LibraryProgramReferenceGraphQLField,
     LineFluxIntegratedGraphQLField,
     LineFluxSurfaceGraphQLField,
     LinkUserResultGraphQLField,
+    MonitoringProgramReferenceGraphQLField,
     NonsiderealGraphQLField,
     ObservationGraphQLField,
     ObservationReferenceGraphQLField,
@@ -170,10 +196,14 @@ from .custom_typing_fields import (
     OffsetQGraphQLField,
     OpportunityGraphQLField,
     ParallaxGraphQLField,
+    PartnerLinkGraphQLField,
+    PartnerSplitGraphQLField,
+    PoorWeatherGraphQLField,
     PosAngleConstraintGraphQLField,
     ProgramGraphQLField,
     ProgramNoteGraphQLField,
     ProgramNoteSelectResultGraphQLField,
+    ProgramReferenceGraphQLField,
     ProgramSelectResultGraphQLField,
     ProgramUserGraphQLField,
     ProgramUserSelectResultGraphQLField,
@@ -183,22 +213,25 @@ from .custom_typing_fields import (
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
     ProposalStatusMetaGraphQLField,
+    ProposalTypeGraphQLField,
+    QueueGraphQLField,
     RadialVelocityGraphQLField,
     RandomTelescopeConfigGeneratorGraphQLField,
-    RecordAtomResultGraphQLField,
     RecordDatasetResultGraphQLField,
-    RecordFlamingos2StepResultGraphQLField,
     RecordFlamingos2VisitResultGraphQLField,
-    RecordGmosNorthStepResultGraphQLField,
     RecordGmosNorthVisitResultGraphQLField,
-    RecordGmosSouthStepResultGraphQLField,
     RecordGmosSouthVisitResultGraphQLField,
     RedeemUserInvitationResultGraphQLField,
     RegionGraphQLField,
+    ReplaceFlamingos2SequenceResultGraphQLField,
+    ReplaceGmosNorthSequenceResultGraphQLField,
+    ReplaceGmosSouthSequenceResultGraphQLField,
     ResetAcquisitionResultGraphQLField,
     RevokeUserInvitationResultGraphQLField,
     RightAscensionArcGraphQLField,
     RightAscensionGraphQLField,
+    ScienceGraphQLField,
+    ScienceProgramReferenceGraphQLField,
     ScienceRequirementsGraphQLField,
     SequenceDigestGraphQLField,
     SequenceEventGraphQLField,
@@ -208,9 +241,11 @@ from .custom_typing_fields import (
     SetProposalStatusResultGraphQLField,
     SetupTimeGraphQLField,
     SiderealGraphQLField,
+    SignalToNoiseAtGraphQLField,
     SignalToNoiseExposureTimeModeGraphQLField,
     SiteCoordinateLimitsGraphQLField,
     SlewEventGraphQLField,
+    SmartGcalGraphQLField,
     SourceProfileGraphQLField,
     SpectralDefinitionIntegratedGraphQLField,
     SpectralDefinitionSurfaceGraphQLField,
@@ -220,10 +255,13 @@ from .custom_typing_fields import (
     SpectroscopyConfigOptionGraphQLField,
     SpectroscopyScienceRequirementsGraphQLField,
     SpiralTelescopeConfigGeneratorGraphQLField,
+    StepConfigGraphQLField,
     StepEstimateGraphQLField,
     StepEventGraphQLField,
     StepRecordGraphQLField,
     StepRecordSelectResultGraphQLField,
+    SystemProgramReferenceGraphQLField,
+    SystemVerificationGraphQLField,
     TargetEnvironmentGraphQLField,
     TargetGraphQLField,
     TargetGroupGraphQLField,
@@ -234,7 +272,12 @@ from .custom_typing_fields import (
     TelluricTypeGraphQLField,
     TimeAndCountExposureTimeModeGraphQLField,
     TimeChargeCorrectionGraphQLField,
+    TimeChargeDaylightDiscountGraphQLField,
+    TimeChargeDiscountGraphQLField,
     TimeChargeInvoiceGraphQLField,
+    TimeChargeNoDataDiscountGraphQLField,
+    TimeChargeOverlapDiscountGraphQLField,
+    TimeChargeQaDiscountGraphQLField,
     TimeSpanGraphQLField,
     TimestampIntervalGraphQLField,
     TimingWindowEndAfterGraphQLField,
@@ -267,26 +310,6 @@ from .custom_typing_fields import (
 )
 
 
-class AddAtomEventResultFields(GraphQLField):
-    """The result of adding a atom event."""
-
-    @classmethod
-    def event(cls) -> "AtomEventFields":
-        """The new atom event that was added."""
-        return AtomEventFields("event")
-
-    def fields(
-        self, *subfields: Union[AddAtomEventResultGraphQLField, "AtomEventFields"]
-    ) -> "AddAtomEventResultFields":
-        """Subfields should come from the AddAtomEventResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "AddAtomEventResultFields":
-        self._alias = alias
-        return self
-
-
 class AddConditionsEntryResultFields(GraphQLField):
     @classmethod
     def conditions_entry(cls) -> "ConditionsEntryFields":
@@ -294,7 +317,9 @@ class AddConditionsEntryResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[AddConditionsEntryResultGraphQLField, "ConditionsEntryFields"]
+        *subfields: Union[
+            AddConditionsEntryResultGraphQLField, "ConditionsEntryFields"
+        ],
     ) -> "AddConditionsEntryResultFields":
         """Subfields should come from the AddConditionsEntryResultFields class"""
         self._subfields.extend(subfields)
@@ -352,7 +377,7 @@ class AddSequenceEventResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[AddSequenceEventResultGraphQLField, "SequenceEventFields"]
+        *subfields: Union[AddSequenceEventResultGraphQLField, "SequenceEventFields"],
     ) -> "AddSequenceEventResultFields":
         """Subfields should come from the AddSequenceEventResultFields class"""
         self._subfields.extend(subfields)
@@ -415,7 +440,7 @@ class AddTimeChargeCorrectionResultFields(GraphQLField):
         self,
         *subfields: Union[
             AddTimeChargeCorrectionResultGraphQLField, "TimeChargeInvoiceFields"
-        ]
+        ],
     ) -> "AddTimeChargeCorrectionResultFields":
         """Subfields should come from the AddTimeChargeCorrectionResultFields class"""
         self._subfields.extend(subfields)
@@ -475,7 +500,7 @@ class AllConfigChangeEstimatesFields(GraphQLField):
             AllConfigChangeEstimatesGraphQLField,
             "ConfigChangeEstimateFields",
             "TimeSpanFields",
-        ]
+        ],
     ) -> "AllConfigChangeEstimatesFields":
         """Subfields should come from the AllConfigChangeEstimatesFields class"""
         self._subfields.extend(subfields)
@@ -518,7 +543,7 @@ class AllDetectorEstimatesFields(GraphQLField):
         self,
         *subfields: Union[
             AllDetectorEstimatesGraphQLField, "DetectorEstimateFields", "TimeSpanFields"
-        ]
+        ],
     ) -> "AllDetectorEstimatesFields":
         """Subfields should come from the AllDetectorEstimatesFields class"""
         self._subfields.extend(subfields)
@@ -598,7 +623,7 @@ class AsterismGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
@@ -625,7 +650,7 @@ class AsterismGroupFields(GraphQLField):
             "ObservationSelectResultFields",
             "ProgramFields",
             "TargetFields",
-        ]
+        ],
     ) -> "AsterismGroupFields":
         """Subfields should come from the AsterismGroupFields class"""
         self._subfields.extend(subfields)
@@ -651,7 +676,7 @@ class AsterismGroupSelectResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[AsterismGroupSelectResultGraphQLField, "AsterismGroupFields"]
+        *subfields: Union[AsterismGroupSelectResultGraphQLField, "AsterismGroupFields"],
     ) -> "AsterismGroupSelectResultFields":
         """Subfields should come from the AsterismGroupSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -685,12 +710,12 @@ class AtomEventFields(GraphQLField):
 
     @classmethod
     def atom(cls) -> "AtomRecordFields":
-        """Atom associated with this event."""
+        """Atom record associated with this event, if any.  Atom records only materialize
+        when the steps they contain execute."""
         return AtomRecordFields("atom")
 
     atom_stage: "AtomEventGraphQLField" = AtomEventGraphQLField("atomStage")
     "Atom execution stage."
-    client_id: "AtomEventGraphQLField" = AtomEventGraphQLField("clientId")
     idempotency_key: "AtomEventGraphQLField" = AtomEventGraphQLField("idempotencyKey")
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -701,7 +726,7 @@ class AtomEventFields(GraphQLField):
             "AtomRecordFields",
             "ObservationFields",
             "VisitFields",
-        ]
+        ],
     ) -> "AtomEventFields":
         """Subfields should come from the AtomEventFields class"""
         self._subfields.extend(subfields)
@@ -713,20 +738,28 @@ class AtomEventFields(GraphQLField):
 
 
 class AtomRecordFields(GraphQLField):
-    """An atom as recorded by Observe."""
+    """The portion of an atom that executed in a particular visit."""
 
     id: "AtomRecordGraphQLField" = AtomRecordGraphQLField("id")
     "Atom ID."
+
+    @classmethod
+    def visit(cls) -> "VisitFields":
+        """Visit in which this atom executed."""
+        return VisitFields("visit")
+
+    index: "AtomRecordGraphQLField" = AtomRecordGraphQLField("index")
+    "Atom execution order -- the index of its first executed step."
+    description: "AtomRecordGraphQLField" = AtomRecordGraphQLField("description")
+    "Description, if any."
     instrument: "AtomRecordGraphQLField" = AtomRecordGraphQLField("instrument")
     "The instrument associated with this atom."
 
     @classmethod
-    def visit(cls) -> "VisitFields":
-        """Visit in which this atom was executed."""
-        return VisitFields("visit")
+    def observation(cls) -> "ObservationFields":
+        """Observation containing this atom."""
+        return ObservationFields("observation")
 
-    created: "AtomRecordGraphQLField" = AtomRecordGraphQLField("created")
-    "Created by Observe at this time."
     execution_state: "AtomRecordGraphQLField" = AtomRecordGraphQLField("executionState")
     "The execution state of this atom, according to events received (if any) from\nObserve."
 
@@ -742,9 +775,9 @@ class AtomRecordFields(GraphQLField):
     def steps(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "StepRecordSelectResultFields":
-        """Recorded steps associated with this atom."""
+        """Recorded steps associated with this atom, ordered by execution order."""
         arguments: dict[str, dict[str, Any]] = {
-            "OFFSET": {"type": "Timestamp", "value": offset},
+            "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -752,19 +785,15 @@ class AtomRecordFields(GraphQLField):
         }
         return StepRecordSelectResultFields("steps", arguments=cleared_arguments)
 
-    generated_id: "AtomRecordGraphQLField" = AtomRecordGraphQLField("generatedId")
-    "Atom ID from the generated atom, if any, that produced this atom record."
-    idempotency_key: "AtomRecordGraphQLField" = AtomRecordGraphQLField("idempotencyKey")
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe atom is created and is used to enable problem-free retry in the case of\nfailure."
-
     def fields(
         self,
         *subfields: Union[
             AtomRecordGraphQLField,
+            "ObservationFields",
             "StepRecordSelectResultFields",
             "TimestampIntervalFields",
             "VisitFields",
-        ]
+        ],
     ) -> "AtomRecordFields":
         """Subfields should come from the AtomRecordFields class"""
         self._subfields.extend(subfields)
@@ -923,7 +952,7 @@ class BandNormalizedIntegratedFields(GraphQLField):
             BandNormalizedIntegratedGraphQLField,
             "BandBrightnessIntegratedFields",
             "UnnormalizedSedFields",
-        ]
+        ],
     ) -> "BandNormalizedIntegratedFields":
         """Subfields should come from the BandNormalizedIntegratedFields class"""
         self._subfields.extend(subfields)
@@ -950,7 +979,7 @@ class BandNormalizedSurfaceFields(GraphQLField):
             BandNormalizedSurfaceGraphQLField,
             "BandBrightnessSurfaceFields",
             "UnnormalizedSedFields",
-        ]
+        ],
     ) -> "BandNormalizedSurfaceFields":
         """Subfields should come from the BandNormalizedSurfaceFields class"""
         self._subfields.extend(subfields)
@@ -982,6 +1011,22 @@ class BandedTimeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "BandedTimeFields":
+        self._alias = alias
+        return self
+
+
+class BiasFields(GraphQLField):
+    """Bias calibration step"""
+
+    step_type: "BiasGraphQLField" = BiasGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: BiasGraphQLField) -> "BiasFields":
+        """Subfields should come from the BiasFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "BiasFields":
         self._alias = alias
         return self
 
@@ -1034,7 +1079,7 @@ class CalculatedCategorizedTimeRangeFields(GraphQLField):
         self,
         *subfields: Union[
             CalculatedCategorizedTimeRangeGraphQLField, "CategorizedTimeRangeFields"
-        ]
+        ],
     ) -> "CalculatedCategorizedTimeRangeFields":
         """Subfields should come from the CalculatedCategorizedTimeRangeFields class"""
         self._subfields.extend(subfields)
@@ -1066,7 +1111,7 @@ class CalculatedExecutionDigestFields(GraphQLField):
         self,
         *subfields: Union[
             CalculatedExecutionDigestGraphQLField, "ExecutionDigestFields"
-        ]
+        ],
     ) -> "CalculatedExecutionDigestFields":
         """Subfields should come from the CalculatedExecutionDigestFields class"""
         self._subfields.extend(subfields)
@@ -1095,13 +1140,42 @@ class CalculatedObservationWorkflowFields(GraphQLField):
         self,
         *subfields: Union[
             CalculatedObservationWorkflowGraphQLField, "ObservationWorkflowFields"
-        ]
+        ],
     ) -> "CalculatedObservationWorkflowFields":
         """Subfields should come from the CalculatedObservationWorkflowFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "CalculatedObservationWorkflowFields":
+        self._alias = alias
+        return self
+
+
+class CalibrationProgramReferenceFields(GraphQLField):
+    label: "CalibrationProgramReferenceGraphQLField" = (
+        CalibrationProgramReferenceGraphQLField("label")
+    )
+    type_: "CalibrationProgramReferenceGraphQLField" = (
+        CalibrationProgramReferenceGraphQLField("type")
+    )
+    instrument: "CalibrationProgramReferenceGraphQLField" = (
+        CalibrationProgramReferenceGraphQLField("instrument")
+    )
+    semester: "CalibrationProgramReferenceGraphQLField" = (
+        CalibrationProgramReferenceGraphQLField("semester")
+    )
+    semester_index: "CalibrationProgramReferenceGraphQLField" = (
+        CalibrationProgramReferenceGraphQLField("semesterIndex")
+    )
+
+    def fields(
+        self, *subfields: CalibrationProgramReferenceGraphQLField
+    ) -> "CalibrationProgramReferenceFields":
+        """Subfields should come from the CalibrationProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalibrationProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -1113,7 +1187,7 @@ class CallForProposalsFields(GraphQLField):
     "The unique Call for Proposals id associated with this Call."
     title: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("title")
     "The title of this Call for Proposals."
-    type: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("type")
+    type_: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("type")
     "Describes which type of proposals are being accepted."
     semester: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("semester")
     "The semester associated with the Call.  Some types may have multiple Calls\nper semester."
@@ -1167,7 +1241,7 @@ class CallForProposalsFields(GraphQLField):
             "CallForProposalsPartnerFields",
             "DateIntervalFields",
             "SiteCoordinateLimitsFields",
-        ]
+        ],
     ) -> "CallForProposalsFields":
         """Subfields should come from the CallForProposalsFields class"""
         self._subfields.extend(subfields)
@@ -1218,7 +1292,7 @@ class CallsForProposalsSelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             CallsForProposalsSelectResultGraphQLField, "CallForProposalsFields"
-        ]
+        ],
     ) -> "CallsForProposalsSelectResultFields":
         """Subfields should come from the CallsForProposalsSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -1294,7 +1368,7 @@ class CategorizedTimeRangeFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[CategorizedTimeRangeGraphQLField, "CategorizedTimeFields"]
+        *subfields: Union[CategorizedTimeRangeGraphQLField, "CategorizedTimeFields"],
     ) -> "CategorizedTimeRangeFields":
         """Subfields should come from the CategorizedTimeRangeFields class"""
         self._subfields.extend(subfields)
@@ -1314,13 +1388,38 @@ class ChangeProgramUserRoleResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[ChangeProgramUserRoleResultGraphQLField, "ProgramUserFields"]
+        *subfields: Union[ChangeProgramUserRoleResultGraphQLField, "ProgramUserFields"],
     ) -> "ChangeProgramUserRoleResultFields":
         """Subfields should come from the ChangeProgramUserRoleResultFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "ChangeProgramUserRoleResultFields":
+        self._alias = alias
+        return self
+
+
+class ClassicalFields(GraphQLField):
+    """Proposal properties for Regular Semester (Classical) CallForProposals."""
+
+    science_subtype: "ClassicalGraphQLField" = ClassicalGraphQLField("scienceSubtype")
+    "The science type of this Call for Proposals."
+    min_percent_time: "ClassicalGraphQLField" = ClassicalGraphQLField("minPercentTime")
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[ClassicalGraphQLField, "PartnerSplitFields"]
+    ) -> "ClassicalFields":
+        """Subfields should come from the ClassicalFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ClassicalFields":
         self._alias = alias
         return self
 
@@ -1396,6 +1495,35 @@ class CloneTargetResultFields(GraphQLField):
         return self
 
 
+class CommissioningProgramReferenceFields(GraphQLField):
+    label: "CommissioningProgramReferenceGraphQLField" = (
+        CommissioningProgramReferenceGraphQLField("label")
+    )
+    type_: "CommissioningProgramReferenceGraphQLField" = (
+        CommissioningProgramReferenceGraphQLField("type")
+    )
+    instrument: "CommissioningProgramReferenceGraphQLField" = (
+        CommissioningProgramReferenceGraphQLField("instrument")
+    )
+    semester: "CommissioningProgramReferenceGraphQLField" = (
+        CommissioningProgramReferenceGraphQLField("semester")
+    )
+    semester_index: "CommissioningProgramReferenceGraphQLField" = (
+        CommissioningProgramReferenceGraphQLField("semesterIndex")
+    )
+
+    def fields(
+        self, *subfields: CommissioningProgramReferenceGraphQLField
+    ) -> "CommissioningProgramReferenceFields":
+        """Subfields should come from the CommissioningProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CommissioningProgramReferenceFields":
+        self._alias = alias
+        return self
+
+
 class ConditionsEntryFields(GraphQLField):
     id: "ConditionsEntryGraphQLField" = ConditionsEntryGraphQLField("id")
     transaction_id: "ConditionsEntryGraphQLField" = ConditionsEntryGraphQLField(
@@ -1423,7 +1551,7 @@ class ConditionsEntryFields(GraphQLField):
             "ConditionsIntuitionFields",
             "ConditionsMeasurementFields",
             "UserFields",
-        ]
+        ],
     ) -> "ConditionsEntryFields":
         """Subfields should come from the ConditionsEntryFields class"""
         self._subfields.extend(subfields)
@@ -1435,7 +1563,7 @@ class ConditionsEntryFields(GraphQLField):
 
 
 class ConditionsExpectationFields(GraphQLField):
-    type: "ConditionsExpectationGraphQLField" = ConditionsExpectationGraphQLField(
+    type_: "ConditionsExpectationGraphQLField" = ConditionsExpectationGraphQLField(
         "type"
     )
 
@@ -1468,7 +1596,7 @@ class ConditionsIntuitionFields(GraphQLField):
         self,
         *subfields: Union[
             ConditionsIntuitionGraphQLField, "ConditionsExpectationFields"
-        ]
+        ],
     ) -> "ConditionsIntuitionFields":
         """Subfields should come from the ConditionsIntuitionFields class"""
         self._subfields.extend(subfields)
@@ -1508,7 +1636,7 @@ class ConditionsMeasurementFields(GraphQLField):
         self,
         *subfields: Union[
             ConditionsMeasurementGraphQLField, "AngleFields", "WavelengthFields"
-        ]
+        ],
     ) -> "ConditionsMeasurementFields":
         """Subfields should come from the ConditionsMeasurementFields class"""
         self._subfields.extend(subfields)
@@ -1569,7 +1697,7 @@ class ConfigurationFields(GraphQLField):
             "ConfigurationConditionsFields",
             "ConfigurationObservingModeFields",
             "ConfigurationTargetFields",
-        ]
+        ],
     ) -> "ConfigurationFields":
         """Subfields should come from the ConfigurationFields class"""
         self._subfields.extend(subfields)
@@ -1691,6 +1819,23 @@ class ConfigurationGmosSouthLongSlitFields(GraphQLField):
         return self
 
 
+class ConfigurationIgrins2LongSlitFields(GraphQLField):
+    ignore: "ConfigurationIgrins2LongSlitGraphQLField" = (
+        ConfigurationIgrins2LongSlitGraphQLField("ignore")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationIgrins2LongSlitGraphQLField
+    ) -> "ConfigurationIgrins2LongSlitFields":
+        """Subfields should come from the ConfigurationIgrins2LongSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationIgrins2LongSlitFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationObservingModeFields(GraphQLField):
     instrument: "ConfigurationObservingModeGraphQLField" = (
         ConfigurationObservingModeGraphQLField("instrument")
@@ -1719,6 +1864,10 @@ class ConfigurationObservingModeFields(GraphQLField):
     def flamingos_2_long_slit(cls) -> "ConfigurationFlamingos2LongSlitFields":
         return ConfigurationFlamingos2LongSlitFields("flamingos2LongSlit")
 
+    @classmethod
+    def igrins_2_long_slit(cls) -> "ConfigurationIgrins2LongSlitFields":
+        return ConfigurationIgrins2LongSlitFields("igrins2LongSlit")
+
     def fields(
         self,
         *subfields: Union[
@@ -1728,7 +1877,8 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationGmosNorthLongSlitFields",
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
-        ]
+            "ConfigurationIgrins2LongSlitFields",
+        ],
     ) -> "ConfigurationObservingModeFields":
         """Subfields should come from the ConfigurationObservingModeFields class"""
         self._subfields.extend(subfields)
@@ -1765,7 +1915,7 @@ class ConfigurationRequestFields(GraphQLField):
         self,
         *subfields: Union[
             ConfigurationRequestGraphQLField, "ConfigurationFields", "ProgramFields"
-        ]
+        ],
     ) -> "ConfigurationRequestFields":
         """Subfields should come from the ConfigurationRequestFields class"""
         self._subfields.extend(subfields)
@@ -1793,7 +1943,7 @@ class ConfigurationRequestSelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             ConfigurationRequestSelectResultGraphQLField, "ConfigurationRequestFields"
-        ]
+        ],
     ) -> "ConfigurationRequestSelectResultFields":
         """Subfields should come from the ConfigurationRequestSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -1819,7 +1969,7 @@ class ConfigurationTargetFields(GraphQLField):
         self,
         *subfields: Union[
             ConfigurationTargetGraphQLField, "CoordinatesFields", "RegionFields"
-        ]
+        ],
     ) -> "ConfigurationTargetFields":
         """Subfields should come from the ConfigurationTargetFields class"""
         self._subfields.extend(subfields)
@@ -1870,7 +2020,7 @@ class ConstraintSetGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
@@ -1902,7 +2052,7 @@ class ConstraintSetGroupFields(GraphQLField):
             "ConstraintSetFields",
             "ObservationSelectResultFields",
             "ProgramFields",
-        ]
+        ],
     ) -> "ConstraintSetGroupFields":
         """Subfields should come from the ConstraintSetGroupFields class"""
         self._subfields.extend(subfields)
@@ -1930,7 +2080,7 @@ class ConstraintSetGroupSelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             ConstraintSetGroupSelectResultGraphQLField, "ConstraintSetGroupFields"
-        ]
+        ],
     ) -> "ConstraintSetGroupSelectResultFields":
         """Subfields should come from the ConstraintSetGroupSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -1972,7 +2122,7 @@ class CoordinateLimitsFields(GraphQLField):
         self,
         *subfields: Union[
             CoordinateLimitsGraphQLField, "DeclinationFields", "RightAscensionFields"
-        ]
+        ],
     ) -> "CoordinateLimitsFields":
         """Subfields should come from the CoordinateLimitsFields class"""
         self._subfields.extend(subfields)
@@ -1998,7 +2148,7 @@ class CoordinatesFields(GraphQLField):
         self,
         *subfields: Union[
             CoordinatesGraphQLField, "DeclinationFields", "RightAscensionFields"
-        ]
+        ],
     ) -> "CoordinatesFields":
         """Subfields should come from the CoordinatesFields class"""
         self._subfields.extend(subfields)
@@ -2018,7 +2168,7 @@ class CreateCallForProposalsResultFields(GraphQLField):
         self,
         *subfields: Union[
             CreateCallForProposalsResultGraphQLField, "CallForProposalsFields"
-        ]
+        ],
     ) -> "CreateCallForProposalsResultFields":
         """Subfields should come from the CreateCallForProposalsResultFields class"""
         self._subfields.extend(subfields)
@@ -2059,7 +2209,7 @@ class CreateObservationResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[CreateObservationResultGraphQLField, "ObservationFields"]
+        *subfields: Union[CreateObservationResultGraphQLField, "ObservationFields"],
     ) -> "CreateObservationResultFields":
         """Subfields should come from the CreateObservationResultFields class"""
         self._subfields.extend(subfields)
@@ -2078,7 +2228,7 @@ class CreateProgramNoteResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[CreateProgramNoteResultGraphQLField, "ProgramNoteFields"]
+        *subfields: Union[CreateProgramNoteResultGraphQLField, "ProgramNoteFields"],
     ) -> "CreateProgramNoteResultFields":
         """Subfields should come from the CreateProgramNoteResultFields class"""
         self._subfields.extend(subfields)
@@ -2164,13 +2314,29 @@ class CreateUserInvitationResultFields(GraphQLField):
         self,
         *subfields: Union[
             CreateUserInvitationResultGraphQLField, "UserInvitationFields"
-        ]
+        ],
     ) -> "CreateUserInvitationResultFields":
         """Subfields should come from the CreateUserInvitationResultFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "CreateUserInvitationResultFields":
+        self._alias = alias
+        return self
+
+
+class DarkFields(GraphQLField):
+    """Dark calibration step"""
+
+    step_type: "DarkGraphQLField" = DarkGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: DarkGraphQLField) -> "DarkFields":
+        """Subfields should come from the DarkFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DarkFields":
         self._alias = alias
         return self
 
@@ -2243,7 +2409,7 @@ class DatasetFields(GraphQLField):
             "StepRecordFields",
             "TimestampIntervalFields",
             "VisitFields",
-        ]
+        ],
     ) -> "DatasetFields":
         """Subfields should come from the DatasetFields class"""
         self._subfields.extend(subfields)
@@ -2345,7 +2511,7 @@ class DatasetChronicleEntryFields(GraphQLField):
             "DatasetFields",
             "TimestampIntervalFields",
             "UserFields",
-        ]
+        ],
     ) -> "DatasetChronicleEntryFields":
         """Subfields should come from the DatasetChronicleEntryFields class"""
         self._subfields.extend(subfields)
@@ -2371,7 +2537,7 @@ class DatasetChronicleEntrySelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             DatasetChronicleEntrySelectResultGraphQLField, "DatasetChronicleEntryFields"
-        ]
+        ],
     ) -> "DatasetChronicleEntrySelectResultFields":
         """Subfields should come from the DatasetChronicleEntrySelectResultFields class"""
         self._subfields.extend(subfields)
@@ -2457,7 +2623,6 @@ class DatasetEventFields(GraphQLField):
         """The associated dataset."""
         return DatasetFields("dataset")
 
-    client_id: "DatasetEventGraphQLField" = DatasetEventGraphQLField("clientId")
     idempotency_key: "DatasetEventGraphQLField" = DatasetEventGraphQLField(
         "idempotencyKey"
     )
@@ -2472,7 +2637,7 @@ class DatasetEventFields(GraphQLField):
             "ObservationFields",
             "StepRecordFields",
             "VisitFields",
-        ]
+        ],
     ) -> "DatasetEventFields":
         """Subfields should come from the DatasetEventFields class"""
         self._subfields.extend(subfields)
@@ -2506,7 +2671,7 @@ class DatasetReferenceFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[DatasetReferenceGraphQLField, "ObservationReferenceFields"]
+        *subfields: Union[DatasetReferenceGraphQLField, "ObservationReferenceFields"],
     ) -> "DatasetReferenceFields":
         """Subfields should come from the DatasetReferenceFields class"""
         self._subfields.extend(subfields)
@@ -2582,7 +2747,7 @@ class DeclinationFields(GraphQLField):
 
 
 class DeclinationArcFields(GraphQLField):
-    type: "DeclinationArcGraphQLField" = DeclinationArcGraphQLField("type")
+    type_: "DeclinationArcGraphQLField" = DeclinationArcGraphQLField("type")
 
     @classmethod
     def start(cls) -> "DeclinationFields":
@@ -2644,6 +2809,32 @@ class DeleteProposalResultFields(GraphQLField):
         return self
 
 
+class DemoScienceFields(GraphQLField):
+    """Proposal properties for Demo Science CallForProposals."""
+
+    science_subtype: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+    to_o_activation: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
+        "toOActivation"
+    )
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    def fields(self, *subfields: DemoScienceGraphQLField) -> "DemoScienceFields":
+        """Subfields should come from the DemoScienceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DemoScienceFields":
+        self._alias = alias
+        return self
+
+
 class DetectorEstimateFields(GraphQLField):
     """Time estimate for a single detector.  Some instruments will employ multiple
     detectors per step."""
@@ -2673,13 +2864,39 @@ class DetectorEstimateFields(GraphQLField):
         self,
         *subfields: Union[
             DetectorEstimateGraphQLField, "DatasetEstimateFields", "TimeSpanFields"
-        ]
+        ],
     ) -> "DetectorEstimateFields":
         """Subfields should come from the DetectorEstimateFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "DetectorEstimateFields":
+        self._alias = alias
+        return self
+
+
+class DirectorsTimeFields(GraphQLField):
+    """Proposal properties for Director's Time CallForProposals."""
+
+    science_subtype: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+    to_o_activation: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
+        "toOActivation"
+    )
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    def fields(self, *subfields: DirectorsTimeGraphQLField) -> "DirectorsTimeFields":
+        """Subfields should come from the DirectorsTimeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DirectorsTimeFields":
         self._alias = alias
         return self
 
@@ -2701,7 +2918,7 @@ class ElevationRangeFields(GraphQLField):
         self,
         *subfields: Union[
             ElevationRangeGraphQLField, "AirMassRangeFields", "HourAngleRangeFields"
-        ]
+        ],
     ) -> "ElevationRangeFields":
         """Subfields should come from the ElevationRangeFields class"""
         self._subfields.extend(subfields)
@@ -2760,7 +2977,7 @@ class EmissionLineIntegratedFields(GraphQLField):
             EmissionLineIntegratedGraphQLField,
             "LineFluxIntegratedFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "EmissionLineIntegratedFields":
         """Subfields should come from the EmissionLineIntegratedFields class"""
         self._subfields.extend(subfields)
@@ -2789,7 +3006,7 @@ class EmissionLineSurfaceFields(GraphQLField):
         self,
         *subfields: Union[
             EmissionLineSurfaceGraphQLField, "LineFluxSurfaceFields", "WavelengthFields"
-        ]
+        ],
     ) -> "EmissionLineSurfaceFields":
         """Subfields should come from the EmissionLineSurfaceFields class"""
         self._subfields.extend(subfields)
@@ -2815,7 +3032,7 @@ class EmissionLinesIntegratedFields(GraphQLField):
             EmissionLinesIntegratedGraphQLField,
             "EmissionLineIntegratedFields",
             "FluxDensityContinuumIntegratedFields",
-        ]
+        ],
     ) -> "EmissionLinesIntegratedFields":
         """Subfields should come from the EmissionLinesIntegratedFields class"""
         self._subfields.extend(subfields)
@@ -2841,13 +3058,42 @@ class EmissionLinesSurfaceFields(GraphQLField):
             EmissionLinesSurfaceGraphQLField,
             "EmissionLineSurfaceFields",
             "FluxDensityContinuumSurfaceFields",
-        ]
+        ],
     ) -> "EmissionLinesSurfaceFields":
         """Subfields should come from the EmissionLinesSurfaceFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "EmissionLinesSurfaceFields":
+        self._alias = alias
+        return self
+
+
+class EngineeringProgramReferenceFields(GraphQLField):
+    label: "EngineeringProgramReferenceGraphQLField" = (
+        EngineeringProgramReferenceGraphQLField("label")
+    )
+    type_: "EngineeringProgramReferenceGraphQLField" = (
+        EngineeringProgramReferenceGraphQLField("type")
+    )
+    instrument: "EngineeringProgramReferenceGraphQLField" = (
+        EngineeringProgramReferenceGraphQLField("instrument")
+    )
+    semester: "EngineeringProgramReferenceGraphQLField" = (
+        EngineeringProgramReferenceGraphQLField("semester")
+    )
+    semester_index: "EngineeringProgramReferenceGraphQLField" = (
+        EngineeringProgramReferenceGraphQLField("semesterIndex")
+    )
+
+    def fields(
+        self, *subfields: EngineeringProgramReferenceGraphQLField
+    ) -> "EngineeringProgramReferenceFields":
+        """Subfields should come from the EngineeringProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "EngineeringProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -2863,13 +3109,36 @@ class EnumeratedTelescopeConfigGeneratorFields(GraphQLField):
         self,
         *subfields: Union[
             EnumeratedTelescopeConfigGeneratorGraphQLField, "TelescopeConfigFields"
-        ]
+        ],
     ) -> "EnumeratedTelescopeConfigGeneratorFields":
         """Subfields should come from the EnumeratedTelescopeConfigGeneratorFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "EnumeratedTelescopeConfigGeneratorFields":
+        self._alias = alias
+        return self
+
+
+class ExampleProgramReferenceFields(GraphQLField):
+    label: "ExampleProgramReferenceGraphQLField" = ExampleProgramReferenceGraphQLField(
+        "label"
+    )
+    type_: "ExampleProgramReferenceGraphQLField" = ExampleProgramReferenceGraphQLField(
+        "type"
+    )
+    instrument: "ExampleProgramReferenceGraphQLField" = (
+        ExampleProgramReferenceGraphQLField("instrument")
+    )
+
+    def fields(
+        self, *subfields: ExampleProgramReferenceGraphQLField
+    ) -> "ExampleProgramReferenceFields":
+        """Subfields should come from the ExampleProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ExampleProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -2902,9 +3171,10 @@ class ExecutionFields(GraphQLField):
     def atom_records(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "AtomRecordSelectResultFields":
-        """Executed (or at least partially executed) atom records, across all visits."""
+        """Executed (or at least partially executed) atom records, across all visits,
+        ordered by execution order of the first contained step."""
         arguments: dict[str, dict[str, Any]] = {
-            "OFFSET": {"type": "Timestamp", "value": offset},
+            "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -2970,7 +3240,7 @@ class ExecutionFields(GraphQLField):
             "ExecutionConfigFields",
             "ExecutionEventSelectResultFields",
             "VisitSelectResultFields",
-        ]
+        ],
     ) -> "ExecutionFields":
         """Subfields should come from the ExecutionFields class"""
         self._subfields.extend(subfields)
@@ -3014,7 +3284,7 @@ class ExecutionConfigFields(GraphQLField):
             "Flamingos2ExecutionConfigFields",
             "GmosNorthExecutionConfigFields",
             "GmosSouthExecutionConfigFields",
-        ]
+        ],
     ) -> "ExecutionConfigFields":
         """Subfields should come from the ExecutionConfigFields class"""
         self._subfields.extend(subfields)
@@ -3047,7 +3317,7 @@ class ExecutionDigestFields(GraphQLField):
         self,
         *subfields: Union[
             ExecutionDigestGraphQLField, "SequenceDigestFields", "SetupTimeFields"
-        ]
+        ],
     ) -> "ExecutionDigestFields":
         """Subfields should come from the ExecutionDigestFields class"""
         self._subfields.extend(subfields)
@@ -3078,7 +3348,6 @@ class ExecutionEventInterface(GraphQLField):
     "Time at which this event was received."
     event_type: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("eventType")
     "Event type."
-    client_id: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("clientId")
     idempotency_key: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
         "idempotencyKey"
     )
@@ -3088,7 +3357,7 @@ class ExecutionEventInterface(GraphQLField):
         self,
         *subfields: Union[
             ExecutionEventGraphQLField, "ObservationFields", "VisitFields"
-        ]
+        ],
     ) -> "ExecutionEventInterface":
         """Subfields should come from the ExecutionEventInterface class"""
         self._subfields.extend(subfields)
@@ -3120,7 +3389,7 @@ class ExecutionEventSelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             ExecutionEventSelectResultGraphQLField, "ExecutionEventInterface"
-        ]
+        ],
     ) -> "ExecutionEventSelectResultFields":
         """Subfields should come from the ExecutionEventSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -3150,13 +3419,52 @@ class ExposureTimeModeFields(GraphQLField):
             ExposureTimeModeGraphQLField,
             "SignalToNoiseExposureTimeModeFields",
             "TimeAndCountExposureTimeModeFields",
-        ]
+        ],
     ) -> "ExposureTimeModeFields":
         """Subfields should come from the ExposureTimeModeFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "ExposureTimeModeFields":
+        self._alias = alias
+        return self
+
+
+class FastTurnaroundFields(GraphQLField):
+    """Proposal properties for Fast Turnaround CallForProposals."""
+
+    science_subtype: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+    to_o_activation: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
+        "toOActivation"
+    )
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    @classmethod
+    def reviewer(cls) -> "ProgramUserFields":
+        """Program User that will be selected as a reviewer for this program"""
+        return ProgramUserFields("reviewer")
+
+    @classmethod
+    def mentor(cls) -> "ProgramUserFields":
+        """Program User that will be selected as a mentor for this program.
+        Required when the reviewer does not have PhD educational status."""
+        return ProgramUserFields("mentor")
+
+    def fields(
+        self, *subfields: Union[FastTurnaroundGraphQLField, "ProgramUserFields"]
+    ) -> "FastTurnaroundFields":
+        """Subfields should come from the FastTurnaroundFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "FastTurnaroundFields":
         self._alias = alias
         return self
 
@@ -3245,7 +3553,7 @@ class Flamingos2DynamicFields(GraphQLField):
         "disperser"
     )
     "Flamingos 2 disperser, if any."
-    filter: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("filter")
+    filter_: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("filter")
     "Flamingos 2 filter."
     read_mode: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
         "readMode"
@@ -3282,7 +3590,7 @@ class Flamingos2DynamicFields(GraphQLField):
             "Flamingos2FpuMaskFields",
             "TimeSpanFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "Flamingos2DynamicFields":
         """Subfields should come from the Flamingos2DynamicFields class"""
         self._subfields.extend(subfields)
@@ -3317,7 +3625,7 @@ class Flamingos2ExecutionConfigFields(GraphQLField):
             Flamingos2ExecutionConfigGraphQLField,
             "Flamingos2ExecutionSequenceFields",
             "Flamingos2StaticFields",
-        ]
+        ],
     ) -> "Flamingos2ExecutionConfigFields":
         """Subfields should come from the Flamingos2ExecutionConfigFields class"""
         self._subfields.extend(subfields)
@@ -3350,7 +3658,7 @@ class Flamingos2ExecutionSequenceFields(GraphQLField):
         self,
         *subfields: Union[
             Flamingos2ExecutionSequenceGraphQLField, "Flamingos2AtomFields"
-        ]
+        ],
     ) -> "Flamingos2ExecutionSequenceFields":
         """Subfields should come from the Flamingos2ExecutionSequenceFields class"""
         self._subfields.extend(subfields)
@@ -3374,7 +3682,7 @@ class Flamingos2FpuMaskFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[Flamingos2FpuMaskGraphQLField, "Flamingos2CustomMaskFields"]
+        *subfields: Union[Flamingos2FpuMaskGraphQLField, "Flamingos2CustomMaskFields"],
     ) -> "Flamingos2FpuMaskFields":
         """Subfields should come from the Flamingos2FpuMaskFields class"""
         self._subfields.extend(subfields)
@@ -3392,7 +3700,7 @@ class Flamingos2LongSlitFields(GraphQLField):
         "disperser"
     )
     "Flamingos2 Disperser"
-    filter: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("filter")
+    filter_: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("filter")
     "Flamingos2 Filter"
     fpu: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("fpu")
     "Flamingos2 FPU"
@@ -3481,7 +3789,7 @@ class Flamingos2LongSlitFields(GraphQLField):
             "Flamingos2LongSlitAcquisitionFields",
             "OffsetFields",
             "TelluricTypeFields",
-        ]
+        ],
     ) -> "Flamingos2LongSlitFields":
         """Subfields should come from the Flamingos2LongSlitFields class"""
         self._subfields.extend(subfields)
@@ -3504,7 +3812,7 @@ class Flamingos2LongSlitAcquisitionFields(GraphQLField):
         self,
         *subfields: Union[
             Flamingos2LongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
-        ]
+        ],
     ) -> "Flamingos2LongSlitAcquisitionFields":
         """Subfields should come from the Flamingos2LongSlitAcquisitionFields class"""
         self._subfields.extend(subfields)
@@ -3580,7 +3888,7 @@ class Flamingos2StepFields(GraphQLField):
             "StepConfigInterface",
             "StepEstimateFields",
             "TelescopeConfigFields",
-        ]
+        ],
     ) -> "Flamingos2StepFields":
         """Subfields should come from the Flamingos2StepFields class"""
         self._subfields.extend(subfields)
@@ -3681,13 +3989,39 @@ class GaussianSourceFields(GraphQLField):
             "AngleFields",
             "BandNormalizedIntegratedFields",
             "EmissionLinesIntegratedFields",
-        ]
+        ],
     ) -> "GaussianSourceFields":
         """Subfields should come from the GaussianSourceFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GaussianSourceFields":
+        self._alias = alias
+        return self
+
+
+class GcalFields(GraphQLField):
+    """GCAL calibration step (flat / arc)"""
+
+    continuum: "GcalGraphQLField" = GcalGraphQLField("continuum")
+    "GCAL continuum, present if no arcs are used"
+    arcs: "GcalGraphQLField" = GcalGraphQLField("arcs")
+    "GCAL arcs, one or more present if no continuum is used"
+    filter_: "GcalGraphQLField" = GcalGraphQLField("filter")
+    "GCAL filter"
+    diffuser: "GcalGraphQLField" = GcalGraphQLField("diffuser")
+    "GCAL diffuser"
+    shutter: "GcalGraphQLField" = GcalGraphQLField("shutter")
+    "GCAL shutter"
+    step_type: "GcalGraphQLField" = GcalGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: GcalGraphQLField) -> "GcalFields":
+        """Subfields should come from the GcalFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GcalFields":
         self._alias = alias
         return self
 
@@ -3764,7 +4098,7 @@ class GmosGroupedImagingVariantFields(GraphQLField):
         self,
         *subfields: Union[
             GmosGroupedImagingVariantGraphQLField, "TelescopeConfigGeneratorFields"
-        ]
+        ],
     ) -> "GmosGroupedImagingVariantFields":
         """Subfields should come from the GmosGroupedImagingVariantFields class"""
         self._subfields.extend(subfields)
@@ -3805,7 +4139,7 @@ class GmosImagingVariantFields(GraphQLField):
             "GmosGroupedImagingVariantFields",
             "GmosInterleavedImagingVariantFields",
             "GmosPreImagingVariantFields",
-        ]
+        ],
     ) -> "GmosImagingVariantFields":
         """Subfields should come from the GmosImagingVariantFields class"""
         self._subfields.extend(subfields)
@@ -3840,7 +4174,7 @@ class GmosInterleavedImagingVariantFields(GraphQLField):
         self,
         *subfields: Union[
             GmosInterleavedImagingVariantGraphQLField, "TelescopeConfigGeneratorFields"
-        ]
+        ],
     ) -> "GmosInterleavedImagingVariantFields":
         """Subfields should come from the GmosInterleavedImagingVariantFields class"""
         self._subfields.extend(subfields)
@@ -3937,7 +4271,7 @@ class GmosNorthDynamicFields(GraphQLField):
         """GMOS North grating"""
         return GmosNorthGratingConfigFields("gratingConfig")
 
-    filter: "GmosNorthDynamicGraphQLField" = GmosNorthDynamicGraphQLField("filter")
+    filter_: "GmosNorthDynamicGraphQLField" = GmosNorthDynamicGraphQLField("filter")
     "GMOS North filter"
 
     @classmethod
@@ -3960,7 +4294,7 @@ class GmosNorthDynamicFields(GraphQLField):
             "GmosNorthGratingConfigFields",
             "TimeSpanFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "GmosNorthDynamicFields":
         """Subfields should come from the GmosNorthDynamicFields class"""
         self._subfields.extend(subfields)
@@ -3995,7 +4329,7 @@ class GmosNorthExecutionConfigFields(GraphQLField):
             GmosNorthExecutionConfigGraphQLField,
             "GmosNorthExecutionSequenceFields",
             "GmosNorthStaticFields",
-        ]
+        ],
     ) -> "GmosNorthExecutionConfigFields":
         """Subfields should come from the GmosNorthExecutionConfigFields class"""
         self._subfields.extend(subfields)
@@ -4026,7 +4360,9 @@ class GmosNorthExecutionSequenceFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[GmosNorthExecutionSequenceGraphQLField, "GmosNorthAtomFields"]
+        *subfields: Union[
+            GmosNorthExecutionSequenceGraphQLField, "GmosNorthAtomFields"
+        ],
     ) -> "GmosNorthExecutionSequenceFields":
         """Subfields should come from the GmosNorthExecutionSequenceFields class"""
         self._subfields.extend(subfields)
@@ -4157,7 +4493,7 @@ class GmosNorthImagingFields(GraphQLField):
             GmosNorthImagingGraphQLField,
             "GmosImagingVariantFields",
             "GmosNorthImagingFilterFields",
-        ]
+        ],
     ) -> "GmosNorthImagingFields":
         """Subfields should come from the GmosNorthImagingFields class"""
         self._subfields.extend(subfields)
@@ -4171,7 +4507,7 @@ class GmosNorthImagingFields(GraphQLField):
 class GmosNorthImagingFilterFields(GraphQLField):
     """Imaging filters combine an actual filter with an exposure time mode."""
 
-    filter: "GmosNorthImagingFilterGraphQLField" = GmosNorthImagingFilterGraphQLField(
+    filter_: "GmosNorthImagingFilterGraphQLField" = GmosNorthImagingFilterGraphQLField(
         "filter"
     )
 
@@ -4181,7 +4517,7 @@ class GmosNorthImagingFilterFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[GmosNorthImagingFilterGraphQLField, "ExposureTimeModeFields"]
+        *subfields: Union[GmosNorthImagingFilterGraphQLField, "ExposureTimeModeFields"],
     ) -> "GmosNorthImagingFilterFields":
         """Subfields should come from the GmosNorthImagingFilterFields class"""
         self._subfields.extend(subfields)
@@ -4197,7 +4533,7 @@ class GmosNorthLongSlitFields(GraphQLField):
 
     grating: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("grating")
     "GMOS North Grating"
-    filter: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("filter")
+    filter_: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("filter")
     "GMOS North Filter"
     fpu: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("fpu")
     "GMOS North FPU"
@@ -4351,7 +4687,7 @@ class GmosNorthLongSlitFields(GraphQLField):
             "OffsetQFields",
             "WavelengthDitherFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "GmosNorthLongSlitFields":
         """Subfields should come from the GmosNorthLongSlitFields class"""
         self._subfields.extend(subfields)
@@ -4365,7 +4701,7 @@ class GmosNorthLongSlitFields(GraphQLField):
 class GmosNorthLongSlitAcquisitionFields(GraphQLField):
     """Acquisition settings for GMOS North long slit acquisition."""
 
-    filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
+    filter_: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("filter")
     )
     "The GMOS North filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
@@ -4399,7 +4735,7 @@ class GmosNorthLongSlitAcquisitionFields(GraphQLField):
         self,
         *subfields: Union[
             GmosNorthLongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
-        ]
+        ],
     ) -> "GmosNorthLongSlitAcquisitionFields":
         """Subfields should come from the GmosNorthLongSlitAcquisitionFields class"""
         self._subfields.extend(subfields)
@@ -4480,7 +4816,7 @@ class GmosNorthStepFields(GraphQLField):
             "StepConfigInterface",
             "StepEstimateFields",
             "TelescopeConfigFields",
-        ]
+        ],
     ) -> "GmosNorthStepFields":
         """Subfields should come from the GmosNorthStepFields class"""
         self._subfields.extend(subfields)
@@ -4574,7 +4910,7 @@ class GmosSouthDynamicFields(GraphQLField):
         """GMOS South grating"""
         return GmosSouthGratingConfigFields("gratingConfig")
 
-    filter: "GmosSouthDynamicGraphQLField" = GmosSouthDynamicGraphQLField("filter")
+    filter_: "GmosSouthDynamicGraphQLField" = GmosSouthDynamicGraphQLField("filter")
     "GMOS South filter"
 
     @classmethod
@@ -4597,7 +4933,7 @@ class GmosSouthDynamicFields(GraphQLField):
             "GmosSouthGratingConfigFields",
             "TimeSpanFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "GmosSouthDynamicFields":
         """Subfields should come from the GmosSouthDynamicFields class"""
         self._subfields.extend(subfields)
@@ -4632,7 +4968,7 @@ class GmosSouthExecutionConfigFields(GraphQLField):
             GmosSouthExecutionConfigGraphQLField,
             "GmosSouthExecutionSequenceFields",
             "GmosSouthStaticFields",
-        ]
+        ],
     ) -> "GmosSouthExecutionConfigFields":
         """Subfields should come from the GmosSouthExecutionConfigFields class"""
         self._subfields.extend(subfields)
@@ -4663,7 +4999,9 @@ class GmosSouthExecutionSequenceFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[GmosSouthExecutionSequenceGraphQLField, "GmosSouthAtomFields"]
+        *subfields: Union[
+            GmosSouthExecutionSequenceGraphQLField, "GmosSouthAtomFields"
+        ],
     ) -> "GmosSouthExecutionSequenceFields":
         """Subfields should come from the GmosSouthExecutionSequenceFields class"""
         self._subfields.extend(subfields)
@@ -4794,7 +5132,7 @@ class GmosSouthImagingFields(GraphQLField):
             GmosSouthImagingGraphQLField,
             "GmosImagingVariantFields",
             "GmosSouthImagingFilterFields",
-        ]
+        ],
     ) -> "GmosSouthImagingFields":
         """Subfields should come from the GmosSouthImagingFields class"""
         self._subfields.extend(subfields)
@@ -4808,7 +5146,7 @@ class GmosSouthImagingFields(GraphQLField):
 class GmosSouthImagingFilterFields(GraphQLField):
     """Imaging filters combine an actual filter with an exposure time mode."""
 
-    filter: "GmosSouthImagingFilterGraphQLField" = GmosSouthImagingFilterGraphQLField(
+    filter_: "GmosSouthImagingFilterGraphQLField" = GmosSouthImagingFilterGraphQLField(
         "filter"
     )
 
@@ -4818,7 +5156,7 @@ class GmosSouthImagingFilterFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[GmosSouthImagingFilterGraphQLField, "ExposureTimeModeFields"]
+        *subfields: Union[GmosSouthImagingFilterGraphQLField, "ExposureTimeModeFields"],
     ) -> "GmosSouthImagingFilterFields":
         """Subfields should come from the GmosSouthImagingFilterFields class"""
         self._subfields.extend(subfields)
@@ -4834,7 +5172,7 @@ class GmosSouthLongSlitFields(GraphQLField):
 
     grating: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("grating")
     "GMOS South Grating"
-    filter: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("filter")
+    filter_: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("filter")
     "GMOS South Filter"
     fpu: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("fpu")
     "GMOS South FPU"
@@ -4988,7 +5326,7 @@ class GmosSouthLongSlitFields(GraphQLField):
             "OffsetQFields",
             "WavelengthDitherFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "GmosSouthLongSlitFields":
         """Subfields should come from the GmosSouthLongSlitFields class"""
         self._subfields.extend(subfields)
@@ -5002,7 +5340,7 @@ class GmosSouthLongSlitFields(GraphQLField):
 class GmosSouthLongSlitAcquisitionFields(GraphQLField):
     """Acquisition settings for GMOS South long slit acquisition."""
 
-    filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
+    filter_: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("filter")
     )
     "The GMOS South filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
@@ -5036,7 +5374,7 @@ class GmosSouthLongSlitAcquisitionFields(GraphQLField):
         self,
         *subfields: Union[
             GmosSouthLongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
-        ]
+        ],
     ) -> "GmosSouthLongSlitAcquisitionFields":
         """Subfields should come from the GmosSouthLongSlitAcquisitionFields class"""
         self._subfields.extend(subfields)
@@ -5117,7 +5455,7 @@ class GmosSouthStepFields(GraphQLField):
             "StepConfigInterface",
             "StepEstimateFields",
             "TelescopeConfigFields",
-        ]
+        ],
     ) -> "GmosSouthStepFields":
         """Subfields should come from the GmosSouthStepFields class"""
         self._subfields.extend(subfields)
@@ -5229,7 +5567,7 @@ class GroupFields(GraphQLField):
             "GroupElementFields",
             "ProgramFields",
             "TimeSpanFields",
-        ]
+        ],
     ) -> "GroupFields":
         """Subfields should come from the GroupFields class"""
         self._subfields.extend(subfields)
@@ -5260,7 +5598,7 @@ class GroupElementFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[GroupElementGraphQLField, "GroupFields", "ObservationFields"]
+        *subfields: Union[GroupElementGraphQLField, "GroupFields", "ObservationFields"],
     ) -> "GroupElementFields":
         """Subfields should come from the GroupElementFields class"""
         self._subfields.extend(subfields)
@@ -5318,7 +5656,7 @@ class GuideEnvironmentFields(GraphQLField):
         self,
         *subfields: Union[
             GuideEnvironmentGraphQLField, "AngleFields", "GuideTargetFields"
-        ]
+        ],
     ) -> "GuideEnvironmentFields":
         """Subfields should come from the GuideEnvironmentFields class"""
         self._subfields.extend(subfields)
@@ -5359,13 +5697,70 @@ class GuideTargetFields(GraphQLField):
             "NonsiderealFields",
             "SiderealFields",
             "SourceProfileFields",
-        ]
+        ],
     ) -> "GuideTargetFields":
         """Subfields should come from the GuideTargetFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GuideTargetFields":
+        self._alias = alias
+        return self
+
+
+class HasNonPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is explicitly associated with
+    no `Partner`."""
+
+    link_type: "HasNonPartnerGraphQLField" = HasNonPartnerGraphQLField("linkType")
+    "Partner link discriminator."
+
+    def fields(self, *subfields: HasNonPartnerGraphQLField) -> "HasNonPartnerFields":
+        """Subfields should come from the HasNonPartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasNonPartnerFields":
+        self._alias = alias
+        return self
+
+
+class HasPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific
+    `Partner`."""
+
+    link_type: "HasPartnerGraphQLField" = HasPartnerGraphQLField("linkType")
+    "Partner link discriminator."
+    partner: "HasPartnerGraphQLField" = HasPartnerGraphQLField("partner")
+    "The associated partner."
+
+    def fields(self, *subfields: HasPartnerGraphQLField) -> "HasPartnerFields":
+        """Subfields should come from the HasPartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasPartnerFields":
+        self._alias = alias
+        return self
+
+
+class HasUnspecifiedPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user's `PartnerLink` has not
+    (yet) been made."""
+
+    link_type: "HasUnspecifiedPartnerGraphQLField" = HasUnspecifiedPartnerGraphQLField(
+        "linkType"
+    )
+    "Partner link discriminator."
+
+    def fields(
+        self, *subfields: HasUnspecifiedPartnerGraphQLField
+    ) -> "HasUnspecifiedPartnerFields":
+        """Subfields should come from the HasUnspecifiedPartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasUnspecifiedPartnerFields":
         self._alias = alias
         return self
 
@@ -5382,6 +5777,51 @@ class HourAngleRangeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "HourAngleRangeFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2LongSlitFields(GraphQLField):
+    """IGRINS-2 Long Slit mode"""
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    offset_mode: "Igrins2LongSlitGraphQLField" = Igrins2LongSlitGraphQLField(
+        "offsetMode"
+    )
+    "The offset mode is either explicitly specified in explicitOffsetMode or else\ntaken from defaultOffsetMode"
+    default_offset_mode: "Igrins2LongSlitGraphQLField" = Igrins2LongSlitGraphQLField(
+        "defaultOffsetMode"
+    )
+    "Default offset mode"
+    explicit_offset_mode: "Igrins2LongSlitGraphQLField" = Igrins2LongSlitGraphQLField(
+        "explicitOffsetMode"
+    )
+    "Optional explicitly specified offset mode. If set it overrides the default."
+    save_svc_images: "Igrins2LongSlitGraphQLField" = Igrins2LongSlitGraphQLField(
+        "saveSVCImages"
+    )
+    "Whether to save SVC images, either explicitly specified in\nexplicitSaveSVCImages or else taken from defaultSaveSVCImages"
+    default_save_svc_images: "Igrins2LongSlitGraphQLField" = (
+        Igrins2LongSlitGraphQLField("defaultSaveSVCImages")
+    )
+    "Default save SVC images setting"
+    explicit_save_svc_images: "Igrins2LongSlitGraphQLField" = (
+        Igrins2LongSlitGraphQLField("explicitSaveSVCImages")
+    )
+    "Optional explicitly specified save SVC images setting. If set it overrides\nthe default."
+
+    def fields(
+        self, *subfields: Union[Igrins2LongSlitGraphQLField, "ExposureTimeModeFields"]
+    ) -> "Igrins2LongSlitFields":
+        """Subfields should come from the Igrins2LongSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2LongSlitFields":
         self._alias = alias
         return self
 
@@ -5423,7 +5863,7 @@ class ImagingConfigOptionFields(GraphQLField):
             "AngleFields",
             "ImagingConfigOptionGmosNorthFields",
             "ImagingConfigOptionGmosSouthFields",
-        ]
+        ],
     ) -> "ImagingConfigOptionFields":
         """Subfields should come from the ImagingConfigOptionFields class"""
         self._subfields.extend(subfields)
@@ -5435,7 +5875,7 @@ class ImagingConfigOptionFields(GraphQLField):
 
 
 class ImagingConfigOptionGmosNorthFields(GraphQLField):
-    filter: "ImagingConfigOptionGmosNorthGraphQLField" = (
+    filter_: "ImagingConfigOptionGmosNorthGraphQLField" = (
         ImagingConfigOptionGmosNorthGraphQLField("filter")
     )
 
@@ -5452,7 +5892,7 @@ class ImagingConfigOptionGmosNorthFields(GraphQLField):
 
 
 class ImagingConfigOptionGmosSouthFields(GraphQLField):
-    filter: "ImagingConfigOptionGmosSouthGraphQLField" = (
+    filter_: "ImagingConfigOptionGmosSouthGraphQLField" = (
         ImagingConfigOptionGmosSouthGraphQLField("filter")
     )
 
@@ -5496,6 +5936,287 @@ class ImagingScienceRequirementsFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ImagingScienceRequirementsFields":
+        self._alias = alias
+        return self
+
+
+class ItcInterface(GraphQLField):
+    """ITC results for a particular observation, including relevant instrument
+    configurations and targets.  There are specific instances for each `ItcType`."""
+
+    itc_type: "ItcGraphQLField" = ItcGraphQLField("itcType")
+    "The type of the Itc results."
+
+    def fields(self, *subfields: ItcGraphQLField) -> "ItcInterface":
+        """Subfields should come from the ItcInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcInterface":
+        self._alias = alias
+        return self
+
+    def on(self, type_name: str, *subfields: GraphQLField) -> "ItcInterface":
+        self._inline_fragments[type_name] = subfields
+        return self
+
+
+class ItcGmosNorthImagingFields(GraphQLField):
+    """GMOS North imaging ITC results.  Here each filter is paired with its result
+    set."""
+
+    itc_type: "ItcGmosNorthImagingGraphQLField" = ItcGmosNorthImagingGraphQLField(
+        "itcType"
+    )
+    "The type of the Itc results."
+
+    @classmethod
+    def gmos_north_imaging_science(cls) -> "ItcGmosNorthImagingResultSetFields":
+        return ItcGmosNorthImagingResultSetFields("gmosNorthImagingScience")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcGmosNorthImagingGraphQLField, "ItcGmosNorthImagingResultSetFields"
+        ],
+    ) -> "ItcGmosNorthImagingFields":
+        """Subfields should come from the ItcGmosNorthImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGmosNorthImagingFields":
+        self._alias = alias
+        return self
+
+
+class ItcGmosNorthImagingResultSetFields(GraphQLField):
+    """Combines a GMOS North filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
+    filter_: "ItcGmosNorthImagingResultSetGraphQLField" = (
+        ItcGmosNorthImagingResultSetGraphQLField("filter")
+    )
+
+    @classmethod
+    def results(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("results")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcGmosNorthImagingResultSetGraphQLField, "ItcResultSetFields"
+        ],
+    ) -> "ItcGmosNorthImagingResultSetFields":
+        """Subfields should come from the ItcGmosNorthImagingResultSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGmosNorthImagingResultSetFields":
+        self._alias = alias
+        return self
+
+
+class ItcGmosSouthImagingFields(GraphQLField):
+    """GMOS South imaging ITC results.  Here each filter is paired with its result
+    set."""
+
+    itc_type: "ItcGmosSouthImagingGraphQLField" = ItcGmosSouthImagingGraphQLField(
+        "itcType"
+    )
+    "The type of the Itc results."
+
+    @classmethod
+    def gmos_south_imaging_science(cls) -> "ItcGmosSouthImagingResultSetFields":
+        return ItcGmosSouthImagingResultSetFields("gmosSouthImagingScience")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcGmosSouthImagingGraphQLField, "ItcGmosSouthImagingResultSetFields"
+        ],
+    ) -> "ItcGmosSouthImagingFields":
+        """Subfields should come from the ItcGmosSouthImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGmosSouthImagingFields":
+        self._alias = alias
+        return self
+
+
+class ItcGmosSouthImagingResultSetFields(GraphQLField):
+    """Combines a GMOS South filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
+    filter_: "ItcGmosSouthImagingResultSetGraphQLField" = (
+        ItcGmosSouthImagingResultSetGraphQLField("filter")
+    )
+
+    @classmethod
+    def results(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("results")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcGmosSouthImagingResultSetGraphQLField, "ItcResultSetFields"
+        ],
+    ) -> "ItcGmosSouthImagingResultSetFields":
+        """Subfields should come from the ItcGmosSouthImagingResultSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGmosSouthImagingResultSetFields":
+        self._alias = alias
+        return self
+
+
+class ItcResultFields(GraphQLField):
+    """An ITC result for a single target."""
+
+    target_id: "ItcResultGraphQLField" = ItcResultGraphQLField("targetId")
+
+    @classmethod
+    def exposure_time(cls) -> "TimeSpanFields":
+        return TimeSpanFields("exposureTime")
+
+    exposure_count: "ItcResultGraphQLField" = ItcResultGraphQLField("exposureCount")
+
+    @classmethod
+    def signal_to_noise_at(cls) -> "SignalToNoiseAtFields":
+        return SignalToNoiseAtFields("signalToNoiseAt")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcResultGraphQLField, "SignalToNoiseAtFields", "TimeSpanFields"
+        ],
+    ) -> "ItcResultFields":
+        """Subfields should come from the ItcResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcResultFields":
+        self._alias = alias
+        return self
+
+
+class ItcResultSetFields(GraphQLField):
+    """Contains the result of calling the ITC for all targets, but a single instrument
+    configuration.  Since the observation may contain multiple targets, there may
+    be multiple results. The "result" field contains the selected, representative,
+    result for all targets.  If there are multiple successful results, this will
+    be the one that prescribes the longest observation. If there is a mix of
+    failures and successes, the overall "result" will be a failure. The "all" field
+    contains results for all targets regardless."""
+
+    @classmethod
+    def selected(cls) -> "ItcResultFields":
+        return ItcResultFields("selected")
+
+    @classmethod
+    def all(cls) -> "ItcResultFields":
+        return ItcResultFields("all")
+
+    index: "ItcResultSetGraphQLField" = ItcResultSetGraphQLField("index")
+
+    def fields(
+        self, *subfields: Union[ItcResultSetGraphQLField, "ItcResultFields"]
+    ) -> "ItcResultSetFields":
+        """Subfields should come from the ItcResultSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcResultSetFields":
+        self._alias = alias
+        return self
+
+
+class ItcSpectroscopyFields(GraphQLField):
+    """ITC results for spectroscopy observations."""
+
+    itc_type: "ItcSpectroscopyGraphQLField" = ItcSpectroscopyGraphQLField("itcType")
+    "The type of the Itc results."
+
+    @classmethod
+    def acquisition(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("acquisition")
+
+    @classmethod
+    def spectroscopy_science(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("spectroscopyScience")
+
+    def fields(
+        self, *subfields: Union[ItcSpectroscopyGraphQLField, "ItcResultSetFields"]
+    ) -> "ItcSpectroscopyFields":
+        """Subfields should come from the ItcSpectroscopyFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcSpectroscopyFields":
+        self._alias = alias
+        return self
+
+
+class LargeProgramFields(GraphQLField):
+    """Proposal properties for Large Program CallForProposals."""
+
+    science_subtype: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+    to_o_activation: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
+        "toOActivation"
+    )
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time (first semester) required to consider this\nproposal successful."
+    min_percent_total_time: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
+        "minPercentTotalTime"
+    )
+    "Minimum percentage of the total observing time (over all semesters) required\nto consider this proposal successful."
+
+    @classmethod
+    def total_time(cls) -> "TimeSpanFields":
+        """Total time requested (over multiple all semesters) for this proposal."""
+        return TimeSpanFields("totalTime")
+
+    def fields(
+        self, *subfields: Union[LargeProgramGraphQLField, "TimeSpanFields"]
+    ) -> "LargeProgramFields":
+        """Subfields should come from the LargeProgramFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "LargeProgramFields":
+        self._alias = alias
+        return self
+
+
+class LibraryProgramReferenceFields(GraphQLField):
+    label: "LibraryProgramReferenceGraphQLField" = LibraryProgramReferenceGraphQLField(
+        "label"
+    )
+    type_: "LibraryProgramReferenceGraphQLField" = LibraryProgramReferenceGraphQLField(
+        "type"
+    )
+    description: "LibraryProgramReferenceGraphQLField" = (
+        LibraryProgramReferenceGraphQLField("description")
+    )
+    instrument: "LibraryProgramReferenceGraphQLField" = (
+        LibraryProgramReferenceGraphQLField("instrument")
+    )
+
+    def fields(
+        self, *subfields: LibraryProgramReferenceGraphQLField
+    ) -> "LibraryProgramReferenceFields":
+        """Subfields should come from the LibraryProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "LibraryProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -5545,6 +6266,35 @@ class LinkUserResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "LinkUserResultFields":
+        self._alias = alias
+        return self
+
+
+class MonitoringProgramReferenceFields(GraphQLField):
+    label: "MonitoringProgramReferenceGraphQLField" = (
+        MonitoringProgramReferenceGraphQLField("label")
+    )
+    type_: "MonitoringProgramReferenceGraphQLField" = (
+        MonitoringProgramReferenceGraphQLField("type")
+    )
+    instrument: "MonitoringProgramReferenceGraphQLField" = (
+        MonitoringProgramReferenceGraphQLField("instrument")
+    )
+    semester: "MonitoringProgramReferenceGraphQLField" = (
+        MonitoringProgramReferenceGraphQLField("semester")
+    )
+    semester_index: "MonitoringProgramReferenceGraphQLField" = (
+        MonitoringProgramReferenceGraphQLField("semesterIndex")
+    )
+
+    def fields(
+        self, *subfields: MonitoringProgramReferenceGraphQLField
+    ) -> "MonitoringProgramReferenceFields":
+        """Subfields should come from the MonitoringProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "MonitoringProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -5701,7 +6451,7 @@ class ObservationFields(GraphQLField):
             "TargetEnvironmentFields",
             "TimeSpanFields",
             "TimingWindowFields",
-        ]
+        ],
     ) -> "ObservationFields":
         """Subfields should come from the ObservationFields class"""
         self._subfields.extend(subfields)
@@ -5733,7 +6483,9 @@ class ObservationReferenceFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[ObservationReferenceGraphQLField, "ProgramReferenceInterface"]
+        *subfields: Union[
+            ObservationReferenceGraphQLField, "ProgramReferenceInterface"
+        ],
     ) -> "ObservationReferenceFields":
         """Subfields should come from the ObservationReferenceFields class"""
         self._subfields.extend(subfields)
@@ -5759,7 +6511,7 @@ class ObservationSelectResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[ObservationSelectResultGraphQLField, "ObservationFields"]
+        *subfields: Union[ObservationSelectResultGraphQLField, "ObservationFields"],
     ) -> "ObservationSelectResultFields":
         """Subfields should come from the ObservationSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -5808,7 +6560,7 @@ class ObservationWorkflowFields(GraphQLField):
         self,
         *subfields: Union[
             ObservationWorkflowGraphQLField, "ObservationValidationFields"
-        ]
+        ],
     ) -> "ObservationWorkflowFields":
         """Subfields should come from the ObservationWorkflowFields class"""
         self._subfields.extend(subfields)
@@ -5852,6 +6604,11 @@ class ObservingModeFields(GraphQLField):
         """Flamingos 2 Long Slit mode"""
         return Flamingos2LongSlitFields("flamingos2LongSlit")
 
+    @classmethod
+    def igrins_2_long_slit(cls) -> "Igrins2LongSlitFields":
+        """IGRINS-2 Long Slit mode"""
+        return Igrins2LongSlitFields("igrins2LongSlit")
+
     def fields(
         self,
         *subfields: Union[
@@ -5861,7 +6618,8 @@ class ObservingModeFields(GraphQLField):
             "GmosNorthLongSlitFields",
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
-        ]
+            "Igrins2LongSlitFields",
+        ],
     ) -> "ObservingModeFields":
         """Subfields should come from the ObservingModeFields class"""
         self._subfields.extend(subfields)
@@ -5879,7 +6637,7 @@ class ObservingModeGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
@@ -5911,7 +6669,7 @@ class ObservingModeGroupFields(GraphQLField):
             "ObservationSelectResultFields",
             "ObservingModeFields",
             "ProgramFields",
-        ]
+        ],
     ) -> "ObservingModeGroupFields":
         """Subfields should come from the ObservingModeGroupFields class"""
         self._subfields.extend(subfields)
@@ -5939,7 +6697,7 @@ class ObservingModeGroupSelectResultFields(GraphQLField):
         self,
         *subfields: Union[
             ObservingModeGroupSelectResultGraphQLField, "ObservingModeGroupFields"
-        ]
+        ],
     ) -> "ObservingModeGroupSelectResultFields":
         """Subfields should come from the ObservingModeGroupSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -6042,6 +6800,62 @@ class ParallaxFields(GraphQLField):
         return self
 
 
+class PartnerLinkInterface(GraphQLField):
+    """Represents the association of a user with a `Partner`, if any."""
+
+    link_type: "PartnerLinkGraphQLField" = PartnerLinkGraphQLField("linkType")
+    "Partner link discriminator."
+
+    def fields(self, *subfields: PartnerLinkGraphQLField) -> "PartnerLinkInterface":
+        """Subfields should come from the PartnerLinkInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "PartnerLinkInterface":
+        self._alias = alias
+        return self
+
+    def on(self, type_name: str, *subfields: GraphQLField) -> "PartnerLinkInterface":
+        self._inline_fragments[type_name] = subfields
+        return self
+
+
+class PartnerSplitFields(GraphQLField):
+    """Partner splits detail how requested time for a Queue or Classical proposal
+    should be distributed amongst Gemini partners."""
+
+    partner: "PartnerSplitGraphQLField" = PartnerSplitGraphQLField("partner")
+    percent: "PartnerSplitGraphQLField" = PartnerSplitGraphQLField("percent")
+    "Percentage of requested time that should be associated with the partner."
+
+    def fields(self, *subfields: PartnerSplitGraphQLField) -> "PartnerSplitFields":
+        """Subfields should come from the PartnerSplitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "PartnerSplitFields":
+        self._alias = alias
+        return self
+
+
+class PoorWeatherFields(GraphQLField):
+    """Proposal properties for Regular Semester (Poor Weather) CallForProposals."""
+
+    science_subtype: "PoorWeatherGraphQLField" = PoorWeatherGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+
+    def fields(self, *subfields: PoorWeatherGraphQLField) -> "PoorWeatherFields":
+        """Subfields should come from the PoorWeatherFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "PoorWeatherFields":
+        self._alias = alias
+        return self
+
+
 class PosAngleConstraintFields(GraphQLField):
     """Constraints (if any) on the observation's position angle."""
 
@@ -6087,7 +6901,7 @@ class ProgramFields(GraphQLField):
         }
         return ProgramNoteFields("notes", arguments=cleared_arguments)
 
-    type: "ProgramGraphQLField" = ProgramGraphQLField("type")
+    type_: "ProgramGraphQLField" = ProgramGraphQLField("type")
     "Program type"
 
     @classmethod
@@ -6127,7 +6941,7 @@ class ProgramFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """All observations associated with the program."""
         arguments: dict[str, dict[str, Any]] = {
@@ -6244,7 +7058,7 @@ class ProgramFields(GraphQLField):
             "ProgramUserFields",
             "ProposalFields",
             "UserInvitationFields",
-        ]
+        ],
     ) -> "ProgramFields":
         """Subfields should come from the ProgramFields class"""
         self._subfields.extend(subfields)
@@ -6301,7 +7115,7 @@ class ProgramNoteSelectResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[ProgramNoteSelectResultGraphQLField, "ProgramNoteFields"]
+        *subfields: Union[ProgramNoteSelectResultGraphQLField, "ProgramNoteFields"],
     ) -> "ProgramNoteSelectResultFields":
         """Subfields should come from the ProgramNoteSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -6309,6 +7123,31 @@ class ProgramNoteSelectResultFields(GraphQLField):
 
     def alias(self, alias: str) -> "ProgramNoteSelectResultFields":
         self._alias = alias
+        return self
+
+
+class ProgramReferenceInterface(GraphQLField):
+    """Defines the category of program references, where specific implementations exist
+    for calibration, engineering, etc."""
+
+    label: "ProgramReferenceGraphQLField" = ProgramReferenceGraphQLField("label")
+    type_: "ProgramReferenceGraphQLField" = ProgramReferenceGraphQLField("type")
+
+    def fields(
+        self, *subfields: ProgramReferenceGraphQLField
+    ) -> "ProgramReferenceInterface":
+        """Subfields should come from the ProgramReferenceInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProgramReferenceInterface":
+        self._alias = alias
+        return self
+
+    def on(
+        self, type_name: str, *subfields: GraphQLField
+    ) -> "ProgramReferenceInterface":
+        self._inline_fragments[type_name] = subfields
         return self
 
 
@@ -6395,7 +7234,7 @@ class ProgramUserFields(GraphQLField):
             "UserFields",
             "UserInvitationFields",
             "UserProfileFields",
-        ]
+        ],
     ) -> "ProgramUserFields":
         """Subfields should come from the ProgramUserFields class"""
         self._subfields.extend(subfields)
@@ -6421,7 +7260,7 @@ class ProgramUserSelectResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[ProgramUserSelectResultGraphQLField, "ProgramUserFields"]
+        *subfields: Union[ProgramUserSelectResultGraphQLField, "ProgramUserFields"],
     ) -> "ProgramUserSelectResultFields":
         """Subfields should come from the ProgramUserSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -6449,7 +7288,7 @@ class ProperMotionFields(GraphQLField):
             ProperMotionGraphQLField,
             "ProperMotionDeclinationFields",
             "ProperMotionRAFields",
-        ]
+        ],
     ) -> "ProperMotionFields":
         """Subfields should come from the ProperMotionFields class"""
         self._subfields.extend(subfields)
@@ -6519,7 +7358,7 @@ class ProposalFields(GraphQLField):
     "Proposal TAC category"
 
     @classmethod
-    def type(cls) -> "ProposalTypeInterface":
+    def type_(cls) -> "ProposalTypeInterface":
         """Properties of this proposal that are dependent upon the Call for Proposals
         type."""
         return ProposalTypeInterface("type")
@@ -6531,7 +7370,7 @@ class ProposalFields(GraphQLField):
             "CallForProposalsFields",
             "ProposalReferenceFields",
             "ProposalTypeInterface",
-        ]
+        ],
     ) -> "ProposalFields":
         """Subfields should come from the ProposalFields class"""
         self._subfields.extend(subfields)
@@ -6581,6 +7420,56 @@ class ProposalStatusMetaFields(GraphQLField):
         return self
 
 
+class ProposalTypeInterface(GraphQLField):
+    """Proposal properties that depend on the particular call for proposals associated
+    with this proposal."""
+
+    science_subtype: "ProposalTypeGraphQLField" = ProposalTypeGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+
+    def fields(self, *subfields: ProposalTypeGraphQLField) -> "ProposalTypeInterface":
+        """Subfields should come from the ProposalTypeInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProposalTypeInterface":
+        self._alias = alias
+        return self
+
+    def on(self, type_name: str, *subfields: GraphQLField) -> "ProposalTypeInterface":
+        self._inline_fragments[type_name] = subfields
+        return self
+
+
+class QueueFields(GraphQLField):
+    """Proposal properties for Regular Semester (Queue) CallForProposals."""
+
+    science_subtype: "QueueGraphQLField" = QueueGraphQLField("scienceSubtype")
+    "The science type of this Call for Proposals."
+    to_o_activation: "QueueGraphQLField" = QueueGraphQLField("toOActivation")
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "QueueGraphQLField" = QueueGraphQLField("minPercentTime")
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[QueueGraphQLField, "PartnerSplitFields"]
+    ) -> "QueueFields":
+        """Subfields should come from the QueueFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "QueueFields":
+        self._alias = alias
+        return self
+
+
 class RadialVelocityFields(GraphQLField):
     centimeters_per_second: "RadialVelocityGraphQLField" = RadialVelocityGraphQLField(
         "centimetersPerSecond"
@@ -6622,33 +7511,13 @@ class RandomTelescopeConfigGeneratorFields(GraphQLField):
         self,
         *subfields: Union[
             RandomTelescopeConfigGeneratorGraphQLField, "AngleFields", "OffsetFields"
-        ]
+        ],
     ) -> "RandomTelescopeConfigGeneratorFields":
         """Subfields should come from the RandomTelescopeConfigGeneratorFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "RandomTelescopeConfigGeneratorFields":
-        self._alias = alias
-        return self
-
-
-class RecordAtomResultFields(GraphQLField):
-    """The result of recording an atom."""
-
-    @classmethod
-    def atom_record(cls) -> "AtomRecordFields":
-        """The newly added atom record itself."""
-        return AtomRecordFields("atomRecord")
-
-    def fields(
-        self, *subfields: Union[RecordAtomResultGraphQLField, "AtomRecordFields"]
-    ) -> "RecordAtomResultFields":
-        """Subfields should come from the RecordAtomResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "RecordAtomResultFields":
         self._alias = alias
         return self
 
@@ -6673,27 +7542,6 @@ class RecordDatasetResultFields(GraphQLField):
         return self
 
 
-class RecordFlamingos2StepResultFields(GraphQLField):
-    """The result of recording a Flamingos 2 step."""
-
-    @classmethod
-    def step_record(cls) -> "StepRecordFields":
-        """The newly added step record itself."""
-        return StepRecordFields("stepRecord")
-
-    def fields(
-        self,
-        *subfields: Union[RecordFlamingos2StepResultGraphQLField, "StepRecordFields"]
-    ) -> "RecordFlamingos2StepResultFields":
-        """Subfields should come from the RecordFlamingos2StepResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "RecordFlamingos2StepResultFields":
-        self._alias = alias
-        return self
-
-
 class RecordFlamingos2VisitResultFields(GraphQLField):
     """Result for recordFlamingos2Visit mutation."""
 
@@ -6714,27 +7562,6 @@ class RecordFlamingos2VisitResultFields(GraphQLField):
         return self
 
 
-class RecordGmosNorthStepResultFields(GraphQLField):
-    """The result of recording a GmosNorth step."""
-
-    @classmethod
-    def step_record(cls) -> "StepRecordFields":
-        """The newly added step record itself."""
-        return StepRecordFields("stepRecord")
-
-    def fields(
-        self,
-        *subfields: Union[RecordGmosNorthStepResultGraphQLField, "StepRecordFields"]
-    ) -> "RecordGmosNorthStepResultFields":
-        """Subfields should come from the RecordGmosNorthStepResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "RecordGmosNorthStepResultFields":
-        self._alias = alias
-        return self
-
-
 class RecordGmosNorthVisitResultFields(GraphQLField):
     """The result of recording a GmosNorth visit."""
 
@@ -6751,27 +7578,6 @@ class RecordGmosNorthVisitResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "RecordGmosNorthVisitResultFields":
-        self._alias = alias
-        return self
-
-
-class RecordGmosSouthStepResultFields(GraphQLField):
-    """The result of recording a GmosSouth step."""
-
-    @classmethod
-    def step_record(cls) -> "StepRecordFields":
-        """The newly added step record itself."""
-        return StepRecordFields("stepRecord")
-
-    def fields(
-        self,
-        *subfields: Union[RecordGmosSouthStepResultGraphQLField, "StepRecordFields"]
-    ) -> "RecordGmosSouthStepResultFields":
-        """Subfields should come from the RecordGmosSouthStepResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "RecordGmosSouthStepResultFields":
         self._alias = alias
         return self
 
@@ -6806,7 +7612,7 @@ class RedeemUserInvitationResultFields(GraphQLField):
         self,
         *subfields: Union[
             RedeemUserInvitationResultGraphQLField, "UserInvitationFields"
-        ]
+        ],
     ) -> "RedeemUserInvitationResultFields":
         """Subfields should come from the RedeemUserInvitationResultFields class"""
         self._subfields.extend(subfields)
@@ -6830,13 +7636,82 @@ class RegionFields(GraphQLField):
         self,
         *subfields: Union[
             RegionGraphQLField, "DeclinationArcFields", "RightAscensionArcFields"
-        ]
+        ],
     ) -> "RegionFields":
         """Subfields should come from the RegionFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "RegionFields":
+        self._alias = alias
+        return self
+
+
+class ReplaceFlamingos2SequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
+    @classmethod
+    def sequence(cls) -> "Flamingos2AtomFields":
+        return Flamingos2AtomFields("sequence")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ReplaceFlamingos2SequenceResultGraphQLField, "Flamingos2AtomFields"
+        ],
+    ) -> "ReplaceFlamingos2SequenceResultFields":
+        """Subfields should come from the ReplaceFlamingos2SequenceResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ReplaceFlamingos2SequenceResultFields":
+        self._alias = alias
+        return self
+
+
+class ReplaceGmosNorthSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
+    @classmethod
+    def sequence(cls) -> "GmosNorthAtomFields":
+        return GmosNorthAtomFields("sequence")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ReplaceGmosNorthSequenceResultGraphQLField, "GmosNorthAtomFields"
+        ],
+    ) -> "ReplaceGmosNorthSequenceResultFields":
+        """Subfields should come from the ReplaceGmosNorthSequenceResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ReplaceGmosNorthSequenceResultFields":
+        self._alias = alias
+        return self
+
+
+class ReplaceGmosSouthSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
+    @classmethod
+    def sequence(cls) -> "GmosSouthAtomFields":
+        return GmosSouthAtomFields("sequence")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ReplaceGmosSouthSequenceResultGraphQLField, "GmosSouthAtomFields"
+        ],
+    ) -> "ReplaceGmosSouthSequenceResultFields":
+        """Subfields should come from the ReplaceGmosSouthSequenceResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ReplaceGmosSouthSequenceResultFields":
         self._alias = alias
         return self
 
@@ -6871,7 +7746,7 @@ class RevokeUserInvitationResultFields(GraphQLField):
         self,
         *subfields: Union[
             RevokeUserInvitationResultGraphQLField, "UserInvitationFields"
-        ]
+        ],
     ) -> "RevokeUserInvitationResultFields":
         """Subfields should come from the RevokeUserInvitationResultFields class"""
         self._subfields.extend(subfields)
@@ -6905,7 +7780,7 @@ class RightAscensionFields(GraphQLField):
 
 
 class RightAscensionArcFields(GraphQLField):
-    type: "RightAscensionArcGraphQLField" = RightAscensionArcGraphQLField("type")
+    type_: "RightAscensionArcGraphQLField" = RightAscensionArcGraphQLField("type")
 
     @classmethod
     def start(cls) -> "RightAscensionFields":
@@ -6923,6 +7798,51 @@ class RightAscensionArcFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "RightAscensionArcFields":
+        self._alias = alias
+        return self
+
+
+class ScienceFields(GraphQLField):
+    """Science step"""
+
+    step_type: "ScienceGraphQLField" = ScienceGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: ScienceGraphQLField) -> "ScienceFields":
+        """Subfields should come from the ScienceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ScienceFields":
+        self._alias = alias
+        return self
+
+
+class ScienceProgramReferenceFields(GraphQLField):
+    label: "ScienceProgramReferenceGraphQLField" = ScienceProgramReferenceGraphQLField(
+        "label"
+    )
+    type_: "ScienceProgramReferenceGraphQLField" = ScienceProgramReferenceGraphQLField(
+        "type"
+    )
+    science_subtype: "ScienceProgramReferenceGraphQLField" = (
+        ScienceProgramReferenceGraphQLField("scienceSubtype")
+    )
+    semester: "ScienceProgramReferenceGraphQLField" = (
+        ScienceProgramReferenceGraphQLField("semester")
+    )
+    semester_index: "ScienceProgramReferenceGraphQLField" = (
+        ScienceProgramReferenceGraphQLField("semesterIndex")
+    )
+
+    def fields(
+        self, *subfields: ScienceProgramReferenceGraphQLField
+    ) -> "ScienceProgramReferenceFields":
+        """Subfields should come from the ScienceProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ScienceProgramReferenceFields":
         self._alias = alias
         return self
 
@@ -6953,7 +7873,7 @@ class ScienceRequirementsFields(GraphQLField):
             "ExposureTimeModeFields",
             "ImagingScienceRequirementsFields",
             "SpectroscopyScienceRequirementsFields",
-        ]
+        ],
     ) -> "ScienceRequirementsFields":
         """Subfields should come from the ScienceRequirementsFields class"""
         self._subfields.extend(subfields)
@@ -6991,7 +7911,7 @@ class SequenceDigestFields(GraphQLField):
         self,
         *subfields: Union[
             SequenceDigestGraphQLField, "CategorizedTimeFields", "TelescopeConfigFields"
-        ]
+        ],
     ) -> "SequenceDigestFields":
         """Subfields should come from the SequenceDigestFields class"""
         self._subfields.extend(subfields)
@@ -7024,7 +7944,6 @@ class SequenceEventFields(GraphQLField):
     "Event type."
     command: "SequenceEventGraphQLField" = SequenceEventGraphQLField("command")
     "Sequence event data."
-    client_id: "SequenceEventGraphQLField" = SequenceEventGraphQLField("clientId")
     idempotency_key: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
         "idempotencyKey"
     )
@@ -7032,7 +7951,9 @@ class SequenceEventFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[SequenceEventGraphQLField, "ObservationFields", "VisitFields"]
+        *subfields: Union[
+            SequenceEventGraphQLField, "ObservationFields", "VisitFields"
+        ],
     ) -> "SequenceEventFields":
         """Subfields should come from the SequenceEventFields class"""
         self._subfields.extend(subfields)
@@ -7069,7 +7990,7 @@ class SetGuideTargetNameResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[SetGuideTargetNameResultGraphQLField, "ObservationFields"]
+        *subfields: Union[SetGuideTargetNameResultGraphQLField, "ObservationFields"],
     ) -> "SetGuideTargetNameResultFields":
         """Subfields should come from the SetGuideTargetNameResultFields class"""
         self._subfields.extend(subfields)
@@ -7090,7 +8011,7 @@ class SetProgramReferenceResultFields(GraphQLField):
         self,
         *subfields: Union[
             SetProgramReferenceResultGraphQLField, "ProgramReferenceInterface"
-        ]
+        ],
     ) -> "SetProgramReferenceResultFields":
         """Subfields should come from the SetProgramReferenceResultFields class"""
         self._subfields.extend(subfields)
@@ -7190,13 +8111,38 @@ class SiderealFields(GraphQLField):
             "ProperMotionFields",
             "RadialVelocityFields",
             "RightAscensionFields",
-        ]
+        ],
     ) -> "SiderealFields":
         """Subfields should come from the SiderealFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "SiderealFields":
+        self._alias = alias
+        return self
+
+
+class SignalToNoiseAtFields(GraphQLField):
+    """Calculated signal to noise at a specific wavelength"""
+
+    single: "SignalToNoiseAtGraphQLField" = SignalToNoiseAtGraphQLField("single")
+    "Single exposure signal to noise"
+    total: "SignalToNoiseAtGraphQLField" = SignalToNoiseAtGraphQLField("total")
+    "Total exposure signal to noise"
+
+    @classmethod
+    def wavelength(cls) -> "WavelengthFields":
+        """Wavelength sn was calculated at"""
+        return WavelengthFields("wavelength")
+
+    def fields(
+        self, *subfields: Union[SignalToNoiseAtGraphQLField, "WavelengthFields"]
+    ) -> "SignalToNoiseAtFields":
+        """Subfields should come from the SignalToNoiseAtFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SignalToNoiseAtFields":
         self._alias = alias
         return self
 
@@ -7216,7 +8162,9 @@ class SignalToNoiseExposureTimeModeFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[SignalToNoiseExposureTimeModeGraphQLField, "WavelengthFields"]
+        *subfields: Union[
+            SignalToNoiseExposureTimeModeGraphQLField, "WavelengthFields"
+        ],
     ) -> "SignalToNoiseExposureTimeModeFields":
         """Subfields should come from the SignalToNoiseExposureTimeModeFields class"""
         self._subfields.extend(subfields)
@@ -7242,7 +8190,7 @@ class SiteCoordinateLimitsFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[SiteCoordinateLimitsGraphQLField, "CoordinateLimitsFields"]
+        *subfields: Union[SiteCoordinateLimitsGraphQLField, "CoordinateLimitsFields"],
     ) -> "SiteCoordinateLimitsFields":
         """Subfields should come from the SiteCoordinateLimitsFields class"""
         self._subfields.extend(subfields)
@@ -7275,19 +8223,35 @@ class SlewEventFields(GraphQLField):
     "Event type."
     slew_stage: "SlewEventGraphQLField" = SlewEventGraphQLField("slewStage")
     "Slew event data."
-    client_id: "SlewEventGraphQLField" = SlewEventGraphQLField("clientId")
     idempotency_key: "SlewEventGraphQLField" = SlewEventGraphQLField("idempotencyKey")
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
-        *subfields: Union[SlewEventGraphQLField, "ObservationFields", "VisitFields"]
+        *subfields: Union[SlewEventGraphQLField, "ObservationFields", "VisitFields"],
     ) -> "SlewEventFields":
         """Subfields should come from the SlewEventFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "SlewEventFields":
+        self._alias = alias
+        return self
+
+
+class SmartGcalFields(GraphQLField):
+    """SmartGcal step configuration."""
+
+    smart_gcal_type: "SmartGcalGraphQLField" = SmartGcalGraphQLField("smartGcalType")
+    step_type: "SmartGcalGraphQLField" = SmartGcalGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: SmartGcalGraphQLField) -> "SmartGcalFields":
+        """Subfields should come from the SmartGcalFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SmartGcalFields":
         self._alias = alias
         return self
 
@@ -7317,7 +8281,7 @@ class SourceProfileFields(GraphQLField):
             "GaussianSourceFields",
             "SpectralDefinitionIntegratedFields",
             "SpectralDefinitionSurfaceFields",
-        ]
+        ],
     ) -> "SourceProfileFields":
         """Subfields should come from the SourceProfileFields class"""
         self._subfields.extend(subfields)
@@ -7347,7 +8311,7 @@ class SpectralDefinitionIntegratedFields(GraphQLField):
             SpectralDefinitionIntegratedGraphQLField,
             "BandNormalizedIntegratedFields",
             "EmissionLinesIntegratedFields",
-        ]
+        ],
     ) -> "SpectralDefinitionIntegratedFields":
         """Subfields should come from the SpectralDefinitionIntegratedFields class"""
         self._subfields.extend(subfields)
@@ -7377,7 +8341,7 @@ class SpectralDefinitionSurfaceFields(GraphQLField):
             SpectralDefinitionSurfaceGraphQLField,
             "BandNormalizedSurfaceFields",
             "EmissionLinesSurfaceFields",
-        ]
+        ],
     ) -> "SpectralDefinitionSurfaceFields":
         """Subfields should come from the SpectralDefinitionSurfaceFields class"""
         self._subfields.extend(subfields)
@@ -7476,7 +8440,7 @@ class SpectroscopyConfigOptionFields(GraphQLField):
             "SpectroscopyConfigOptionGmosNorthFields",
             "SpectroscopyConfigOptionGmosSouthFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "SpectroscopyConfigOptionFields":
         """Subfields should come from the SpectroscopyConfigOptionFields class"""
         self._subfields.extend(subfields)
@@ -7494,7 +8458,7 @@ class SpectroscopyConfigOptionFlamingos2Fields(GraphQLField):
     disperser: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
         SpectroscopyConfigOptionFlamingos2GraphQLField("disperser")
     )
-    filter: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
+    filter_: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
         SpectroscopyConfigOptionFlamingos2GraphQLField("filter")
     )
 
@@ -7517,7 +8481,7 @@ class SpectroscopyConfigOptionGmosNorthFields(GraphQLField):
     grating: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("grating")
     )
-    filter: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
+    filter_: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("filter")
     )
 
@@ -7540,7 +8504,7 @@ class SpectroscopyConfigOptionGmosSouthFields(GraphQLField):
     grating: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("grating")
     )
-    filter: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
+    filter_: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("filter")
     )
 
@@ -7593,7 +8557,7 @@ class SpectroscopyScienceRequirementsFields(GraphQLField):
             SpectroscopyScienceRequirementsGraphQLField,
             "AngleFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "SpectroscopyScienceRequirementsFields":
         """Subfields should come from the SpectroscopyScienceRequirementsFields class"""
         self._subfields.extend(subfields)
@@ -7621,7 +8585,7 @@ class SpiralTelescopeConfigGeneratorFields(GraphQLField):
         self,
         *subfields: Union[
             SpiralTelescopeConfigGeneratorGraphQLField, "AngleFields", "OffsetFields"
-        ]
+        ],
     ) -> "SpiralTelescopeConfigGeneratorFields":
         """Subfields should come from the SpiralTelescopeConfigGeneratorFields class"""
         self._subfields.extend(subfields)
@@ -7629,6 +8593,26 @@ class SpiralTelescopeConfigGeneratorFields(GraphQLField):
 
     def alias(self, alias: str) -> "SpiralTelescopeConfigGeneratorFields":
         self._alias = alias
+        return self
+
+
+class StepConfigInterface(GraphQLField):
+    """Step (bias, dark, gcal, science, etc.)"""
+
+    step_type: "StepConfigGraphQLField" = StepConfigGraphQLField("stepType")
+    "Step type"
+
+    def fields(self, *subfields: StepConfigGraphQLField) -> "StepConfigInterface":
+        """Subfields should come from the StepConfigInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "StepConfigInterface":
+        self._alias = alias
+        return self
+
+    def on(self, type_name: str, *subfields: GraphQLField) -> "StepConfigInterface":
+        self._inline_fragments[type_name] = subfields
         return self
 
 
@@ -7660,7 +8644,7 @@ class StepEstimateFields(GraphQLField):
             "AllConfigChangeEstimatesFields",
             "AllDetectorEstimatesFields",
             "TimeSpanFields",
-        ]
+        ],
     ) -> "StepEstimateFields":
         """Subfields should come from the StepEstimateFields class"""
         self._subfields.extend(subfields)
@@ -7704,7 +8688,6 @@ class StepEventFields(GraphQLField):
 
     step_stage: "StepEventGraphQLField" = StepEventGraphQLField("stepStage")
     "Step execution stage."
-    client_id: "StepEventGraphQLField" = StepEventGraphQLField("clientId")
     idempotency_key: "StepEventGraphQLField" = StepEventGraphQLField("idempotencyKey")
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -7716,7 +8699,7 @@ class StepEventFields(GraphQLField):
             "ObservationFields",
             "StepRecordFields",
             "VisitFields",
-        ]
+        ],
     ) -> "StepEventFields":
         """Subfields should come from the StepEventFields class"""
         self._subfields.extend(subfields)
@@ -7743,8 +8726,6 @@ class StepRecordFields(GraphQLField):
         """The atom in which the step was executed."""
         return AtomRecordFields("atom")
 
-    created: "StepRecordGraphQLField" = StepRecordGraphQLField("created")
-    "The step was created by Observe at this time."
     execution_state: "StepRecordGraphQLField" = StepRecordGraphQLField("executionState")
     "The execution state of this step, according to events received (if any) from\nObserve."
 
@@ -7752,8 +8733,7 @@ class StepRecordFields(GraphQLField):
     def interval(cls) -> "TimestampIntervalFields":
         """Time interval during which this step executed.  This measures the range of
         time from the first event to the last, whether or not the step ever
-        actually completed.  A 'null' result means there are no events associated
-        with this step."""
+        actually completed."""
         return TimestampIntervalFields("interval")
 
     @classmethod
@@ -7806,11 +8786,6 @@ class StepRecordFields(GraphQLField):
         }
         return ExecutionEventSelectResultFields("events", arguments=cleared_arguments)
 
-    generated_id: "StepRecordGraphQLField" = StepRecordGraphQLField("generatedId")
-    "Step ID of the generated step, if any, that produced this step record."
-    idempotency_key: "StepRecordGraphQLField" = StepRecordGraphQLField("idempotencyKey")
-    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe step is created and is used to enable problem-free retry in the case of\nfailure."
-
     @classmethod
     def flamingos_2(cls) -> "Flamingos2DynamicFields":
         """Flamingos 2 instrument configuration for this step, if any.  This will be null
@@ -7843,7 +8818,7 @@ class StepRecordFields(GraphQLField):
             "TelescopeConfigFields",
             "TimeSpanFields",
             "TimestampIntervalFields",
-        ]
+        ],
     ) -> "StepRecordFields":
         """Subfields should come from the StepRecordFields class"""
         self._subfields.extend(subfields)
@@ -7875,6 +8850,54 @@ class StepRecordSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "StepRecordSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class SystemProgramReferenceFields(GraphQLField):
+    label: "SystemProgramReferenceGraphQLField" = SystemProgramReferenceGraphQLField(
+        "label"
+    )
+    type_: "SystemProgramReferenceGraphQLField" = SystemProgramReferenceGraphQLField(
+        "type"
+    )
+
+    def fields(
+        self, *subfields: SystemProgramReferenceGraphQLField
+    ) -> "SystemProgramReferenceFields":
+        """Subfields should come from the SystemProgramReferenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SystemProgramReferenceFields":
+        self._alias = alias
+        return self
+
+
+class SystemVerificationFields(GraphQLField):
+    """Proposal properties for System Verification CallForProposals."""
+
+    science_subtype: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+    to_o_activation: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
+        "toOActivation"
+    )
+    "Whether (and how) the observations in this proposal are available for Target\nof Opportunity triggering."
+    min_percent_time: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
+    def fields(
+        self, *subfields: SystemVerificationGraphQLField
+    ) -> "SystemVerificationFields":
+        """Subfields should come from the SystemVerificationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SystemVerificationFields":
         self._alias = alias
         return self
 
@@ -7934,7 +8957,7 @@ class TargetFields(GraphQLField):
             "ProgramFields",
             "SiderealFields",
             "SourceProfileFields",
-        ]
+        ],
     ) -> "TargetFields":
         """Subfields should come from the TargetFields class"""
         self._subfields.extend(subfields)
@@ -8005,8 +9028,7 @@ class TargetEnvironmentFields(GraphQLField):
     ) -> "GuideAvailabilityPeriodFields":
         """Availability of guide stars during a specified time range.
         There can be multiple `GuideAvailabilityPeriod`s returned if availability changes over the time
-        range. In this case, the `end` of one period will be the same as the `start` of the next period.
-        """
+        range. In this case, the `end` of one period will be the same as the `start` of the next period."""
         arguments: dict[str, dict[str, Any]] = {
             "start": {"type": "Timestamp!", "value": start},
             "end": {"type": "Timestamp!", "value": end},
@@ -8050,7 +9072,7 @@ class TargetEnvironmentFields(GraphQLField):
             "GuideAvailabilityPeriodFields",
             "GuideEnvironmentFields",
             "TargetFields",
-        ]
+        ],
     ) -> "TargetEnvironmentFields":
         """Subfields should come from the TargetEnvironmentFields class"""
         self._subfields.extend(subfields)
@@ -8068,7 +9090,7 @@ class TargetGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
@@ -8100,7 +9122,7 @@ class TargetGroupFields(GraphQLField):
             "ObservationSelectResultFields",
             "ProgramFields",
             "TargetFields",
-        ]
+        ],
     ) -> "TargetGroupFields":
         """Subfields should come from the TargetGroupFields class"""
         self._subfields.extend(subfields)
@@ -8126,7 +9148,7 @@ class TargetGroupSelectResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[TargetGroupSelectResultGraphQLField, "TargetGroupFields"]
+        *subfields: Union[TargetGroupSelectResultGraphQLField, "TargetGroupFields"],
     ) -> "TargetGroupSelectResultFields":
         """Subfields should come from the TargetGroupSelectResultFields class"""
         self._subfields.extend(subfields)
@@ -8218,7 +9240,7 @@ class TelescopeConfigGeneratorFields(GraphQLField):
             "RandomTelescopeConfigGeneratorFields",
             "SpiralTelescopeConfigGeneratorFields",
             "UniformTelescopeConfigGeneratorFields",
-        ]
+        ],
     ) -> "TelescopeConfigGeneratorFields":
         """Subfields should come from the TelescopeConfigGeneratorFields class"""
         self._subfields.extend(subfields)
@@ -8269,7 +9291,7 @@ class TimeAndCountExposureTimeModeFields(GraphQLField):
             TimeAndCountExposureTimeModeGraphQLField,
             "TimeSpanFields",
             "WavelengthFields",
-        ]
+        ],
     ) -> "TimeAndCountExposureTimeModeFields":
         """Subfields should come from the TimeAndCountExposureTimeModeFields class"""
         self._subfields.extend(subfields)
@@ -8315,7 +9337,7 @@ class TimeChargeCorrectionFields(GraphQLField):
         self,
         *subfields: Union[
             TimeChargeCorrectionGraphQLField, "TimeSpanFields", "UserFields"
-        ]
+        ],
     ) -> "TimeChargeCorrectionFields":
         """Subfields should come from the TimeChargeCorrectionFields class"""
         self._subfields.extend(subfields)
@@ -8323,6 +9345,87 @@ class TimeChargeCorrectionFields(GraphQLField):
 
     def alias(self, alias: str) -> "TimeChargeCorrectionFields":
         self._alias = alias
+        return self
+
+
+class TimeChargeDaylightDiscountFields(GraphQLField):
+    """A time charge discount that is applied when part of the observation is executed
+    outside of nautical twilight boundaries.  The portion that occurs during day
+    time is not charged."""
+
+    @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
+    def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
+        return TimeSpanFields("amount")
+
+    comment: "TimeChargeDaylightDiscountGraphQLField" = (
+        TimeChargeDaylightDiscountGraphQLField("comment")
+    )
+    "Additional detail."
+    site: "TimeChargeDaylightDiscountGraphQLField" = (
+        TimeChargeDaylightDiscountGraphQLField("site")
+    )
+    "The site where the observation was executed."
+
+    def fields(
+        self,
+        *subfields: Union[
+            TimeChargeDaylightDiscountGraphQLField,
+            "TimeSpanFields",
+            "TimestampIntervalFields",
+        ],
+    ) -> "TimeChargeDaylightDiscountFields":
+        """Subfields should come from the TimeChargeDaylightDiscountFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TimeChargeDaylightDiscountFields":
+        self._alias = alias
+        return self
+
+
+class TimeChargeDiscountInterface(GraphQLField):
+    """Describes a time charge discount, broken out by charge class.  For each class,
+    the associated time is subtracted and then added to uncharged."""
+
+    @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
+    def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
+        return TimeSpanFields("amount")
+
+    comment: "TimeChargeDiscountGraphQLField" = TimeChargeDiscountGraphQLField(
+        "comment"
+    )
+    "Additional detail."
+
+    def fields(
+        self,
+        *subfields: Union[
+            TimeChargeDiscountGraphQLField, "TimeSpanFields", "TimestampIntervalFields"
+        ],
+    ) -> "TimeChargeDiscountInterface":
+        """Subfields should come from the TimeChargeDiscountInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TimeChargeDiscountInterface":
+        self._alias = alias
+        return self
+
+    def on(
+        self, type_name: str, *subfields: GraphQLField
+    ) -> "TimeChargeDiscountInterface":
+        self._inline_fragments[type_name] = subfields
         return self
 
 
@@ -8359,13 +9462,131 @@ class TimeChargeInvoiceFields(GraphQLField):
             "CategorizedTimeFields",
             "TimeChargeCorrectionFields",
             "TimeChargeDiscountInterface",
-        ]
+        ],
     ) -> "TimeChargeInvoiceFields":
         """Subfields should come from the TimeChargeInvoiceFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "TimeChargeInvoiceFields":
+        self._alias = alias
+        return self
+
+
+class TimeChargeNoDataDiscountFields(GraphQLField):
+    """A time charge discount that is applied when no data is collected during the
+    entirety of the visit."""
+
+    @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
+    def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
+        return TimeSpanFields("amount")
+
+    comment: "TimeChargeNoDataDiscountGraphQLField" = (
+        TimeChargeNoDataDiscountGraphQLField("comment")
+    )
+    "Additional detail."
+
+    def fields(
+        self,
+        *subfields: Union[
+            TimeChargeNoDataDiscountGraphQLField,
+            "TimeSpanFields",
+            "TimestampIntervalFields",
+        ],
+    ) -> "TimeChargeNoDataDiscountFields":
+        """Subfields should come from the TimeChargeNoDataDiscountFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TimeChargeNoDataDiscountFields":
+        self._alias = alias
+        return self
+
+
+class TimeChargeOverlapDiscountFields(GraphQLField):
+    """A time charge discount that is applied when part of the observation is executed
+    after an overlapping chargeable observation is started.  For example, when
+    writing out datasets while slewing to a new target."""
+
+    @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
+    def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
+        return TimeSpanFields("amount")
+
+    comment: "TimeChargeOverlapDiscountGraphQLField" = (
+        TimeChargeOverlapDiscountGraphQLField("comment")
+    )
+    "Additional detail."
+
+    @classmethod
+    def observation(cls) -> "ObservationFields":
+        """The overlapping observation."""
+        return ObservationFields("observation")
+
+    def fields(
+        self,
+        *subfields: Union[
+            TimeChargeOverlapDiscountGraphQLField,
+            "ObservationFields",
+            "TimeSpanFields",
+            "TimestampIntervalFields",
+        ],
+    ) -> "TimeChargeOverlapDiscountFields":
+        """Subfields should come from the TimeChargeOverlapDiscountFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TimeChargeOverlapDiscountFields":
+        self._alias = alias
+        return self
+
+
+class TimeChargeQaDiscountFields(GraphQLField):
+    @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
+    def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
+        return TimeSpanFields("amount")
+
+    comment: "TimeChargeQaDiscountGraphQLField" = TimeChargeQaDiscountGraphQLField(
+        "comment"
+    )
+    "Additional detail."
+
+    @classmethod
+    def datasets(cls) -> "DatasetFields":
+        """Datasets associated with the discount."""
+        return DatasetFields("datasets")
+
+    def fields(
+        self,
+        *subfields: Union[
+            TimeChargeQaDiscountGraphQLField,
+            "DatasetFields",
+            "TimeSpanFields",
+            "TimestampIntervalFields",
+        ],
+    ) -> "TimeChargeQaDiscountFields":
+        """Subfields should come from the TimeChargeQaDiscountFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TimeChargeQaDiscountFields":
         self._alias = alias
         return self
 
@@ -8461,7 +9682,7 @@ class TimingWindowEndAfterFields(GraphQLField):
             TimingWindowEndAfterGraphQLField,
             "TimeSpanFields",
             "TimingWindowRepeatFields",
-        ]
+        ],
     ) -> "TimingWindowEndAfterFields":
         """Subfields should come from the TimingWindowEndAfterFields class"""
         self._subfields.extend(subfields)
@@ -8527,7 +9748,7 @@ class UniformTelescopeConfigGeneratorFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[UniformTelescopeConfigGeneratorGraphQLField, "OffsetFields"]
+        *subfields: Union[UniformTelescopeConfigGeneratorGraphQLField, "OffsetFields"],
     ) -> "UniformTelescopeConfigGeneratorFields":
         """Subfields should come from the UniformTelescopeConfigGeneratorFields class"""
         self._subfields.extend(subfields)
@@ -8665,7 +9886,7 @@ class UpdateCallsForProposalsResultFields(GraphQLField):
         self,
         *subfields: Union[
             UpdateCallsForProposalsResultGraphQLField, "CallForProposalsFields"
-        ]
+        ],
     ) -> "UpdateCallsForProposalsResultFields":
         """Subfields should come from the UpdateCallsForProposalsResultFields class"""
         self._subfields.extend(subfields)
@@ -8693,7 +9914,7 @@ class UpdateConfigurationRequestsResultFields(GraphQLField):
         self,
         *subfields: Union[
             UpdateConfigurationRequestsResultGraphQLField, "ConfigurationRequestFields"
-        ]
+        ],
     ) -> "UpdateConfigurationRequestsResultFields":
         """Subfields should come from the UpdateConfigurationRequestsResultFields class"""
         self._subfields.extend(subfields)
@@ -8767,7 +9988,7 @@ class UpdateObservationsResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[UpdateObservationsResultGraphQLField, "ObservationFields"]
+        *subfields: Union[UpdateObservationsResultGraphQLField, "ObservationFields"],
     ) -> "UpdateObservationsResultFields":
         """Subfields should come from the UpdateObservationsResultFields class"""
         self._subfields.extend(subfields)
@@ -8795,7 +10016,7 @@ class UpdateProgramNotesResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[UpdateProgramNotesResultGraphQLField, "ProgramNoteFields"]
+        *subfields: Union[UpdateProgramNotesResultGraphQLField, "ProgramNoteFields"],
     ) -> "UpdateProgramNotesResultFields":
         """Subfields should come from the UpdateProgramNotesResultFields class"""
         self._subfields.extend(subfields)
@@ -8824,7 +10045,7 @@ class UpdateProgramUsersResultFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[UpdateProgramUsersResultGraphQLField, "ProgramUserFields"]
+        *subfields: Union[UpdateProgramUsersResultGraphQLField, "ProgramUserFields"],
     ) -> "UpdateProgramUsersResultFields":
         """Subfields should come from the UpdateProgramUsersResultFields class"""
         self._subfields.extend(subfields)
@@ -8907,7 +10128,7 @@ class UpdateTargetsResultFields(GraphQLField):
 
 class UserFields(GraphQLField):
     id: "UserGraphQLField" = UserGraphQLField("id")
-    type: "UserGraphQLField" = UserGraphQLField("type")
+    type_: "UserGraphQLField" = UserGraphQLField("type")
     service_name: "UserGraphQLField" = UserGraphQLField("serviceName")
     orcid_id: "UserGraphQLField" = UserGraphQLField("orcidId")
 
@@ -8959,7 +10180,7 @@ class UserInvitationFields(GraphQLField):
         self,
         *subfields: Union[
             UserInvitationGraphQLField, "EmailFields", "ProgramUserFields", "UserFields"
-        ]
+        ],
     ) -> "UserInvitationFields":
         """Subfields should come from the UserInvitationFields class"""
         self._subfields.extend(subfields)
@@ -9017,7 +10238,7 @@ class VisitFields(GraphQLField):
     ) -> "AtomRecordSelectResultFields":
         """Executed (or at least partially executed) atom records for this visit."""
         arguments: dict[str, dict[str, Any]] = {
-            "OFFSET": {"type": "Timestamp", "value": offset},
+            "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -9095,7 +10316,7 @@ class VisitFields(GraphQLField):
             "ObservationFields",
             "TimeChargeInvoiceFields",
             "TimestampIntervalFields",
-        ]
+        ],
     ) -> "VisitFields":
         """Subfields should come from the VisitFields class"""
         self._subfields.extend(subfields)

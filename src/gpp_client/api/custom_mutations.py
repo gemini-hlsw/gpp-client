@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from .custom_fields import (
-    AddAtomEventResultFields,
     AddConditionsEntryResultFields,
     AddDatasetEventResultFields,
     AddProgramUserResultFields,
@@ -26,15 +25,14 @@ from .custom_fields import (
     DeleteProposalResultFields,
     LinkUserResultFields,
     ObservationWorkflowFields,
-    RecordAtomResultFields,
     RecordDatasetResultFields,
-    RecordFlamingos2StepResultFields,
     RecordFlamingos2VisitResultFields,
-    RecordGmosNorthStepResultFields,
     RecordGmosNorthVisitResultFields,
-    RecordGmosSouthStepResultFields,
     RecordGmosSouthVisitResultFields,
     RedeemUserInvitationResultFields,
+    ReplaceFlamingos2SequenceResultFields,
+    ReplaceGmosNorthSequenceResultFields,
+    ReplaceGmosSouthSequenceResultFields,
     ResetAcquisitionResultFields,
     RevokeUserInvitationResultFields,
     SetAllocationsResultFields,
@@ -56,7 +54,6 @@ from .custom_fields import (
     UpdateTargetsResultFields,
 )
 from .input_types import (
-    AddAtomEventInput,
     AddDatasetEventInput,
     AddProgramUserInput,
     AddSequenceEventInput,
@@ -80,15 +77,14 @@ from .input_types import (
     DeleteProgramUserInput,
     DeleteProposalInput,
     LinkUserInput,
-    RecordAtomInput,
     RecordDatasetInput,
-    RecordFlamingos2StepInput,
     RecordFlamingos2VisitInput,
-    RecordGmosNorthStepInput,
     RecordGmosNorthVisitInput,
-    RecordGmosSouthStepInput,
     RecordGmosSouthVisitInput,
     RedeemUserInvitationInput,
+    ReplaceFlamingos2SequenceInput,
+    ReplaceGmosNorthSequenceInput,
+    ReplaceGmosSouthSequenceInput,
     ResetAcquisitionInput,
     RevokeUserInvitationInput,
     SetAllocationsInput,
@@ -128,19 +124,6 @@ class Mutation:
         }
         return AddConditionsEntryResultFields(
             field_name="addConditionsEntry", arguments=cleared_arguments
-        )
-
-    @classmethod
-    def add_atom_event(cls, input: AddAtomEventInput) -> AddAtomEventResultFields:
-        """Adds a new atom event."""
-        arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "AddAtomEventInput!", "value": input}
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return AddAtomEventResultFields(
-            field_name="addAtomEvent", arguments=cleared_arguments
         )
 
     @classmethod
@@ -433,19 +416,6 @@ class Mutation:
         return LinkUserResultFields(field_name="linkUser", arguments=cleared_arguments)
 
     @classmethod
-    def record_atom(cls, input: RecordAtomInput) -> RecordAtomResultFields:
-        """Record a new atom"""
-        arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "RecordAtomInput!", "value": input}
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return RecordAtomResultFields(
-            field_name="recordAtom", arguments=cleared_arguments
-        )
-
-    @classmethod
     def record_dataset(cls, input: RecordDatasetInput) -> RecordDatasetResultFields:
         """Records a new dataset.  This dataset may be subsequently referenced by dataset events."""
         arguments: dict[str, dict[str, Any]] = {
@@ -456,21 +426,6 @@ class Mutation:
         }
         return RecordDatasetResultFields(
             field_name="recordDataset", arguments=cleared_arguments
-        )
-
-    @classmethod
-    def record_flamingos_2_step(
-        cls, input: RecordFlamingos2StepInput
-    ) -> RecordFlamingos2StepResultFields:
-        """Record a new Flamingos 2 step."""
-        arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "RecordFlamingos2StepInput!", "value": input}
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return RecordFlamingos2StepResultFields(
-            field_name="recordFlamingos2Step", arguments=cleared_arguments
         )
 
     @classmethod
@@ -489,18 +444,20 @@ class Mutation:
         )
 
     @classmethod
-    def record_gmos_north_step(
-        cls, input: RecordGmosNorthStepInput
-    ) -> RecordGmosNorthStepResultFields:
-        """Record a new GMOS North step"""
+    def replace_flamingos_2_sequence(
+        cls, input: ReplaceFlamingos2SequenceInput
+    ) -> ReplaceFlamingos2SequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
         arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "RecordGmosNorthStepInput!", "value": input}
+            "input": {"type": "ReplaceFlamingos2SequenceInput!", "value": input}
         }
         cleared_arguments = {
             key: value for key, value in arguments.items() if value["value"] is not None
         }
-        return RecordGmosNorthStepResultFields(
-            field_name="recordGmosNorthStep", arguments=cleared_arguments
+        return ReplaceFlamingos2SequenceResultFields(
+            field_name="replaceFlamingos2Sequence", arguments=cleared_arguments
         )
 
     @classmethod
@@ -519,18 +476,20 @@ class Mutation:
         )
 
     @classmethod
-    def record_gmos_south_step(
-        cls, input: RecordGmosSouthStepInput
-    ) -> RecordGmosSouthStepResultFields:
-        """Record a new GMOS South step"""
+    def replace_gmos_north_sequence(
+        cls, input: ReplaceGmosNorthSequenceInput
+    ) -> ReplaceGmosNorthSequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
         arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "RecordGmosSouthStepInput!", "value": input}
+            "input": {"type": "ReplaceGmosNorthSequenceInput!", "value": input}
         }
         cleared_arguments = {
             key: value for key, value in arguments.items() if value["value"] is not None
         }
-        return RecordGmosSouthStepResultFields(
-            field_name="recordGmosSouthStep", arguments=cleared_arguments
+        return ReplaceGmosNorthSequenceResultFields(
+            field_name="replaceGmosNorthSequence", arguments=cleared_arguments
         )
 
     @classmethod
@@ -546,6 +505,23 @@ class Mutation:
         }
         return RecordGmosSouthVisitResultFields(
             field_name="recordGmosSouthVisit", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def replace_gmos_south_sequence(
+        cls, input: ReplaceGmosSouthSequenceInput
+    ) -> ReplaceGmosSouthSequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "ReplaceGmosSouthSequenceInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ReplaceGmosSouthSequenceResultFields(
+            field_name="replaceGmosSouthSequence", arguments=cleared_arguments
         )
 
     @classmethod

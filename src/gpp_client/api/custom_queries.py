@@ -55,7 +55,7 @@ class Query:
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> AsterismGroupSelectResultFields:
         """Observations grouped by commonly held science asterisms. Identify the program
         by specifying only one of programId, programReference, or proposalReference.
@@ -105,7 +105,7 @@ class Query:
         *,
         where: Optional[WhereCallForProposals] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> CallsForProposalsSelectResultFields:
         """Select all Calls for Proposals."""
         arguments: dict[str, dict[str, Any]] = {
@@ -130,7 +130,7 @@ class Query:
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ConstraintSetGroupSelectResultFields:
         """Observations grouped by commonly held constraints. Identify the program by
         specifying only one of programId, programReference, or proposalReference.  If
@@ -162,7 +162,7 @@ class Query:
         cls,
         *,
         dataset_id: Optional[Any] = None,
-        dataset_reference: Optional[Any] = None
+        dataset_reference: Optional[Any] = None,
     ) -> DatasetFields:
         """Returns the dataset with the given id or reference, if any.  Identify the
         dataset by specifying only one of datasetId or datasetReference. If more than
@@ -185,7 +185,7 @@ class Query:
         *,
         where: Optional[WhereDataset] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> DatasetSelectResultFields:
         """Select all datasets associated with a step or observation"""
         arguments: dict[str, dict[str, Any]] = {
@@ -206,7 +206,7 @@ class Query:
         *,
         where: Optional[WhereDatasetChronicleEntry] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> DatasetChronicleEntrySelectResultFields:
         """Select all dataset chronicle entries.  This will contain detailed information
         about dataset creation and updates."""
@@ -228,7 +228,7 @@ class Query:
         *,
         where: Optional[WhereExecutionEvent] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ExecutionEventSelectResultFields:
         """Selects the first `LIMIT` matching execution events based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
@@ -249,7 +249,7 @@ class Query:
         *,
         observation_id: Optional[Any] = None,
         observation_reference: Optional[Any] = None,
-        future_limit: Optional[Any] = None
+        future_limit: Optional[Any] = None,
     ) -> ExecutionConfigFields:
         """Full execution config, including static values and acquisition and science
         sequences.  If a sequence cannot be generated for this observation, `null`
@@ -307,7 +307,7 @@ class Query:
         cls,
         *,
         observation_id: Optional[Any] = None,
-        observation_reference: Optional[Any] = None
+        observation_reference: Optional[Any] = None,
     ) -> ObservationFields:
         """Returns the observation with the given id or reference, if any.  Identify the
         observation by specifying only one of observationId or observationReference.
@@ -332,7 +332,7 @@ class Query:
         *,
         where: Optional[WhereObservation] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ObservationSelectResultFields:
         """Selects the first `LIMIT` matching observations based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
@@ -354,7 +354,7 @@ class Query:
         *,
         where: Optional[WhereConfigurationRequest] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ConfigurationRequestSelectResultFields:
         """Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
@@ -378,7 +378,7 @@ class Query:
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ObservingModeGroupSelectResultFields:
         """Observations grouped by commonly held observing modes. Identify the program by
         specifying only one of programId, programReference, or proposalReference.  If
@@ -411,7 +411,7 @@ class Query:
         *,
         program_id: Optional[Any] = None,
         proposal_reference: Optional[Any] = None,
-        program_reference: Optional[Any] = None
+        program_reference: Optional[Any] = None,
     ) -> ProgramFields:
         """Returns the program with the given id or reference, if any. Identify the
         program by specifying only one of programId, programReference, or
@@ -440,7 +440,7 @@ class Query:
         *,
         where: Optional[WhereProgram] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ProgramSelectResultFields:
         """Selects the first `LIMIT` matching programs based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
@@ -474,7 +474,7 @@ class Query:
         *,
         where: Optional[WhereProgramNote] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ProgramNoteSelectResultFields:
         """Selects the first `LIMIT` matching program notes based on the provided `WHERE`
         parameter, if any."""
@@ -498,7 +498,7 @@ class Query:
         *,
         where: Optional[WhereProgramUser] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> ProgramUserSelectResultFields:
         """Selects the first `LIMIT` matching program users based on the provided `WHERE`
         parameter, if any."""
@@ -570,7 +570,7 @@ class Query:
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
         where: Optional[WhereObservation] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> TargetGroupSelectResultFields:
         """Observations grouped by commonly held targets. Identify the program by
         specifying only one of programId, programReference, or proposalReference. If
@@ -604,7 +604,7 @@ class Query:
         *,
         where: Optional[WhereTarget] = None,
         offset: Optional[Any] = None,
-        limit: Optional[Any] = None
+        limit: Optional[Any] = None,
     ) -> TargetSelectResultFields:
         """Selects the first `LIMIT` matching targets based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {

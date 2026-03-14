@@ -94,7 +94,7 @@ class ProgramManager(BaseManager):
         )
 
         input_data = CreateProgramInput(
-            set=properties,
+            set_=properties,
         )
 
         fields = Mutation.create_program(input=input_data).fields(
@@ -156,7 +156,7 @@ class ProgramManager(BaseManager):
         )
 
         input_data = UpdateProgramsInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
@@ -381,7 +381,7 @@ class ProgramManager(BaseManager):
             ProgramFields.name,
             ProgramFields.description,
             ProgramFields.existence,
-            ProgramFields.type,
+            ProgramFields.type_,
             ProgramFields.active().fields(
                 DateIntervalFields.start, DateIntervalFields.end
             ),

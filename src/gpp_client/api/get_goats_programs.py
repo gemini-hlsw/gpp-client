@@ -21,7 +21,7 @@ class GetGOATSProgramsProgramsMatches(BaseModel):
     description: Optional[Any]
     reference: Optional["GetGOATSProgramsProgramsMatchesReference"]
     proposal_status: ProposalStatus = Field(alias="proposalStatus")
-    type: ProgramType
+    type_: ProgramType = Field(alias="type")
 
 
 class GetGOATSProgramsProgramsMatchesReference(BaseModel):

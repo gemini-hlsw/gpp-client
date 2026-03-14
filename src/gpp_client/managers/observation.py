@@ -20,7 +20,11 @@ from gpp_client.api.custom_fields import (
     ExposureTimeModeFields,
     Flamingos2LongSlitAcquisitionFields,
     Flamingos2LongSlitFields,
+    GmosNorthImagingFields,
+    GmosNorthImagingFilterFields,
     GmosNorthLongSlitFields,
+    GmosSouthImagingFields,
+    GmosSouthImagingFilterFields,
     GmosSouthLongSlitFields,
     HourAngleRangeFields,
     NonsiderealFields,
@@ -50,10 +54,6 @@ from gpp_client.api.custom_fields import (
     TimingWindowRepeatFields,
     UpdateObservationsResultFields,
     WavelengthFields,
-    GmosNorthImagingFields,
-    GmosNorthImagingFilterFields,
-    GmosSouthImagingFields,
-    GmosSouthImagingFilterFields,
 )
 from gpp_client.api.custom_mutations import Mutation
 from gpp_client.api.custom_queries import Query
@@ -134,7 +134,7 @@ class ObservationManager(BaseManager):
         input_data = CloneObservationInput(
             observation_id=observation_id,
             observation_reference=observation_reference,
-            set=properties,
+            set_=properties,
         )
         fields = Mutation.clone_observation(input=input_data).fields(
             CloneObservationResultFields.original_observation().fields(
@@ -218,7 +218,7 @@ class ObservationManager(BaseManager):
             program_id=program_id,
             proposal_reference=proposal_reference,
             program_reference=program_reference,
-            set=properties,
+            set_=properties,
         )
 
         fields = Mutation.create_observation(input=input_data).fields(
@@ -280,7 +280,7 @@ class ObservationManager(BaseManager):
         )
 
         input_data = UpdateObservationsInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
@@ -605,7 +605,7 @@ class ObservationManager(BaseManager):
                 ObservingModeFields.mode,
                 ObservingModeFields.gmos_north_long_slit().fields(
                     GmosNorthLongSlitFields.grating,
-                    GmosNorthLongSlitFields.filter,
+                    GmosNorthLongSlitFields.filter_,
                     GmosNorthLongSlitFields.fpu,
                     GmosNorthLongSlitFields.central_wavelength().fields(
                         WavelengthFields.nanometers
@@ -616,7 +616,7 @@ class ObservationManager(BaseManager):
                 ),
                 ObservingModeFields.gmos_south_long_slit().fields(
                     GmosSouthLongSlitFields.grating,
-                    GmosSouthLongSlitFields.filter,
+                    GmosSouthLongSlitFields.filter_,
                     GmosSouthLongSlitFields.fpu,
                     GmosSouthLongSlitFields.central_wavelength().fields(
                         WavelengthFields.nanometers
@@ -627,12 +627,12 @@ class ObservationManager(BaseManager):
                 ),
                 ObservingModeFields.gmos_north_imaging().fields(
                     GmosNorthImagingFields.filters().fields(
-                        GmosNorthImagingFilterFields.filter
+                        GmosNorthImagingFilterFields.filter_
                     )
                 ),
                 ObservingModeFields.gmos_south_imaging().fields(
                     GmosSouthImagingFields.filters().fields(
-                        GmosSouthImagingFilterFields.filter
+                        GmosSouthImagingFilterFields.filter_
                     )
                 ),
                 ObservingModeFields.flamingos_2_long_slit().fields(
@@ -647,7 +647,7 @@ class ObservationManager(BaseManager):
                         ),
                     ),
                     Flamingos2LongSlitFields.disperser,
-                    Flamingos2LongSlitFields.filter,
+                    Flamingos2LongSlitFields.filter_,
                     Flamingos2LongSlitFields.fpu,
                     Flamingos2LongSlitFields.telluric_type().fields(
                         TelluricTypeFields.tag, TelluricTypeFields.star_types

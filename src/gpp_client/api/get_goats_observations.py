@@ -64,17 +64,17 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     target_environment: "GetGOATSObservationsObservationsMatchesTargetEnvironment" = (
         Field(alias="targetEnvironment")
     )
-    pos_angle_constraint: (
-        "GetGOATSObservationsObservationsMatchesPosAngleConstraint"
-    ) = Field(alias="posAngleConstraint")
+    pos_angle_constraint: "GetGOATSObservationsObservationsMatchesPosAngleConstraint" = Field(
+        alias="posAngleConstraint"
+    )
     science_band: Optional[ScienceBand] = Field(alias="scienceBand")
     observation_duration: Optional[
         "GetGOATSObservationsObservationsMatchesObservationDuration"
     ] = Field(alias="observationDuration")
     observer_notes: Optional[Any] = Field(alias="observerNotes")
-    science_requirements: (
-        "GetGOATSObservationsObservationsMatchesScienceRequirements"
-    ) = Field(alias="scienceRequirements")
+    science_requirements: "GetGOATSObservationsObservationsMatchesScienceRequirements" = Field(
+        alias="scienceRequirements"
+    )
     observing_mode: Optional["GetGOATSObservationsObservationsMatchesObservingMode"] = (
         Field(alias="observingMode")
     )
@@ -90,9 +90,9 @@ class GetGOATSObservationsObservationsMatchesConstraintSet(BaseModel):
     cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
     sky_background: SkyBackground = Field(alias="skyBackground")
     water_vapor: WaterVapor = Field(alias="waterVapor")
-    elevation_range: (
-        "GetGOATSObservationsObservationsMatchesConstraintSetElevationRange"
-    ) = Field(alias="elevationRange")
+    elevation_range: "GetGOATSObservationsObservationsMatchesConstraintSetElevationRange" = Field(
+        alias="elevationRange"
+    )
 
 
 class GetGOATSObservationsObservationsMatchesConstraintSetElevationRange(BaseModel):
@@ -225,9 +225,9 @@ class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget
     sidereal: Optional[
         "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal"
     ]
-    source_profile: (
-        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile"
-    ) = Field(alias="sourceProfile")
+    source_profile: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile" = Field(
+        alias="sourceProfile"
+    )
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetOpportunity(
@@ -461,11 +461,11 @@ class GetGOATSObservationsObservationsMatchesObservingMode(BaseModel):
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(BaseModel):
     grating: GmosNorthGrating
-    filter: Optional[GmosNorthFilter]
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
     fpu: GmosNorthBuiltinFpu
-    central_wavelength: (
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength"
-    ) = Field(alias="centralWavelength")
+    central_wavelength: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
     wavelength_dithers: list[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitWavelengthDithers"
     ] = Field(alias="wavelengthDithers")
@@ -473,9 +473,9 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(Base
     y_bin: GmosBinning = Field(alias="yBin")
     amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
     roi: GmosRoi
-    exposure_time_mode: (
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode"
-    ) = Field(alias="exposureTimeMode")
+    exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
     offsets: list[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets"
     ]
@@ -545,11 +545,11 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffse
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(BaseModel):
     grating: GmosSouthGrating
-    filter: Optional[GmosSouthFilter]
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
     fpu: GmosSouthBuiltinFpu
-    central_wavelength: (
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength"
-    ) = Field(alias="centralWavelength")
+    central_wavelength: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
     wavelength_dithers: list[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitWavelengthDithers"
     ] = Field(alias="wavelengthDithers")
@@ -557,9 +557,9 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(Base
     y_bin: GmosBinning = Field(alias="yBin")
     amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
     roi: GmosRoi
-    exposure_time_mode: (
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode"
-    ) = Field(alias="exposureTimeMode")
+    exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
     offsets: list[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets"
     ]

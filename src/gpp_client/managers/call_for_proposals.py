@@ -86,7 +86,7 @@ class CallForProposalsManager(BaseManager):
             cls=CallForProposalsPropertiesInput,
         )
 
-        input_data = CreateCallForProposalsInput(set=properties)
+        input_data = CreateCallForProposalsInput(set_=properties)
 
         fields = Mutation.create_call_for_proposals(input=input_data).fields(
             CreateCallForProposalsResultFields.call_for_proposals().fields(
@@ -149,7 +149,7 @@ class CallForProposalsManager(BaseManager):
         )
 
         input_data = UpdateCallsForProposalsInput(
-            set=properties,
+            set_=properties,
             where=where,
             limit=limit,
             include_deleted=include_deleted,
@@ -364,7 +364,7 @@ class CallForProposalsManager(BaseManager):
         return (
             CallForProposalsFields.id,
             CallForProposalsFields.title,
-            CallForProposalsFields.type,
+            CallForProposalsFields.type_,
             CallForProposalsFields.semester,
             CallForProposalsFields.active().fields(
                 DateIntervalFields.start, DateIntervalFields.end
