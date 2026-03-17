@@ -57,16 +57,6 @@ testpaths = ["tests"]
 addopts = "-r A -v -n auto"
 asyncio_default_fixture_loop_scope = "session"
 
-[tool.ariadne-codegen]
-client_name = "_GPPClient"
-client_file_name = "_client"
-enable_custom_operations = true
-target_package_name = "api"
-target_package_path = "src/gpp_client"
-convert_to_snake_case = true
-plugins = ["custom_plugins.AliasStrWrapperPlugin"]
-queries_path = "src/queries"
-
 [tool.numpydoc_validation]
 checks = [
     "all",  # All except the rules listed below.
@@ -103,10 +93,6 @@ docs = [
     "sphinx-autobuild>=2024.10.3",
     "sphinx-copybutton>=0.5.2",
     "sphinxcontrib-typer>=0.7.2",
-]
-schema = [
-    "aiohttp>=3.13.3",
-    "gql>=3.5.0,<4.0.0",
 ]
 
 [project.urls]

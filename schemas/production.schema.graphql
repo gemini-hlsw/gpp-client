@@ -63,7 +63,7 @@ enum ProposalStatus {
 }
 
 """Email address, matching ^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"""
-scalar EmailAddress
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 
 """AtomEvent creation parameters."""
 input AddAtomEventInput {

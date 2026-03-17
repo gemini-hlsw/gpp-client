@@ -45,10 +45,27 @@ class _Defaults:
 
     @property
     def schema(self) -> Path:
+        """
+        Get the path to the GraphQL schema file for the specified environment.
+
+        Returns
+        -------
+        Path
+            The path to the GraphQL schema file for the specified environment.
+        """
+
         return Path(self.schema_dir) / f"{self.env.value.lower()}.schema.graphql"
 
     @property
     def output_dir(self) -> Path:
+        """
+        Get the output directory for the generated client code.
+
+        Returns
+        -------
+        Path
+            The path to the output directory for the generated client code.
+        """
         return Path(self.target_package_path) / self.target_package_name
 
     def to_toml(self) -> str:
