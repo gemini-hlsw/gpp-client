@@ -1,6 +1,7 @@
 __all__ = ["ProgramCoordinator"]
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 
@@ -217,3 +218,23 @@ class ProgramCoordinator(BaseCoordinator):
             del program["all_group_elements"]  # remove flatten tree
 
         return programs
+
+    async def get_all_reference_labels(
+        self, date: str | None = None
+    ) -> list[tuple[str, str]]:
+        """
+
+        Parameters
+        ----------
+        date: str | None
+            change the activeEnd parameter date. by default is the today date.
+
+        Returns
+        -------
+        list[tuple[str, str]]
+            return a list of tuples containing the program reference label and the id.
+        """
+
+        today = datetime.today().date().isoformat() if date is None else date
+        response = await self.client._client.get_scheduler_all_programs_id(today=today)
+        return [(p.reference.label, p.id) for p in response.programs.matches]

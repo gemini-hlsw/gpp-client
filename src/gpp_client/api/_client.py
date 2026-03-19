@@ -440,18 +440,24 @@ class _GPPClient(AsyncBaseClient):
         return GetSchedulerPrograms.model_validate(data)
 
     async def get_scheduler_all_programs_id(
-        self, **kwargs: Any
+        self, today: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
     ) -> GetSchedulerAllProgramsId:
         query = gql("""
-            query GetSchedulerAllProgramsId {
-              programs(WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
+            query GetSchedulerAllProgramsId($today: Date) {
+              programs(
+                WHERE: {activeEnd: {GTE: $today}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
+              ) {
                 matches {
+                  reference {
+                    __typename
+                    label
+                  }
                   id
                 }
               }
             }
             """)
-        variables: dict[str, object] = {}
+        variables: dict[str, object] = {"today": today}
         response = await self.execute(
             query=query,
             operation_name="GetSchedulerAllProgramsId",
