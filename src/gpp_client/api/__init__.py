@@ -223,6 +223,7 @@ from .get_scheduler_all_programs_id import (
     GetSchedulerAllProgramsId,
     GetSchedulerAllProgramsIdPrograms,
     GetSchedulerAllProgramsIdProgramsMatches,
+    GetSchedulerAllProgramsIdProgramsMatchesReference,
 )
 from .get_scheduler_programs import (
     GetSchedulerPrograms,
@@ -810,6 +811,7 @@ __all__ = [
     "GetSchedulerAllProgramsId",
     "GetSchedulerAllProgramsIdPrograms",
     "GetSchedulerAllProgramsIdProgramsMatches",
+    "GetSchedulerAllProgramsIdProgramsMatchesReference",
     "GetSchedulerPrograms",
     "GetSchedulerProgramsPrograms",
     "GetSchedulerProgramsProgramsMatches",
