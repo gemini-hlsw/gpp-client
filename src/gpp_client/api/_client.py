@@ -445,7 +445,7 @@ class _GPPClient(AsyncBaseClient):
         query = gql("""
             query GetSchedulerAllProgramsId($today: Date) {
               programs(
-                WHERE: {activeEnd: {GTE: $today}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
+                WHERE: {activeEnd: {GTE: $today}, activeStart: {LT: $today}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
               ) {
                 matches {
                   reference {

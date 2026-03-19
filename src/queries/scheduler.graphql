@@ -81,6 +81,7 @@ query GetSchedulerAllProgramsId($today: Date) {
   programs(
     WHERE: {
       activeEnd: { GTE: $today }
+      activeStart: { LT: $today }
       OR: [
         { proposalStatus: { EQ: ACCEPTED } },
         { type: { IN: [CALIBRATION, ENGINEERING] } }
