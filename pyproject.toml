@@ -31,7 +31,7 @@ dependencies = [
     "typer>=0.21.1",
     "websockets>=14.2",
 ]
-version = "26.3.1"
+version = "26.3.2"
 keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
