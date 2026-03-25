@@ -163,7 +163,13 @@ from .custom_typing_fields import (
     HasPartnerGraphQLField,
     HasUnspecifiedPartnerGraphQLField,
     HourAngleRangeGraphQLField,
+    Igrins2AtomGraphQLField,
+    Igrins2DynamicGraphQLField,
+    Igrins2ExecutionConfigGraphQLField,
+    Igrins2ExecutionSequenceGraphQLField,
     Igrins2LongSlitGraphQLField,
+    Igrins2StaticGraphQLField,
+    Igrins2StepGraphQLField,
     ImagingConfigOptionGmosNorthGraphQLField,
     ImagingConfigOptionGmosSouthGraphQLField,
     ImagingConfigOptionGraphQLField,
@@ -173,6 +179,7 @@ from .custom_typing_fields import (
     ItcGmosSouthImagingGraphQLField,
     ItcGmosSouthImagingResultSetGraphQLField,
     ItcGraphQLField,
+    ItcIgrins2SpectroscopyGraphQLField,
     ItcResultGraphQLField,
     ItcResultSetGraphQLField,
     ItcSpectroscopyGraphQLField,
@@ -3277,6 +3284,12 @@ class ExecutionConfigFields(GraphQLField):
         `GMOS_SOUTH`."""
         return GmosSouthExecutionConfigFields("gmosSouth")
 
+    @classmethod
+    def igrins_2(cls) -> "Igrins2ExecutionConfigFields":
+        """IGRINS-2 execution config.  This will be null unless the `instrument` is
+        `IGRINS2`."""
+        return Igrins2ExecutionConfigFields("igrins2")
+
     def fields(
         self,
         *subfields: Union[
@@ -3284,6 +3297,7 @@ class ExecutionConfigFields(GraphQLField):
             "Flamingos2ExecutionConfigFields",
             "GmosNorthExecutionConfigFields",
             "GmosSouthExecutionConfigFields",
+            "Igrins2ExecutionConfigFields",
         ],
     ) -> "ExecutionConfigFields":
         """Subfields should come from the ExecutionConfigFields class"""
@@ -3302,6 +3316,11 @@ class ExecutionDigestFields(GraphQLField):
     def setup(cls) -> "SetupTimeFields":
         """Setup time calculations."""
         return SetupTimeFields("setup")
+
+    setup_count: "ExecutionDigestGraphQLField" = ExecutionDigestGraphQLField(
+        "setupCount"
+    )
+    "Estimated number of setups required to complete this observation."
 
     @classmethod
     def acquisition(cls) -> "SequenceDigestFields":
@@ -3802,6 +3821,19 @@ class Flamingos2LongSlitFields(GraphQLField):
 
 class Flamingos2LongSlitAcquisitionFields(GraphQLField):
     """Flamingos2 Long Slit acquisition settings."""
+
+    filter_: "Flamingos2LongSlitAcquisitionGraphQLField" = (
+        Flamingos2LongSlitAcquisitionGraphQLField("filter")
+    )
+    "The filter that will be used in the acquisition sequence.  This will be the\n`explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "Flamingos2LongSlitAcquisitionGraphQLField" = (
+        Flamingos2LongSlitAcquisitionGraphQLField("defaultFilter")
+    )
+    "The filter that will be used by default, if an explicit acquisition filter was\nnot specified.  The default is calculated as the acquisition filter closest in\nwavelength to the observation's science filter."
+    explicit_filter: "Flamingos2LongSlitAcquisitionGraphQLField" = (
+        Flamingos2LongSlitAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified filter to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
@@ -5781,6 +5813,114 @@ class HourAngleRangeFields(GraphQLField):
         return self
 
 
+class Igrins2AtomFields(GraphQLField):
+    """IGRINS-2 atom, a collection of steps that should be executed in their entirety"""
+
+    id: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("id")
+    "Atom id"
+    description: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("description")
+    "Atom description, if any"
+    observe_class: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("observeClass")
+    "Observe class for this atom"
+
+    @classmethod
+    def steps(cls) -> "Igrins2StepFields":
+        """Individual steps that comprise the atom"""
+        return Igrins2StepFields("steps")
+
+    def fields(
+        self, *subfields: Union[Igrins2AtomGraphQLField, "Igrins2StepFields"]
+    ) -> "Igrins2AtomFields":
+        """Subfields should come from the Igrins2AtomFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2AtomFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2DynamicFields(GraphQLField):
+    """IGRINS-2 dynamic step configuration"""
+
+    @classmethod
+    def exposure(cls) -> "TimeSpanFields":
+        """IGRINS-2 exposure time"""
+        return TimeSpanFields("exposure")
+
+    def fields(
+        self, *subfields: Union[Igrins2DynamicGraphQLField, "TimeSpanFields"]
+    ) -> "Igrins2DynamicFields":
+        """Subfields should come from the Igrins2DynamicFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2DynamicFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2ExecutionConfigFields(GraphQLField):
+    """IGRINS-2 Execution Config"""
+
+    @classmethod
+    def static(cls) -> "Igrins2StaticFields":
+        """IGRINS-2 static configuration"""
+        return Igrins2StaticFields("static")
+
+    @classmethod
+    def science(cls) -> "Igrins2ExecutionSequenceFields":
+        """IGRINS-2 science execution"""
+        return Igrins2ExecutionSequenceFields("science")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Igrins2ExecutionConfigGraphQLField,
+            "Igrins2ExecutionSequenceFields",
+            "Igrins2StaticFields",
+        ],
+    ) -> "Igrins2ExecutionConfigFields":
+        """Subfields should come from the Igrins2ExecutionConfigFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2ExecutionConfigFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2ExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
+    @classmethod
+    def next_atom(cls) -> "Igrins2AtomFields":
+        """Next atom to execute."""
+        return Igrins2AtomFields("nextAtom")
+
+    @classmethod
+    def possible_future(cls) -> "Igrins2AtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
+        return Igrins2AtomFields("possibleFuture")
+
+    has_more: "Igrins2ExecutionSequenceGraphQLField" = (
+        Igrins2ExecutionSequenceGraphQLField("hasMore")
+    )
+    "Whether there are additional atoms beyond those listed in possibleFuture."
+
+    def fields(
+        self,
+        *subfields: Union[Igrins2ExecutionSequenceGraphQLField, "Igrins2AtomFields"],
+    ) -> "Igrins2ExecutionSequenceFields":
+        """Subfields should come from the Igrins2ExecutionSequenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2ExecutionSequenceFields":
+        self._alias = alias
+        return self
+
+
 class Igrins2LongSlitFields(GraphQLField):
     """IGRINS-2 Long Slit mode"""
 
@@ -5814,14 +5954,105 @@ class Igrins2LongSlitFields(GraphQLField):
     )
     "Optional explicitly specified save SVC images setting. If set it overrides\nthe default."
 
+    @classmethod
+    def offsets(cls) -> "OffsetFields":
+        """Spatial offsets, either explicitly specified in explicitOffsets or else
+        taken from defaultOffsets"""
+        return OffsetFields("offsets")
+
+    @classmethod
+    def default_offsets(cls) -> "OffsetFields":
+        """Default spatial offsets
+        (ABBA pattern, q = -1.25, +1.25, +1.25, -1.25 arcsec) for NodAlongSlit, or
+        (p = 0, q = 0), (p = 10, q = 10), (p = 0, q = 0) for NodToSky."""
+        return OffsetFields("defaultOffsets")
+
+    @classmethod
+    def explicit_offsets(cls) -> "OffsetFields":
+        """Optional explicitly specified spatial offsets. If set, overrides the default."""
+        return OffsetFields("explicitOffsets")
+
     def fields(
-        self, *subfields: Union[Igrins2LongSlitGraphQLField, "ExposureTimeModeFields"]
+        self,
+        *subfields: Union[
+            Igrins2LongSlitGraphQLField, "ExposureTimeModeFields", "OffsetFields"
+        ],
     ) -> "Igrins2LongSlitFields":
         """Subfields should come from the Igrins2LongSlitFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "Igrins2LongSlitFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2StaticFields(GraphQLField):
+    """IGRINS-2 static configuration"""
+
+    save_svc_images: "Igrins2StaticGraphQLField" = Igrins2StaticGraphQLField(
+        "saveSVCImages"
+    )
+    "Whether to save SVC images."
+    offset_mode: "Igrins2StaticGraphQLField" = Igrins2StaticGraphQLField("offsetMode")
+    "Offset mode."
+
+    def fields(self, *subfields: Igrins2StaticGraphQLField) -> "Igrins2StaticFields":
+        """Subfields should come from the Igrins2StaticFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2StaticFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2StepFields(GraphQLField):
+    """IGRINS-2 step with potential breakpoint"""
+
+    @classmethod
+    def instrument_config(cls) -> "Igrins2DynamicFields":
+        """Instrument configuration for this step"""
+        return Igrins2DynamicFields("instrumentConfig")
+
+    id: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("id")
+    "Step id"
+    breakpoint: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
+
+    @classmethod
+    def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
+        return StepConfigInterface("stepConfig")
+
+    @classmethod
+    def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
+        return TelescopeConfigFields("telescopeConfig")
+
+    @classmethod
+    def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
+        return StepEstimateFields("estimate")
+
+    observe_class: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("observeClass")
+    "Observe class for this step"
+
+    def fields(
+        self,
+        *subfields: Union[
+            Igrins2StepGraphQLField,
+            "Igrins2DynamicFields",
+            "StepConfigInterface",
+            "StepEstimateFields",
+            "TelescopeConfigFields",
+        ],
+    ) -> "Igrins2StepFields":
+        """Subfields should come from the Igrins2StepFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2StepFields":
         self._alias = alias
         return self
 
@@ -6067,6 +6298,31 @@ class ItcGmosSouthImagingResultSetFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ItcGmosSouthImagingResultSetFields":
+        self._alias = alias
+        return self
+
+
+class ItcIgrins2SpectroscopyFields(GraphQLField):
+    """ITC results for IGRINS-2 spectroscopy observations (no acquisition)."""
+
+    itc_type: "ItcIgrins2SpectroscopyGraphQLField" = ItcIgrins2SpectroscopyGraphQLField(
+        "itcType"
+    )
+    "The type of the Itc results."
+
+    @classmethod
+    def spectroscopy_science(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("spectroscopyScience")
+
+    def fields(
+        self,
+        *subfields: Union[ItcIgrins2SpectroscopyGraphQLField, "ItcResultSetFields"],
+    ) -> "ItcIgrins2SpectroscopyFields":
+        """Subfields should come from the ItcIgrins2SpectroscopyFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcIgrins2SpectroscopyFields":
         self._alias = alias
         return self
 

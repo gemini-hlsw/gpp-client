@@ -979,6 +979,42 @@ class Flamingos2DynamicGraphQLField(GraphQLField):
         return self
 
 
+class Igrins2ExecutionConfigGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2ExecutionConfigGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2ExecutionSequenceGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2ExecutionSequenceGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2StaticGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2StaticGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2DynamicGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2DynamicGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2AtomGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2AtomGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Igrins2StepGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2StepGraphQLField":
+        self._alias = alias
+        return self
+
+
 class Flamingos2FpuMaskGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2FpuMaskGraphQLField":
         self._alias = alias
@@ -1257,6 +1293,12 @@ class ItcGmosSouthImagingGraphQLField(GraphQLField):
 
 class ItcSpectroscopyGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcSpectroscopyGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcIgrins2SpectroscopyGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcIgrins2SpectroscopyGraphQLField":
         self._alias = alias
         return self
 

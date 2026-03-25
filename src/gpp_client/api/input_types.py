@@ -2302,6 +2302,10 @@ class Flamingos2LongSlitAcquisitionInput(BaseModel):
     """Flamingos2 Long Slit acquisition input parameters.  When specified, these override
     default values."""
 
+    explicit_filter: Optional[Flamingos2Filter] = Field(
+        alias=str("explicitFilter"), default=None
+    )
+    "An explicit acquisition filter to use instead of the default.  The `explicitFilter`\nmay be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,\nthe filter that will be used for the acquisition sequence is the acquisition filter closest to\nthe science filter wavelength.\nAllowed filters are J, H and K_SHORT."
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
@@ -2364,6 +2368,10 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("explicitSaveSVCImages"), default=None
     )
     "The save SVC images field may be unset by assigning a null value, or ignored\nby skipping it altogether"
+    explicit_offsets: Optional[list["OffsetInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
+    )
+    "Spatial offsets. May be unset by assigning null, or ignored by skipping.\nFor NodAlongSlit mode, all offsets must have P = 0."
 
 
 class GmosImagingVariantInput(BaseModel):
