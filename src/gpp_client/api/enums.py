@@ -762,6 +762,11 @@ class ImageQualityPreset(str, Enum):
     TWO_POINT_ZERO = "TWO_POINT_ZERO"
 
 
+class PortDisposition(str, Enum):
+    SIDE = "SIDE"
+    BOTTOM = "BOTTOM"
+
+
 class Instrument(str, Enum):
     ACQ_CAM = "ACQ_CAM"
     FLAMINGOS2 = "FLAMINGOS2"
@@ -781,6 +786,7 @@ class Instrument(str, Enum):
 
 class ItcType(str, Enum):
     SPECTROSCOPY = "SPECTROSCOPY"
+    IGRINS_2_SPECTROSCOPY = "IGRINS_2_SPECTROSCOPY"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
 
