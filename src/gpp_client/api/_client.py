@@ -352,7 +352,7 @@ class _GPPClient(AsyncBaseClient):
     ) -> GetSchedulerPrograms:
         query = gql("""
             query GetSchedulerPrograms($programsList: [ProgramId!]) {
-              programs(WHERE: {id: {IN: $programsList}, proposalStatus: {EQ: ACCEPTED}}) {
+              programs(WHERE: {id: {IN: $programsList}}) {
                 matches {
                   id
                   name

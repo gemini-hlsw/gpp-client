@@ -1,6 +1,6 @@
 query GetSchedulerPrograms($programsList: [ProgramId!]) {
   programs(
-    WHERE: { id: { IN: $programsList }, proposalStatus: { EQ: ACCEPTED } }
+    WHERE: { id: { IN: $programsList }}
   ) {
     matches {
       id
