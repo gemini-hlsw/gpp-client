@@ -1,39 +1,143 @@
+"""
+Tests for program CLI commands.
+"""
+
+from types import SimpleNamespace
+
 import pytest
 
-from gpp_client.cli.cli import app
 
-_RESOURCE_NAME = "program"
-_RESOURCE_PREFIX = "p"
-_TABLE_TITLE = "Programs"
+@pytest.mark.parametrize(
+    ("args", "method_name", "expected_kwargs"),
+    [
+        (
+            ["program", "get", "--program-id", "p-1"],
+            "get_by_id",
+            {"program_id": "p-1", "include_deleted": False},
+        ),
+        (
+            ["program", "get", "--program-reference", "prog-ref"],
+            "get_by_reference",
+            {"program_reference": "prog-ref", "include_deleted": False},
+        ),
+        (
+            ["program", "get", "--proposal-reference", "prop-ref"],
+            "get_by_proposal_reference",
+            {"proposal_reference": "prop-ref", "include_deleted": False},
+        ),
+        (
+            ["program", "get", "--program-id", "p-1", "--include-deleted"],
+            "get_by_id",
+            {"program_id": "p-1", "include_deleted": True},
+        ),
+    ],
+)
+def test_get_program_dispatches_correctly(
+    runner,
+    cli_app,
+    mocker,
+    dummy_async_client_factory,
+    args: list[str],
+    method_name: str,
+    expected_kwargs: dict[str, str | bool],
+) -> None:
+    """
+    Ensure program get dispatches correctly.
+    """
+    result_model = {"id": "p-1"}
+
+    program = SimpleNamespace(
+        get_by_id=mocker.AsyncMock(),
+        get_by_reference=mocker.AsyncMock(),
+        get_by_proposal_reference=mocker.AsyncMock(),
+    )
+    getattr(program, method_name).return_value = result_model
+
+    mocker.patch(
+        "gpp_client.cli.commands.program.GPPClient",
+        return_value=dummy_async_client_factory(program=program),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.program.output.json_pydantic"
+    )
+
+    result = runner.invoke(cli_app, args)
+
+    assert result.exit_code == 0
+    getattr(program, method_name).assert_called_once_with(**expected_kwargs)
+    json_pydantic_mock.assert_called_once_with(result_model)
 
 
-@pytest.fixture
-def resource_id(cli_runner, helpers) -> str:
-    """Fixture to extract the first resource ID from the CLI."""
-    result = cli_runner.invoke(app, [_RESOURCE_NAME, "list", "--limit", "1"])
-    assert result.exit_code == 0, result.stdout
-    resource_id = helpers.extract_first_resource_id(result.stdout, _RESOURCE_PREFIX)
-    if not resource_id:
-        pytest.skip(f"No {_RESOURCE_NAME} ID found in CLI output.")
-    return resource_id
+def test_get_program_fails_with_no_selector(runner, cli_app) -> None:
+    """
+    Ensure program get fails with no selector.
+    """
+    result = runner.invoke(cli_app, ["program", "get"])
+
+    assert result.exit_code != 0
+    assert "Exactly one selector is required" in result.output
 
 
-@pytest.mark.remote_data
-class TestObservation:
-    def test_get_all(self, cli_runner):
-        """Test listing multiple items."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "list", "--limit", "2"])
-        assert result.exit_code == 0
-        assert _TABLE_TITLE in result.stdout or "No items found." in result.stdout
+def test_get_program_fails_with_multiple_selectors(runner, cli_app) -> None:
+    """
+    Ensure program get fails with multiple selectors.
+    """
+    result = runner.invoke(
+        cli_app,
+        [
+            "program",
+            "get",
+            "--program-id",
+            "p-1",
+            "--program-reference",
+            "prog-ref",
+        ],
+    )
 
-    def test_get_by_id(self, resource_id, cli_runner):
-        """Test retrieving a single item by ID."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "get", resource_id])
-        assert result.exit_code == 0
-        assert resource_id in result.stdout
+    assert result.exit_code != 0
+    assert "Selectors are mutually exclusive" in result.output
 
-    def test_get_by_id_not_found(self, cli_runner):
-        """Test retrieving a non-existent item."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "get", "nonexistent"])
-        assert result.exit_code != 0
-        assert "Error:" in result.stdout
+
+def test_list_programs_dispatches_correctly(
+    runner,
+    cli_app,
+    mocker,
+    dummy_async_client_factory,
+) -> None:
+    """
+    Ensure program list dispatches correctly.
+    """
+    result_model = {"items": []}
+
+    program = SimpleNamespace(
+        get_all=mocker.AsyncMock(return_value=result_model),
+    )
+
+    mocker.patch(
+        "gpp_client.cli.commands.program.GPPClient",
+        return_value=dummy_async_client_factory(program=program),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.program.output.json_pydantic"
+    )
+
+    result = runner.invoke(
+        cli_app,
+        [
+            "program",
+            "list",
+            "--include-deleted",
+            "--offset",
+            "abc",
+            "--limit",
+            "10",
+        ],
+    )
+
+    assert result.exit_code == 0
+    program.get_all.assert_called_once_with(
+        include_deleted=True,
+        offset="abc",
+        limit=10,
+    )
+    json_pydantic_mock.assert_called_once_with(result_model)
