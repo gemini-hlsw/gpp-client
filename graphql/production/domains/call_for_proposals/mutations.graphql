@@ -1,0 +1,80 @@
+mutation createCallForProposals($properties: CallForProposalsPropertiesInput) {
+  createCallForProposals(input: { SET: $properties }) {
+    callForProposals {
+      ...CallForProposalsDetails
+    }
+  }
+}
+
+mutation updateCallsForProposals(
+  $properties: CallForProposalsPropertiesInput!
+  $where: WhereCallForProposals
+  $limit: NonNegInt
+  $includeDeleted: Boolean! = false
+) {
+  updateCallsForProposals(
+    input: {
+      SET: $properties
+      WHERE: $where
+      LIMIT: $limit
+      includeDeleted: $includeDeleted
+    }
+  ) {
+    hasMore
+    callsForProposals {
+      ...CallForProposalsDetails
+    }
+  }
+}
+
+mutation updateCallForProposalsById(
+  $callForProposalsId: CallForProposalsId!
+  $properties: CallForProposalsPropertiesInput!
+  $includeDeleted: Boolean! = false
+) {
+  updateCallsForProposals(
+    input: {
+      SET: $properties
+      WHERE: { id: { EQ: $callForProposalsId } }
+      LIMIT: 1
+      includeDeleted: $includeDeleted
+    }
+  ) {
+    hasMore
+    callsForProposals {
+      ...CallForProposalsDetails
+    }
+  }
+}
+
+mutation restoreCallForProposalsById($callForProposalsId: CallForProposalsId!) {
+  updateCallsForProposals(
+    input: {
+      SET: { existence: PRESENT }
+      WHERE: { id: { EQ: $callForProposalsId } }
+      LIMIT: 1
+      includeDeleted: true
+    }
+  ) {
+    hasMore
+    callsForProposals {
+      ...CallForProposalsDetails
+    }
+  }
+}
+
+mutation deleteCallForProposalsById($callForProposalsId: CallForProposalsId!) {
+  updateCallsForProposals(
+    input: {
+      SET: { existence: DELETED }
+      WHERE: { id: { EQ: $callForProposalsId } }
+      LIMIT: 1
+      includeDeleted: false
+    }
+  ) {
+    hasMore
+    callsForProposals {
+      ...CallForProposalsDetails
+    }
+  }
+}
