@@ -3,18 +3,15 @@
 Runs the code generator on a specified GraphQL schema.
 """
 
-import shutil
 import subprocess
-import tempfile
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import toml
 import typer
 
 from gpp_client.cli import output
-from gpp_client.config import GPPEnvironment
+from gpp_client.environment import GPPEnvironment
 
 app = typer.Typer(
     help="Run the code generator for a given GPP environment.",
@@ -22,71 +19,120 @@ app = typer.Typer(
 )
 
 
-@dataclass
-class _Defaults:
+def _load_codegen_config(toml_path: Path) -> dict[str, Any]:
     """
-    Configuration defaults for the code generator for a specific GPP environment.
+    Load an ariadne-codegen TOML configuration file.
+
+    Parameters
+    ----------
+    toml_path : Path
+        Path to the TOML configuration file.
+
+    Returns
+    -------
+    dict[str, Any]
+        Parsed TOML configuration.
     """
+    return toml.loads(toml_path.read_text(encoding="utf-8"))
 
-    # Settings for which environment to run codegen for.
-    env: GPPEnvironment
-    schema_dir: str = "schemas"
 
-    # Codegen settings.
-    target_package_path: str = "src/gpp_client"
-    target_package_name: str = "api"
-    client_name: str = "_GPPClient"
-    client_file_name: str = "_client"
-    queries_path: str = "src/queries"
-    plugins: tuple[str] = ("custom_plugins.AliasStrWrapperPlugin",)
-    enable_custom_operations: bool = True
-    convert_to_snake_case: bool = True
-    include_comments: str = "none"
+def _get_codegen_settings(config: dict[str, Any]) -> dict[str, Any]:
+    """
+    Return the ``tool.ariadne-codegen`` settings block.
 
-    @property
-    def schema(self) -> Path:
-        return Path(self.schema_dir) / f"{self.env.value.lower()}.schema.graphql"
+    Parameters
+    ----------
+    config : dict[str, Any]
+        Parsed TOML configuration.
 
-    @property
-    def output_dir(self) -> Path:
-        return Path(self.target_package_path) / self.target_package_name
+    Returns
+    -------
+    dict[str, Any]
+        Ariadne codegen settings.
 
-    def to_toml(self) -> str:
-        """
-        Construct a TOML config for ariadne-codegen.
+    Raises
+    ------
+    typer.Exit
+        Raised if the required settings block is missing.
+    """
+    try:
+        return config["tool"]["ariadne-codegen"]
+    except KeyError:
+        output.fail("Missing [tool.ariadne-codegen] section in codegen config.")
+        raise typer.Exit(code=1) from None
 
-        Returns
-        -------
-        str
-            The TOML configuration as a string.
 
-        Notes
-        -----
-        There is a bug in ariadne-codegen that does not import custom scalars properly in files other than 'input_types.py'. Filing an issue there and hopefully this can be added in the future.
+def _get_target_package_dir(
+    codegen_settings: dict[str, Any],
+) -> Path:
+    """
+    Resolve the generated package directory from codegen settings.
 
-        # "scalars": {
-        #     "Date": {"type": "datetime.date"},
-        #     "NonNegInt": {"type": "pydantic.types.NonNegativeInt"},
-        # },
-        """
-        return toml.dumps(
-            {
-                "tool": {
-                    "ariadne-codegen": {
-                        "schema_path": str(self.schema),
-                        "queries_path": str(self.queries_path),
-                        "target_package_path": str(self.target_package_path),
-                        "target_package_name": self.target_package_name,
-                        "client_name": self.client_name,
-                        "client_file_name": self.client_file_name,
-                        "plugins": list(self.plugins),
-                        "enable_custom_operations": self.enable_custom_operations,
-                        "convert_to_snake_case": self.convert_to_snake_case,
-                        "include_comments": self.include_comments,
-                    }
-                }
-            }
-        )
+    Parameters
+    ----------
+    toml_path : Path
+        Path to the TOML configuration file.
+    codegen_settings : dict[str, Any]
+        Ariadne codegen settings.
+
+    Returns
+    -------
+    Path
+        Absolute path to the generated package directory.
+
+    Raises
+    ------
+    typer.Exit
+        Raised if required package path settings are missing.
+    """
+    target_package_path = codegen_settings.get("target_package_path")
+    target_package_name = codegen_settings.get("target_package_name")
+
+    if not target_package_path:
+        output.fail("Missing 'target_package_path' in codegen config.")
+        raise typer.Exit(code=1)
+
+    if not target_package_name:
+        output.fail("Missing 'target_package_name' in codegen config.")
+        raise typer.Exit(code=1)
+
+    project_root = Path.cwd()
+    return (project_root / target_package_path / target_package_name).resolve()
+
+
+def _write_package_environment(
+    package_dir: Path,
+    env: GPPEnvironment,
+) -> None:
+    """
+    Write the package environment module into the generated package.
+
+    Parameters
+    ----------
+    package_dir : Path
+        Path to the generated package directory.
+    env : GPPEnvironment
+        Active package environment.
+
+    Raises
+    ------
+    typer.Exit
+        Raised if the target package directory does not exist.
+    """
+    if not package_dir.exists():
+        output.fail(f"Generated package directory not found at {package_dir}")
+        raise typer.Exit(code=1)
+
+    module_path = package_dir / "package_environment.py"
+    module_contents = f'''"""
+Package-level environment constant for generated client code.
+"""
+
+PACKAGE_ENVIRONMENT = "{env.value}"
+'''
+
+    module_path.write_text(module_contents, encoding="utf-8")
+    output.dim_info(f"Wrote package environment module to {module_path}")
 
 
 @app.command()
@@ -100,64 +146,35 @@ def main(
     Run the codegen for a specific GPP environment.
     """
     output.info(f"Running codegen for environment: {env.value}")
-
-    # Prepare the defaults.
-    defaults = _Defaults(env=env)
-    if defaults.schema and not defaults.schema.exists():
-        output.fail(
-            f"Schema file for environment {env.value} does not exist: {defaults.schema}"
-        )
+    toml_path = Path("graphql") / env.value.lower() / "ariadne-codegen.toml"
+    if not toml_path.exists():
+        output.fail(f"Codegen config file not found at {toml_path}")
         raise typer.Exit(code=1)
 
-    with tempfile.TemporaryDirectory() as tmp:
-        # Write the temporary TOML config file.
-        config_path = Path(tmp) / "codegen.toml"
-        config_path.write_text(defaults.to_toml())
-        output.info(f"Using temporary config file: {config_path}")
+    with output.status("Running codegen..."):
+        try:
+            process = subprocess.run(
+                [
+                    "ariadne-codegen",
+                    "--config",
+                    str(toml_path),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            output.dim_info(process.stdout)
 
-        # Create backup of existing generated files.
-        api_dir = defaults.output_dir
-        backup_dir = api_dir.with_name(f"{api_dir.name}_backup")
+        except subprocess.CalledProcessError as exc:
+            output.fail(exc.stderr)
+            raise typer.Exit(code=1) from exc
 
-        # Remove stale backup first.
-        if backup_dir.exists():
-            shutil.rmtree(backup_dir)
+    config = _load_codegen_config(toml_path)
+    codegen_settings = _get_codegen_settings(config)
+    package_dir = _get_target_package_dir(codegen_settings)
+    _write_package_environment(package_dir, env)
 
-        if api_dir.exists():
-            output.info(f"Creating backup of existing generated client: {backup_dir}")
-            api_dir.rename(backup_dir)
-
-        with output.status("Running codegen..."):
-            try:
-                process = subprocess.run(
-                    [
-                        "ariadne-codegen",
-                        "--config",
-                        str(config_path),
-                    ],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
-                output.dim_info(process.stdout)
-                # Codegen succeeded, remove backup.
-                if backup_dir.exists():
-                    shutil.rmtree(backup_dir)
-
-            except subprocess.CalledProcessError as exc:
-                # Remove partial generated files.
-                output.warning("Codegen failed, restoring backup of existing client")
-                if api_dir.exists():
-                    shutil.rmtree(api_dir)
-
-                # Restore backup.
-                if backup_dir.exists():
-                    backup_dir.rename(api_dir)
-
-                output.fail(exc.stderr)
-                raise typer.Exit(code=1) from exc
-
-        output.success("Codegen completed successfully")
+    output.success("Codegen completed successfully")
 
 
 if __name__ == "__main__":
