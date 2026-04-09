@@ -1,10 +1,3 @@
-from gpp_client.client import GPPClient
-from gpp_client.director import GPPDirector
+from .client import GPPClient
 
-__all__ = ["GPPClient", "GPPDirector"]
-
-import logging
-
-logger = logging.getLogger(__name__)
-# Attach a null handler by default to avoid "No handler found" warnings.
-logger.addHandler(logging.NullHandler())
+__all__ = ["GPPClient"]
