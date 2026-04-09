@@ -1,0 +1,621 @@
+from typing import Any, Optional
+
+from .custom_fields import (
+    AsterismGroupSelectResultFields,
+    CallForProposalsFields,
+    CallsForProposalsSelectResultFields,
+    ConfigurationRequestSelectResultFields,
+    ConstraintSetGroupSelectResultFields,
+    DatasetChronicleEntrySelectResultFields,
+    DatasetFields,
+    DatasetSelectResultFields,
+    ExecutionConfigFields,
+    ExecutionEventSelectResultFields,
+    FilterTypeMetaFields,
+    GroupFields,
+    ImagingConfigOptionFields,
+    ObservationFields,
+    ObservationSelectResultFields,
+    ObservingModeGroupSelectResultFields,
+    ProgramFields,
+    ProgramNoteFields,
+    ProgramNoteSelectResultFields,
+    ProgramSelectResultFields,
+    ProgramUserSelectResultFields,
+    ProposalStatusMetaFields,
+    SpectroscopyConfigOptionFields,
+    TargetFields,
+    TargetGroupSelectResultFields,
+    TargetSelectResultFields,
+)
+from .custom_typing_fields import GraphQLField
+from .input_types import (
+    WhereCallForProposals,
+    WhereConfigurationRequest,
+    WhereDataset,
+    WhereDatasetChronicleEntry,
+    WhereExecutionEvent,
+    WhereImagingConfigOption,
+    WhereObservation,
+    WhereProgram,
+    WhereProgramNote,
+    WhereProgramUser,
+    WhereSpectroscopyConfigOption,
+    WhereTarget,
+)
+
+
+class Query:
+    @classmethod
+    def asterism_group(
+        cls,
+        include_deleted: bool,
+        *,
+        program_id: Optional[Any] = None,
+        proposal_reference: Optional[Any] = None,
+        program_reference: Optional[Any] = None,
+        where: Optional[WhereObservation] = None,
+        limit: Optional[Any] = None,
+    ) -> AsterismGroupSelectResultFields:
+        """Observations grouped by commonly held science asterisms. Identify the program
+        by specifying only one of programId, programReference, or proposalReference.
+        If more than one is provided, all must match.  If none are set, nothing will
+        match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programId": {"type": "ProgramId", "value": program_id},
+            "proposalReference": {
+                "type": "ProposalReferenceLabel",
+                "value": proposal_reference,
+            },
+            "programReference": {
+                "type": "ProgramReferenceLabel",
+                "value": program_reference,
+            },
+            "WHERE": {"type": "WhereObservation", "value": where},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return AsterismGroupSelectResultFields(
+            field_name="asterismGroup", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def call_for_proposals(cls, call_for_proposals_id: Any) -> CallForProposalsFields:
+        """Select a single Call for Proposals by id."""
+        arguments: dict[str, dict[str, Any]] = {
+            "callForProposalsId": {
+                "type": "CallForProposalsId!",
+                "value": call_for_proposals_id,
+            }
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return CallForProposalsFields(
+            field_name="callForProposals", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def calls_for_proposals(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereCallForProposals] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> CallsForProposalsSelectResultFields:
+        """Select all Calls for Proposals."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereCallForProposals", "value": where},
+            "OFFSET": {"type": "CallForProposalsId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return CallsForProposalsSelectResultFields(
+            field_name="callsForProposals", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def constraint_set_group(
+        cls,
+        include_deleted: bool,
+        *,
+        program_id: Optional[Any] = None,
+        proposal_reference: Optional[Any] = None,
+        program_reference: Optional[Any] = None,
+        where: Optional[WhereObservation] = None,
+        limit: Optional[Any] = None,
+    ) -> ConstraintSetGroupSelectResultFields:
+        """Observations grouped by commonly held constraints. Identify the program by
+        specifying only one of programId, programReference, or proposalReference.  If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programId": {"type": "ProgramId", "value": program_id},
+            "proposalReference": {
+                "type": "ProposalReferenceLabel",
+                "value": proposal_reference,
+            },
+            "programReference": {
+                "type": "ProgramReferenceLabel",
+                "value": program_reference,
+            },
+            "WHERE": {"type": "WhereObservation", "value": where},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ConstraintSetGroupSelectResultFields(
+            field_name="constraintSetGroup", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def dataset(
+        cls,
+        *,
+        dataset_id: Optional[Any] = None,
+        dataset_reference: Optional[Any] = None,
+    ) -> DatasetFields:
+        """Returns the dataset with the given id or reference, if any.  Identify the
+        dataset by specifying only one of datasetId or datasetReference. If more than
+        one is provided, all must match.  If neither are set, nothing will match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "datasetId": {"type": "DatasetId", "value": dataset_id},
+            "datasetReference": {
+                "type": "DatasetReferenceLabel",
+                "value": dataset_reference,
+            },
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DatasetFields(field_name="dataset", arguments=cleared_arguments)
+
+    @classmethod
+    def datasets(
+        cls,
+        *,
+        where: Optional[WhereDataset] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> DatasetSelectResultFields:
+        """Select all datasets associated with a step or observation"""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereDataset", "value": where},
+            "OFFSET": {"type": "DatasetId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DatasetSelectResultFields(
+            field_name="datasets", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def dataset_chronicle_entries(
+        cls,
+        *,
+        where: Optional[WhereDatasetChronicleEntry] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> DatasetChronicleEntrySelectResultFields:
+        """Select all dataset chronicle entries.  This will contain detailed information
+        about dataset creation and updates."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereDatasetChronicleEntry", "value": where},
+            "OFFSET": {"type": "ChronicleId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DatasetChronicleEntrySelectResultFields(
+            field_name="datasetChronicleEntries", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def events(
+        cls,
+        *,
+        where: Optional[WhereExecutionEvent] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ExecutionEventSelectResultFields:
+        """Selects the first `LIMIT` matching execution events based on the provided `WHERE` parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereExecutionEvent", "value": where},
+            "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ExecutionEventSelectResultFields(
+            field_name="events", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def execution_config(
+        cls,
+        *,
+        observation_id: Optional[Any] = None,
+        observation_reference: Optional[Any] = None,
+        future_limit: Optional[Any] = None,
+    ) -> ExecutionConfigFields:
+        """Full execution config, including static values and acquisition and science
+        sequences.  If a sequence cannot be generated for this observation, `null`
+        is returned along with warning messages."""
+        arguments: dict[str, dict[str, Any]] = {
+            "observationId": {"type": "ObservationId", "value": observation_id},
+            "observationReference": {
+                "type": "ObservationReferenceLabel",
+                "value": observation_reference,
+            },
+            "futureLimit": {"type": "NonNegInt", "value": future_limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ExecutionConfigFields(
+            field_name="executionConfig", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def filter_type_meta(cls) -> FilterTypeMetaFields:
+        """Metadata for `enum FilterType`"""
+        return FilterTypeMetaFields(field_name="filterTypeMeta")
+
+    @classmethod
+    def goa_data_download_access(cls, orcid_id: str) -> GraphQLField:
+        """Obtains a list of program references for which the user with ORCiD `orcidId`
+        has GOA data-download access privileges.  These will be those for which the
+        user is a ProgramUser of any role with the `hasDataAccess` flag set.
+
+        This query is for use by staff and the GOA and will fail for other users."""
+        arguments: dict[str, dict[str, Any]] = {
+            "orcidId": {"type": "String!", "value": orcid_id}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return GraphQLField(
+            field_name="goaDataDownloadAccess", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def group(cls, group_id: Any) -> GroupFields:
+        """Returns the group indicated by the given groupId, if found."""
+        arguments: dict[str, dict[str, Any]] = {
+            "groupId": {"type": "GroupId!", "value": group_id}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return GroupFields(field_name="group", arguments=cleared_arguments)
+
+    @classmethod
+    def observation(
+        cls,
+        *,
+        observation_id: Optional[Any] = None,
+        observation_reference: Optional[Any] = None,
+    ) -> ObservationFields:
+        """Returns the observation with the given id or reference, if any.  Identify the
+        observation by specifying only one of observationId or observationReference.
+        If more than one is provided, all must match.  If neither are set, nothing
+        will match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "observationId": {"type": "ObservationId", "value": observation_id},
+            "observationReference": {
+                "type": "ObservationReferenceLabel",
+                "value": observation_reference,
+            },
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ObservationFields(field_name="observation", arguments=cleared_arguments)
+
+    @classmethod
+    def observations(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereObservation] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ObservationSelectResultFields:
+        """Selects the first `LIMIT` matching observations based on the provided `WHERE` parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereObservation", "value": where},
+            "OFFSET": {"type": "ObservationId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ObservationSelectResultFields(
+            field_name="observations", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def configuration_requests(
+        cls,
+        *,
+        where: Optional[WhereConfigurationRequest] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ConfigurationRequestSelectResultFields:
+        """Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereConfigurationRequest", "value": where},
+            "OFFSET": {"type": "ConfigurationRequestId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ConfigurationRequestSelectResultFields(
+            field_name="configurationRequests", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def observing_mode_group(
+        cls,
+        include_deleted: bool,
+        *,
+        program_id: Optional[Any] = None,
+        proposal_reference: Optional[Any] = None,
+        program_reference: Optional[Any] = None,
+        where: Optional[WhereObservation] = None,
+        limit: Optional[Any] = None,
+    ) -> ObservingModeGroupSelectResultFields:
+        """Observations grouped by commonly held observing modes. Identify the program by
+        specifying only one of programId, programReference, or proposalReference.  If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programId": {"type": "ProgramId", "value": program_id},
+            "proposalReference": {
+                "type": "ProposalReferenceLabel",
+                "value": proposal_reference,
+            },
+            "programReference": {
+                "type": "ProgramReferenceLabel",
+                "value": program_reference,
+            },
+            "WHERE": {"type": "WhereObservation", "value": where},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ObservingModeGroupSelectResultFields(
+            field_name="observingModeGroup", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def program(
+        cls,
+        *,
+        program_id: Optional[Any] = None,
+        proposal_reference: Optional[Any] = None,
+        program_reference: Optional[Any] = None,
+    ) -> ProgramFields:
+        """Returns the program with the given id or reference, if any. Identify the
+        program by specifying only one of programId, programReference, or
+        proposalReference. If more than one is provided, all must match.  If none are
+        set, nothing will match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programId": {"type": "ProgramId", "value": program_id},
+            "proposalReference": {
+                "type": "ProposalReferenceLabel",
+                "value": proposal_reference,
+            },
+            "programReference": {
+                "type": "ProgramReferenceLabel",
+                "value": program_reference,
+            },
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ProgramFields(field_name="program", arguments=cleared_arguments)
+
+    @classmethod
+    def programs(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereProgram] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ProgramSelectResultFields:
+        """Selects the first `LIMIT` matching programs based on the provided `WHERE` parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereProgram", "value": where},
+            "OFFSET": {"type": "ProgramId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ProgramSelectResultFields(
+            field_name="programs", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def program_note(cls, program_note_id: Any) -> ProgramNoteFields:
+        """Selects the program note with the given id, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programNoteId": {"type": "ProgramNoteId!", "value": program_note_id}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ProgramNoteFields(field_name="programNote", arguments=cleared_arguments)
+
+    @classmethod
+    def program_notes(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereProgramNote] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ProgramNoteSelectResultFields:
+        """Selects the first `LIMIT` matching program notes based on the provided `WHERE`
+        parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereProgramNote", "value": where},
+            "OFFSET": {"type": "ProgramNoteId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ProgramNoteSelectResultFields(
+            field_name="programNotes", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def program_users(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereProgramUser] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> ProgramUserSelectResultFields:
+        """Selects the first `LIMIT` matching program users based on the provided `WHERE`
+        parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereProgramUser", "value": where},
+            "OFFSET": {"type": "UserId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ProgramUserSelectResultFields(
+            field_name="programUsers", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def proposal_status_meta(cls) -> ProposalStatusMetaFields:
+        """Metadata for `enum ProposalStatus"""
+        return ProposalStatusMetaFields(field_name="proposalStatusMeta")
+
+    @classmethod
+    def spectroscopy_config_options(
+        cls, *, where: Optional[WhereSpectroscopyConfigOption] = None
+    ) -> SpectroscopyConfigOptionFields:
+        """Spectroscopy configuration options matching the WHERE parameter."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereSpectroscopyConfigOption", "value": where}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return SpectroscopyConfigOptionFields(
+            field_name="spectroscopyConfigOptions", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def imaging_config_options(
+        cls, *, where: Optional[WhereImagingConfigOption] = None
+    ) -> ImagingConfigOptionFields:
+        """Imaging configuration options matching the WHERE parameter."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereImagingConfigOption", "value": where}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ImagingConfigOptionFields(
+            field_name="imagingConfigOptions", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def target(cls, target_id: Any) -> TargetFields:
+        """Retrieves the target with the given id, if it exists"""
+        arguments: dict[str, dict[str, Any]] = {
+            "targetId": {"type": "TargetId!", "value": target_id}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return TargetFields(field_name="target", arguments=cleared_arguments)
+
+    @classmethod
+    def target_group(
+        cls,
+        include_deleted: bool,
+        *,
+        program_id: Optional[Any] = None,
+        proposal_reference: Optional[Any] = None,
+        program_reference: Optional[Any] = None,
+        where: Optional[WhereObservation] = None,
+        limit: Optional[Any] = None,
+    ) -> TargetGroupSelectResultFields:
+        """Observations grouped by commonly held targets. Identify the program by
+        specifying only one of programId, programReference, or proposalReference. If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
+        arguments: dict[str, dict[str, Any]] = {
+            "programId": {"type": "ProgramId", "value": program_id},
+            "proposalReference": {
+                "type": "ProposalReferenceLabel",
+                "value": proposal_reference,
+            },
+            "programReference": {
+                "type": "ProgramReferenceLabel",
+                "value": program_reference,
+            },
+            "WHERE": {"type": "WhereObservation", "value": where},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return TargetGroupSelectResultFields(
+            field_name="targetGroup", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def targets(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereTarget] = None,
+        offset: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> TargetSelectResultFields:
+        """Selects the first `LIMIT` matching targets based on the provided `WHERE` parameter, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereTarget", "value": where},
+            "OFFSET": {"type": "TargetId", "value": offset},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return TargetSelectResultFields(
+            field_name="targets", arguments=cleared_arguments
+        )

@@ -1,0 +1,179 @@
+from typing import Any, Literal, Optional
+
+from pydantic import Field
+
+from .base_model import BaseModel
+from .enums import (
+    Existence,
+    ProgramType,
+    ProposalStatus,
+    ScienceBand,
+    ScienceSubtype,
+    TimeAccountingCategory,
+)
+
+
+class GetSchedulerPrograms(BaseModel):
+    programs: "GetSchedulerProgramsPrograms"
+
+
+class GetSchedulerProgramsPrograms(BaseModel):
+    matches: list["GetSchedulerProgramsProgramsMatches"]
+
+
+class GetSchedulerProgramsProgramsMatches(BaseModel):
+    id: Any
+    name: Optional[Any]
+    description: Optional[Any]
+    existence: Existence
+    type_: ProgramType = Field(alias="type")
+    reference: Optional["GetSchedulerProgramsProgramsMatchesReference"]
+    active: "GetSchedulerProgramsProgramsMatchesActive"
+    proposal_status: ProposalStatus = Field(alias="proposalStatus")
+    proposal: Optional["GetSchedulerProgramsProgramsMatchesProposal"]
+    allocations: list["GetSchedulerProgramsProgramsMatchesAllocations"]
+    time_charge: list["GetSchedulerProgramsProgramsMatchesTimeCharge"] = Field(
+        alias="timeCharge"
+    )
+    all_group_elements: list["GetSchedulerProgramsProgramsMatchesAllGroupElements"] = (
+        Field(alias="allGroupElements")
+    )
+
+
+class GetSchedulerProgramsProgramsMatchesReference(BaseModel):
+    typename__: Literal[
+        "CalibrationProgramReference",
+        "CommissioningProgramReference",
+        "EngineeringProgramReference",
+        "ExampleProgramReference",
+        "LibraryProgramReference",
+        "MonitoringProgramReference",
+        "ProgramReference",
+        "ScienceProgramReference",
+        "SystemProgramReference",
+    ] = Field(alias="__typename")
+    label: Any
+    type_: ProgramType = Field(alias="type")
+
+
+class GetSchedulerProgramsProgramsMatchesActive(BaseModel):
+    start: Any
+    end: Any
+
+
+class GetSchedulerProgramsProgramsMatchesProposal(BaseModel):
+    type_: "GetSchedulerProgramsProgramsMatchesProposalType" = Field(alias="type")
+    call: Optional["GetSchedulerProgramsProgramsMatchesProposalCall"]
+
+
+class GetSchedulerProgramsProgramsMatchesProposalType(BaseModel):
+    typename__: Literal[
+        "Classical",
+        "DemoScience",
+        "DirectorsTime",
+        "FastTurnaround",
+        "LargeProgram",
+        "PoorWeather",
+        "ProposalType",
+        "Queue",
+        "SystemVerification",
+    ] = Field(alias="__typename")
+    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
+
+
+class GetSchedulerProgramsProgramsMatchesProposalCall(BaseModel):
+    active: "GetSchedulerProgramsProgramsMatchesProposalCallActive"
+    semester: Any
+
+
+class GetSchedulerProgramsProgramsMatchesProposalCallActive(BaseModel):
+    start: Any
+    end: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllocations(BaseModel):
+    category: TimeAccountingCategory
+    duration: "GetSchedulerProgramsProgramsMatchesAllocationsDuration"
+    science_band: ScienceBand = Field(alias="scienceBand")
+
+
+class GetSchedulerProgramsProgramsMatchesAllocationsDuration(BaseModel):
+    hours: Any
+
+
+class GetSchedulerProgramsProgramsMatchesTimeCharge(BaseModel):
+    band: Optional[ScienceBand]
+    time: "GetSchedulerProgramsProgramsMatchesTimeChargeTime"
+
+
+class GetSchedulerProgramsProgramsMatchesTimeChargeTime(BaseModel):
+    program: "GetSchedulerProgramsProgramsMatchesTimeChargeTimeProgram"
+    total: "GetSchedulerProgramsProgramsMatchesTimeChargeTimeTotal"
+    non_charged: "GetSchedulerProgramsProgramsMatchesTimeChargeTimeNonCharged" = Field(
+        alias="nonCharged"
+    )
+
+
+class GetSchedulerProgramsProgramsMatchesTimeChargeTimeProgram(BaseModel):
+    hours: Any
+
+
+class GetSchedulerProgramsProgramsMatchesTimeChargeTimeTotal(BaseModel):
+    hours: Any
+
+
+class GetSchedulerProgramsProgramsMatchesTimeChargeTimeNonCharged(BaseModel):
+    hours: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElements(BaseModel):
+    parent_group_id: Optional[Any] = Field(alias="parentGroupId")
+    group: Optional["GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup"]
+    observation: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsObservation"
+    ]
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup(BaseModel):
+    id: Any
+    name: Optional[Any]
+    minimum_required: Optional[Any] = Field(alias="minimumRequired")
+    ordered: bool
+    parent_id: Optional[Any] = Field(alias="parentId")
+    parent_index: Any = Field(alias="parentIndex")
+    minimum_interval: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMinimumInterval"
+    ] = Field(alias="minimumInterval")
+    maximum_interval: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMaximumInterval"
+    ] = Field(alias="maximumInterval")
+    system: bool
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMinimumInterval(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMaximumInterval(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsObservation(BaseModel):
+    id: Any
+    group_id: Optional[Any] = Field(alias="groupId")
+
+
+GetSchedulerPrograms.model_rebuild()
+GetSchedulerProgramsPrograms.model_rebuild()
+GetSchedulerProgramsProgramsMatches.model_rebuild()
+GetSchedulerProgramsProgramsMatchesProposal.model_rebuild()
+GetSchedulerProgramsProgramsMatchesProposalCall.model_rebuild()
+GetSchedulerProgramsProgramsMatchesAllocations.model_rebuild()
+GetSchedulerProgramsProgramsMatchesTimeCharge.model_rebuild()
+GetSchedulerProgramsProgramsMatchesTimeChargeTime.model_rebuild()
+GetSchedulerProgramsProgramsMatchesAllGroupElements.model_rebuild()
+GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup.model_rebuild()

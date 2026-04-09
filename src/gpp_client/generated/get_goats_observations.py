@@ -1,0 +1,697 @@
+from typing import Annotated, Any, Literal, Optional, Union
+
+from pydantic import Field
+
+from .base_model import BaseModel
+from .enums import (
+    AttachmentType,
+    Band,
+    BrightnessIntegratedUnits,
+    CalculationState,
+    CloudExtinctionPreset,
+    CoolStarTemperature,
+    GalaxySpectrum,
+    GmosAmpReadMode,
+    GmosBinning,
+    GmosNorthBuiltinFpu,
+    GmosNorthFilter,
+    GmosNorthGrating,
+    GmosRoi,
+    GmosSouthBuiltinFpu,
+    GmosSouthFilter,
+    GmosSouthGrating,
+    HiiRegionSpectrum,
+    ImageQualityPreset,
+    Instrument,
+    ObservationValidationCode,
+    ObservationWorkflowState,
+    ObservingModeType,
+    PlanetaryNebulaSpectrum,
+    PlanetSpectrum,
+    PosAngleConstraintMode,
+    QuasarSpectrum,
+    ScienceBand,
+    ScienceMode,
+    SkyBackground,
+    StellarLibrarySpectrum,
+    TimingWindowInclusion,
+    WaterVapor,
+)
+
+
+class GetGOATSObservations(BaseModel):
+    observations: "GetGOATSObservationsObservations"
+
+
+class GetGOATSObservationsObservations(BaseModel):
+    matches: list["GetGOATSObservationsObservationsMatches"]
+    has_more: bool = Field(alias="hasMore")
+
+
+class GetGOATSObservationsObservationsMatches(BaseModel):
+    id: Any
+    reference: Optional["GetGOATSObservationsObservationsMatchesReference"]
+    instrument: Optional[Instrument]
+    title: Any
+    constraint_set: "GetGOATSObservationsObservationsMatchesConstraintSet" = Field(
+        alias="constraintSet"
+    )
+    workflow: Optional["GetGOATSObservationsObservationsMatchesWorkflow"]
+    attachments: list["GetGOATSObservationsObservationsMatchesAttachments"]
+    timing_windows: list["GetGOATSObservationsObservationsMatchesTimingWindows"] = (
+        Field(alias="timingWindows")
+    )
+    target_environment: "GetGOATSObservationsObservationsMatchesTargetEnvironment" = (
+        Field(alias="targetEnvironment")
+    )
+    pos_angle_constraint: "GetGOATSObservationsObservationsMatchesPosAngleConstraint" = Field(
+        alias="posAngleConstraint"
+    )
+    science_band: Optional[ScienceBand] = Field(alias="scienceBand")
+    observation_duration: Optional[
+        "GetGOATSObservationsObservationsMatchesObservationDuration"
+    ] = Field(alias="observationDuration")
+    observer_notes: Optional[Any] = Field(alias="observerNotes")
+    science_requirements: "GetGOATSObservationsObservationsMatchesScienceRequirements" = Field(
+        alias="scienceRequirements"
+    )
+    observing_mode: Optional["GetGOATSObservationsObservationsMatchesObservingMode"] = (
+        Field(alias="observingMode")
+    )
+    program: "GetGOATSObservationsObservationsMatchesProgram"
+
+
+class GetGOATSObservationsObservationsMatchesReference(BaseModel):
+    label: Any
+
+
+class GetGOATSObservationsObservationsMatchesConstraintSet(BaseModel):
+    image_quality: ImageQualityPreset = Field(alias="imageQuality")
+    cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
+    sky_background: SkyBackground = Field(alias="skyBackground")
+    water_vapor: WaterVapor = Field(alias="waterVapor")
+    elevation_range: "GetGOATSObservationsObservationsMatchesConstraintSetElevationRange" = Field(
+        alias="elevationRange"
+    )
+
+
+class GetGOATSObservationsObservationsMatchesConstraintSetElevationRange(BaseModel):
+    air_mass: Optional[
+        "GetGOATSObservationsObservationsMatchesConstraintSetElevationRangeAirMass"
+    ] = Field(alias="airMass")
+    hour_angle: Optional[
+        "GetGOATSObservationsObservationsMatchesConstraintSetElevationRangeHourAngle"
+    ] = Field(alias="hourAngle")
+
+
+class GetGOATSObservationsObservationsMatchesConstraintSetElevationRangeAirMass(
+    BaseModel
+):
+    min: Any
+    max: Any
+
+
+class GetGOATSObservationsObservationsMatchesConstraintSetElevationRangeHourAngle(
+    BaseModel
+):
+    min_hours: Any = Field(alias="minHours")
+    max_hours: Any = Field(alias="maxHours")
+
+
+class GetGOATSObservationsObservationsMatchesWorkflow(BaseModel):
+    state: CalculationState
+    value: "GetGOATSObservationsObservationsMatchesWorkflowValue"
+
+
+class GetGOATSObservationsObservationsMatchesWorkflowValue(BaseModel):
+    state: ObservationWorkflowState
+    valid_transitions: list[ObservationWorkflowState] = Field(alias="validTransitions")
+    validation_errors: list[
+        "GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors"
+    ] = Field(alias="validationErrors")
+
+
+class GetGOATSObservationsObservationsMatchesWorkflowValueValidationErrors(BaseModel):
+    code: ObservationValidationCode
+
+
+class GetGOATSObservationsObservationsMatchesAttachments(BaseModel):
+    id: Any
+    attachment_type: AttachmentType = Field(alias="attachmentType")
+    file_name: Any = Field(alias="fileName")
+    description: Optional[Any]
+    updated_at: Any = Field(alias="updatedAt")
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindows(BaseModel):
+    inclusion: TimingWindowInclusion
+    start_utc: Any = Field(alias="startUtc")
+    end: Optional[
+        Annotated[
+            Union[
+                "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt",
+                "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter",
+            ],
+            Field(discriminator="typename__"),
+        ]
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt(
+    BaseModel
+):
+    typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
+    at_utc: Any = Field(alias="atUtc")
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter(
+    BaseModel
+):
+    typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
+    after: "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterAfter"
+    repeat: Optional[
+        "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterAfter(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat(
+    BaseModel
+):
+    period: "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
+    times: Optional[Any]
+
+
+class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironment(BaseModel):
+    asterism: list["GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism"]
+    first_science_target: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget"
+    ] = Field(alias="firstScienceTarget")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism(BaseModel):
+    id: Any
+    name: Any
+    opportunity: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterismOpportunity"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterismOpportunity(
+    BaseModel
+):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget(
+    BaseModel
+):
+    id: Any
+    name: Any
+    opportunity: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetOpportunity"
+    ]
+    sidereal: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal"
+    ]
+    source_profile: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile" = Field(
+        alias="sourceProfile"
+    )
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetOpportunity(
+    BaseModel
+):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal(
+    BaseModel
+):
+    ra: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRa"
+    dec: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealDec"
+    proper_motion: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion"
+    ] = Field(alias="properMotion")
+    parallax: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealParallax"
+    ]
+    radial_velocity: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRadialVelocity"
+    ] = Field(alias="radialVelocity")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRa(
+    BaseModel
+):
+    hms: Any
+    hours: Any
+    degrees: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealDec(
+    BaseModel
+):
+    dms: Any
+    degrees: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion(
+    BaseModel
+):
+    ra: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotionRa"
+    dec: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotionDec"
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotionRa(
+    BaseModel
+):
+    milliarcseconds_per_year: Any = Field(alias="milliarcsecondsPerYear")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotionDec(
+    BaseModel
+):
+    milliarcseconds_per_year: Any = Field(alias="milliarcsecondsPerYear")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealParallax(
+    BaseModel
+):
+    milliarcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealRadialVelocity(
+    BaseModel
+):
+    kilometers_per_second: Any = Field(alias="kilometersPerSecond")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile(
+    BaseModel
+):
+    point: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePoint"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePoint(
+    BaseModel
+):
+    band_normalized: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized"
+    ] = Field(alias="bandNormalized")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized(
+    BaseModel
+):
+    brightnesses: list[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses"
+    ]
+    sed: Optional[
+        "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedBrightnesses(
+    BaseModel
+):
+    band: Band
+    value: Any
+    units: BrightnessIntegratedUnits
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed(
+    BaseModel
+):
+    black_body_temp_k: Optional[Any] = Field(alias="blackBodyTempK")
+    cool_star: Optional[CoolStarTemperature] = Field(alias="coolStar")
+    flux_densities: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities"
+        ]
+    ] = Field(alias="fluxDensities")
+    flux_densities_attachment: Optional[Any] = Field(alias="fluxDensitiesAttachment")
+    galaxy: Optional[GalaxySpectrum]
+    hii_region: Optional[HiiRegionSpectrum] = Field(alias="hiiRegion")
+    planet: Optional[PlanetSpectrum]
+    planetary_nebula: Optional[PlanetaryNebulaSpectrum] = Field(alias="planetaryNebula")
+    power_law: Optional[Any] = Field(alias="powerLaw")
+    quasar: Optional[QuasarSpectrum]
+    stellar_library: Optional[StellarLibrarySpectrum] = Field(alias="stellarLibrary")
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities(
+    BaseModel
+):
+    wavelength: "GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength"
+    density: Any
+
+
+class GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesPosAngleConstraint(BaseModel):
+    mode: PosAngleConstraintMode
+    angle: "GetGOATSObservationsObservationsMatchesPosAngleConstraintAngle"
+
+
+class GetGOATSObservationsObservationsMatchesPosAngleConstraintAngle(BaseModel):
+    degrees: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservationDuration(BaseModel):
+    seconds: Any
+    minutes: Any
+    hours: Any
+    iso: str
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirements(BaseModel):
+    mode: Optional[ScienceMode]
+    spectroscopy: Optional[
+        "GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopy"
+    ]
+    exposure_time_mode: Optional[
+        "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeMode"
+    ] = Field(alias="exposureTimeMode")
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopy(BaseModel):
+    wavelength: Optional[
+        "GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelength"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopyWavelength(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeMode(
+    BaseModel
+):
+    signal_to_noise: Optional[
+        "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignalToNoise(
+    BaseModel
+):
+    value: Any
+    at: "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignalToNoiseAt"
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignalToNoiseAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCount(
+    BaseModel
+):
+    time: "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCountAt"
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCountTime(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCountAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingMode(BaseModel):
+    instrument: Instrument
+    mode: ObservingModeType
+    gmos_north_long_slit: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit"
+    ] = Field(alias="gmosNorthLongSlit")
+    gmos_south_long_slit: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit"
+    ] = Field(alias="gmosSouthLongSlit")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(BaseModel):
+    grating: GmosNorthGrating
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
+    fpu: GmosNorthBuiltinFpu
+    central_wavelength: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    wavelength_dithers: list[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitWavelengthDithers"
+    ] = Field(alias="wavelengthDithers")
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    roi: GmosRoi
+    exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    offsets: list[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitWavelengthDithers(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode(
+    BaseModel
+):
+    signal_to_noise: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise(
+    BaseModel
+):
+    value: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoiseAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoiseAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount(
+    BaseModel
+):
+    time: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountTime(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCountAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(BaseModel):
+    grating: GmosSouthGrating
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
+    fpu: GmosSouthBuiltinFpu
+    central_wavelength: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    wavelength_dithers: list[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitWavelengthDithers"
+    ] = Field(alias="wavelengthDithers")
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    roi: GmosRoi
+    exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    offsets: list[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitWavelengthDithers(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode(
+    BaseModel
+):
+    signal_to_noise: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise(
+    BaseModel
+):
+    value: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoiseAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoiseAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount(
+    BaseModel
+):
+    time: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountAt"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountTime(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCountAt(
+    BaseModel
+):
+    nanometers: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesProgram(BaseModel):
+    allocations: list["GetGOATSObservationsObservationsMatchesProgramAllocations"]
+    time_charge: list["GetGOATSObservationsObservationsMatchesProgramTimeCharge"] = (
+        Field(alias="timeCharge")
+    )
+
+
+class GetGOATSObservationsObservationsMatchesProgramAllocations(BaseModel):
+    science_band: ScienceBand = Field(alias="scienceBand")
+    duration: "GetGOATSObservationsObservationsMatchesProgramAllocationsDuration"
+
+
+class GetGOATSObservationsObservationsMatchesProgramAllocationsDuration(BaseModel):
+    hours: Any
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeCharge(BaseModel):
+    band: Optional[ScienceBand]
+    time: "GetGOATSObservationsObservationsMatchesProgramTimeChargeTime"
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeChargeTime(BaseModel):
+    program: "GetGOATSObservationsObservationsMatchesProgramTimeChargeTimeProgram"
+
+
+class GetGOATSObservationsObservationsMatchesProgramTimeChargeTimeProgram(BaseModel):
+    hours: Any
+
+
+GetGOATSObservations.model_rebuild()
+GetGOATSObservationsObservations.model_rebuild()
+GetGOATSObservationsObservationsMatches.model_rebuild()
+GetGOATSObservationsObservationsMatchesConstraintSet.model_rebuild()
+GetGOATSObservationsObservationsMatchesConstraintSetElevationRange.model_rebuild()
+GetGOATSObservationsObservationsMatchesWorkflow.model_rebuild()
+GetGOATSObservationsObservationsMatchesWorkflowValue.model_rebuild()
+GetGOATSObservationsObservationsMatchesTimingWindows.model_rebuild()
+GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter.model_rebuild()
+GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironment.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSidereal.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSiderealProperMotion.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfile.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePoint.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalized.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSed.model_rebuild()
+GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTargetSourceProfilePointBandNormalizedSedFluxDensities.model_rebuild()
+GetGOATSObservationsObservationsMatchesPosAngleConstraint.model_rebuild()
+GetGOATSObservationsObservationsMatchesScienceRequirements.model_rebuild()
+GetGOATSObservationsObservationsMatchesScienceRequirementsSpectroscopy.model_rebuild()
+GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeSignalToNoise.model_rebuild()
+GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgram.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramAllocations.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramTimeCharge.model_rebuild()
+GetGOATSObservationsObservationsMatchesProgramTimeChargeTime.model_rebuild()
