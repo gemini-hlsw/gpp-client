@@ -10,8 +10,10 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.config import GPPDefaults, GPPEnvironment
-from gpp_client.credentials import EnvVarReader
+from gpp_client.environment import GPPEnvironment
+from gpp_client.exceptions import GPPAuthError
+from gpp_client.settings import GPPSettings
+from gpp_client.urls import get_graphql_url
 
 app = typer.Typer(
     help="Download the GraphQL schema for a given GPP environment.",
@@ -28,42 +30,26 @@ def main(
             case_sensitive=False,
         ),
     ],
-    output_dir: Annotated[
-        Path,
-        typer.Option(
-            "--output-dir",
-            "-o",
-            help="Directory where the schema file will be saved.",
-            exists=False,
-            file_okay=False,
-            dir_okay=True,
-        ),
-    ] = Path("schemas"),
 ) -> None:
     """
     Download the GraphQL schema for a specific environment.
     """
     output.info(f"Downloading schema for environment: {env.value}")
 
-    token = EnvVarReader.get_env_token(env)
-    if not token:
-        expected_key = GPPDefaults.env_var_env_tokens.get(env)
-        output.fail(
-            f"No token found for environment {env.value}. "
-            f"Make sure the environment variable '{expected_key}' is set."
-        )
+    settings = GPPSettings(environment_override=env)
+    try:
+        token = settings.resolved_token
+    except GPPAuthError as exc:
+        output.fail(str(exc))
         raise typer.Exit(code=1)
 
-    output.info("Token found in environment variables.")
-    url = GPPDefaults.url.get(env)
-    if not url:
-        output.fail(f"No URL defined for environment {env.value}")
-        raise typer.Exit(code=1)
+    url = get_graphql_url(settings.environment)
 
     output.info(f"Using URL: {url}")
 
+    output_dir = Path(f"graphql/{env.value.lower()}/")
     output_dir.mkdir(exist_ok=True)
-    output_file = output_dir / f"{env.value.lower()}.schema.graphql"
+    output_file = output_dir / "schema.graphql"
 
     cmd = [
         "gql-cli",
