@@ -1,0 +1,43 @@
+query GetObservationAttachmentsById($observationId: ObservationId!) {
+  observation(observationId: $observationId) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query GetObservationAttachmentsByReference(
+  $observationReference: ObservationReferenceLabel!
+) {
+  observation(observationReference: $observationReference) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query GetProgramAttachmentsById($programId: ProgramId!) {
+  program(programId: $programId) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query GetProgramAttachmentsByReference($programReference: ProgramReferenceLabel!) {
+  program(programReference: $programReference) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}
+
+query GetProgramAttachmentsByProposalReference(
+  $proposalReference: ProposalReferenceLabel!
+) {
+  program(proposalReference: $proposalReference) {
+    attachments {
+      ...AttachmentDetails
+    }
+  }
+}

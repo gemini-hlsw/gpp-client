@@ -1,0 +1,66 @@
+fragment ObservationCore on Observation {
+  id
+  existence
+  reference {
+    label
+  }
+  title
+  instrument
+  calibrationRole
+}
+
+fragment OriginalClonedObservationDetails on Observation {
+  id
+  existence
+  reference {
+    label
+  }
+}
+
+fragment TargetEnvironmentDetails on TargetEnvironment {
+  asterism {
+    name
+    sidereal {
+      ...SiderealTargetDetails
+    }
+    nonsidereal {
+      ...NonsiderealTargetDetails
+    }
+  }
+  explicitBase {
+    ra {
+      hms
+    }
+    dec {
+      dms
+    }
+  }
+}
+
+fragment ObservationDetails on Observation {
+  ...ObservationCore
+  observerNotes
+  subtitle
+  program {
+    ...ProgramCore
+  }
+  scienceRequirements {
+    ...ScienceRequirementsDetails
+  }
+  scienceBand
+  workflow {
+    ...WorkflowDetails
+  }
+  observingMode {
+    ...ObservingModeDetails
+  }
+  constraintSet {
+    ...ConstraintSetDetails
+  }
+  timingWindows {
+    ...TimingWindowDetails
+  }
+  targetEnvironment {
+    ...TargetEnvironmentDetails
+  }
+}

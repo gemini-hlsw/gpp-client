@@ -1,0 +1,283 @@
+query GetGOATSPrograms {
+  programs(includeDeleted: false, WHERE: { proposalStatus: { EQ: ACCEPTED } }) {
+    matches {
+      id
+      name
+      description
+      reference {
+        label
+      }
+      proposalStatus
+      type
+    }
+    hasMore
+  }
+}
+query GetGOATSObservations($programId: ProgramId!) {
+  observations(
+    includeDeleted: false
+    WHERE: { program: { id: { EQ: $programId }, proposalStatus: { EQ: ACCEPTED } } }
+  ) {
+    matches {
+      id
+      reference {
+        label
+      }
+      instrument
+      title
+      constraintSet {
+        imageQuality
+        cloudExtinction
+        skyBackground
+        waterVapor
+        elevationRange {
+          airMass {
+            min
+            max
+          }
+          hourAngle {
+            minHours
+            maxHours
+          }
+        }
+      }
+      workflow {
+        state
+        value {
+          state
+          validTransitions
+          validationErrors {
+            code
+          }
+        }
+      }
+      attachments {
+        id
+        attachmentType
+        fileName
+        description
+        updatedAt
+      }
+      timingWindows {
+        inclusion
+        startUtc
+        end {
+          ... on TimingWindowEndAt {
+            atUtc
+          }
+          ... on TimingWindowEndAfter {
+            after {
+              seconds
+            }
+            repeat {
+              period {
+                seconds
+              }
+              times
+            }
+          }
+        }
+      }
+      targetEnvironment {
+        asterism {
+          id
+          name
+          opportunity {
+            __typename
+          }
+        }
+        firstScienceTarget {
+          id
+          name
+          opportunity {
+            __typename
+          }
+          sidereal {
+            ra {
+              hms
+              hours
+              degrees
+            }
+            dec {
+              dms
+              degrees
+            }
+            properMotion {
+              ra {
+                milliarcsecondsPerYear
+              }
+              dec {
+                milliarcsecondsPerYear
+              }
+            }
+            parallax {
+              milliarcseconds
+            }
+            radialVelocity {
+              kilometersPerSecond
+            }
+          }
+          sourceProfile {
+            point {
+              bandNormalized {
+                brightnesses {
+                  band
+                  value
+                  units
+                }
+                sed {
+                  blackBodyTempK
+                  coolStar
+                  fluxDensities {
+                    wavelength {
+                      nanometers
+                    }
+                    density
+                  }
+                  fluxDensitiesAttachment
+                  galaxy
+                  hiiRegion
+                  planet
+                  planetaryNebula
+                  powerLaw
+                  quasar
+                  stellarLibrary
+                }
+              }
+            }
+          }
+        }
+      }
+      posAngleConstraint {
+        mode
+        angle {
+          degrees
+        }
+      }
+      scienceBand
+      observationDuration {
+        seconds
+        minutes
+        hours
+        iso
+      }
+      observerNotes
+      scienceRequirements {
+        mode
+        spectroscopy {
+          wavelength {
+            nanometers
+          }
+        }
+        exposureTimeMode {
+          signalToNoise {
+            value
+            at {
+              nanometers
+            }
+          }
+          timeAndCount {
+            time {
+              seconds
+            }
+            count
+            at {
+              nanometers
+            }
+          }
+        }
+      }
+      observingMode {
+        instrument
+        mode
+        gmosNorthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+          wavelengthDithers {
+            nanometers
+          }
+          xBin
+          yBin
+          ampReadMode
+          roi
+          exposureTimeMode {
+            signalToNoise {
+              value
+              at {
+                nanometers
+              }
+            }
+            timeAndCount {
+              time {
+                seconds
+              }
+              count
+              at {
+                nanometers
+              }
+            }
+          }
+          offsets {
+            arcseconds
+          }
+        }
+        gmosSouthLongSlit {
+          grating
+          filter
+          fpu
+          centralWavelength {
+            nanometers
+          }
+          wavelengthDithers {
+            nanometers
+          }
+          xBin
+          yBin
+          ampReadMode
+          roi
+          exposureTimeMode {
+            signalToNoise {
+              value
+              at {
+                nanometers
+              }
+            }
+            timeAndCount {
+              time {
+                seconds
+              }
+              count
+              at {
+                nanometers
+              }
+            }
+          }
+          offsets {
+            arcseconds
+          }
+        }
+      }
+      program {
+        allocations {
+          scienceBand
+          duration {
+            hours
+          }
+        }
+        timeCharge {
+          band
+          time {
+            program {
+              hours
+            }
+          }
+        }
+      }
+    }
+    hasMore
+  }
+}

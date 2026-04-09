@@ -1,0 +1,28 @@
+fragment WorkflowCore on CalculatedObservationWorkflow {
+  state
+}
+
+fragment WorkflowDetails on CalculatedObservationWorkflow {
+  ...WorkflowCore
+  value {
+    state
+    validTransitions
+    validationErrors {
+      code
+      messages
+    }
+  }
+}
+
+fragment ObservationWorkflowCore on ObservationWorkflow {
+  state
+}
+
+fragment ObservationWorkflowDetails on ObservationWorkflow {
+  ...ObservationWorkflowCore
+  validTransitions
+  validationErrors {
+    code
+    messages
+  }
+}

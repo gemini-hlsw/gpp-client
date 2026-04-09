@@ -1,0 +1,11 @@
+[tool.ariadne-codegen]
+schema_path = "graphql/production/schema.graphql"
+queries_path = "graphql/production/domains/"
+target_package_path = "src/gpp_client"
+target_package_name = "generated"
+client_name = "GraphQLClient"
+client_file_name = "client"
+plugins = ["custom_plugins.AliasStrWrapperPlugin"]
+enable_custom_operations = true
+convert_to_snake_case = true
+include_comments = "none"

@@ -1,0 +1,17 @@
+fragment CallForProposalsCore on CallForProposals {
+  id
+  title
+}
+
+fragment CallForProposalsDetails on CallForProposals {
+  ...CallForProposalsCore
+  type
+  semester
+  active {
+    start
+    end
+  }
+  submissionDeadlineDefault
+  instruments
+  existence
+}

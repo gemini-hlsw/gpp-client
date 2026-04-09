@@ -1,0 +1,9 @@
+fragment AttachmentDetails on Attachment {
+  id
+  fileName
+  attachmentType
+  fileSize
+  checked
+  description
+  updatedAt
+}
