@@ -1,0 +1,102 @@
+"""
+REST API client for non-GraphQL requests.
+"""
+
+__all__ = ["RESTClient"]
+
+import asyncio
+import logging
+import ssl
+
+import aiohttp
+import certifi
+
+logger = logging.getLogger(__name__)
+
+
+class RESTClient:
+    """
+    REST API client to non-GraphQL requests that help with the function of managers and
+    coordinators.
+
+    Parameters
+    ----------
+    base_url : str
+        Base URL of the REST API. Derived from GPPClient base_url.
+    gpp_token : str
+        GPP token to authenticate against the REST API. Same as GPPClient.
+    timeout : float
+        Timeout for REST API requests in seconds.
+    """
+
+    _DEFAULT_TIMEOUT = 30.0  # Seconds.
+
+    def __init__(
+        self, base_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
+    ) -> None:
+        self.base_url = base_url
+        self.gpp_token = gpp_token
+        self._timeout = timeout
+
+        self._session: aiohttp.ClientSession | None = None
+        self._lock = asyncio.Lock()
+
+    def _resolve_headers(self) -> dict[str, str]:
+        """
+        Resolve the headers for the REST API requests.
+
+        Returns
+        -------
+        dict[str, str]
+            Headers dictionary.
+        """
+        headers = {
+            "Content-Type": "text/plain",
+            "Authorization": f"Bearer {self.gpp_token}",
+        }
+        return headers
+
+    def _create_session(self) -> aiohttp.ClientSession:
+        """
+        Create a new aiohttp client session.
+
+        Returns
+        -------
+        aiohttp.ClientSession
+            Configured aiohttp client session.
+        """
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        return aiohttp.ClientSession(
+            base_url=self.base_url,
+            timeout=aiohttp.ClientTimeout(total=self._timeout),
+            connector=connector,
+            headers=self._resolve_headers(),
+        )
+
+    async def get_session(self) -> aiohttp.ClientSession:
+        """
+        Get or create an ``aiohttp.ClientSession`` for making REST API requests.
+
+        Returns
+        -------
+        aiohttp.ClientSession
+            The aiohttp ClientSession instance.
+        """
+        async with self._lock:
+            if self._session is None or self._session.closed:
+                self._session = self._create_session()
+            return self._session
+
+    async def close(self) -> None:
+        """
+        Close the session if it exists and is not already closed.
+        """
+        if self._session and not self._session.closed:
+            await self._session.close()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
