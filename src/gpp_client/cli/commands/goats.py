@@ -1,53 +1,56 @@
+"""
+GOATS CLI commands.
+"""
+
+__all__ = ["goats_app"]
+
 from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.json import JSON
 
+from gpp_client.cli import output
+from gpp_client.cli.utils import async_command
 from gpp_client.client import GPPClient
-from gpp_client.director import GPPDirector
-from gpp_client.cli.utils import (
-    async_command,
+
+goats_app = typer.Typer(
+    name="goats",
+    help="GOATS operations.",
 )
 
-console = Console()
-app = typer.Typer(name="goats", help="Run goats-specific queries.")
 
-program_sub_app = typer.Typer(
-    name="program",
-    help="Program-level coordinations.",
-)
-app.add_typer(program_sub_app, name="program")
-
-observation_sub_app = typer.Typer(
-    name="obs",
-    help="Observation-level coordinations.",
-)
-app.add_typer(observation_sub_app, name="obs")
-
-
-@observation_sub_app.command("list")
+@goats_app.command("list-programs")
 @async_command
-async def get_all_observations(
+async def list_programs() -> None:
+    """
+    List GOATS programs.
+    """
+    with output.status("Fetching GOATS programs..."):
+        async with GPPClient() as client:
+            result = await client.goats.get_programs()
+
+    output.json_pydantic(result)
+
+
+@goats_app.command("list-observations")
+@async_command
+async def list_observations(
     program_id: Annotated[
         str,
-        typer.Option(
-            "--program-id",
-            "-p",
-            help="Program ID to filter observations by.",
-        ),
+        typer.Argument(help="Program ID."),
     ],
 ) -> None:
-    """List observations for a specific program."""
-    director = GPPDirector(GPPClient())
-    result = await director.goats.observation.get_all(program_id=program_id)
-    console.print(JSON.from_data(result))
+    """
+    List GOATS observations for a program.
 
+    Parameters
+    ----------
+    program_id : str
+        Program ID.
+    """
+    with output.status("Fetching GOATS observations..."):
+        async with GPPClient() as client:
+            result = await client.goats.get_observations_by_program_id(
+                program_id=program_id
+            )
 
-@program_sub_app.command("list")
-@async_command
-async def get_all_programs() -> None:
-    """List all programs with accepted proposal status."""
-    director = GPPDirector(GPPClient())
-    result = await director.goats.program.get_all()
-    console.print(JSON.from_data(result))
+    output.json_pydantic(result)

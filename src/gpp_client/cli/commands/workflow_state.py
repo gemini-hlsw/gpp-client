@@ -1,54 +1,68 @@
-from typing import Annotated, Optional
+"""
+Workflow state CLI commands.
+"""
+
+__all__ = ["workflow_state_app"]
+
+from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.json import JSON
 
-from gpp_client.api.enums import ObservationWorkflowState
-from gpp_client.cli.utils import (
-    async_command,
-)
+from gpp_client.cli import output
+from gpp_client.cli.utils import async_command, require_exactly_one
 from gpp_client.client import GPPClient
 
-console = Console()
-app = typer.Typer(name="wfs", help="Manage observation workflow states.")
+workflow_state_app = typer.Typer(
+    name="workflow-state",
+    help="Workflow state operations.",
+)
 
 
-@app.command("get")
+@workflow_state_app.command("get")
 @async_command
-async def get(
+async def get_workflow_state(
     observation_id: Annotated[
-        Optional[str], typer.Option(help="Observation ID.")
+        str | None,
+        typer.Option(
+            "--observation-id",
+            help="Get workflow state by observation ID.",
+        ),
     ] = None,
     observation_reference: Annotated[
-        Optional[str], typer.Option(help="Observation reference label.")
+        str | None,
+        typer.Option(
+            "--observation-reference",
+            help="Get workflow state by observation reference.",
+        ),
     ] = None,
-):
-    """Get a workflow state for an observation by ID or reference."""
-    client = GPPClient()
-    result = await client.workflow_state.get_by_id(
+) -> None:
+    """
+    Get workflow state using exactly one selector.
+
+    Parameters
+    ----------
+    observation_id : str | None, optional
+        Observation ID.
+    observation_reference : str | None, optional
+        Observation reference label.
+    """
+    selector_name, selector_value = require_exactly_one(
         observation_id=observation_id,
         observation_reference=observation_reference,
     )
-    console.print(JSON.from_data(result))
 
+    with output.status("Fetching workflow state..."):
+        async with GPPClient() as client:
+            match selector_name:
+                case "observation_id":
+                    result = await client.workflow_state.get_by_id(
+                        observation_id=selector_value
+                    )
+                case "observation_reference":
+                    result = await client.workflow_state.get_by_reference(
+                        observation_reference=selector_value
+                    )
+                case _:
+                    raise typer.BadParameter(f"Unsupported selector: {selector_name}")
 
-@app.command("update")
-@async_command
-async def update(
-    workflow_state: Annotated[
-        ObservationWorkflowState,
-        typer.Option(
-            help="The new workflow state to set.",
-            case_sensitive=False,
-        ),
-    ],
-    observation_id: Annotated[str, typer.Option(help="Observation ID.")],
-):
-    """Update the workflow state for an observation by ID."""
-    client = GPPClient()
-    result = await client.workflow_state.update_by_id(
-        workflow_state=workflow_state,
-        observation_id=observation_id,
-    )
-    console.print(JSON.from_data(result))
+    output.json_pydantic(result)
