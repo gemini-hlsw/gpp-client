@@ -46,17 +46,6 @@ async def get_program(
 ) -> None:
     """
     Get a program using exactly one selector.
-
-    Parameters
-    ----------
-    program_id : str | None, optional
-        Program ID.
-    program_reference : str | None, optional
-        Program reference label.
-    proposal_reference : str | None, optional
-        Proposal reference label.
-    include_deleted : bool, optional
-        Whether deleted related records should be included.
     """
     selector_name, selector_value = require_exactly_one(
         program_id=program_id,
@@ -116,15 +105,6 @@ async def list_programs(
 ) -> None:
     """
     List programs.
-
-    Parameters
-    ----------
-    include_deleted : bool, optional
-        Whether deleted programs should be included.
-    offset : str | None, optional
-        Pagination offset.
-    limit : int | None, optional
-        Maximum number of programs to return.
     """
     with output.status("Fetching programs..."):
         async with GPPClient() as client:

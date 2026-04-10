@@ -35,13 +35,6 @@ async def get_observation(
 ) -> None:
     """
     Get an observation using exactly one selector.
-
-    Parameters
-    ----------
-    observation_id : str | None, optional
-        Observation ID.
-    observation_reference : str | None, optional
-        Observation reference label.
     """
     selector_name, selector_value = require_exactly_one(
         observation_id=observation_id,
@@ -93,15 +86,6 @@ async def list_observations(
 ) -> None:
     """
     List observations.
-
-    Parameters
-    ----------
-    include_deleted : bool, optional
-        Whether to include deleted observations.
-    offset : str | None, optional
-        Pagination offset.
-    limit : int | None, optional
-        Maximum number of observations to return.
     """
     with output.status("Fetching observations..."):
         async with GPPClient() as client:

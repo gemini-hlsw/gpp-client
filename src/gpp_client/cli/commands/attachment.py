@@ -59,19 +59,6 @@ async def list_attachments(
 ) -> None:
     """
     List attachments using exactly one selector.
-
-    Parameters
-    ----------
-    observation_id : str | None, optional
-        Observation ID selector.
-    observation_reference : str | None, optional
-        Observation reference selector.
-    program_id : str | None, optional
-        Program ID selector.
-    program_reference : str | None, optional
-        Program reference selector.
-    proposal_reference : str | None, optional
-        Proposal reference selector.
     """
     selector_name, selector_value = require_exactly_one(
         observation_id=observation_id,

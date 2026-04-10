@@ -31,11 +31,6 @@ async def list_programs(
 ) -> None:
     """
     List scheduler programs.
-
-    Parameters
-    ----------
-    programs_list : list[str] | None, optional
-        Optional list of program IDs to restrict the result set.
     """
     with output.status("Fetching scheduler programs..."):
         async with GPPClient() as client:

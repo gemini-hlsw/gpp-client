@@ -23,6 +23,7 @@ from gpp_client.cli.commands import (
 )
 from gpp_client.cli.utils import async_command
 from gpp_client.client import GPPClient
+from gpp_client.settings import get_config_path as _get_config_path
 
 __version__ = get_version("gpp-client").strip()
 
@@ -90,6 +91,14 @@ async def ping() -> None:
         raise typer.Exit(code=1)
 
     output.success("GPP is reachable. Credentials are valid.")
+
+
+@app.command("get-config-path")
+def get_config_path() -> None:
+    """Get the path to the GPP Client configuration file."""
+
+    config_path = _get_config_path()
+    output.info(f"{config_path.resolve()}")
 
 
 app.add_typer(observation_app)

@@ -1,39 +1,63 @@
 CLI
 ===
 
-The ``gpp`` command-line interface provides access to the Gemini Program Platform (GPP), enabling interaction with programs, observations, targets, proposals, and related resources.
+The ``gpp`` command-line interface provides access to the Gemini Program
+Platform (GPP) from the command line.
+
+The CLI uses the same configuration and authentication rules as the Python
+client. See :doc:`../configuration` for details.
+
+Quick Example
+-------------
+
+Check connectivity:
+
+.. code-block:: bash
+
+   gpp ping
+
+List attachments for a program:
+
+.. code-block:: bash
+
+   gpp attachment list --program-id p-123
+
+Command Reference
+-----------------
 
 .. typer:: gpp_client.cli.cli:app
-    :prog: gpp
-    :make-sections:
-    :width: 80
-    :theme: dark
+   :prog: gpp
+   :make-sections:
+   :width: 80
+   :theme: dark
 
-Each command supports ``--help`` for usage details.
+.. tip::
+
+   Use ``--help`` with any command or subcommand for usage details.
+
+.. typer:: gpp_client.cli.cli:app:ping
+   :prog: gpp ping
+   :make-sections:
+   :width: 80
+   :theme: dark
+
+.. typer:: gpp_client.cli.cli:app:get-config-path
+   :prog: gpp get-config-path
+   :make-sections:
+   :width: 80
+   :theme: dark
 
 Commands
 --------
 
-Individual commands are documented below:
-
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 1
 
-    config
-    attachment
-    call-for-proposals
-    program-note
-    observation
-    target
-    program
-    site-status
-    configuration-request
-    workflow-state
-    scheduler
-    goats
-
-.. note::
-
-   The ``config`` group is used to manage local settings and authentication for the CLI.
-   You must either configure credentials using ``gpp config`` or set the ``GPP_TOKEN``
-   and ``GPP_URL`` environment variables. See the :doc:`credentials </credentials>` section for details.
+   attachment
+   observation
+   target
+   program
+   site-status
+   workflow-state
+   scheduler
+   goats

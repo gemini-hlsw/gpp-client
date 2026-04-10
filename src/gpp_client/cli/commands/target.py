@@ -35,13 +35,6 @@ async def get_target(
 ) -> None:
     """
     Get a target using exactly one selector.
-
-    Parameters
-    ----------
-    target_id : str | None, optional
-        Target ID.
-    include_deleted : bool, optional
-        Whether deleted program data should be included in the result.
     """
     selector_name, selector_value = require_exactly_one(
         target_id=target_id,
@@ -89,15 +82,6 @@ async def list_targets(
 ) -> None:
     """
     List targets.
-
-    Parameters
-    ----------
-    include_deleted : bool, optional
-        Whether deleted targets should be included.
-    offset : str | None, optional
-        Pagination offset.
-    limit : int | None, optional
-        Maximum number of targets to return.
     """
     with output.status("Fetching targets..."):
         async with GPPClient() as client:

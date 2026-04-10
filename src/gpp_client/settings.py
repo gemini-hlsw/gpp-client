@@ -25,15 +25,14 @@ class GPPSettings(BaseSettings):
 
     Notes
     -----
-    - Supported environment variables:
+    Supported environment variables:
       - ``GPP_TOKEN``
       - ``GPP_DEVELOPMENT_TOKEN``
       - ``GPP_DEBUG``
 
     Token resolution behavior:
       - Production package uses ``token``.
-      - Development package prefers ``development_token`` and falls back to
-      ``token`` if needed.
+      - Development package uses ``development_token``.
     """
 
     model_config = SettingsConfigDict(

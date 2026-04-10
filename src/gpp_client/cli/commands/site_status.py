@@ -29,11 +29,6 @@ async def get_site_status(
 ) -> None:
     """
     Get site status by site ID.
-
-    Parameters
-    ----------
-    site_id : Site
-        Site identifier.
     """
     with output.status("Fetching site status..."):
         async with GPPClient() as client:
