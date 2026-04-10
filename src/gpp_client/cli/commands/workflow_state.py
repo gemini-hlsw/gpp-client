@@ -38,13 +38,6 @@ async def get_workflow_state(
 ) -> None:
     """
     Get workflow state using exactly one selector.
-
-    Parameters
-    ----------
-    observation_id : str | None, optional
-        Observation ID.
-    observation_reference : str | None, optional
-        Observation reference label.
     """
     selector_name, selector_value = require_exactly_one(
         observation_id=observation_id,

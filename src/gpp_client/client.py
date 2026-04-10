@@ -37,10 +37,40 @@ class GPPClient:
     Parameters
     ----------
     token : str, optional
-        GPP API token to use for authentication. If not provided, the client will attempt to resolve a token from environment variables or other configuration sources.
+        GPP API token to use for authentication. If not provided, the client will
+        attempt to resolve a token from environment variables or other configuration
+        sources.
     debug : bool, optional
-        Whether to enable debug logging for the client. If not provided, defaults to ``False``.
+        Whether to enable debug logging for the client. If not provided, defaults to
+        ``False``.
     """
+
+    scheduler: SchedulerDomain
+    """Domain client for scheduler-related operations."""
+
+    program: ProgramDomain
+    """Domain client for program-related operations."""
+
+    observation: ObservationDomain
+    """Domain client for observation-related operations."""
+
+    target: TargetDomain
+    """Domain client for target-related operations."""
+
+    workflow_state: WorkflowStateDomain
+    """Domain client for workflow state operations."""
+
+    atom: AtomDomain
+    """Domain client for atom digest operations."""
+
+    attachment: AttachmentDomain
+    """Domain client for attachment upload, download, and management operations."""
+
+    goats: GOATSDomain
+    """Domain client for GOATS-specific queries."""
+
+    site_status: SiteStatusDomain
+    """Domain client for Gemini site status information."""
 
     def __init__(
         self,
