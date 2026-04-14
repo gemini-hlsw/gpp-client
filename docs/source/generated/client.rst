@@ -1,5 +1,5 @@
-Generated GraphQL Client
-========================
+Client
+======
 
 The :class:`~gpp_client.generated.client.GraphQLClient` provides direct access
 to generated GraphQL operations.
