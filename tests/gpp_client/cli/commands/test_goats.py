@@ -1,13 +1,59 @@
-import pytest
+"""
+Tests for GOATS CLI commands.
+"""
 
-from gpp_client.cli.cli import app
-
-_RESOURCE_NAME = "goats"
+from types import SimpleNamespace
 
 
-@pytest.mark.remote_data
-class TestGOATS:
-    def test_observation_get_all(self, cli_runner):
-        """Test listing multiple items."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "obs", "list", "-p", "p-42"])
-        assert result.exit_code == 0
+def test_list_goats_programs(
+    runner, cli_app, mocker, dummy_async_client_factory
+) -> None:
+    """
+    Ensure GOATS program listing dispatches correctly.
+    """
+    result_model = {"items": ["program"]}
+
+    goats = SimpleNamespace(
+        get_programs=mocker.AsyncMock(return_value=result_model),
+    )
+
+    mocker.patch(
+        "gpp_client.cli.commands.goats.GPPClient",
+        return_value=dummy_async_client_factory(goats=goats),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.goats.output.json_pydantic"
+    )
+
+    result = runner.invoke(cli_app, ["goats", "list-programs"])
+
+    assert result.exit_code == 0
+    goats.get_programs.assert_called_once_with()
+    json_pydantic_mock.assert_called_once_with(result_model)
+
+
+def test_list_goats_observations(
+    runner, cli_app, mocker, dummy_async_client_factory
+) -> None:
+    """
+    Ensure GOATS observation listing dispatches correctly.
+    """
+    result_model = {"items": ["observation"]}
+
+    goats = SimpleNamespace(
+        get_observations_by_program_id=mocker.AsyncMock(return_value=result_model),
+    )
+
+    mocker.patch(
+        "gpp_client.cli.commands.goats.GPPClient",
+        return_value=dummy_async_client_factory(goats=goats),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.goats.output.json_pydantic"
+    )
+
+    result = runner.invoke(cli_app, ["goats", "list-observations", "p-1"])
+
+    assert result.exit_code == 0
+    goats.get_observations_by_program_id.assert_called_once_with(program_id="p-1")
+    json_pydantic_mock.assert_called_once_with(result_model)

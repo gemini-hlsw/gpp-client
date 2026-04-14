@@ -1,0 +1,141 @@
+mutation cloneTarget(
+  $targetId: TargetId!
+  $properties: TargetPropertiesInput
+  $replaceIn: [ObservationId!]
+  $includeDeleted: Boolean! = false
+) {
+  cloneTarget(
+    input: { targetId: $targetId, SET: $properties, REPLACE_IN: $replaceIn }
+  ) {
+    newTarget {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation createTargetByProgramId(
+  $programId: ProgramId!
+  $properties: TargetPropertiesInput!
+  $includeDeleted: Boolean! = false
+) {
+  createTarget(input: { programId: $programId, SET: $properties }) {
+    target {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation createTargetByProposalReference(
+  $proposalReference: ProposalReferenceLabel!
+  $properties: TargetPropertiesInput!
+  $includeDeleted: Boolean! = false
+) {
+  createTarget(input: { proposalReference: $proposalReference, SET: $properties }) {
+    target {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation createTargetByProgramReference(
+  $programReference: ProgramReferenceLabel!
+  $properties: TargetPropertiesInput!
+  $includeDeleted: Boolean! = false
+) {
+  createTarget(input: { programReference: $programReference, SET: $properties }) {
+    target {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation updateTargets(
+  $properties: TargetPropertiesInput!
+  $where: WhereTarget
+  $limit: NonNegInt
+  $includeDeleted: Boolean! = false
+) {
+  updateTargets(
+    input: {
+      SET: $properties
+      WHERE: $where
+      LIMIT: $limit
+      includeDeleted: $includeDeleted
+    }
+  ) {
+    hasMore
+    targets {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation updateTargetById(
+  $targetId: TargetId!
+  $properties: TargetPropertiesInput!
+  $includeDeleted: Boolean! = false
+) {
+  updateTargets(
+    input: {
+      SET: $properties
+      WHERE: { id: { EQ: $targetId } }
+      LIMIT: 1
+      includeDeleted: $includeDeleted
+    }
+  ) {
+    hasMore
+    targets {
+      ...TargetDetails
+      ...TargetProgramSummary
+    }
+  }
+}
+
+mutation restoreTargetById($targetId: TargetId!) {
+  updateTargets(
+    input: {
+      SET: { existence: PRESENT }
+      WHERE: { id: { EQ: $targetId } }
+      LIMIT: 1
+      includeDeleted: true
+    }
+  ) {
+    hasMore
+    targets {
+      ...TargetDetails
+      program(includeDeleted: true) {
+        id
+        name
+        description
+        existence
+      }
+    }
+  }
+}
+
+mutation deleteTargetById($targetId: TargetId!) {
+  updateTargets(
+    input: {
+      SET: { existence: DELETED }
+      WHERE: { id: { EQ: $targetId } }
+      LIMIT: 1
+      includeDeleted: false
+    }
+  ) {
+    hasMore
+    targets {
+      ...TargetDetails
+      program(includeDeleted: false) {
+        id
+        name
+        description
+        existence
+      }
+    }
+  }
+}

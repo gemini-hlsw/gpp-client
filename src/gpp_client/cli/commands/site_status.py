@@ -1,28 +1,37 @@
+"""
+Site status CLI commands.
+"""
+
+__all__ = ["site_status_app"]
+
 from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.json import JSON
 
-from gpp_client.client import GPPClient
-from gpp_client.managers.site_status import Site
+from gpp_client.cli import output
 from gpp_client.cli.utils import async_command
+from gpp_client.client import GPPClient
+from gpp_client.domains.site_status import Site
 
-console = Console()
-app = typer.Typer(name="site", help="Retrieve site status.")
+site_status_app = typer.Typer(
+    name="site-status",
+    help="Site status operations.",
+)
 
 
-@app.command("get")
+@site_status_app.command("get")
 @async_command
-async def get_by_id(
+async def get_site_status(
     site_id: Annotated[
         Site,
-        typer.Argument(
-            help="Site name: north or south (case-insensitive).", case_sensitive=False
-        ),
+        typer.Argument(help="Site identifier: north or south."),
     ],
 ) -> None:
-    """Get site status for Gemini North or South."""
-    client = GPPClient()
-    result = await client.site_status.get_by_id(site_id)
-    console.print(JSON.from_data(result))
+    """
+    Get site status by site ID.
+    """
+    with output.status("Fetching site status..."):
+        async with GPPClient() as client:
+            result = await client.site_status.get_by_id(site_id=site_id.value)
+
+    output.json(result)

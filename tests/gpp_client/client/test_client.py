@@ -1,297 +1,375 @@
-"""
-Tests for GPPClient.
-"""
+"""Tests for the main GPP client."""
+
+from types import SimpleNamespace
 
 import pytest
 
 from gpp_client.client import GPPClient
-from gpp_client.config import GPPEnvironment
+from gpp_client.environment import GPPEnvironment
 
 
-@pytest.fixture
-def patched_dependencies(mocker) -> dict[str, object]:
+@pytest.fixture()
+def mock_settings() -> SimpleNamespace:
     """
-    Patch GPPClient for easy testing.
+    Return a reusable fake settings object.
     """
-    resolved_url = "https://example.com/graphql"
-    resolved_token = "TEST_TOKEN"
-    resolved_env = GPPEnvironment.DEVELOPMENT
-
-    base_url = GPPClient._get_base_url(resolved_url)
-    ws_url = GPPClient._get_ws_url(base_url)
-
-    fake_graphql = mocker.MagicMock()
-    fake_graphql.execute = mocker.AsyncMock()
-
-    fake_rest = mocker.MagicMock()
-    fake_rest.close = mocker.AsyncMock()
-
-    resolve_credentials = mocker.patch(
-        "gpp_client.client.CredentialResolver.resolve",
-        autospec=True,
-        return_value=(resolved_url, resolved_token, resolved_env),
-    )
-    graphql_client = mocker.patch(
-        "gpp_client.client._GPPClient",
-        autospec=True,
-        return_value=fake_graphql,
-    )
-    rest_client = mocker.patch(
-        "gpp_client.client._GPPRESTClient",
-        autospec=True,
-        return_value=fake_rest,
-    )
-    enable_dev_logging = mocker.patch(
-        "gpp_client.client._enable_dev_console_logging",
-        autospec=True,
-    )
-
-    return {
-        "resolved_url": resolved_url,
-        "resolved_token": resolved_token,
-        "resolved_env": resolved_env,
-        "base_url": base_url,
-        "ws_url": ws_url,
-        "resolve_credentials": resolve_credentials,
-        "graphql_client": graphql_client,
-        "rest_client": rest_client,
-        "enable_dev_logging": enable_dev_logging,
-        "fake_graphql": fake_graphql,
-        "fake_rest": fake_rest,
-    }
-
-
-@pytest.mark.parametrize(
-    "env_input,expected_env",
-    [
-        ("development", GPPEnvironment.DEVELOPMENT),
-        (GPPEnvironment.DEVELOPMENT, GPPEnvironment.DEVELOPMENT),
-        (None, None),
-    ],
-)
-def test_init_normalizes_env_before_resolving_credentials(
-    patched_dependencies: dict[str, object],
-    env_input: GPPEnvironment | str | None,
-    expected_env: GPPEnvironment | None,
-) -> None:
-    """
-    Test that the env parameter is normalized before being passed to
-    ``CredentialResolver``.
-    """
-    resolve_credentials = patched_dependencies["resolve_credentials"]
-
-    GPPClient(env=env_input, token="abc", _debug=False)
-
-    _, kwargs = resolve_credentials.call_args
-    assert kwargs["env"] == expected_env
-    assert kwargs["token"] == "abc"
-    assert kwargs["config"] is not None
-
-
-def test_init_invalid_env_string_raises_value_error() -> None:
-    """
-    Test that an invalid env string raises ``ValueError``.
-    """
-    with pytest.raises(ValueError):
-        GPPClient(env="NOT_A_REAL_ENV", _debug=False)
-
-
-def test_init_debug_true_enables_console_logging(
-    patched_dependencies: dict[str, object],
-) -> None:
-    """
-    Test that ``debug=True`` enables console logging.
-    """
-    enable_dev_logging = patched_dependencies["enable_dev_logging"]
-
-    GPPClient(env="development", token="abc", _debug=True)
-
-    enable_dev_logging.assert_called_once()
-
-
-def test_init_debug_false_does_not_enable_console_logging(
-    patched_dependencies: dict[str, object],
-) -> None:
-    """
-    Test that ``debug=False`` does not enable console logging.
-    """
-    enable_dev_logging = patched_dependencies["enable_dev_logging"]
-
-    GPPClient(env="development", token="abc", _debug=False)
-
-    enable_dev_logging.assert_not_called()
-
-
-def test_init_constructs_clients_from_resolved_credentials(
-    patched_dependencies: dict[str, object],
-) -> None:
-    """
-    Test that the GraphQL and REST clients are constructed with the
-    resolved credentials.
-    """
-    graphql_client = patched_dependencies["graphql_client"]
-    rest_client = patched_dependencies["rest_client"]
-
-    client = GPPClient(_debug=False)
-
-    assert client._client is patched_dependencies["fake_graphql"]
-    assert client._rest_client is patched_dependencies["fake_rest"]
-
-    _, gql_kwargs = graphql_client.call_args
-    assert gql_kwargs["url"] == patched_dependencies["resolved_url"]
-    assert gql_kwargs["headers"] == {
-        "Authorization": f"Bearer {patched_dependencies['resolved_token']}"
-    }
-    assert gql_kwargs["ws_url"] == patched_dependencies["ws_url"]
-    assert gql_kwargs["ws_connection_init_payload"] == {
-        "Authorization": f"Bearer {patched_dependencies['resolved_token']}"
-    }
-
-    rest_client.assert_called_once_with(
-        patched_dependencies["base_url"],
-        patched_dependencies["resolved_token"],
+    return SimpleNamespace(
+        debug=False,
+        resolved_token="resolved-token",
+        token="raw-token",
+        environment=SimpleNamespace(base_url="https://example.test"),
     )
 
 
-def test_init_initializes_all_managers(patched_dependencies: dict[str, object]) -> None:
+@pytest.fixture()
+def bare_client() -> GPPClient:
     """
-    Test that all manager attributes are initialized.
+    Return an uninitialized GPPClient instance for targeted tests.
     """
-    client = GPPClient(_debug=False)
-
-    assert client.program_note is not None
-    assert client.target is not None
-    assert client.program is not None
-    assert client.call_for_proposals is not None
-    assert client.observation is not None
-    assert client.site_status is not None
-    assert client.group is not None
-    assert client.configuration_request is not None
-    assert client.workflow_state is not None
-    assert client.attachment is not None
+    return object.__new__(GPPClient)
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "execute_raises,status_raises,expected_ok",
-    [
-        (None, None, True),
-        (RuntimeError("boom"), None, False),
-        (None, RuntimeError("bad status"), False),
-    ],
-)
-async def test_is_reachable_returns_expected_tuple(
+def test_init_builds_settings_and_core_clients(
     mocker,
-    patched_dependencies: dict[str, object],
-    execute_raises: Exception | None,
-    status_raises: Exception | None,
-    expected_ok: bool,
+    mock_settings,
 ) -> None:
     """
-    Test that ``is_reachable`` returns the expected tuple based on different
-    failure scenarios.
+    Ensure initialization builds settings and core clients.
     """
-    fake_graphql = patched_dependencies["fake_graphql"]
+    graphql_client = object()
+    rest_client = object()
 
-    if execute_raises is not None:
-        fake_graphql.execute = mocker.AsyncMock(side_effect=execute_raises)
-    else:
-        response = mocker.MagicMock()
-        response.raise_for_status.side_effect = status_raises
-        fake_graphql.execute = mocker.AsyncMock(return_value=response)
+    build_settings = mocker.patch.object(
+        GPPClient,
+        "_build_settings",
+        return_value=mock_settings,
+    )
+    build_graphql = mocker.patch.object(
+        GPPClient,
+        "_build_graphql_client",
+        return_value=graphql_client,
+    )
+    build_rest = mocker.patch.object(
+        GPPClient,
+        "_build_rest_client",
+        return_value=rest_client,
+    )
+    init_domains = mocker.patch.object(GPPClient, "_init_domains")
 
-    client = GPPClient(_debug=False)
+    client = GPPClient(token="abc", debug=True)
 
-    ok, error = await client.is_reachable()
+    build_settings.assert_called_once_with(token="abc", debug=True)
+    build_graphql.assert_called_once_with()
+    build_rest.assert_called_once_with()
+    init_domains.assert_called_once_with()
 
-    assert ok is expected_ok
-    if expected_ok:
-        assert error is None
-    else:
-        assert isinstance(error, str)
-        assert error
-
-    assert fake_graphql.execute.await_count == 1
-    (query_arg,) = fake_graphql.execute.await_args.args
-    assert "__schema" in query_arg
+    assert client.settings is mock_settings
+    assert client.graphql is graphql_client
+    assert client.rest is rest_client
 
 
-@pytest.mark.asyncio
-async def test_close_closes_rest_client(
-    patched_dependencies: dict[str, object],
+def test_init_enables_dev_logging_when_debug_true(
+    mocker,
+    mock_settings,
 ) -> None:
     """
-    Test that ``close`` calls ``close`` on the REST client.
+    Ensure debug logging is enabled when settings.debug is true.
     """
-    client = GPPClient(_debug=False)
+    mock_settings.debug = True
 
-    await client.close()
+    mocker.patch.object(
+        GPPClient,
+        "_build_settings",
+        return_value=mock_settings,
+    )
+    mocker.patch.object(
+        GPPClient,
+        "_build_graphql_client",
+        return_value=object(),
+    )
+    mocker.patch.object(
+        GPPClient,
+        "_build_rest_client",
+        return_value=object(),
+    )
+    mocker.patch.object(GPPClient, "_init_domains")
+    enable_logging = mocker.patch.object(GPPClient, "_enable_dev_logging")
 
-    patched_dependencies["fake_rest"].close.assert_awaited_once()
+    GPPClient()
+
+    enable_logging.assert_called_once_with()
 
 
-@pytest.mark.asyncio
-async def test_async_context_manager_closes(
-    patched_dependencies: dict[str, object],
+def test_build_graphql_client_uses_expected_settings(
+    mocker,
+    bare_client,
+    mock_settings,
 ) -> None:
     """
-    Test that the async context manager calls ``close`` on the REST client.
+    Ensure the GraphQL client is constructed from settings.
     """
-    fake_rest = patched_dependencies["fake_rest"]
+    graphql_cls = mocker.patch("gpp_client.client.GraphQLClient")
+    get_ws_url = mocker.patch(
+        "gpp_client.client.get_ws_url",
+        return_value="wss://ws.example.test",
+    )
+    get_graphql_url = mocker.patch(
+        "gpp_client.client.get_graphql_url",
+        return_value="https://graphql.example.test",
+    )
 
-    async with GPPClient(_debug=False) as entered:
-        assert isinstance(entered, GPPClient)
-        fake_rest.close.assert_not_awaited()
+    bare_client._settings = mock_settings
 
-    fake_rest.close.assert_awaited_once()
+    bare_client._build_graphql_client()
 
-
-def test_set_credentials_delegates_to_config(mocker) -> None:
-    """
-    Test that ``set_credentials`` delegates to ``GPPConfig.set_credentials``.
-    """
-    mocked_config = mocker.patch("gpp_client.client.GPPConfig", autospec=True)
-    instance = mocked_config.return_value
-
-    GPPClient.set_credentials("development", "TOK", activate=True, save=False)
-
-    instance.set_credentials.assert_called_once_with(
-        "development",
-        "TOK",
-        activate=True,
-        save=False,
+    get_ws_url.assert_called_once_with(mock_settings.environment)
+    get_graphql_url.assert_called_once_with(mock_settings.environment)
+    graphql_cls.assert_called_once_with(
+        url="https://graphql.example.test",
+        headers={"Authorization": "Bearer resolved-token"},
+        ws_url="wss://ws.example.test",
     )
 
 
-@pytest.mark.parametrize(
-    "url,expected_base_url",
-    [
-        ("https://example.com/graphql", "https://example.com"),
-        ("https://example.com/graphql?x=1", "https://example.com"),
-        ("https://example.com/graphql#frag", "https://example.com"),
-        ("http://localhost:8000/graphql", "http://localhost:8000"),
-        ("http://localhost:8000/api/graphql", "http://localhost:8000"),
-    ],
-)
-def test__get_base_url(url: str, expected_base_url: str) -> None:
+def test_build_rest_client_uses_expected_settings(
+    mocker,
+    bare_client,
+    mock_settings,
+) -> None:
     """
-    Test that ``_get_base_url`` correctly extracts the base URL from various GraphQL
-    URLs.
+    Ensure the REST client is constructed from settings.
     """
-    assert GPPClient._get_base_url(url) == expected_base_url
+    rest_cls = mocker.patch("gpp_client.client.RESTClient")
+
+    bare_client._settings = mock_settings
+
+    bare_client._build_rest_client()
+
+    rest_cls.assert_called_once_with(
+        base_url="https://example.test",
+        gpp_token="resolved-token",
+    )
 
 
-@pytest.mark.parametrize(
-    "base_url,expected_ws_url",
-    [
-        ("https://example.com", "wss://example.com/ws"),
-        ("https://example.com:8443", "wss://example.com:8443/ws"),
-        ("http://localhost:8000", "ws://localhost:8000/ws"),
-        ("http://127.0.0.1:8000", "ws://127.0.0.1:8000/ws"),
-    ],
-)
-def test__get_ws_url(base_url: str, expected_ws_url: str) -> None:
+def test_init_domains_uses_shared_domain_kwargs(
+    mocker,
+    bare_client,
+    mock_settings,
+) -> None:
     """
-    Test that ``_get_ws_url`` correctly constructs the WebSocket URL from the base URL.
+    Ensure domain instances are initialized with shared dependencies.
     """
-    assert GPPClient._get_ws_url(base_url) == expected_ws_url
+    scheduler_domain = object()
+    target_domain = object()
+    workflow_state_domain = object()
+    observation_domain = object()
+    program_domain = object()
+    site_status_domain = object()
+    goats_domain = object()
+    atom_domain = object()
+    attachment_domain = object()
+
+    scheduler_cls = mocker.patch(
+        "gpp_client.client.SchedulerDomain",
+        return_value=scheduler_domain,
+    )
+    target_cls = mocker.patch(
+        "gpp_client.client.TargetDomain",
+        return_value=target_domain,
+    )
+    workflow_state_cls = mocker.patch(
+        "gpp_client.client.WorkflowStateDomain",
+        return_value=workflow_state_domain,
+    )
+    observation_cls = mocker.patch(
+        "gpp_client.client.ObservationDomain",
+        return_value=observation_domain,
+    )
+    program_cls = mocker.patch(
+        "gpp_client.client.ProgramDomain",
+        return_value=program_domain,
+    )
+    site_status_cls = mocker.patch(
+        "gpp_client.client.SiteStatusDomain",
+        return_value=site_status_domain,
+    )
+    goats_cls = mocker.patch(
+        "gpp_client.client.GOATSDomain",
+        return_value=goats_domain,
+    )
+    atom_cls = mocker.patch(
+        "gpp_client.client.AtomDomain",
+        return_value=atom_domain,
+    )
+    attachment_cls = mocker.patch(
+        "gpp_client.client.AttachmentDomain",
+        return_value=attachment_domain,
+    )
+
+    bare_client._graphql = object()
+    bare_client._rest = object()
+    bare_client._settings = mock_settings
+
+    bare_client._init_domains()
+
+    expected_domain_kwargs = {
+        "graphql": bare_client._graphql,
+        "rest": bare_client._rest,
+        "settings": mock_settings,
+    }
+
+    scheduler_cls.assert_called_once_with(**expected_domain_kwargs)
+    target_cls.assert_called_once_with(**expected_domain_kwargs)
+    workflow_state_cls.assert_called_once_with(**expected_domain_kwargs)
+    observation_cls.assert_called_once_with(**expected_domain_kwargs)
+    program_cls.assert_called_once_with(**expected_domain_kwargs)
+    goats_cls.assert_called_once_with(**expected_domain_kwargs)
+    atom_cls.assert_called_once_with(**expected_domain_kwargs)
+    attachment_cls.assert_called_once_with(**expected_domain_kwargs)
+    site_status_cls.assert_called_once_with()
+
+    assert bare_client.scheduler is scheduler_domain
+    assert bare_client.target is target_domain
+    assert bare_client.workflow_state is workflow_state_domain
+    assert bare_client.observation is observation_domain
+    assert bare_client.program is program_domain
+    assert bare_client.site_status is site_status_domain
+    assert bare_client.goats is goats_domain
+    assert bare_client.atom is atom_domain
+    assert bare_client.attachment is attachment_domain
+
+
+@pytest.mark.asyncio
+async def test_close_delegates_to_rest_client(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure close delegates to the REST client.
+    """
+    rest_client = SimpleNamespace(close=mocker.AsyncMock())
+    bare_client._rest = rest_client
+
+    await bare_client.close()
+
+    rest_client.close.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+async def test_async_context_manager_closes_client(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure async context manager closes the client on exit.
+    """
+    bare_client.close = mocker.AsyncMock()
+
+    async with bare_client as entered_client:
+        assert entered_client is bare_client
+
+    bare_client.close.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+async def test_ping_returns_success_on_success(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure ping returns success when GraphQL ping succeeds.
+    """
+    graphql = SimpleNamespace(
+        url="https://graphql.example.test",
+        ping=mocker.AsyncMock(return_value=None),
+    )
+    bare_client._graphql = graphql
+
+    success, error = await bare_client.ping()
+
+    assert success is True
+    assert error is None
+    graphql.ping.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+async def test_ping_returns_failure_on_exception(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure ping returns failure and message when GraphQL ping fails.
+    """
+    graphql = SimpleNamespace(
+        url="https://graphql.example.test",
+        ping=mocker.AsyncMock(side_effect=RuntimeError("boom")),
+    )
+    bare_client._graphql = graphql
+
+    success, error = await bare_client.ping()
+
+    assert success is False
+    assert error == "boom"
+    graphql.ping.assert_called_once_with()
+
+
+def test_build_settings_maps_explicit_token_to_production_token(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure an explicit client token maps to ``token`` in production.
+    """
+    mocker.patch(
+        "gpp_client.client._get_packaged_environment",
+        return_value=GPPEnvironment.PRODUCTION,
+    )
+    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
+    settings_instance = settings_cls.return_value
+
+    result = bare_client._build_settings(token="prod-token", debug=True)
+
+    settings_cls.assert_called_once_with(token="prod-token", debug=True)
+    assert result is settings_instance
+
+
+def test_build_settings_maps_explicit_token_to_development_token(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure an explicit client token maps to ``development_token`` in development.
+    """
+    mocker.patch(
+        "gpp_client.client._get_packaged_environment",
+        return_value=GPPEnvironment.DEVELOPMENT,
+    )
+    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
+    settings_instance = settings_cls.return_value
+
+    result = bare_client._build_settings(token="dev-token", debug=False)
+
+    settings_cls.assert_called_once_with(
+        development_token="dev-token",
+        debug=False,
+    )
+    assert result is settings_instance
+
+
+def test_build_settings_without_explicit_token_uses_default_sources(
+    mocker,
+    bare_client,
+) -> None:
+    """
+    Ensure settings construction does not consult packaged environment when no
+    explicit token is provided.
+    """
+    packaged_environment = mocker.patch("gpp_client.client._get_packaged_environment")
+    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
+    settings_instance = settings_cls.return_value
+
+    result = bare_client._build_settings(debug=True)
+
+    packaged_environment.assert_not_called()
+    settings_cls.assert_called_once_with(debug=True)
+    assert result is settings_instance

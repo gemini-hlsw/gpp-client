@@ -157,6 +157,18 @@ def json(data: dict) -> None:
     console.print(JSON.from_data(data))
 
 
+def json_pydantic(model: object) -> None:
+    """
+    Print a Pydantic model as JSON.
+
+    Parameters
+    ----------
+    model : object
+        The Pydantic model to print.
+    """
+    console.print(JSON.from_data(model.model_dump(mode="json")))
+
+
 def panel(
     msg: RenderableType,
     *,

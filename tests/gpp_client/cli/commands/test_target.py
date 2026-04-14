@@ -1,39 +1,127 @@
-import pytest
+"""
+Tests for target CLI commands.
+"""
 
-from gpp_client.cli.cli import app
-
-_RESOURCE_NAME = "target"
-_RESOURCE_PREFIX = "t"
-_TABLE_TITLE = "Targets"
+from types import SimpleNamespace
 
 
-@pytest.fixture
-def resource_id(cli_runner, helpers) -> str:
-    """Fixture to extract the first resource ID from the CLI."""
-    result = cli_runner.invoke(app, [_RESOURCE_NAME, "list", "--limit", "1"])
-    assert result.exit_code == 0, result.stdout
-    resource_id = helpers.extract_first_resource_id(result.stdout, _RESOURCE_PREFIX)
-    if not resource_id:
-        pytest.skip(f"No {_RESOURCE_NAME} ID found in CLI output.")
-    return resource_id
+def test_get_target_dispatches_correctly(
+    runner,
+    cli_app,
+    mocker,
+    dummy_async_client_factory,
+) -> None:
+    """Ensure target get dispatches correctly."""
+    result_model = {"id": "t-1"}
+
+    target = SimpleNamespace(
+        get_by_id=mocker.AsyncMock(return_value=result_model),
+    )
+
+    mocker.patch(
+        "gpp_client.cli.commands.target.GPPClient",
+        return_value=dummy_async_client_factory(target=target),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.target.output.json_pydantic"
+    )
+
+    result = runner.invoke(cli_app, ["target", "get", "--target-id", "t-1"])
+
+    assert result.exit_code == 0
+    target.get_by_id.assert_called_once_with(
+        target_id="t-1",
+        include_deleted=False,
+    )
+    json_pydantic_mock.assert_called_once_with(result_model)
 
 
-@pytest.mark.remote_data
-class TestObservation:
-    def test_get_all(self, cli_runner):
-        """Test listing multiple items."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "list", "--limit", "2"])
-        assert result.exit_code == 0
-        assert _TABLE_TITLE in result.stdout or "No items found." in result.stdout
+def test_get_target_dispatches_with_include_deleted(
+    runner,
+    cli_app,
+    mocker,
+    dummy_async_client_factory,
+) -> None:
+    """
+    Ensure target get passes include_deleted when requested.
+    """
+    result_model = {"id": "t-1"}
 
-    def test_get_by_id(self, resource_id, cli_runner):
-        """Test retrieving a single item by ID."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "get", resource_id])
-        assert result.exit_code == 0
-        assert resource_id in result.stdout
+    target = SimpleNamespace(
+        get_by_id=mocker.AsyncMock(return_value=result_model),
+    )
 
-    def test_get_by_id_not_found(self, cli_runner):
-        """Test retrieving a non-existent item."""
-        result = cli_runner.invoke(app, [_RESOURCE_NAME, "get", "nonexistent"])
-        assert result.exit_code != 0
-        assert "Error:" in result.stdout
+    mocker.patch(
+        "gpp_client.cli.commands.target.GPPClient",
+        return_value=dummy_async_client_factory(target=target),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.target.output.json_pydantic"
+    )
+
+    result = runner.invoke(
+        cli_app,
+        ["target", "get", "--target-id", "t-1", "--include-deleted"],
+    )
+
+    assert result.exit_code == 0
+    target.get_by_id.assert_called_once_with(
+        target_id="t-1",
+        include_deleted=True,
+    )
+    json_pydantic_mock.assert_called_once_with(result_model)
+
+
+def test_get_target_fails_with_no_selector(runner, cli_app) -> None:
+    """
+    Ensure target get fails with no selector.
+    """
+    result = runner.invoke(cli_app, ["target", "get"])
+
+    assert result.exit_code != 0
+    assert "Exactly one selector is required" in result.output
+
+
+def test_list_targets_dispatches_correctly(
+    runner,
+    cli_app,
+    mocker,
+    dummy_async_client_factory,
+) -> None:
+    """
+    Ensure target list dispatches correctly.
+    """
+    result_model = {"items": []}
+
+    target = SimpleNamespace(
+        get_all=mocker.AsyncMock(return_value=result_model),
+    )
+
+    mocker.patch(
+        "gpp_client.cli.commands.target.GPPClient",
+        return_value=dummy_async_client_factory(target=target),
+    )
+    json_pydantic_mock = mocker.patch(
+        "gpp_client.cli.commands.target.output.json_pydantic"
+    )
+
+    result = runner.invoke(
+        cli_app,
+        [
+            "target",
+            "list",
+            "--include-deleted",
+            "--offset",
+            "abc",
+            "--limit",
+            "10",
+        ],
+    )
+
+    assert result.exit_code == 0
+    target.get_all.assert_called_once_with(
+        include_deleted=True,
+        offset="abc",
+        limit=10,
+    )
+    json_pydantic_mock.assert_called_once_with(result_model)

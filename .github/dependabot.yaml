@@ -14,7 +14,6 @@ updates:
           - "graphql-core"
           - "httpx"
           - "pydantic"
-          - "toml"
           - "typer"
           - "websockets"
       codegen-dependencies:

@@ -1,12 +1,37 @@
 Workflow State
 ==============
-The ``gpp wfs`` command group manages observation workflow state transitions.
 
-Use it to view and change the workflow state of observations in the GPP database.
+The ``gpp workflow-state`` command group provides access to observation workflow state.
 
-.. typer:: gpp_client.cli.cli:app:wfs
-   :prog: gpp wfs
+Quick Example
+-------------
+
+Get workflow state:
+
+.. code-block:: bash
+
+   gpp workflow-state get --observation-id o-123
+
+Selecting Workflow State
+------------------------
+
+The ``get`` command requires exactly one selector:
+
+- ``--observation-id``
+- ``--observation-reference``
+
+.. warning::
+
+   Provide exactly one selector.
+
+Reference
+---------
+
+.. typer:: gpp_client.cli.cli.app:workflow-state
+   :prog: gpp workflow-state
    :make-sections:
    :show-nested:
    :width: 80
    :theme: dark
+
+See also: :doc:`../domains/workflow-state`

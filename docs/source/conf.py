@@ -5,6 +5,7 @@
 # https://eikonomega.medium.com/getting-started-with-sphinx-autodoc-part-1-2cebbbca5365
 
 import os
+import re
 import sys
 from enum import Enum
 
@@ -97,12 +98,7 @@ autodoc_default_options = {
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
-
-
-def skip_member(app, what, name, obj, skip, options):
-    if name in {}:
-        return True  # skip this member
-    return skip
+autosummary_imported_members = True
 
 
 def suppress_enum_docstring(app, what, name, obj, options, lines):
@@ -112,6 +108,72 @@ def suppress_enum_docstring(app, what, name, obj, options, lines):
             lines.clear()
 
 
+def skip_model_config(app, obj_type, name, obj, skip, options):
+    """Skip Pydantic model_config members in autodoc output."""
+    if name == "model_config":
+        return True
+
+    return None
+
+
+def skip_generated_support_modules(app, obj_type, name, obj, skip, options):
+    """
+    Skip selected generated support modules only when rendering the
+    top-level ``gpp_client.generated`` package page.
+    """
+    current_module = app.env.temp_data.get("autodoc:module")
+    module_name = getattr(obj, "__module__", None)
+
+    hidden_modules = {
+        "gpp_client.generated.async_base_client",
+        "gpp_client.generated.base_model",
+        "gpp_client.generated.client",
+        "gpp_client.generated.enums",
+        "gpp_client.generated.input_types",
+        "gpp_client.generated.base_operation",
+        "gpp_client.generated.custom_fields",
+        "gpp_client.generated.custom_mutations",
+        "gpp_client.generated.custom_queries",
+        "gpp_client.generated.custom_typing_fields",
+        "gpp_client.generated.exceptions",
+    }
+
+    if current_module != "gpp_client.generated":
+        return None
+
+    if obj_type != "module":
+        return None
+
+    if module_name in hidden_modules:
+        return True
+
+    return None
+
+
+def clean_generated_signature(
+    app,
+    what,
+    name,
+    obj,
+    options,
+    signature,
+    return_annotation,
+):
+    """Replace noisy UNSET sentinel reprs in autodoc signatures."""
+    if signature is None:
+        return None
+
+    cleaned_signature = re.sub(
+        r"<[^>]*UnsetType object[^>]*>",
+        "UNSET",
+        signature,
+    )
+
+    return cleaned_signature, return_annotation
+
+
 def setup(app):
-    app.connect("autodoc-skip-member", skip_member)
+    app.connect("autodoc-skip-member", skip_model_config)
+    app.connect("autodoc-skip-member", skip_generated_support_modules)
     app.connect("autodoc-process-docstring", suppress_enum_docstring)
+    app.connect("autodoc-process-signature", clean_generated_signature)
