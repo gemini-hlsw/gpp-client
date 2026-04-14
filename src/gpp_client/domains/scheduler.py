@@ -1,3 +1,7 @@
+"""
+Module for retrieving scheduler information.
+"""
+
 __all__ = ["SchedulerDomain"]
 
 from gpp_client.domains.base import BaseDomain
@@ -8,6 +12,10 @@ from gpp_client.generated.get_scheduler_programs import GetSchedulerPrograms
 
 
 class SchedulerDomain(BaseDomain):
+    """
+    Domain for retrieving scheduler information.
+    """
+
     async def get_programs(
         self,
         *,

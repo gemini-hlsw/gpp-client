@@ -1,3 +1,7 @@
+"""
+Module for observation-related operations.
+"""
+
 __all__ = ["ObservationDomain"]
 
 import logging
@@ -35,8 +39,13 @@ logger = logging.getLogger(__name__)
 
 
 class ObservationDomain(BaseDomain):
+    """
+    Domain class for observation-related operations.
+    """
+
     async def create(
         self,
+        *,
         input: CreateObservationInput,
     ) -> CreateObservation:
         """
@@ -56,6 +65,7 @@ class ObservationDomain(BaseDomain):
 
     async def clone(
         self,
+        *,
         input: CloneObservationInput,
     ) -> CloneObservation:
         """
@@ -75,6 +85,7 @@ class ObservationDomain(BaseDomain):
 
     async def update_all(
         self,
+        *,
         input: UpdateObservationsInput,
     ) -> UpdateObservations:
         """
@@ -95,6 +106,7 @@ class ObservationDomain(BaseDomain):
     async def update_by_id(
         self,
         observation_id: str,
+        *,
         properties: ObservationPropertiesInput,
     ) -> UpdateObservationById:
         """
@@ -120,6 +132,7 @@ class ObservationDomain(BaseDomain):
     async def update_by_reference(
         self,
         observation_reference: str,
+        *,
         properties: ObservationPropertiesInput,
     ) -> UpdateObservationByReference:
         """
@@ -269,7 +282,7 @@ class ObservationDomain(BaseDomain):
     async def get_all(
         self,
         *,
-        include_deleted: bool,
+        include_deleted: bool = False,
         where: WhereObservation | None = None,
         offset: str | None = None,
         limit: int | None = None,
@@ -279,7 +292,7 @@ class ObservationDomain(BaseDomain):
 
         Parameters
         ----------
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether to include deleted observations.
         where : WhereObservation | None, optional
             Optional observation filter.

@@ -27,9 +27,9 @@ logger = logging.getLogger(__name__)
 class TargetDomain(BaseDomain):
     async def clone(
         self,
-        *,
         target_id: str,
-        include_deleted: bool,
+        *,
+        include_deleted: bool = False,
         properties: TargetPropertiesInput | None = None,
         replace_in: list[str] | None = None,
     ) -> CloneTarget:
@@ -40,7 +40,7 @@ class TargetDomain(BaseDomain):
         ----------
         target_id : str
             The target ID to clone.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
         properties : TargetPropertiesInput | None, optional
             Optional replacement properties for the cloned target.
@@ -61,10 +61,10 @@ class TargetDomain(BaseDomain):
 
     async def create_by_program_id(
         self,
-        *,
         program_id: str,
+        *,
         properties: TargetPropertiesInput,
-        include_deleted: bool,
+        include_deleted: bool = False,
     ) -> CreateTargetByProgramId:
         """
         Create a target by program ID.
@@ -75,7 +75,7 @@ class TargetDomain(BaseDomain):
             The program ID.
         properties : TargetPropertiesInput
             The target properties.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
 
         Returns
@@ -91,10 +91,10 @@ class TargetDomain(BaseDomain):
 
     async def create_by_program_reference(
         self,
-        *,
         program_reference: str,
+        *,
         properties: TargetPropertiesInput,
-        include_deleted: bool,
+        include_deleted: bool = False,
     ) -> CreateTargetByProgramReference:
         """
         Create a target by program reference.
@@ -105,7 +105,7 @@ class TargetDomain(BaseDomain):
             The program reference label.
         properties : TargetPropertiesInput
             The target properties.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
 
         Returns
@@ -121,10 +121,10 @@ class TargetDomain(BaseDomain):
 
     async def create_by_proposal_reference(
         self,
-        *,
         proposal_reference: str,
+        *,
         properties: TargetPropertiesInput,
-        include_deleted: bool,
+        include_deleted: bool = False,
     ) -> CreateTargetByProposalReference:
         """
         Create a target by proposal reference.
@@ -135,7 +135,7 @@ class TargetDomain(BaseDomain):
             The proposal reference label.
         properties : TargetPropertiesInput
             The target properties.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
 
         Returns
@@ -153,7 +153,7 @@ class TargetDomain(BaseDomain):
         self,
         *,
         properties: TargetPropertiesInput,
-        include_deleted: bool,
+        include_deleted: bool = False,
         where: WhereTarget | None = None,
         limit: int | None = None,
     ) -> UpdateTargets:
@@ -164,7 +164,7 @@ class TargetDomain(BaseDomain):
         ----------
         properties : TargetPropertiesInput
             The properties to update.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted targets should be included in the update selection/result.
         where : WhereTarget | None, optional
             Optional target filter.
@@ -185,10 +185,10 @@ class TargetDomain(BaseDomain):
 
     async def update_by_id(
         self,
-        *,
         target_id: str,
+        *,
         properties: TargetPropertiesInput,
-        include_deleted: bool,
+        include_deleted: bool = False,
     ) -> UpdateTargetById:
         """
         Update a target by ID.
@@ -199,7 +199,7 @@ class TargetDomain(BaseDomain):
             The target ID.
         properties : TargetPropertiesInput
             The properties to update.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
 
         Returns
@@ -215,7 +215,6 @@ class TargetDomain(BaseDomain):
 
     async def restore_by_id(
         self,
-        *,
         target_id: str,
     ) -> RestoreTargetById:
         """
@@ -235,7 +234,6 @@ class TargetDomain(BaseDomain):
 
     async def delete_by_id(
         self,
-        *,
         target_id: str,
     ) -> DeleteTargetById:
         """
@@ -255,9 +253,9 @@ class TargetDomain(BaseDomain):
 
     async def get_by_id(
         self,
-        *,
         target_id: str,
-        include_deleted: bool,
+        *,
+        include_deleted: bool = False,
     ) -> GetTargetById:
         """
         Get a target by ID.
@@ -266,7 +264,7 @@ class TargetDomain(BaseDomain):
         ----------
         target_id : str
             The target ID.
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted program data should be included in the result.
 
         Returns
@@ -282,7 +280,7 @@ class TargetDomain(BaseDomain):
     async def get_all(
         self,
         *,
-        include_deleted: bool,
+        include_deleted: bool = False,
         where: WhereTarget | None = None,
         offset: str | None = None,
         limit: int | None = None,
@@ -292,7 +290,7 @@ class TargetDomain(BaseDomain):
 
         Parameters
         ----------
-        include_deleted : bool
+        include_deleted : bool, default=False
             Whether deleted targets should be included.
         where : WhereTarget | None, optional
             Optional target filter.

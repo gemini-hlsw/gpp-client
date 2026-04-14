@@ -1,3 +1,7 @@
+"""
+Module for attachment-related domain functionality.
+"""
+
 __all__ = ["AttachmentDomain"]
 
 import logging
@@ -34,6 +38,10 @@ DELETE_OK: set[int] = {200, 204}
 
 
 class AttachmentDomain(BaseDomain):
+    """
+    Domain class for attachment-related operations.
+    """
+
     async def upload(
         self,
         program_id: str,
@@ -241,10 +249,10 @@ class AttachmentDomain(BaseDomain):
             The ID of the attachment.
         save_to : str | Path | None, optional
             The directory to save the downloaded attachment. If ``None``, defaults to home directory.
-        overwrite : bool, optional
-            Whether to overwrite the file if it already exists. Default is ``False``.
-        chunk_size : int, optional
-            The chunk size for downloading the file in bytes. Default is 1 MB.
+        overwrite : bool, default=False
+            Whether to overwrite the file if it already exists.
+        chunk_size : int, default=1 MB
+            The chunk size for downloading the file in bytes.
 
         Returns
         -------

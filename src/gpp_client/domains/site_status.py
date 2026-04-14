@@ -1,3 +1,7 @@
+"""
+Module for retrieving current Gemini site status information.
+"""
+
 __all__ = ["SiteStatusDomain"]
 
 import re
@@ -32,6 +36,10 @@ SITE_CONFIG = {
 
 
 class SiteStatusDomain:
+    """
+    Domain for retrieving current Gemini site status information.
+    """
+
     async def get_by_id(self, site_id: Literal["south", "north"]) -> dict[str, Any]:
         """
         Get the current site status payload for Gemini North or South.

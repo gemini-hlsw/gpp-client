@@ -1,3 +1,7 @@
+"""
+Module for atom-related operations.
+"""
+
 __all__ = ["AtomDomain"]
 
 import gzip
@@ -16,7 +20,7 @@ class AtomDomain(BaseDomain):
     """
 
     async def get_digests(
-        self, observation_ids: list[str], accept_gzip: bool = True
+        self, *, observation_ids: list[str], accept_gzip: bool = True
     ) -> str:
         """
         Request atom digests for the given observation IDs.

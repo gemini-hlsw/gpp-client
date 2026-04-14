@@ -101,7 +101,7 @@ async def test_update_by_id_dispatches_correctly(
     properties = object()
     graphql.update_observation_by_id = mocker.AsyncMock(return_value=result_model)
 
-    result = await observation_domain.update_by_id("o-1", properties)
+    result = await observation_domain.update_by_id("o-1", properties=properties)
 
     assert result is result_model
     graphql.update_observation_by_id.assert_called_once_with(
@@ -125,7 +125,9 @@ async def test_update_by_reference_dispatches_correctly(
         return_value=result_model
     )
 
-    result = await observation_domain.update_by_reference("obs-ref", properties)
+    result = await observation_domain.update_by_reference(
+        "obs-ref", properties=properties
+    )
 
     assert result is result_model
     graphql.update_observation_by_reference.assert_called_once_with(

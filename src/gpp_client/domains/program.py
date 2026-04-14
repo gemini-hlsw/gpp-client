@@ -1,3 +1,7 @@
+"""
+Module for retrieving and managing program information.
+"""
+
 __all__ = ["ProgramDomain"]
 
 import logging
@@ -22,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class ProgramDomain(BaseDomain):
+    """
+    Domain for retrieving and managing program information.
+    """
+
     async def create(
         self,
         *,
@@ -33,7 +41,7 @@ class ProgramDomain(BaseDomain):
 
         Parameters
         ----------
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether related deleted records should be included in the response.
         properties : ProgramPropertiesInput | None, optional
             The program properties to create.
@@ -63,7 +71,7 @@ class ProgramDomain(BaseDomain):
         ----------
         properties : ProgramPropertiesInput
             The properties to update.
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted programs should be included in matching/updating.
         where : WhereProgram | None, optional
             Optional filter for matching programs.
@@ -98,7 +106,7 @@ class ProgramDomain(BaseDomain):
             The program ID.
         properties : ProgramPropertiesInput
             The properties to update.
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted programs should be included.
 
         Returns
@@ -163,7 +171,7 @@ class ProgramDomain(BaseDomain):
         ----------
         program_id : str
             The program ID.
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted related records should be included.
 
         Returns
@@ -189,7 +197,7 @@ class ProgramDomain(BaseDomain):
         ----------
         program_reference : str
             The program reference label.
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted related records should be included.
 
         Returns
@@ -215,7 +223,7 @@ class ProgramDomain(BaseDomain):
         ----------
         proposal_reference : str
             The proposal reference label.
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted related records should be included.
 
         Returns
@@ -241,7 +249,7 @@ class ProgramDomain(BaseDomain):
 
         Parameters
         ----------
-        include_deleted : bool, optional
+        include_deleted : bool, default=False
             Whether deleted programs should be included.
         where : WhereProgram | None, optional
             Optional program filter.

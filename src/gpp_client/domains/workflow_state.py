@@ -1,3 +1,7 @@
+"""
+Module for managing observation workflow states in the GPP client.
+"""
+
 __all__ = ["WorkflowStateDomain"]
 
 import asyncio
@@ -18,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowStateDomain(BaseDomain):
+    """
+    Domain for managing observation workflow states.
+    """
+
     async def get_by_id(
         self,
         observation_id: str,
@@ -62,9 +70,9 @@ class WorkflowStateDomain(BaseDomain):
 
     async def update_by_id(
         self,
+        observation_id: str,
         *,
         workflow_state: ObservationWorkflowState,
-        observation_id: str,
     ) -> dict[str, Any]:
         """
         Update the workflow state of an observation by its ID, or return the current
@@ -80,10 +88,10 @@ class WorkflowStateDomain(BaseDomain):
 
         Parameters
         ----------
-        workflow_state : ObservationWorkflowState
-            The desired workflow state to transition to.
         observation_id : str
             The observation ID.
+        workflow_state : ObservationWorkflowState
+            The desired workflow state to transition to.
 
         Returns
         -------
@@ -135,9 +143,9 @@ class WorkflowStateDomain(BaseDomain):
 
     async def update_by_id_with_retry(
         self,
+        observation_id: str,
         *,
         workflow_state: ObservationWorkflowState,
-        observation_id: str,
         max_attempts: int = 10,
         initial_delay: float = 0.0,
         retry_delay: float = 1.0,
@@ -151,10 +159,10 @@ class WorkflowStateDomain(BaseDomain):
 
         Parameters
         ----------
-        workflow_state : ObservationWorkflowState
-            The desired workflow state to transition to.
         observation_id : str
             The observation ID.
+        workflow_state : ObservationWorkflowState
+            The desired workflow state to transition to.
         max_attempts : int, default=10
             Maximum number of retry attempts.
         initial_delay : float, default=0.0

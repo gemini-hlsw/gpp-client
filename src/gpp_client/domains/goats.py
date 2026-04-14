@@ -1,3 +1,7 @@
+"""
+Module for GOATS-related operations.
+"""
+
 __all__ = ["GOATSDomain"]
 
 from gpp_client.domains.base import BaseDomain
@@ -6,8 +10,13 @@ from gpp_client.generated.get_goats_programs import GetGOATSPrograms
 
 
 class GOATSDomain(BaseDomain):
+    """
+    Domain class for GOATS-related operations.
+    """
+
     async def get_observations_by_program_id(
         self,
+        *,
         program_id: str,
     ) -> GetGOATSObservations:
         """
