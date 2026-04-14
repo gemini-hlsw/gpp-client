@@ -138,25 +138,29 @@ The client also supports async context management:
       ...
 
 
-Accessing Underlying Clients
-----------------------------
+Underlying Clients
+------------------
 
-Advanced usage may require direct access to the underlying clients:
+Advanced users may access the underlying transport clients directly.
 
-- :attr:`~gpp_client.GPPClient.graphql` → GraphQL client
-- :attr:`~gpp_client.GPPClient.rest` → REST client
-- :attr:`~gpp_client.GPPClient.settings` → resolved settings
+GraphQL Client
+^^^^^^^^^^^^^^
 
-.. code-block:: python
+The generated GraphQL client is available via:
 
-   graphql = client.graphql
-   rest = client.rest
+- :attr:`~gpp_client.GPPClient.graphql`
 
+REST Client
+^^^^^^^^^^^
+
+The REST client is available via:
+
+- :attr:`~gpp_client.GPPClient.rest`
 
 .. warning::
 
-   Direct use of the underlying clients is considered advanced usage.
-   Prefer using domain interfaces when possible.
+   Direct use of the REST client is considered advanced usage and is rarely
+   necessary. Prefer using domain interfaces whenever possible.
 
 
 API Reference
