@@ -35,6 +35,7 @@ keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["gpp_client*"]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"
@@ -92,6 +93,10 @@ docs = [
     "sphinx-autobuild>=2024.10.3",
     "sphinx-copybutton>=0.5.2",
     "sphinxcontrib-typer>=0.7.2",
+]
+notebook = [
+    "ipykernel>=7.2.0",
+    "jupyter>=1.1.1",
 ]
 schema = [
     "aiohttp>=3.13.3",

@@ -1,3 +1,7 @@
+"""
+Module for base domain functionality and utilities.
+"""
+
 __all__ = ["BaseDomain"]
 
 import logging
@@ -18,6 +22,19 @@ logger = logging.getLogger(__name__)
 
 
 class BaseDomain:
+    """
+    Base class for domain functionality and utilities.
+
+    Parameters
+    ----------
+    graphql : GraphQLClient
+        The GraphQL client instance for making API requests.
+    rest : RESTClient
+        The REST client instance for making API requests.
+    settings : GPPSettings
+        The settings instance containing configuration options.
+    """
+
     def __init__(
         self, *, graphql: GraphQLClient, rest: RESTClient, settings: GPPSettings
     ) -> None:
