@@ -228,11 +228,14 @@ from .custom_typing_fields import (
     RecordFlamingos2VisitResultGraphQLField,
     RecordGmosNorthVisitResultGraphQLField,
     RecordGmosSouthVisitResultGraphQLField,
+    RecordIgrins2VisitResultGraphQLField,
+    RecordVisitResultGraphQLField,
     RedeemUserInvitationResultGraphQLField,
     RegionGraphQLField,
     ReplaceFlamingos2SequenceResultGraphQLField,
     ReplaceGmosNorthSequenceResultGraphQLField,
     ReplaceGmosSouthSequenceResultGraphQLField,
+    ReplaceIgrins2SequenceResultGraphQLField,
     ResetAcquisitionResultGraphQLField,
     RevokeUserInvitationResultGraphQLField,
     RightAscensionArcGraphQLField,
@@ -257,6 +260,7 @@ from .custom_typing_fields import (
     SpectralDefinitionIntegratedGraphQLField,
     SpectralDefinitionSurfaceGraphQLField,
     SpectroscopyConfigOptionFlamingos2GraphQLField,
+    SpectroscopyConfigOptionGhostGraphQLField,
     SpectroscopyConfigOptionGmosNorthGraphQLField,
     SpectroscopyConfigOptionGmosSouthGraphQLField,
     SpectroscopyConfigOptionGraphQLField,
@@ -1433,10 +1437,6 @@ class ClassicalFields(GraphQLField):
 
 class CloneGroupResultFields(GraphQLField):
     @classmethod
-    def original_group(cls) -> "GroupFields":
-        return GroupFields("originalGroup")
-
-    @classmethod
     def new_group(cls) -> "GroupFields":
         return GroupFields("newGroup")
 
@@ -1453,12 +1453,7 @@ class CloneGroupResultFields(GraphQLField):
 
 
 class CloneObservationResultFields(GraphQLField):
-    """The result of cloning an observation, containing the original and new observations."""
-
-    @classmethod
-    def original_observation(cls) -> "ObservationFields":
-        """The original unmodified observation which was cloned."""
-        return ObservationFields("originalObservation")
+    """The result of cloning an observation, containing the new observation."""
 
     @classmethod
     def new_observation(cls) -> "ObservationFields":
@@ -1479,11 +1474,6 @@ class CloneObservationResultFields(GraphQLField):
 
 class CloneTargetResultFields(GraphQLField):
     """The result of cloning a target, containing the original and new targets."""
-
-    @classmethod
-    def original_target(cls) -> "TargetFields":
-        """The original unmodified target which was cloned"""
-        return TargetFields("originalTarget")
 
     @classmethod
     def new_target(cls) -> "TargetFields":
@@ -3158,19 +3148,6 @@ class ExecutionFields(GraphQLField):
         along with warning messages."""
         return CalculatedExecutionDigestFields("digest")
 
-    @classmethod
-    def config(cls, *, future_limit: Optional[Any] = None) -> "ExecutionConfigFields":
-        """Full execution config, including acquisition and science sequences.  If a
-        sequence cannot be generated for this observation, `null` is returned along
-        with warning messages."""
-        arguments: dict[str, dict[str, Any]] = {
-            "futureLimit": {"type": "NonNegInt", "value": future_limit}
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return ExecutionConfigFields("config", arguments=cleared_arguments)
-
     execution_state: "ExecutionGraphQLField" = ExecutionGraphQLField("executionState")
     "Determines the execution state as a whole of this observation."
 
@@ -3244,7 +3221,6 @@ class ExecutionFields(GraphQLField):
             "CalculatedExecutionDigestFields",
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
-            "ExecutionConfigFields",
             "ExecutionEventSelectResultFields",
             "VisitSelectResultFields",
         ],
@@ -4792,7 +4768,8 @@ class GmosNorthStaticFields(GraphQLField):
 
     @classmethod
     def nod_and_shuffle(cls) -> "GmosNodAndShuffleFields":
-        """Nod-and-shuffle configuration"""
+        """Nod-and-shuffle configuration.  This is currently not used and will always
+        return null."""
         return GmosNodAndShuffleFields("nodAndShuffle")
 
     def fields(
@@ -5431,7 +5408,9 @@ class GmosSouthStaticFields(GraphQLField):
 
     @classmethod
     def nod_and_shuffle(cls) -> "GmosNodAndShuffleFields":
-        """Nod-and-shuffle configuration"""
+        """#Nod-and-shuffle configuration
+        Nod-and-shuffle configuration.  This is currently not used and will always
+        return null."""
         return GmosNodAndShuffleFields("nodAndShuffle")
 
     def fields(
@@ -7858,6 +7837,45 @@ class RecordGmosSouthVisitResultFields(GraphQLField):
         return self
 
 
+class RecordIgrins2VisitResultFields(GraphQLField):
+    """Result for recordIgrins2Visit mutation."""
+
+    @classmethod
+    def visit(cls) -> "VisitFields":
+        """The newly added visit record itself."""
+        return VisitFields("visit")
+
+    def fields(
+        self, *subfields: Union[RecordIgrins2VisitResultGraphQLField, "VisitFields"]
+    ) -> "RecordIgrins2VisitResultFields":
+        """Subfields should come from the RecordIgrins2VisitResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RecordIgrins2VisitResultFields":
+        self._alias = alias
+        return self
+
+
+class RecordVisitResultFields(GraphQLField):
+    """The result of recording a new Visit."""
+
+    @classmethod
+    def visit(cls) -> "VisitFields":
+        return VisitFields("visit")
+
+    def fields(
+        self, *subfields: Union[RecordVisitResultGraphQLField, "VisitFields"]
+    ) -> "RecordVisitResultFields":
+        """Subfields should come from the RecordVisitResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RecordVisitResultFields":
+        self._alias = alias
+        return self
+
+
 class RedeemUserInvitationResultFields(GraphQLField):
     @classmethod
     def invitation(cls) -> "UserInvitationFields":
@@ -7968,6 +7986,29 @@ class ReplaceGmosSouthSequenceResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ReplaceGmosSouthSequenceResultFields":
+        self._alias = alias
+        return self
+
+
+class ReplaceIgrins2SequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
+    @classmethod
+    def sequence(cls) -> "Igrins2AtomFields":
+        return Igrins2AtomFields("sequence")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ReplaceIgrins2SequenceResultGraphQLField, "Igrins2AtomFields"
+        ],
+    ) -> "ReplaceIgrins2SequenceResultFields":
+        """Subfields should come from the ReplaceIgrins2SequenceResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ReplaceIgrins2SequenceResultFields":
         self._alias = alias
         return self
 
@@ -8670,6 +8711,17 @@ class SpectroscopyConfigOptionFields(GraphQLField):
     )
 
     @classmethod
+    def flamingos_2(cls) -> "SpectroscopyConfigOptionFlamingos2Fields":
+        """For Flamingos2 options, the Flamingos 2configuration.  Null for other
+        instruments."""
+        return SpectroscopyConfigOptionFlamingos2Fields("flamingos2")
+
+    @classmethod
+    def ghost(cls) -> "SpectroscopyConfigOptionGhostFields":
+        """For GHOST options, the GHOST configuration.  Null for other instruments."""
+        return SpectroscopyConfigOptionGhostFields("ghost")
+
+    @classmethod
     def gmos_north(cls) -> "SpectroscopyConfigOptionGmosNorthFields":
         """For GMOS North options, the GMOS North configuration.  Null for other
         instruments."""
@@ -8681,18 +8733,13 @@ class SpectroscopyConfigOptionFields(GraphQLField):
         instruments."""
         return SpectroscopyConfigOptionGmosSouthFields("gmosSouth")
 
-    @classmethod
-    def flamingos_2(cls) -> "SpectroscopyConfigOptionFlamingos2Fields":
-        """For Flamingos2 options, the Flamingos 2configuration.  Null for other
-        instruments."""
-        return SpectroscopyConfigOptionFlamingos2Fields("flamingos2")
-
     def fields(
         self,
         *subfields: Union[
             SpectroscopyConfigOptionGraphQLField,
             "AngleFields",
             "SpectroscopyConfigOptionFlamingos2Fields",
+            "SpectroscopyConfigOptionGhostFields",
             "SpectroscopyConfigOptionGmosNorthFields",
             "SpectroscopyConfigOptionGmosSouthFields",
             "WavelengthFields",
@@ -8726,6 +8773,26 @@ class SpectroscopyConfigOptionFlamingos2Fields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SpectroscopyConfigOptionFlamingos2Fields":
+        self._alias = alias
+        return self
+
+
+class SpectroscopyConfigOptionGhostFields(GraphQLField):
+    resolution_mode: "SpectroscopyConfigOptionGhostGraphQLField" = (
+        SpectroscopyConfigOptionGhostGraphQLField("resolutionMode")
+    )
+    binning: "SpectroscopyConfigOptionGhostGraphQLField" = (
+        SpectroscopyConfigOptionGhostGraphQLField("binning")
+    )
+
+    def fields(
+        self, *subfields: SpectroscopyConfigOptionGhostGraphQLField
+    ) -> "SpectroscopyConfigOptionGhostFields":
+        """Subfields should come from the SpectroscopyConfigOptionGhostFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionGhostFields":
         self._alias = alias
         return self
 
@@ -9060,6 +9127,12 @@ class StepRecordFields(GraphQLField):
         unless the `instrument` discriminator is "GMOS_SOUTH"."""
         return GmosSouthDynamicFields("gmosSouth")
 
+    @classmethod
+    def igrins_2(cls) -> "Igrins2DynamicFields":
+        """IGRINS-2 instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "IGRINS2"."""
+        return Igrins2DynamicFields("igrins2")
+
     def fields(
         self,
         *subfields: Union[
@@ -9070,6 +9143,7 @@ class StepRecordFields(GraphQLField):
             "Flamingos2DynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
+            "Igrins2DynamicFields",
             "StepConfigInterface",
             "TelescopeConfigFields",
             "TimeSpanFields",
@@ -10559,6 +10633,13 @@ class VisitFields(GraphQLField):
         `GMOS_SOUTH`."""
         return GmosSouthStaticFields("gmosSouth")
 
+    @classmethod
+    def igrins_2(cls) -> "Igrins2StaticFields":
+        """IGRINS-2 static instrument configuration, for IGRINS-2 visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `IGRINS2`."""
+        return Igrins2StaticFields("igrins2")
+
     def fields(
         self,
         *subfields: Union[
@@ -10569,6 +10650,7 @@ class VisitFields(GraphQLField):
             "Flamingos2StaticFields",
             "GmosNorthStaticFields",
             "GmosSouthStaticFields",
+            "Igrins2StaticFields",
             "ObservationFields",
             "TimeChargeInvoiceFields",
             "TimestampIntervalFields",

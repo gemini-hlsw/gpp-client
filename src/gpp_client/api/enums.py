@@ -127,6 +127,22 @@ class GcalShutter(str, Enum):
     CLOSED = "CLOSED"
 
 
+class GhostResolutionMode(str, Enum):
+    STANDARD = "STANDARD"
+    HIGH = "HIGH"
+
+
+class GhostBinning(str, Enum):
+    ONE_BY_ONE = "ONE_BY_ONE"
+    ONE_BY_TWO = "ONE_BY_TWO"
+    ONE_BY_FOUR = "ONE_BY_FOUR"
+    ONE_BY_EIGHT = "ONE_BY_EIGHT"
+    TWO_BY_TWO = "TWO_BY_TWO"
+    TWO_BY_FOUR = "TWO_BY_FOUR"
+    TWO_BY_EIGHT = "TWO_BY_EIGHT"
+    FOUR_BY_FOUR = "FOUR_BY_FOUR"
+
+
 class GmosAmpCount(str, Enum):
     THREE = "THREE"
     SIX = "SIX"
