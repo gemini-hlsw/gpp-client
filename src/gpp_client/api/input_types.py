@@ -790,7 +790,7 @@ class GmosNorthStaticInput(BaseModel):
     nod_and_shuffle: Optional["GmosNodAndShuffleInput"] = Field(
         alias=str("nodAndShuffle"), default=None
     )
-    "GMOS Nod And Shuffle configuration"
+    "GMOS Nod And Shuffle configuration.  Warning: Currently not used or stored."
 
 
 class GmosSouthDynamicInput(BaseModel):
@@ -952,7 +952,7 @@ class GmosSouthStaticInput(BaseModel):
     nod_and_shuffle: Optional["GmosNodAndShuffleInput"] = Field(
         alias=str("nodAndShuffle"), default=None
     )
-    "GMOS Nod And Shuffle configuration"
+    "GMOS Nod And Shuffle configuration.  Warning: currently not used or stored."
 
 
 class CloneGroupInput(BaseModel):
@@ -1427,6 +1427,14 @@ class RecordDatasetInput(BaseModel):
     "Dataset comment."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe dataset is created and is used to enable problem-free retry in the case of\nfailure."
+
+
+class RecordVisitInput(BaseModel):
+    """Input parameters for creating a new visit."""
+
+    observation_id: Any = Field(alias=str("observationId"))
+    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
 
 class RecordGmosNorthVisitInput(BaseModel):
@@ -2255,6 +2263,26 @@ class RecordFlamingos2VisitInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     flamingos_2: "Flamingos2StaticInput" = Field(alias=str("flamingos2"))
+    idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
+
+
+class Igrins2StaticInput(BaseModel):
+    """IGRINS-2 static configuration input parameters"""
+
+    save_svc_images: Optional[bool] = Field(alias=str("saveSVCImages"), default=None)
+    "Whether to save SVC images (defaults to false)"
+    offset_mode: Optional[Igrins2OffsetMode] = Field(
+        alias=str("offsetMode"), default=None
+    )
+    "Offset mode (defaults to NOD_ALONG_SLIT)"
+
+
+class RecordIgrins2VisitInput(BaseModel):
+    """Input parameters for creating a new IGRINS-2 Visit"""
+
+    observation_id: Any = Field(alias=str("observationId"))
+    igrins_2: "Igrins2StaticInput" = Field(alias=str("igrins2"))
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -4275,6 +4303,20 @@ class GmosSouthStepInput(BaseModel):
     observe_class: ObserveClass = Field(alias=str("observeClass"))
 
 
+class Igrins2DynamicInput(BaseModel):
+    exposure: "TimeSpanInput"
+
+
+class Igrins2StepInput(BaseModel):
+    instrument_config: "Igrins2DynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
 class Flamingos2AtomInput(BaseModel):
     description: Optional[Any] = None
     steps: list["Flamingos2StepInput"]
@@ -4288,6 +4330,11 @@ class GmosNorthAtomInput(BaseModel):
 class GmosSouthAtomInput(BaseModel):
     description: Optional[Any] = None
     steps: list["GmosSouthStepInput"]
+
+
+class Igrins2AtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["Igrins2StepInput"]
 
 
 class ReplaceFlamingos2SequenceInput(BaseModel):
@@ -4332,6 +4379,21 @@ class ReplaceGmosSouthSequenceInput(BaseModel):
     sequence_type: SequenceType = Field(alias=str("sequenceType"))
     "Specifies which sequence should be replaced."
     sequence: Optional[list["GmosSouthAtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
+class ReplaceIgrins2SequenceInput(BaseModel):
+    """Replace IGRINS-2 sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["Igrins2AtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
 
 
@@ -4445,6 +4507,7 @@ UpdateProposalInput.model_rebuild()
 UpdateTargetsInput.model_rebuild()
 WhereDatasetChronicleEntry.model_rebuild()
 RecordFlamingos2VisitInput.model_rebuild()
+RecordIgrins2VisitInput.model_rebuild()
 Flamingos2DynamicInput.model_rebuild()
 Flamingos2FpuMaskInput.model_rebuild()
 Flamingos2LongSlitAcquisitionInput.model_rebuild()
@@ -4489,9 +4552,13 @@ WhereCalculatedObservationWorkflow.model_rebuild()
 Flamingos2StepInput.model_rebuild()
 GmosNorthStepInput.model_rebuild()
 GmosSouthStepInput.model_rebuild()
+Igrins2DynamicInput.model_rebuild()
+Igrins2StepInput.model_rebuild()
 Flamingos2AtomInput.model_rebuild()
 GmosNorthAtomInput.model_rebuild()
 GmosSouthAtomInput.model_rebuild()
+Igrins2AtomInput.model_rebuild()
 ReplaceFlamingos2SequenceInput.model_rebuild()
 ReplaceGmosNorthSequenceInput.model_rebuild()
 ReplaceGmosSouthSequenceInput.model_rebuild()
+ReplaceIgrins2SequenceInput.model_rebuild()

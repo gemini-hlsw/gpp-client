@@ -104,7 +104,6 @@ class TargetManager(BaseManager):
         )
 
         fields = Mutation.clone_target(input=input_data).fields(
-            CloneTargetResultFields.original_target().fields(*self._fields()),
             CloneTargetResultFields.new_target().fields(*self._fields()),
         )
 

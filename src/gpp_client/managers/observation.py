@@ -137,12 +137,6 @@ class ObservationManager(BaseManager):
             set_=properties,
         )
         fields = Mutation.clone_observation(input=input_data).fields(
-            CloneObservationResultFields.original_observation().fields(
-                # Only a few fields from the original are returned.
-                ObservationFields.id,
-                ObservationFields.existence,
-                ObservationFields.reference().fields(ObservationReferenceFields.label),
-            ),
             CloneObservationResultFields.new_observation().fields(*self._fields()),
         )
 

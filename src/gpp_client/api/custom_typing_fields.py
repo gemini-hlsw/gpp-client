@@ -553,6 +553,12 @@ class RecordDatasetResultGraphQLField(GraphQLField):
         return self
 
 
+class RecordVisitResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RecordVisitResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class RecordGmosNorthVisitResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "RecordGmosNorthVisitResultGraphQLField":
         self._alias = alias
@@ -961,6 +967,12 @@ class RecordFlamingos2VisitResultGraphQLField(GraphQLField):
         return self
 
 
+class RecordIgrins2VisitResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RecordIgrins2VisitResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class Flamingos2AtomGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2AtomGraphQLField":
         self._alias = alias
@@ -1207,6 +1219,18 @@ class SpectroscopyConfigOptionGraphQLField(GraphQLField):
         return self
 
 
+class SpectroscopyConfigOptionFlamingos2GraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionFlamingos2GraphQLField":
+        self._alias = alias
+        return self
+
+
+class SpectroscopyConfigOptionGhostGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionGhostGraphQLField":
+        self._alias = alias
+        return self
+
+
 class SpectroscopyConfigOptionGmosNorthGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SpectroscopyConfigOptionGmosNorthGraphQLField":
         self._alias = alias
@@ -1215,12 +1239,6 @@ class SpectroscopyConfigOptionGmosNorthGraphQLField(GraphQLField):
 
 class SpectroscopyConfigOptionGmosSouthGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SpectroscopyConfigOptionGmosSouthGraphQLField":
-        self._alias = alias
-        return self
-
-
-class SpectroscopyConfigOptionFlamingos2GraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SpectroscopyConfigOptionFlamingos2GraphQLField":
         self._alias = alias
         return self
 
@@ -1939,5 +1957,11 @@ class ReplaceGmosNorthSequenceResultGraphQLField(GraphQLField):
 
 class ReplaceGmosSouthSequenceResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ReplaceGmosSouthSequenceResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ReplaceIgrins2SequenceResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ReplaceIgrins2SequenceResultGraphQLField":
         self._alias = alias
         return self
