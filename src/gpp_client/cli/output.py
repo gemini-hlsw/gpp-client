@@ -13,10 +13,14 @@ __all__ = [
     "print_exception",
     "status",
     "space",
+    "TableColumn",
+    "model_table",
 ]
 
 from contextlib import contextmanager
-from typing import Optional
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Optional
 
 from rich.console import RenderableType
 from rich.json import JSON
@@ -272,3 +276,134 @@ def status(message: str, *, spinner: str = "dots"):
     """
     with console.status(f"[cyan]{message}[/]", spinner=spinner) as status:
         yield status
+
+
+@dataclass(frozen=True)
+class TableColumn:
+    """
+    Definition for a rendered table column.
+
+    Parameters
+    ----------
+    header : str
+        The displayed column header.
+    path : str
+        Dotted attribute path to resolve from the item.
+    default : str, optional
+        Fallback text when the resolved value is missing.
+    no_wrap : bool, optional
+        Whether the column should avoid wrapping.
+    style : str | None, optional
+        Optional Rich style for the column.
+    """
+
+    header: str
+    path: str
+    default: str = "-"
+    no_wrap: bool = False
+    style: str | None = None
+
+
+def _resolve_attr_path(obj: Any, path: str) -> Any:
+    """
+    Resolve a dotted attribute path from an object.
+
+    Parameters
+    ----------
+    obj : Any
+        Source object.
+    path : str
+        Dotted path such as ``program.id`` or ``workflow.value.state``.
+
+    Returns
+    -------
+    Any
+        The resolved value, or None if any segment is missing.
+    """
+    current = obj
+
+    for part in path.split("."):
+        if current is None:
+            return None
+
+        current = getattr(current, part, None)
+
+    return current
+
+
+def _format_cell(value: Any, *, default: str = "-") -> str:
+    """
+    Convert a Python value into a table-safe string.
+
+    Parameters
+    ----------
+    value : Any
+        Input value.
+    default : str, optional
+        Fallback when the value is None.
+
+    Returns
+    -------
+    str
+        Formatted cell text.
+    """
+    if value is None:
+        return default
+
+    if isinstance(value, Enum):
+        return str(value.value)
+
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+
+    if isinstance(value, (list, tuple, set)):
+        return ", ".join(_format_cell(item, default=default) for item in value)
+
+    return str(value)
+
+
+def model_table(
+    items: list[Any],
+    columns: list[TableColumn],
+    *,
+    title: str | None = None,
+    empty_message: str = "No results found.",
+) -> None:
+    """
+    Render a Rich table from model objects.
+
+    Parameters
+    ----------
+    items : list[Any]
+        Rows to render.
+    columns : list[TableColumn]
+        Column definitions.
+    title : str | None, optional
+        Optional table title.
+    empty_message : str, optional
+        Message to display when there are no rows.
+    """
+    if not items:
+        console.print(empty_message, style="dim")
+        return
+
+    table = Table(title=title)
+
+    for column in columns:
+        table.add_column(
+            column.header,
+            no_wrap=column.no_wrap,
+            style=column.style,
+        )
+
+    for item in items:
+        row = [
+            _format_cell(
+                _resolve_attr_path(item, column.path),
+                default=column.default,
+            )
+            for column in columns
+        ]
+        table.add_row(*row)
+
+    console.print(table)
