@@ -1,11 +1,11 @@
-Generated Result Models
-=======================
+Result Models
+=============
 
-This page documents the generated operation and result models re-exported from
+This page documents the generated operation result models re-exported from
 ``gpp_client.generated``.
 
-These models describe the exact response structure returned by generated
-GraphQL operations and by higher-level domain wrappers.
+These models describe the response structures returned by generated GraphQL
+operations and by higher-level domain wrappers.
 
 Use this page when you need to inspect returned fields or nested result
 models.

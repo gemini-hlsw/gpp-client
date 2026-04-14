@@ -1,5 +1,5 @@
-Generated GraphQL Models
-========================
+Generated GraphQL API
+=====================
 
 This section documents the auto-generated models and helpers used by the
 GPP client.
@@ -33,9 +33,20 @@ The following modules are the primary entry points for advanced usage.
 
    input-types
    enums
+   result-models
    client
-   custom-fields
+   field-builders
    custom-queries
    custom-mutations
    exceptions
-   reference
+
+Internal Reference
+------------------
+
+These pages document lower-level generated helpers used internally by the
+GraphQL client implementation.
+
+.. toctree::
+   :maxdepth: 1
+
+   internal-reference
