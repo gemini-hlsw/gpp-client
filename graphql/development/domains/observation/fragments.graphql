@@ -9,14 +9,6 @@ fragment ObservationCore on Observation {
   calibrationRole
 }
 
-fragment OriginalClonedObservationDetails on Observation {
-  id
-  existence
-  reference {
-    label
-  }
-}
-
 fragment TargetEnvironmentDetails on TargetEnvironment {
   asterism {
     name
