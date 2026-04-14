@@ -136,4 +136,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.program.ProgramDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

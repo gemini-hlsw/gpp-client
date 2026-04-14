@@ -156,4 +156,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.observation.ObservationDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

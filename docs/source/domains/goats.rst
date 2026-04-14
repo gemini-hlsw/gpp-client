@@ -48,4 +48,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.goats.GOATSDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

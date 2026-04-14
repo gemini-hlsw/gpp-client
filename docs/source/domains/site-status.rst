@@ -69,4 +69,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.site_status.SiteStatusDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

@@ -56,4 +56,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.atom.AtomDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

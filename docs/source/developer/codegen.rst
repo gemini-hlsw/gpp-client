@@ -1,12 +1,12 @@
 Code Generation
 ===============
 
-The GPP Client uses `ariadne-codegen <https://github.com/mirumee/ariadne-codegen>`_ to generate all GraphQL models, enums,
-inputs, fragments, and the underlying ``_GPPClient`` transport layer.
+The GPP Client uses `ariadne-codegen <https://github.com/mirumee/ariadne-codegen>`_ to generate the GraphQL transport client,
+operations, models, enums, input types, fragments, and related API code.
 
 All generated code lives in:
 
-``src/gpp_client/api/``
+``src/gpp_client/generated/``
 
 Running Codegen
 ---------------
@@ -15,38 +15,68 @@ Use the provided script:
 
 .. code-block:: bash
 
-   uv run python scripts/run_codegen.py PRODUCTION
+   uv run --group codegen python scripts/run_codegen.py PRODUCTION
 
-This script:
+You may also generate code for the development environment:
 
-1. Validates that the schema exists.
-2. Writes a temporary ``codegen.toml`` based on project defaults.
-3. Creates a backup of the existing ``src/gpp_client/api`` directory.
-4. Runs ``ariadne-codegen``.
-5. Restores the backup on failure.
-6. Deletes the backup on success.
+.. code-block:: bash
+
+   uv run --group codegen python scripts/run_codegen.py DEVELOPMENT
+
+The environment argument is case-insensitive and must match a valid ``GPPEnvironment``.
+
+What the Script Does
+--------------------
+
+The codegen script now uses an environment-specific Ariadne configuration file and performs the following steps:
+
+1. Resolves the config file at:
+
+   ``graphql/<environment>/ariadne-codegen.toml``
+
+2. Runs ``ariadne-codegen`` using that config.
+
+3. Loads the generated package settings from the TOML file.
+
+4. Resolves the generated package directory from:
+
+   - ``target_package_path``
+   - ``target_package_name``
+
+5. Writes a generated module named:
+
+   ``package_environment.py``
+
+   into the generated package so the packaged code knows which environment it was generated for.
+
+Generated Package Environment
+-----------------------------
+
+After code generation completes, the script writes:
+
+``src/gpp_client/generated/package_environment.py``
+
+This module contains a package-level constant:
+
+.. code-block:: python
+
+   PACKAGE_ENVIRONMENT = "PRODUCTION"
+
+or:
+
+.. code-block:: python
+
+   PACKAGE_ENVIRONMENT = "DEVELOPMENT"
+
+This allows the generated package to retain knowledge of the environment it was built against.
 
 Codegen Configuration
 ---------------------
 
-The configuration is constructed dynamically, but corresponds to:
+Code generation is configured per environment using:
 
-.. code-block:: toml
-
-   [tool.ariadne-codegen]
-   schema_path = "schemas/production.schema.graphql"
-   query_path = "src/queries"
-   target_package_path = "src/gpp_client"
-   target_package_name = "api"
-   convert_to_snake_case = true
-   enable_custom_operations = true
-   client_name = "_GPPClient"
-   client_file_name = "_client"
-   plugins = ["custom_plugins.AliasStrWrapperPlugin"]
-
-This produces:
-
-``src/gpp_client/api/``
+- ``graphql/development/ariadne-codegen.toml``
+- ``graphql/production/ariadne-codegen.toml``
 
 Custom Plugins
 --------------
@@ -55,24 +85,18 @@ The project currently uses:
 
 ``custom_plugins.AliasStrWrapperPlugin``
 
-This plugin corrects how certain scalar wrappers behave with aliases.
+This plugin corrects alias behavior for wrapped scalar types in the generated code.
 
 Why Codegen Is Required
 -----------------------
 
-The GPP schema changes regularly. Each change may add:
+The GPP schema changes regularly. Those changes may introduce:
 
 - New input types
 - New enums
 - New fields
 - Updated nullability
+- New operations
 - New custom types
 
-Rather than maintain all Pydantic models manually, the project regenerates them
-using the upstream schema.
-
-.. note::
-
-   The GPP Client itself is intentionally *thin*. Most logic resides in resource
-   managers and higher-level abstractions. The generated code is not intended to
-   contain business logic except for the defined queries, mutations, and subscriptions.
+Rather than manually maintaining the generated GraphQL layer, the client regenerates it directly from the upstream schema.
