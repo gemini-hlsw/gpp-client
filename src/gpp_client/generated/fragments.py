@@ -545,16 +545,6 @@ class OpportunityTargetDetailsRegionDeclinationArcEnd(BaseModel):
     degrees: Any
 
 
-class OriginalClonedObservationDetails(BaseModel):
-    id: Any
-    existence: Existence
-    reference: Optional["OriginalClonedObservationDetailsReference"]
-
-
-class OriginalClonedObservationDetailsReference(BaseModel):
-    label: Any
-
-
 class ProgramDetail(ProgramCore):
     type_: ProgramType = Field(alias="type")
     active: "ProgramDetailActive"
@@ -684,7 +674,6 @@ ObservationDetails.model_rebuild()
 ObservationWorkflowCore.model_rebuild()
 ObservationWorkflowDetails.model_rebuild()
 OpportunityTargetDetails.model_rebuild()
-OriginalClonedObservationDetails.model_rebuild()
 ProgramDetail.model_rebuild()
 ProgramGroupElements.model_rebuild()
 TargetCore.model_rebuild()
