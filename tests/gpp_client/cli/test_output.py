@@ -1,4 +1,9 @@
+from enum import Enum
+from types import SimpleNamespace
+
 import pytest
+from rich.console import Console
+from rich.table import Table
 
 from gpp_client.cli import output
 
@@ -11,6 +16,26 @@ def consoles(mocker):
     mock_console = mocker.patch("gpp_client.cli.output.console")
     mock_error_console = mocker.patch("gpp_client.cli.output.error_console")
     return mock_console, mock_error_console
+
+
+@pytest.fixture()
+def recorded_console(mocker) -> Console:
+    """
+    Patch the CLI output console with a recording Rich console.
+    """
+    test_console = Console(record=True)
+    mocker.patch.object(output, "console", test_console)
+    return test_console
+
+
+@pytest.fixture()
+def recorded_error_console(mocker) -> Console:
+    """
+    Patch the CLI error console with a recording Rich console.
+    """
+    test_console = Console(stderr=True, record=True)
+    mocker.patch.object(output, "error_console", test_console)
+    return test_console
 
 
 @pytest.mark.parametrize(
@@ -107,3 +132,231 @@ def test_status_context_manager(mocker):
         assert s is fake_status
 
     mock_console.status.assert_called_once()
+
+
+class DummyState(Enum):
+    """
+    Dummy enum for testing cell formatting.
+    """
+
+    READY = "READY"
+    INACTIVE = "INACTIVE"
+
+
+def test_table_column_defaults() -> None:
+    """
+    Ensure TableColumn uses the expected default values.
+    """
+    column = output.TableColumn(
+        header="ID",
+        path="id",
+    )
+
+    assert column.header == "ID"
+    assert column.path == "id"
+    assert column.default == "-"
+    assert column.no_wrap is False
+    assert column.style is None
+
+
+@pytest.mark.parametrize(
+    ("item", "path", "expected"),
+    [
+        (
+            SimpleNamespace(
+                program=SimpleNamespace(
+                    id="p-123",
+                )
+            ),
+            "program.id",
+            "p-123",
+        ),
+        (
+            SimpleNamespace(
+                program=SimpleNamespace(
+                    id="p-123",
+                )
+            ),
+            "program.reference",
+            None,
+        ),
+        (
+            SimpleNamespace(
+                program=None,
+            ),
+            "program.id",
+            None,
+        ),
+    ],
+)
+def test_resolve_attr_path(
+    item: SimpleNamespace,
+    path: str,
+    expected: object,
+) -> None:
+    """
+    Ensure _resolve_attr_path correctly resolves nested paths.
+    """
+    result = output._resolve_attr_path(item, path)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (None, "-"),
+        ("abc", "abc"),
+        (123, "123"),
+        (True, "yes"),
+        (False, "no"),
+        (DummyState.READY, "READY"),
+        (["a", "b"], "a, b"),
+        ((1, 2), "1, 2"),
+        ({"x", "y"}, "x, y"),
+    ],
+)
+def test_format_cell_returns_expected_string(
+    value: object,
+    expected: str,
+) -> None:
+    """
+    Ensure _format_cell converts supported values into display strings.
+    """
+    result = output._format_cell(value)
+
+    if isinstance(value, set):
+        assert set(result.split(", ")) == set(expected.split(", "))
+    else:
+        assert result == expected
+
+
+def test_format_cell_uses_custom_default_for_none() -> None:
+    """
+    Ensure _format_cell uses the provided default for None values.
+    """
+    result = output._format_cell(None, default="N/A")
+
+    assert result == "N/A"
+
+
+def test_model_table_prints_empty_message_when_no_items(
+    recorded_console: Console,
+) -> None:
+    """
+    Ensure model_table prints the empty message when there are no items.
+    """
+    output.model_table(
+        items=[],
+        columns=[
+            output.TableColumn(header="ID", path="id"),
+        ],
+        empty_message="Nothing here.",
+    )
+
+    rendered = recorded_console.export_text()
+    assert "Nothing here." in rendered
+
+
+def test_model_table_renders_table(mocker) -> None:
+    """
+    Ensure model_table builds and prints a Rich Table for populated items.
+    """
+    print_mock = mocker.patch("gpp_client.cli.output.console.print")
+
+    items = [
+        SimpleNamespace(
+            id="o-1",
+            title="Observation 1",
+            reference=None,
+            program=SimpleNamespace(id="p-1"),
+            workflow=SimpleNamespace(
+                value=SimpleNamespace(state=DummyState.INACTIVE),
+            ),
+        )
+    ]
+    columns = [
+        output.TableColumn(header="ID", path="id", no_wrap=True, style="cyan"),
+        output.TableColumn(header="Title", path="title"),
+        output.TableColumn(header="Reference", path="reference"),
+        output.TableColumn(header="Program ID", path="program.id"),
+        output.TableColumn(header="Workflow", path="workflow.value.state"),
+    ]
+
+    output.model_table(
+        items=items,
+        columns=columns,
+        title="Observations",
+    )
+
+    print_mock.assert_called_once()
+    table = print_mock.call_args.args[0]
+
+    assert isinstance(table, Table)
+    assert table.title == "Observations"
+    assert len(table.columns) == 5
+    assert [column.header for column in table.columns] == [
+        "ID",
+        "Title",
+        "Reference",
+        "Program ID",
+        "Workflow",
+    ]
+
+
+def test_model_table_formats_nested_values_and_defaults(
+    recorded_console: Console,
+) -> None:
+    """
+    Ensure model_table resolves nested values and applies defaults.
+    """
+    items = [
+        SimpleNamespace(
+            id="o-1",
+            title="Observation 1",
+            reference=None,
+            program=SimpleNamespace(id="p-1"),
+            workflow=SimpleNamespace(
+                value=SimpleNamespace(state=DummyState.READY),
+            ),
+        )
+    ]
+    columns = [
+        output.TableColumn(header="ID", path="id"),
+        output.TableColumn(header="Reference", path="reference", default="N/A"),
+        output.TableColumn(header="Program ID", path="program.id"),
+        output.TableColumn(header="Workflow", path="workflow.value.state"),
+    ]
+
+    output.model_table(items=items, columns=columns)
+
+    rendered = recorded_console.export_text()
+
+    assert "o-1" in rendered
+    assert "N/A" in rendered
+    assert "p-1" in rendered
+    assert "READY" in rendered
+
+
+def test_model_table_formats_list_values(
+    recorded_console: Console,
+) -> None:
+    """
+    Ensure model_table formats list values into a comma-separated string.
+    """
+    items = [
+        SimpleNamespace(
+            tags=["one", "two", "three"],
+        )
+    ]
+    columns = [
+        output.TableColumn(
+            header="Tags",
+            path="tags",
+        ),
+    ]
+
+    output.model_table(items=items, columns=columns)
+
+    rendered = recorded_console.export_text()
+    assert "one, two, three" in rendered
