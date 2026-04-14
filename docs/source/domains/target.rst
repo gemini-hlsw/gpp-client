@@ -168,4 +168,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.target.TargetDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

@@ -54,4 +54,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.scheduler.SchedulerDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:

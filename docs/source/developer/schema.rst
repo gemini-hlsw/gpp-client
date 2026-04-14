@@ -1,53 +1,74 @@
 Schema Management
 =================
 
-The GPP Client depends directly on the GPP GraphQL schema. Maintaining an up-to-date
-local schema is essential for running ``ariadne-codegen`` and generating correct
-client code.
+The GPP Client depends directly on the GPP GraphQL schema. Keeping the local schema files current is required for
+successful code generation and to ensure the generated client matches the target GPP environment.
 
 Schema Download Script
 ----------------------
 
-Use the provided script to download a schema for any environment:
+Use the provided script to download the schema for a specific environment:
 
 .. code-block:: bash
 
-   uv run python scripts/download_schema.py PRODUCTION
+   uv run --group schema python scripts/download_schema.py PRODUCTION
 
-The script handles:
+You may also download the development schema:
 
-- Reading the correct token from the environment
-- Validating that the environment is known
-- Downloading via ``gql-cli``
-- Writing the resulting schema to ``schemas/<env>.schema.graphql``
+.. code-block:: bash
 
-Required Environment Variables
+   uv run --group schema python scripts/download_schema.py DEVELOPMENT
+
+The environment argument is case-insensitive and must match a valid ``GPPEnvironment``.
+
+What the Script Does
+--------------------
+
+The schema download script performs the following steps:
+
+1. Validates the requested environment.
+2. Loads settings using ``GPPSettings(environment_override=env)``.
+3. Resolves the correct authentication token for that environment.
+4. Resolves the GraphQL endpoint using ``get_graphql_url(...)``.
+5. Downloads the schema using ``gql-cli``.
+6. Writes the schema to the environment-specific GraphQL directory.
+
+Downloaded Schema Location
+--------------------------
+
+Schemas are written to:
+
+``graphql/<environment>/schema.graphql``
+
+For example:
+
+- ``graphql/development/schema.graphql``
+- ``graphql/production/schema.graphql``
+
+These schema files are used by the corresponding environment-specific
+``ariadne-codegen.toml`` files.
+
+Authentication and Credentials
 ------------------------------
 
-Tokens must be provided through the environment. The expected variables are:
+The schema download script uses ``GPPSettings`` to resolve credentials for the selected environment.
 
+Supported token settings include:
+
+- ``GPP_TOKEN``
 - ``GPP_DEVELOPMENT_TOKEN``
-- ``GPP_STAGING_TOKEN``
-- ``GPP_PRODUCTION_TOKEN``
 
-Only the token for the selected environment is required.
+Credential resolution follows the normal settings system, including:
 
-Example:
+- Environment variables
+- A local ``.env`` file
+- The app TOML configuration file
 
-.. code-block:: bash
+See the :ref:`configuration` page for full details on credential configuration.
 
-   export GPP_PRODUCTION_TOKEN="abc123"
+Token resolution is environment-aware:
 
-.. note::
+- ``DEVELOPMENT`` uses ``GPP_DEVELOPMENT_TOKEN``
+- ``PRODUCTION`` uses ``GPP_TOKEN``
 
-   Tokens *must* be provided via environment variables. They are not read from
-   the :class:`gpp_client.config.GPPClient` configuration file during schema download.
-
-Directory Layout
-----------------
-
-Downloaded schemas live in:
-
-``schemas/<environment>.schema.graphql``
-
-These files are committed to the repository.
+If the required token for the selected environment cannot be resolved, the script exits with an authentication error.

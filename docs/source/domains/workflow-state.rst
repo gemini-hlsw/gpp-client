@@ -98,4 +98,4 @@ API Reference
 
 .. autoclass:: gpp_client.domains.workflow_state.WorkflowStateDomain
    :members:
-   :exclude-members: __init__
+   :undoc-members:
