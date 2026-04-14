@@ -107,20 +107,14 @@ def suppress_enum_docstring(app, what, name, obj, options, lines):
             lines.clear()
 
 
-def skip_pydantic_internal_members(app, obj_type, name, obj, skip, options):
-    """
-    Hide Pydantic internal members globally.
-    """
-    if name == "model_config":
-        return True
-    return None
-
-
 def skip_generated_internal_modules(app, obj_type, name, obj, skip, options):
     """
     Skip selected generated support modules only when rendering the
     top-level ``gpp_client.generated`` package page.
     """
+    if name == "model_config":
+        return True
+
     current_module = app.env.temp_data.get("autodoc:module")
     module_name = getattr(obj, "__module__", None)
 
@@ -150,5 +144,4 @@ def skip_generated_internal_modules(app, obj_type, name, obj, skip, options):
 
 def setup(app):
     app.connect("autodoc-skip-member", skip_generated_internal_modules)
-    app.connect("autodoc-skip-member", skip_pydantic_internal_members)
     app.connect("autodoc-process-docstring", suppress_enum_docstring)

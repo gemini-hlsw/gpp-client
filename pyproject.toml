@@ -58,16 +58,6 @@ testpaths = ["tests"]
 addopts = "-r A -v -n auto"
 asyncio_default_fixture_loop_scope = "session"
 
-[tool.ariadne-codegen]
-client_name = "_GPPClient"
-client_file_name = "_client"
-enable_custom_operations = true
-target_package_name = "api"
-target_package_path = "src/gpp_client"
-convert_to_snake_case = true
-plugins = ["custom_plugins.AliasStrWrapperPlugin"]
-queries_path = "src/queries"
-
 [tool.numpydoc_validation]
 checks = [
     "all",  # All except the rules listed below.
