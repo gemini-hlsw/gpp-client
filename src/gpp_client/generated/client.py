@@ -1143,6 +1143,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -1432,6 +1433,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -1722,6 +1724,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -2014,6 +2017,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -2309,6 +2313,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -2604,6 +2609,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -2896,6 +2902,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -3188,6 +3195,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -3480,6 +3488,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -3773,6 +3782,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }
@@ -4073,6 +4083,7 @@ class GraphQLClient(AsyncBaseClient):
               inclusion
               startUtc
               end {
+                __typename
                 ... on TimingWindowEndAt {
                   atUtc
                 }

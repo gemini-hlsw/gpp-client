@@ -5,6 +5,7 @@ REST API client for non-GraphQL requests.
 __all__ = ["RESTClient"]
 
 import asyncio
+import gzip
 import logging
 import ssl
 
@@ -100,3 +101,47 @@ class RESTClient:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+    async def _get_atom_digests(
+        self, observation_ids: list[str], accept_gzip: bool = True
+    ) -> str:
+        """
+        Request atom digests for the given observation IDs.
+        """
+        headers = {}
+        if accept_gzip:
+            headers["Accept-Encoding"] = "gzip"
+
+        # Prepare body - one observation ID per line.
+        body = "\n".join(observation_ids)
+
+        session = await self.get_session()
+
+        async with session.post(
+            "/scheduler/atoms", data=body, headers=headers
+        ) as response:
+            # Handle different response codes
+            if response.status == 400:
+                error_text = await response.text()
+                raise ValueError(f"Invalid observation IDs: {error_text}")
+            elif response.status == 403:
+                raise aiohttp.ClientResponseError(
+                    request_info=response.request_info,
+                    history=response.history,
+                    status=response.status,
+                    message="Access forbidden - check authentication and permissions",
+                )
+            elif response.status != 200:
+                response.raise_for_status()
+
+            # Handle gzipped response
+            content_encoding = response.headers.get("Content-Encoding", "").lower()
+            if content_encoding == "gzip":
+                try:
+                    content = await response.read()
+                    return gzip.decompress(content).decode("utf-8")
+                except gzip.BadGzipFile:
+                    # Server claimed gzip but sent plain text.
+                    return await response.text()
+            else:
+                return await response.text()
