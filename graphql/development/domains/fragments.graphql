@@ -23,6 +23,7 @@ fragment TimingWindowDetails on TimingWindow {
   inclusion
   startUtc
   end {
+    __typename
     ... on TimingWindowEndAt {
       atUtc
     }
