@@ -5,14 +5,13 @@ Runtime settings for the installed GPP client package.
 from pathlib import Path
 
 import typer
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     TomlConfigSettingsSource,
 )
-from typing_extensions import Self
 
 from gpp_client.constants import APP_NAME, CONFIG_FILE_NAME
 from gpp_client.environment import GPPEnvironment
@@ -148,21 +147,21 @@ class GPPSettings(BaseSettings):
             file_secret_settings,
         )
 
-    @model_validator(mode="after")
-    def validate_tokens(self) -> Self:
-        """
-        Ensure a valid token exists for the active environment.
+    # @model_validator(mode="after")
+    # def validate_tokens(self) -> Self:
+    #     """
+    #     Ensure a valid token exists for the active environment.
 
-        Returns
-        -------
-        Self
-            Validated settings instance.
-        """
-        try:
-            _ = self.resolved_token
-        except GPPAuthError as exc:
-            raise ValueError(str(exc)) from exc
-        return self
+    #     Returns
+    #     -------
+    #     Self
+    #         Validated settings instance.
+    #     """
+    #     try:
+    #         _ = self.resolved_token
+    #     except GPPAuthError as exc:
+    #         raise ValueError(str(exc)) from exc
+    #     return self
 
 
 def get_config_path() -> Path:

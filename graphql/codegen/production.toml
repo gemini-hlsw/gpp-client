@@ -1,6 +1,6 @@
 [tool.ariadne-codegen]
-schema_path = "graphql/development/schema.graphql"
-queries_path = "graphql/development/domains"
+schema_path = "graphql/schemas/production.graphql"
+queries_path = "build/graphql/production"
 target_package_path = "src/gpp_client"
 target_package_name = "generated"
 client_name = "GraphQLClient"
