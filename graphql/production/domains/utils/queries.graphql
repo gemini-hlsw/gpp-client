@@ -1,7 +1,0 @@
-query ping {
-  programs(LIMIT: 1) {
-    matches {
-      id
-    }
-  }
-}

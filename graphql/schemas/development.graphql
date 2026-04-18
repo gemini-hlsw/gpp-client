@@ -3385,6 +3385,22 @@ type Classical implements ProposalType {
   Describes how time for the program will be apportioned across partners.
   """
   partnerSplits: [PartnerSplit!]!
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean!
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean!
+
+  """Whether this is a US Long Term proposal."""
+  usLongTerm: Boolean!
+
+  """
+  Whether this proposal should be considered for Band 3. Defaults to UNSET
+  on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
+  be submitted.
+  """
+  considerForBand3: ConsiderForBand3!
 }
 
 """Proposal properties for Demo Science CallForProposals."""
@@ -3475,6 +3491,12 @@ type LargeProgram implements ProposalType {
 
   """Total time requested (over multiple all semesters) for this proposal."""
   totalTime: TimeSpan!
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean!
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean!
 }
 
 """
@@ -3506,6 +3528,22 @@ type Queue implements ProposalType {
   Describes how time for the program will be apportioned across partners.
   """
   partnerSplits: [PartnerSplit!]!
+
+  """
+  Whether this proposal should be considered for Band 3. Defaults to UNSET
+  on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
+  be submitted.
+  """
+  considerForBand3: ConsiderForBand3!
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean!
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean!
+
+  """Whether this is a US Long Term proposal."""
+  usLongTerm: Boolean!
 }
 
 """Proposal properties for System Verification CallForProposals."""
@@ -3554,6 +3592,18 @@ input ClassicalInput {
   By submission time, it must be specified.
   """
   partnerSplits: [PartnerSplitInput!]
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean
+
+  """Whether this is a US Long Term proposal."""
+  usLongTerm: Boolean
+
+  """Whether this proposal should be considered for Band 3."""
+  considerForBand3: ConsiderForBand3
 }
 
 input DemoScienceInput {
@@ -3634,6 +3684,12 @@ input LargeProgramInput {
   hours are assumed.
   """
   totalTime: TimeSpanInput
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean
 }
 
 """
@@ -3677,6 +3733,22 @@ input QueueInput {
   By submission time, it must be specified.
   """
   partnerSplits: [PartnerSplitInput!]
+
+  """
+  Whether this proposal should be considered for Band 3. Defaults to UNSET
+  on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
+  be submitted.
+  """
+  considerForBand3: ConsiderForBand3
+
+  """Whether this proposal is part of the AEON/Multi-facility program."""
+  aeonMultiFacility: Boolean
+
+  """Whether this proposal has JWST synergy."""
+  jwstSynergy: Boolean
+
+  """Whether this is a US Long Term proposal."""
+  usLongTerm: Boolean
 }
 
 input SystemVerificationInput {
@@ -6881,10 +6953,11 @@ enum GhostIfu2FiberAgitator {
   ENABLED
 }
 
-input GhostDetectorConfigInput {
+input GhostDetectorInput {
   """
   Exposure time mode for the detector.  If not specified, the exposure time mode
-  of the observation's science requirements are used.
+  of the observation's science requirements are used.  Note, only TimeAndCount
+  exposure time modes are accepted at this time.
   """
   exposureTimeMode: ExposureTimeModeInput
 
@@ -6909,16 +6982,16 @@ input GhostIfuInput {
   resolutionMode: GhostResolutionMode
 
   """
-  Red camera detector config.  If not specified, defaults will be applied.
-  Cannot be unset with a null value.
+  Red config.  If not specified, defaults will be applied. Cannot be unset with
+  a null value.
   """
-  red: GhostDetectorConfigInput
+  red: GhostDetectorInput
 
   """
-  Blue camera detector config.  If not specified, defaults will be applied.
-  Cannot be unset with a null value.
+  Blue config.  If not specified, defaults will be applied. Cannot be unset with
+  a null value.
   """
-  blue: GhostDetectorConfigInput
+  blue: GhostDetectorInput
 
   """
   IFU1 fiber agitator setting.  If not specified, a default (DISABLED) will be
@@ -6933,7 +7006,7 @@ input GhostIfuInput {
   explicitIfu2Agitator: GhostIfu2FiberAgitator
 }
 
-type GhostDetectorConfig {
+type GhostDetector {
   """Exposure time mode for the detector."""
   exposureTimeMode: ExposureTimeMode!
 
@@ -6967,11 +7040,11 @@ type GhostIfu {
   """Resolution mode."""
   resolutionMode: GhostResolutionMode!
 
-  """Red camera detector config."""
-  red: GhostDetectorConfig!
+  """Red detector config."""
+  red: GhostDetector!
 
-  """Blue camera detector config."""
-  blue: GhostDetectorConfig!
+  """Blue detector config."""
+  blue: GhostDetector!
 
   """
   IFU 1 fiber agitator setting, either explicitly specified or else default.
@@ -8885,10 +8958,11 @@ type ItcResult {
 
 """A discriminator for the types of ITC results."""
 enum ItcType {
-  SPECTROSCOPY
-  IGRINS_2_SPECTROSCOPY
+  GHOST_IFU
   GMOS_NORTH_IMAGING
   GMOS_SOUTH_IMAGING
+  IGRINS_2_SPECTROSCOPY
+  SPECTROSCOPY
 }
 
 """
@@ -8931,6 +9005,13 @@ configurations and targets.  There are specific instances for each `ItcType`.
 interface Itc {
   """The type of the Itc results."""
   itcType: ItcType!
+}
+
+"""GHOST IFU ITC results.  Each channel is paired with its result set."""
+type ItcGhostIfu implements Itc {
+  itcType: ItcType!
+  red: ItcResultSet!
+  blue: ItcResultSet!
 }
 
 """
@@ -11947,6 +12028,20 @@ type TimestampInterval {
 
   """Duration of the interval."""
   duration: TimeSpan!
+}
+
+"""Whether a queue proposal should be considered for Band 3 scheduling."""
+enum ConsiderForBand3 {
+  """
+  No decision has been made yet. The proposal cannot be submitted in this state.
+  """
+  UNSET
+
+  """The proposal should be considered for Band 3."""
+  CONSIDER
+
+  """The proposal should not be considered for Band 3."""
+  DO_NOT_CONSIDER
 }
 
 """ToO Activation"""

@@ -1,10 +1,6 @@
 version = 1
 revision = 3
-<<<<<<< HEAD
-requires-python = ">=3.10.0"
-=======
 requires-python = ">=3.11.0"
->>>>>>> 4b8df35 (Update python version to 3.11 in CI and remove toml dependency)
 resolution-markers = [
     "python_full_version >= '3.14'",
     "python_full_version >= '3.12' and python_full_version < '3.14'",

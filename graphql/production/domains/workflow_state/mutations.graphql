@@ -1,8 +1,0 @@
-mutation setObservationWorkflowState(
-  $observationId: ObservationId!
-  $state: ObservationWorkflowState!
-) {
-  setObservationWorkflowState(input: { observationId: $observationId, state: $state }) {
-    ...ObservationWorkflowDetails
-  }
-}

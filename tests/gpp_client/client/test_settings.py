@@ -19,30 +19,30 @@ from gpp_client.settings import (
 )
 
 
-def test_validate_tokens_requires_production_token_for_production(mocker) -> None:
+def test_resolved_token_requires_production_token_for_production(mocker) -> None:
     """
-    Ensure production settings validation fails without ``token``.
+    Ensure production resolved_token fails without token.
     """
     mocker.patch(
         "gpp_client.settings._get_packaged_environment",
         return_value=GPPEnvironment.PRODUCTION,
     )
+    settings = GPPSettings(token=None, development_token=SecretStr("dev"))
+    with pytest.raises(GPPAuthError, match="GPP_TOKEN"):
+        _ = settings.resolved_token
 
-    with pytest.raises(ValueError, match="GPP_TOKEN"):
-        GPPSettings(token=None, development_token=SecretStr("dev"))
 
-
-def test_validate_tokens_requires_development_token_for_development() -> None:
+def test_resolved_token_requires_development_token_for_development() -> None:
     """
-    Ensure development settings validation fails without
-    ``development_token``.
+    Ensure development resolved_token fails without development token.
     """
-    with pytest.raises(ValueError, match="GPP_DEVELOPMENT_TOKEN"):
-        GPPSettings(
-            token=SecretStr("prod"),
-            development_token=None,
-            environment_override=GPPEnvironment.DEVELOPMENT,
-        )
+    settings = GPPSettings(
+        token=SecretStr("prod"),
+        development_token=None,
+        environment_override=GPPEnvironment.DEVELOPMENT,
+    )
+    with pytest.raises(GPPAuthError, match="GPP_DEVELOPMENT_TOKEN"):
+        _ = settings.resolved_token
 
 
 def test_unwrap_returns_string_value() -> None:
