@@ -18,7 +18,7 @@ query GetGOATSObservations($programId: ProgramId!) {
     includeDeleted: false
     WHERE: {program: {id: {EQ: $programId}, proposalStatus: {EQ: ACCEPTED}}}
   ) {
-    matches {
+       matches {
       id
       reference {
         label
@@ -42,7 +42,7 @@ query GetGOATSObservations($programId: ProgramId!) {
         }
       }
       workflow {
-        state
+        calculationState
         value {
           state
           validTransitions
@@ -287,52 +287,6 @@ query GetGOATSObservations($programId: ProgramId!) {
           variant {
             variantType
             grouped {
-              offsets {
-                generatorType
-                enumerated {
-                  values {
-                    guiding
-                    offset {
-                      p {
-                        arcseconds
-                      }
-                      q {
-                        arcseconds
-                      }
-                    }
-                  }
-                }
-                random {
-                  seed
-                  size {
-                    arcseconds
-                  }
-                }
-                spiral {
-                  seed
-                  size {
-                    arcseconds
-                  }
-                }
-                uniform {
-                  cornerA {
-                    p {
-                      arcseconds
-                    }
-                    q {
-                      arcseconds
-                    }
-                  }
-                  cornerB {
-                    p {
-                      arcseconds
-                    }
-                    q {
-                      arcseconds
-                    }
-                  }
-                }
-              }
               skyCount
               skyOffsets {
                 generatorType
@@ -354,11 +308,27 @@ query GetGOATSObservations($programId: ProgramId!) {
                   size {
                     arcseconds
                   }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
                 }
                 spiral {
                   seed
                   size {
                     arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
                   }
                 }
                 uniform {
@@ -381,6 +351,68 @@ query GetGOATSObservations($programId: ProgramId!) {
                 }
               }
               order
+              offsets {
+                generatorType
+                random {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                spiral {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                uniform {
+                  cornerA {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                  cornerB {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                enumerated {
+                  values {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
             }
             interleaved {
               offsets {
@@ -403,11 +435,27 @@ query GetGOATSObservations($programId: ProgramId!) {
                   size {
                     arcseconds
                   }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
                 }
                 spiral {
                   seed
                   size {
                     arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
                   }
                 }
                 uniform {
@@ -450,11 +498,27 @@ query GetGOATSObservations($programId: ProgramId!) {
                   size {
                     arcseconds
                   }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
                 }
                 spiral {
                   seed
                   size {
                     arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
                   }
                 }
                 uniform {
@@ -534,6 +598,302 @@ query GetGOATSObservations($programId: ProgramId!) {
               }
             }
           }
+          ampReadMode
+          bin
+          roi
+          variant {
+            variantType
+            grouped {
+              skyCount
+              skyOffsets {
+                generatorType
+                enumerated {
+                  values {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                random {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                spiral {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                uniform {
+                  cornerA {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                  cornerB {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              order
+              offsets {
+                generatorType
+                random {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                spiral {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                uniform {
+                  cornerA {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                  cornerB {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                enumerated {
+                  values {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            interleaved {
+              offsets {
+                generatorType
+                enumerated {
+                  values {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                random {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                spiral {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                uniform {
+                  cornerA {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                  cornerB {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              skyCount
+              skyOffsets {
+                generatorType
+                enumerated {
+                  values {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                random {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                spiral {
+                  seed
+                  size {
+                    arcseconds
+                  }
+                  center {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+                uniform {
+                  cornerA {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                  cornerB {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+            }
+            preImaging {
+              offset1 {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+              offset2 {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+              offset3 {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+              offset4 {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+            }
+          }
+
           ampReadMode
           bin
           roi
@@ -787,3 +1147,4 @@ query GetGOATSObservations($programId: ProgramId!) {
     hasMore
   }
 }
+
