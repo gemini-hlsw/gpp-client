@@ -94,7 +94,7 @@ class _GPPClient(AsyncBaseClient):
                     }
                   }
                   workflow {
-                    state
+                    calculationState
                     value {
                       state
                       validTransitions
@@ -311,6 +311,871 @@ class _GPPClient(AsyncBaseClient):
                       }
                       offsets {
                         arcseconds
+                      }
+                    }
+                    gmosNorthImaging {
+                      filters {
+                        filter
+                        exposureTimeMode {
+                          signalToNoise {
+                            value
+                            at {
+                              nanometers
+                            }
+                          }
+                          timeAndCount {
+                            time {
+                              seconds
+                            }
+                            count
+                            at {
+                              nanometers
+                            }
+                          }
+                        }
+                      }
+                      ampReadMode
+                      bin
+                      roi
+                      variant {
+                        variantType
+                        grouped {
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          order
+                          offsets {
+                            generatorType
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        interleaved {
+                          offsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                        }
+                        preImaging {
+                          offset1 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset2 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset3 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset4 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
+                      }
+                    }
+                    gmosSouthImaging {
+                      filters {
+                        filter
+                        exposureTimeMode {
+                          signalToNoise {
+                            value
+                            at {
+                              nanometers
+                            }
+                          }
+                          timeAndCount {
+                            time {
+                              seconds
+                            }
+                            count
+                            at {
+                              nanometers
+                            }
+                          }
+                        }
+                      }
+                      ampReadMode
+                      bin
+                      roi
+                      variant {
+                        variantType
+                        grouped {
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          order
+                          offsets {
+                            generatorType
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        interleaved {
+                          offsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                              center {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                        }
+                        preImaging {
+                          offset1 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset2 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset3 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset4 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
+                      }
+                      ampReadMode
+                      bin
+                      roi
+                      variant {
+                        variantType
+                        grouped {
+                          offsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          order
+                        }
+                        interleaved {
+                          offsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                          skyCount
+                          skyOffsets {
+                            generatorType
+                            enumerated {
+                              values {
+                                guiding
+                                offset {
+                                  p {
+                                    arcseconds
+                                  }
+                                  q {
+                                    arcseconds
+                                  }
+                                }
+                              }
+                            }
+                            random {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            spiral {
+                              seed
+                              size {
+                                arcseconds
+                              }
+                            }
+                            uniform {
+                              cornerA {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                              cornerB {
+                                p {
+                                  arcseconds
+                                }
+                                q {
+                                  arcseconds
+                                }
+                              }
+                            }
+                          }
+                        }
+                        preImaging {
+                          offset1 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset2 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset3 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                          offset4 {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
                       }
                     }
                   }
