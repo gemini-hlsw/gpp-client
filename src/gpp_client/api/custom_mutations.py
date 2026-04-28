@@ -29,10 +29,13 @@ from .custom_fields import (
     RecordFlamingos2VisitResultFields,
     RecordGmosNorthVisitResultFields,
     RecordGmosSouthVisitResultFields,
+    RecordIgrins2VisitResultFields,
+    RecordVisitResultFields,
     RedeemUserInvitationResultFields,
     ReplaceFlamingos2SequenceResultFields,
     ReplaceGmosNorthSequenceResultFields,
     ReplaceGmosSouthSequenceResultFields,
+    ReplaceIgrins2SequenceResultFields,
     ResetAcquisitionResultFields,
     RevokeUserInvitationResultFields,
     SetAllocationsResultFields,
@@ -81,10 +84,13 @@ from .input_types import (
     RecordFlamingos2VisitInput,
     RecordGmosNorthVisitInput,
     RecordGmosSouthVisitInput,
+    RecordIgrins2VisitInput,
+    RecordVisitInput,
     RedeemUserInvitationInput,
     ReplaceFlamingos2SequenceInput,
     ReplaceGmosNorthSequenceInput,
     ReplaceGmosSouthSequenceInput,
+    ReplaceIgrins2SequenceInput,
     ResetAcquisitionInput,
     RevokeUserInvitationInput,
     SetAllocationsInput,
@@ -508,6 +514,34 @@ class Mutation:
         )
 
     @classmethod
+    def record_igrins_2_visit(
+        cls, input: RecordIgrins2VisitInput
+    ) -> RecordIgrins2VisitResultFields:
+        """Record a new IGRINS-2 visit"""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RecordIgrins2VisitInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RecordIgrins2VisitResultFields(
+            field_name="recordIgrins2Visit", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def record_visit(cls, input: RecordVisitInput) -> RecordVisitResultFields:
+        """Record a new visit."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RecordVisitInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RecordVisitResultFields(
+            field_name="recordVisit", arguments=cleared_arguments
+        )
+
+    @classmethod
     def replace_gmos_south_sequence(
         cls, input: ReplaceGmosSouthSequenceInput
     ) -> ReplaceGmosSouthSequenceResultFields:
@@ -522,6 +556,23 @@ class Mutation:
         }
         return ReplaceGmosSouthSequenceResultFields(
             field_name="replaceGmosSouthSequence", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def replace_igrins_2_sequence(
+        cls, input: ReplaceIgrins2SequenceInput
+    ) -> ReplaceIgrins2SequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "ReplaceIgrins2SequenceInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ReplaceIgrins2SequenceResultFields(
+            field_name="replaceIgrins2Sequence", arguments=cleared_arguments
         )
 
     @classmethod

@@ -726,13 +726,8 @@ input CloneObservationInput {
   SET: ObservationPropertiesInput
 }
 
-"""
-The result of cloning an observation, containing the original and new observations.
-"""
+"""The result of cloning an observation, containing the new observation."""
 type CloneObservationResult {
-  """The original unmodified observation which was cloned."""
-  originalObservation: Observation!
-
   """The new cloned (but possibly modified) observation."""
   newObservation: Observation!
 }
@@ -750,9 +745,6 @@ input CloneTargetInput {
 The result of cloning a target, containing the original and new targets.
 """
 type CloneTargetResult {
-  """The original unmodified target which was cloned"""
-  originalTarget: Target!
-
   """The new cloned (but possibly modified) target"""
   newTarget: Target!
 }
@@ -1348,6 +1340,29 @@ enum GcalShutter {
   CLOSED
 }
 
+enum GhostResolutionMode {
+  STANDARD
+  HIGH
+}
+
+enum GhostBinning {
+  ONE_BY_ONE
+  ONE_BY_TWO
+  ONE_BY_FOUR
+  ONE_BY_EIGHT
+  TWO_BY_TWO
+  TWO_BY_FOUR
+  TWO_BY_EIGHT
+  FOUR_BY_FOUR
+}
+
+"""GHOST read mode"""
+enum GhostReadMode {
+  SLOW
+  MEDIUM
+  FAST
+}
+
 """GMOS amp count"""
 enum GmosAmpCount {
   """GmosAmpCount Three"""
@@ -1835,7 +1850,10 @@ type GmosNorthStatic {
   """Is MOS Pre-Imaging Observation"""
   mosPreImaging: MosPreImaging!
 
-  """Nod-and-shuffle configuration"""
+  """
+  Nod-and-shuffle configuration.  This is currently not used and will always
+  return null.
+  """
   nodAndShuffle: GmosNodAndShuffle
 }
 
@@ -1852,7 +1870,9 @@ input GmosNorthStaticInput {
   """
   mosPreImaging: MosPreImaging
 
-  """GMOS Nod And Shuffle configuration"""
+  """
+  GMOS Nod And Shuffle configuration.  Warning: Currently not used or stored.
+  """
   nodAndShuffle: GmosNodAndShuffleInput
 }
 
@@ -2198,7 +2218,11 @@ type GmosSouthStatic {
   """Is MOS Pre-Imaging Observation"""
   mosPreImaging: MosPreImaging!
 
-  """Nod-and-shuffle configuration"""
+  """
+  #Nod-and-shuffle configuration
+  Nod-and-shuffle configuration.  This is currently not used and will always
+  return null.
+  """
   nodAndShuffle: GmosNodAndShuffle
 }
 
@@ -2215,7 +2239,9 @@ input GmosSouthStaticInput {
   """
   mosPreImaging: MosPreImaging
 
-  """GMOS Nod And Shuffle configuration"""
+  """
+  GMOS Nod And Shuffle configuration.  Warning: currently not used or stored.
+  """
   nodAndShuffle: GmosNodAndShuffleInput
 }
 
@@ -2249,7 +2275,6 @@ input CloneGroupInput {
 }
 
 type CloneGroupResult {
-  originalGroup: Group!
   newGroup: Group!
 }
 
@@ -2549,7 +2574,7 @@ type Mutation {
   recordFlamingos2Visit(
     """Visit creation parameters"""
     input: RecordFlamingos2VisitInput!
-  ): RecordFlamingos2VisitResult!
+  ): RecordFlamingos2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2562,7 +2587,7 @@ type Mutation {
   recordGmosNorthVisit(
     """Visit creation parameters"""
     input: RecordGmosNorthVisitInput!
-  ): RecordGmosNorthVisitResult!
+  ): RecordGmosNorthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2575,7 +2600,16 @@ type Mutation {
   recordGmosSouthVisit(
     """Visit creation parameters"""
     input: RecordGmosSouthVisitInput!
-  ): RecordGmosSouthVisitResult!
+  ): RecordGmosSouthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+
+  """Record a new IGRINS-2 visit"""
+  recordIgrins2Visit(
+    """Visit creation parameters"""
+    input: RecordIgrins2VisitInput!
+  ): RecordIgrins2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+
+  """Record a new visit."""
+  recordVisit(input: RecordVisitInput!): RecordVisitResult!
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2583,6 +2617,13 @@ type Mutation {
   deleted.  Any ongoing steps are abandoned.
   """
   replaceGmosSouthSequence(input: ReplaceGmosSouthSequenceInput!): ReplaceGmosSouthSequenceResult!
+
+  """
+  Replaces the remaining steps in an execution sequence with the provided
+  sequence.  Previously executed (or even partially executed) steps are not
+  deleted.  Any ongoing steps are abandoned.
+  """
+  replaceIgrins2Sequence(input: ReplaceIgrins2SequenceInput!): ReplaceIgrins2SequenceResult!
 
   """
   Resets the acquisition sequence to start from the initial step regardless of
@@ -3716,6 +3757,23 @@ type RecordDatasetResult {
   dataset: Dataset!
 }
 
+"""Input parameters for creating a new visit."""
+input RecordVisitInput {
+  observationId: ObservationId!
+
+  """
+  Idempotency key, if any.  The IdempotencyKey may be provided by clients when
+  the visit is created and is used to enable problem-free retry in the case of
+  failure.
+  """
+  idempotencyKey: IdempotencyKey
+}
+
+"""The result of recording a new Visit."""
+type RecordVisitResult {
+  visit: Visit!
+}
+
 """Input parameters for creating a new GmosNorthVisit"""
 input RecordGmosNorthVisitInput {
   observationId: ObservationId!
@@ -3805,14 +3863,14 @@ type SmartGcal implements StepConfig {
 """Edit or create an observation's observing mode"""
 input ObservingModeInput {
   """
-  The gmosNorthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
-  gmosNorthLongSlit: GmosNorthLongSlitInput
+  flamingos2LongSlit: Flamingos2LongSlitInput
 
   """
-  The gmosSouthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  The ghostIfu field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
-  gmosSouthLongSlit: GmosSouthLongSlitInput
+  ghostIfu: GhostIfuInput
 
   """
   The gmosNorthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -3820,14 +3878,19 @@ input ObservingModeInput {
   gmosNorthImaging: GmosNorthImagingInput
 
   """
+  The gmosNorthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gmosNorthLongSlit: GmosNorthLongSlitInput
+
+  """
   The gmosSouthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   gmosSouthImaging: GmosSouthImagingInput
 
   """
-  The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  The gmosSouthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
-  flamingos2LongSlit: Flamingos2LongSlitInput
+  gmosSouthLongSlit: GmosSouthLongSlitInput
 
   """
   The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -5436,20 +5499,23 @@ enum CloudExtinctionPreset {
 
 """ObservingMode"""
 enum ObservingModeType {
-  """ObservingModeType GmosNorthLongSlit"""
-  GMOS_NORTH_LONG_SLIT
-
-  """ObservingModeType GmosSouthLongSlit"""
-  GMOS_SOUTH_LONG_SLIT
-
   """ObservingModeType Flamingos2LongSlit"""
   FLAMINGOS_2_LONG_SLIT
+
+  """ObservingModeType GhostIfu"""
+  GHOST_IFU
 
   """ObservingModeType GmosNorthImaging"""
   GMOS_NORTH_IMAGING
 
+  """ObservingModeType GmosNorthLongSlit"""
+  GMOS_NORTH_LONG_SLIT
+
   """ObservingModeType GmosSouthImaging"""
   GMOS_SOUTH_IMAGING
+
+  """ObservingModeType GmosSouthLongSlit"""
+  GMOS_SOUTH_LONG_SLIT
 
   """ObservingModeType Igrins2LongSlit"""
   IGRINS_2_LONG_SLIT
@@ -5933,23 +5999,6 @@ type Execution {
   """
   digest: CalculatedExecutionDigest
 
-  """
-  Full execution config, including acquisition and science sequences.  If a
-  sequence cannot be generated for this observation, `null` is returned along
-  with warning messages.
-  """
-  config(
-    """
-    The maximum size (number of atoms) of the `possibleFuture` in the sequences.
-    If the projected future is longer, the size will be capped at this value.
-    Use 0 if only interested in the `nextAtom`.  The maximum is 100.  Each
-    sequence has a `hasMore` field that can be used to determine whether there
-    additional atoms beyond those returned in `possibleFuture`.  The total
-    projected atom count is available in the execution digest.
-    """
-    futureLimit: NonNegInt = 25
-  ): ExecutionConfig @deprecated(reason: "moved to Query -> executionConfig")
-
   """Determines the execution state as a whole of this observation."""
   executionState: ExecutionState!
 
@@ -6040,6 +6089,12 @@ type ExecutionConfig {
   `GMOS_SOUTH`.
   """
   gmosSouth: GmosSouthExecutionConfig
+
+  """
+  IGRINS-2 execution config.  This will be null unless the `instrument` is
+  `IGRINS2`.
+  """
+  igrins2: Igrins2ExecutionConfig
 }
 
 """Execution event (sequence, step, or dataset events)"""
@@ -6094,6 +6149,9 @@ enum Existence {
 type ExecutionDigest {
   """Setup time calculations."""
   setup: SetupTime!
+
+  """Estimated number of setups required to complete this observation."""
+  setupCount: NonNegInt!
 
   """Acquisition sequence summary."""
   acquisition: SequenceDigest
@@ -6189,6 +6247,34 @@ type RecordFlamingos2VisitResult {
   visit: Visit!
 }
 
+"""IGRINS-2 static configuration input parameters"""
+input Igrins2StaticInput {
+  """Whether to save SVC images (defaults to false)"""
+  saveSVCImages: Boolean
+
+  """Offset mode (defaults to NOD_ALONG_SLIT)"""
+  offsetMode: Igrins2OffsetMode
+}
+
+"""Input parameters for creating a new IGRINS-2 Visit"""
+input RecordIgrins2VisitInput {
+  observationId: ObservationId!
+  igrins2: Igrins2StaticInput!
+
+  """
+  Idempotency key, if any.  The IdempotencyKey may be provided by clients when
+  the visit is created and is used to enable problem-free retry in the case of
+  failure.
+  """
+  idempotencyKey: IdempotencyKey
+}
+
+"""Result for recordIgrins2Visit mutation."""
+type RecordIgrins2VisitResult {
+  """The newly added visit record itself."""
+  visit: Visit!
+}
+
 """
 Flamingos 2 atom, a collection of steps that should be executed in their entirety
 """
@@ -6264,6 +6350,85 @@ type Flamingos2Dynamic {
 
   """Central wavelength, which is taken from the filter wavelength."""
   centralWavelength: Wavelength!
+}
+
+"""IGRINS-2 Execution Config"""
+type Igrins2ExecutionConfig {
+  """IGRINS-2 static configuration"""
+  static: Igrins2Static!
+
+  """IGRINS-2 science execution"""
+  science: Igrins2ExecutionSequence
+}
+
+"""Next atom to execute and potential future atoms."""
+type Igrins2ExecutionSequence {
+  """Next atom to execute."""
+  nextAtom: Igrins2Atom!
+
+  """(Prefix of the) remaining atoms to execute, if any."""
+  possibleFuture: [Igrins2Atom!]!
+
+  """
+  Whether there are additional atoms beyond those listed in possibleFuture.
+  """
+  hasMore: Boolean!
+}
+
+"""IGRINS-2 static configuration"""
+type Igrins2Static {
+  """Whether to save SVC images."""
+  saveSVCImages: Boolean!
+
+  """Offset mode."""
+  offsetMode: Igrins2OffsetMode!
+}
+
+"""IGRINS-2 dynamic step configuration"""
+type Igrins2Dynamic {
+  """IGRINS-2 exposure time"""
+  exposure: TimeSpan!
+}
+
+"""
+IGRINS-2 atom, a collection of steps that should be executed in their entirety
+"""
+type Igrins2Atom {
+  """Atom id"""
+  id: AtomId!
+
+  """Atom description, if any"""
+  description: String
+
+  """Observe class for this atom"""
+  observeClass: ObserveClass!
+
+  """Individual steps that comprise the atom"""
+  steps: [Igrins2Step!]!
+}
+
+"""IGRINS-2 step with potential breakpoint"""
+type Igrins2Step {
+  """Instrument configuration for this step"""
+  instrumentConfig: Igrins2Dynamic!
+
+  """Step id"""
+  id: StepId!
+
+  """Whether to pause before the execution of this step"""
+  breakpoint: Breakpoint!
+
+  """The sequence step itself"""
+  stepConfig: StepConfig!
+
+  """The telescope configuration at this step."""
+  telescopeConfig: TelescopeConfig!
+
+  """Time estimate for this step's execution"""
+  estimate: StepEstimate!
+
+  """Observe class for this step"""
+  observeClass: ObserveClass!
 }
 
 """Flamingos 2 instrument configuration input."""
@@ -6510,6 +6675,22 @@ input TelluricTypeInput {
 """Flamingos2 Long Slit acquisition settings."""
 type Flamingos2LongSlitAcquisition {
   """
+  The filter that will be used in the acquisition sequence.  This will be the
+  `explicitFilter` if specified, but otherwise the `defaultFilter`.
+  """
+  filter: Flamingos2Filter!
+
+  """
+  The filter that will be used by default, if an explicit acquisition filter was
+  not specified.  The default is calculated as the acquisition filter closest in
+  wavelength to the observation's science filter.
+  """
+  defaultFilter: Flamingos2Filter!
+
+  """An explicitly specified filter to use in acquisition (if any)."""
+  explicitFilter: Flamingos2Filter
+
+  """
   The exposure time mode used for ITC lookup for the acquisition sequence.
   """
   exposureTimeMode: ExposureTimeMode!
@@ -6617,6 +6798,15 @@ default values.
 """
 input Flamingos2LongSlitAcquisitionInput {
   """
+  An explicit acquisition filter to use instead of the default.  The `explicitFilter`
+  may be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,
+  the filter that will be used for the acquisition sequence is the acquisition filter closest to
+  the science filter wavelength.
+  Allowed filters are J, H and K_SHORT.
+  """
+  explicitFilter: Flamingos2Filter
+
+  """
   Exposure time mode for the acquisition sequence.  If not specified, a default
   exposure time mode is used.
   """
@@ -6681,6 +6871,136 @@ input Flamingos2LongSlitInput {
   acquisition: Flamingos2LongSlitAcquisitionInput
 }
 
+enum GhostIfu1FiberAgitator {
+  DISABLED
+  ENABLED
+}
+
+enum GhostIfu2FiberAgitator {
+  DISABLED
+  ENABLED
+}
+
+input GhostDetectorInput {
+  """
+  Exposure time mode for the detector.  If not specified, the exposure time mode
+  of the observation's science requirements are used.  Note, only TimeAndCount
+  exposure time modes are accepted at this time.
+  """
+  exposureTimeMode: ExposureTimeModeInput
+
+  """
+  Explicit binning to use for the detector.  If not specified upon creation, a
+  1x1 default will be used.
+  """
+  explicitBinning: GhostBinning
+
+  """
+  Explicit read mode for the detector.  If not specified upon creation, a
+  default of MEDIUM (red camera) or SLOW (blue camera) will be used.
+  """
+  explicitReadMode: GhostReadMode
+}
+
+"""Edit or create GHOST IFU Mode"""
+input GhostIfuInput {
+  """
+  The disperser field must be specified.  It cannot be unset with a null value.
+  """
+  resolutionMode: GhostResolutionMode
+
+  """
+  Red config.  If not specified, defaults will be applied. Cannot be unset with
+  a null value.
+  """
+  red: GhostDetectorInput
+
+  """
+  Blue config.  If not specified, defaults will be applied. Cannot be unset with
+  a null value.
+  """
+  blue: GhostDetectorInput
+
+  """
+  IFU1 fiber agitator setting.  If not specified, a default (DISABLED) will be
+  applied.  Cannot be unset with a null value.
+  """
+  explicitIfu1Agitator: GhostIfu1FiberAgitator
+
+  """
+  IFU2 fiber agitator setting.  If not specified, a default (DISABLED) will be
+  applied.  Cannot be unset with a null value.
+  """
+  explicitIfu2Agitator: GhostIfu2FiberAgitator
+}
+
+type GhostDetector {
+  """Exposure time mode for the detector."""
+  exposureTimeMode: ExposureTimeMode!
+
+  """Binning that will be used, either explicitly specified or default."""
+  binning: GhostBinning!
+
+  """
+  Default binning that will be used for the detector, if not explicitly
+  specified.
+  """
+  defaultBinning: GhostBinning!
+
+  """Explicit binning to use for the detector, if specified."""
+  explicitBinning: GhostBinning
+
+  """Read mode for the detector, either explicitly specified or default."""
+  readMode: GhostReadMode!
+
+  """
+  Default read mode that will be used for the detector, if not explicitly
+  specified.
+  """
+  defaultReadMode: GhostReadMode!
+
+  """Explicit read mode for the detector, if specified."""
+  explicitReadMode: GhostReadMode
+}
+
+"""GHOST IFU observing mode."""
+type GhostIfu {
+  """Resolution mode."""
+  resolutionMode: GhostResolutionMode!
+
+  """Red detector config."""
+  red: GhostDetector!
+
+  """Blue detector config."""
+  blue: GhostDetector!
+
+  """
+  IFU 1 fiber agitator setting, either explicitly specified or else default.
+  """
+  ifu1Agitator: GhostIfu1FiberAgitator!
+
+  """
+  Default IFU 1 fiber agitator setting, used if not explicitly specified.
+  """
+  defaultIfu1Agitator: GhostIfu1FiberAgitator!
+
+  """IFU 1 fiber agitator setting, if explicitly specified."""
+  explicitIfu1Agitator: GhostIfu1FiberAgitator
+
+  """
+  IFU 2 fiber agitator setting, either explicitly specified or else default.
+  """
+  ifu2Agitator: GhostIfu2FiberAgitator!
+
+  """
+  Default IFU 2 fiber agitator setting, used if not explicitly specified.
+  """
+  defaultIfu2Agitator: GhostIfu2FiberAgitator!
+
+  """IFU 2 fiber agitator setting, if explicitly specified."""
+  explicitIfu2Agitator: GhostIfu2FiberAgitator
+}
+
 """IGRINS-2 Offset Mode"""
 enum Igrins2OffsetMode {
   """Igrins2OffsetMode NodAlongSlit"""
@@ -6723,6 +7043,24 @@ type Igrins2LongSlit {
   the default.
   """
   explicitSaveSVCImages: Boolean
+
+  """
+  Spatial offsets, either explicitly specified in explicitOffsets or else
+  taken from defaultOffsets
+  """
+  offsets: [Offset!]!
+
+  """
+  Default spatial offsets
+  (ABBA pattern, q = -1.25, +1.25, +1.25, -1.25 arcsec) for NodAlongSlit, or
+  (p = 0, q = 0), (p = 10, q = 10), (p = 0, q = 0) for NodToSky.
+  """
+  defaultOffsets: [Offset!]!
+
+  """
+  Optional explicitly specified spatial offsets. If set, overrides the default.
+  """
+  explicitOffsets: [Offset!]
 }
 
 """Edit or create IGRINS-2 Long Slit configuration"""
@@ -6744,6 +7082,12 @@ input Igrins2LongSlitInput {
   by skipping it altogether
   """
   explicitSaveSVCImages: Boolean
+
+  """
+  Spatial offsets. May be unset by assigning null, or ignored by skipping.
+  For NodAlongSlit mode, all offsets must have P = 0.
+  """
+  explicitOffsets: [OffsetInput!]
 }
 
 """Metadata for `enum FilterType`"""
@@ -8317,6 +8661,15 @@ Timestamp of time in ISO-8601 representation in format '2011-12-03T10:15:30Z'
 """
 scalar Timestamp
 
+"""PortDisposition"""
+enum PortDisposition {
+  """Side looking port"""
+  SIDE
+
+  """Up (bottom) looking port"""
+  BOTTOM
+}
+
 """Instrument"""
 enum Instrument {
   """Instrument AcqCam"""
@@ -8384,6 +8737,17 @@ type SpectroscopyConfigOption {
   site: Site!
 
   """
+  For Flamingos2 options, the Flamingos 2configuration.  Null for other
+  instruments.
+  """
+  flamingos2: SpectroscopyConfigOptionFlamingos2
+
+  """
+  For GHOST options, the GHOST configuration.  Null for other instruments.
+  """
+  ghost: SpectroscopyConfigOptionGhost
+
+  """
   For GMOS North options, the GMOS North configuration.  Null for other
   instruments.
   """
@@ -8394,12 +8758,17 @@ type SpectroscopyConfigOption {
   instruments.
   """
   gmosSouth: SpectroscopyConfigOptionGmosSouth
+}
 
-  """
-  For Flamingos2 options, the Flamingos 2configuration.  Null for other
-  instruments.
-  """
-  flamingos2: SpectroscopyConfigOptionFlamingos2
+type SpectroscopyConfigOptionFlamingos2 {
+  fpu: Flamingos2Fpu!
+  disperser: Flamingos2Disperser!
+  filter: Flamingos2Filter!
+}
+
+type SpectroscopyConfigOptionGhost {
+  resolutionMode: GhostResolutionMode!
+  binning: GhostBinning!
 }
 
 type SpectroscopyConfigOptionGmosNorth {
@@ -8412,12 +8781,6 @@ type SpectroscopyConfigOptionGmosSouth {
   fpu: GmosSouthBuiltinFpu!
   grating: GmosSouthGrating!
   filter: GmosSouthFilter
-}
-
-type SpectroscopyConfigOptionFlamingos2 {
-  fpu: Flamingos2Fpu!
-  disperser: Flamingos2Disperser!
-  filter: Flamingos2Filter!
 }
 
 """Edit or create imaging science requirements"""
@@ -8524,6 +8887,7 @@ type ItcResult {
 """A discriminator for the types of ITC results."""
 enum ItcType {
   SPECTROSCOPY
+  IGRINS_2_SPECTROSCOPY
   GMOS_NORTH_IMAGING
   GMOS_SOUTH_IMAGING
 }
@@ -8592,6 +8956,12 @@ type ItcGmosSouthImaging implements Itc {
 type ItcSpectroscopy implements Itc {
   itcType: ItcType!
   acquisition: ItcResultSet!
+  spectroscopyScience: ItcResultSet!
+}
+
+"""ITC results for IGRINS-2 spectroscopy observations (no acquisition)."""
+type ItcIgrins2Spectroscopy implements Itc {
+  itcType: ItcType!
   spectroscopyScience: ItcResultSet!
 }
 
@@ -9897,20 +10267,23 @@ type ObservingMode {
   """Mode type"""
   mode: ObservingModeType!
 
-  """GMOS North Long Slit mode"""
-  gmosNorthLongSlit: GmosNorthLongSlit
+  """Flamingos 2 Long Slit mode"""
+  flamingos2LongSlit: Flamingos2LongSlit
 
-  """GMOS South Long Slit mode"""
-  gmosSouthLongSlit: GmosSouthLongSlit
+  """GHOST IFU mode"""
+  ghostIfu: GhostIfu
 
   """GMOS North Imaging mode"""
   gmosNorthImaging: GmosNorthImaging
 
+  """GMOS North Long Slit mode"""
+  gmosNorthLongSlit: GmosNorthLongSlit
+
   """GMOS South Imaging mode"""
   gmosSouthImaging: GmosSouthImaging
 
-  """Flamingos 2 Long Slit mode"""
-  flamingos2LongSlit: Flamingos2LongSlit
+  """GMOS South Long Slit mode"""
+  gmosSouthLongSlit: GmosSouthLongSlit
 
   """IGRINS-2 Long Slit mode"""
   igrins2LongSlit: Igrins2LongSlit
@@ -11055,6 +11428,12 @@ type StepRecord {
   unless the `instrument` discriminator is "GMOS_SOUTH".
   """
   gmosSouth: GmosSouthDynamic
+
+  """
+  IGRINS-2 instrument configuration for this step, if any.  This will be null
+  unless the `instrument` discriminator is "IGRINS2".
+  """
+  igrins2: Igrins2Dynamic
 }
 
 """StepRecord query results, limited to a maximum of 1000 entries."""
@@ -11738,6 +12117,13 @@ type Visit {
   `GMOS_SOUTH`.
   """
   gmosSouth: GmosSouthStatic
+
+  """
+  IGRINS-2 static instrument configuration, for IGRINS-2 visits.  See the
+  `instrument` discriminator.  This will be null unless the instrument is
+  `IGRINS2`.
+  """
+  igrins2: Igrins2Static
 }
 
 """Matching visit results, limited to a maximum of 1000 entries."""
@@ -14211,6 +14597,18 @@ input GmosSouthStepInput {
   observeClass: ObserveClass!
 }
 
+input Igrins2DynamicInput {
+  exposure: TimeSpanInput!
+}
+
+input Igrins2StepInput {
+  instrumentConfig: Igrins2DynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
 input Flamingos2AtomInput {
   description: NonEmptyString
   steps: [Flamingos2StepInput!]!
@@ -14224,6 +14622,11 @@ input GmosNorthAtomInput {
 input GmosSouthAtomInput {
   description: NonEmptyString
   steps: [GmosSouthStepInput!]!
+}
+
+input Igrins2AtomInput {
+  description: NonEmptyString
+  steps: [Igrins2StepInput!]!
 }
 
 """
@@ -14308,4 +14711,32 @@ sequence.
 """
 type ReplaceGmosSouthSequenceResult {
   sequence: [GmosSouthAtom!]!
+}
+
+"""
+Replace IGRINS-2 sequence input.  Select the observation using one of the
+observation ID or the observation reference.  If both are provided, they must
+refer to the same observation.
+"""
+input ReplaceIgrins2SequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+
+  """Specifies which sequence should be replaced."""
+  sequenceType: SequenceType!
+
+  """
+  The new sequence.  Any unexecuted steps are deleted and replaced with the
+  provided sequence.  Steps that were previously executed, or for which at least
+  one execution event was received, are preserved.
+  """
+  sequence: [Igrins2AtomInput!]
+}
+
+"""
+The result of a replace sequence mutation, consisting of the newly inserted
+sequence.
+"""
+type ReplaceIgrins2SequenceResult {
+  sequence: [Igrins2Atom!]!
 }

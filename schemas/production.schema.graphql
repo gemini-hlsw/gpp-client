@@ -726,13 +726,8 @@ input CloneObservationInput {
   SET: ObservationPropertiesInput
 }
 
-"""
-The result of cloning an observation, containing the original and new observations.
-"""
+"""The result of cloning an observation, containing the new observation."""
 type CloneObservationResult {
-  """The original unmodified observation which was cloned."""
-  originalObservation: Observation!
-
   """The new cloned (but possibly modified) observation."""
   newObservation: Observation!
 }
@@ -750,9 +745,6 @@ input CloneTargetInput {
 The result of cloning a target, containing the original and new targets.
 """
 type CloneTargetResult {
-  """The original unmodified target which was cloned"""
-  originalTarget: Target!
-
   """The new cloned (but possibly modified) target"""
   newTarget: Target!
 }
@@ -1348,6 +1340,22 @@ enum GcalShutter {
   CLOSED
 }
 
+enum GhostResolutionMode {
+  STANDARD
+  HIGH
+}
+
+enum GhostBinning {
+  ONE_BY_ONE
+  ONE_BY_TWO
+  ONE_BY_FOUR
+  ONE_BY_EIGHT
+  TWO_BY_TWO
+  TWO_BY_FOUR
+  TWO_BY_EIGHT
+  FOUR_BY_FOUR
+}
+
 """GMOS amp count"""
 enum GmosAmpCount {
   """GmosAmpCount Three"""
@@ -1835,7 +1843,10 @@ type GmosNorthStatic {
   """Is MOS Pre-Imaging Observation"""
   mosPreImaging: MosPreImaging!
 
-  """Nod-and-shuffle configuration"""
+  """
+  Nod-and-shuffle configuration.  This is currently not used and will always
+  return null.
+  """
   nodAndShuffle: GmosNodAndShuffle
 }
 
@@ -1852,7 +1863,9 @@ input GmosNorthStaticInput {
   """
   mosPreImaging: MosPreImaging
 
-  """GMOS Nod And Shuffle configuration"""
+  """
+  GMOS Nod And Shuffle configuration.  Warning: Currently not used or stored.
+  """
   nodAndShuffle: GmosNodAndShuffleInput
 }
 
@@ -2198,7 +2211,11 @@ type GmosSouthStatic {
   """Is MOS Pre-Imaging Observation"""
   mosPreImaging: MosPreImaging!
 
-  """Nod-and-shuffle configuration"""
+  """
+  #Nod-and-shuffle configuration
+  Nod-and-shuffle configuration.  This is currently not used and will always
+  return null.
+  """
   nodAndShuffle: GmosNodAndShuffle
 }
 
@@ -2215,7 +2232,9 @@ input GmosSouthStaticInput {
   """
   mosPreImaging: MosPreImaging
 
-  """GMOS Nod And Shuffle configuration"""
+  """
+  GMOS Nod And Shuffle configuration.  Warning: currently not used or stored.
+  """
   nodAndShuffle: GmosNodAndShuffleInput
 }
 
@@ -2249,7 +2268,6 @@ input CloneGroupInput {
 }
 
 type CloneGroupResult {
-  originalGroup: Group!
   newGroup: Group!
 }
 
@@ -2549,7 +2567,7 @@ type Mutation {
   recordFlamingos2Visit(
     """Visit creation parameters"""
     input: RecordFlamingos2VisitInput!
-  ): RecordFlamingos2VisitResult!
+  ): RecordFlamingos2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2562,7 +2580,7 @@ type Mutation {
   recordGmosNorthVisit(
     """Visit creation parameters"""
     input: RecordGmosNorthVisitInput!
-  ): RecordGmosNorthVisitResult!
+  ): RecordGmosNorthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2575,7 +2593,16 @@ type Mutation {
   recordGmosSouthVisit(
     """Visit creation parameters"""
     input: RecordGmosSouthVisitInput!
-  ): RecordGmosSouthVisitResult!
+  ): RecordGmosSouthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+
+  """Record a new IGRINS-2 visit"""
+  recordIgrins2Visit(
+    """Visit creation parameters"""
+    input: RecordIgrins2VisitInput!
+  ): RecordIgrins2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+
+  """Record a new visit."""
+  recordVisit(input: RecordVisitInput!): RecordVisitResult!
 
   """
   Replaces the remaining steps in an execution sequence with the provided
@@ -2583,6 +2610,13 @@ type Mutation {
   deleted.  Any ongoing steps are abandoned.
   """
   replaceGmosSouthSequence(input: ReplaceGmosSouthSequenceInput!): ReplaceGmosSouthSequenceResult!
+
+  """
+  Replaces the remaining steps in an execution sequence with the provided
+  sequence.  Previously executed (or even partially executed) steps are not
+  deleted.  Any ongoing steps are abandoned.
+  """
+  replaceIgrins2Sequence(input: ReplaceIgrins2SequenceInput!): ReplaceIgrins2SequenceResult!
 
   """
   Resets the acquisition sequence to start from the initial step regardless of
@@ -3714,6 +3748,23 @@ input RecordDatasetInput {
 type RecordDatasetResult {
   """The new dataset that was added."""
   dataset: Dataset!
+}
+
+"""Input parameters for creating a new visit."""
+input RecordVisitInput {
+  observationId: ObservationId!
+
+  """
+  Idempotency key, if any.  The IdempotencyKey may be provided by clients when
+  the visit is created and is used to enable problem-free retry in the case of
+  failure.
+  """
+  idempotencyKey: IdempotencyKey
+}
+
+"""The result of recording a new Visit."""
+type RecordVisitResult {
+  visit: Visit!
 }
 
 """Input parameters for creating a new GmosNorthVisit"""
@@ -5933,23 +5984,6 @@ type Execution {
   """
   digest: CalculatedExecutionDigest
 
-  """
-  Full execution config, including acquisition and science sequences.  If a
-  sequence cannot be generated for this observation, `null` is returned along
-  with warning messages.
-  """
-  config(
-    """
-    The maximum size (number of atoms) of the `possibleFuture` in the sequences.
-    If the projected future is longer, the size will be capped at this value.
-    Use 0 if only interested in the `nextAtom`.  The maximum is 100.  Each
-    sequence has a `hasMore` field that can be used to determine whether there
-    additional atoms beyond those returned in `possibleFuture`.  The total
-    projected atom count is available in the execution digest.
-    """
-    futureLimit: NonNegInt = 25
-  ): ExecutionConfig @deprecated(reason: "moved to Query -> executionConfig")
-
   """Determines the execution state as a whole of this observation."""
   executionState: ExecutionState!
 
@@ -6194,6 +6228,34 @@ input RecordFlamingos2VisitInput {
 
 """Result for recordFlamingos2Visit mutation."""
 type RecordFlamingos2VisitResult {
+  """The newly added visit record itself."""
+  visit: Visit!
+}
+
+"""IGRINS-2 static configuration input parameters"""
+input Igrins2StaticInput {
+  """Whether to save SVC images (defaults to false)"""
+  saveSVCImages: Boolean
+
+  """Offset mode (defaults to NOD_ALONG_SLIT)"""
+  offsetMode: Igrins2OffsetMode
+}
+
+"""Input parameters for creating a new IGRINS-2 Visit"""
+input RecordIgrins2VisitInput {
+  observationId: ObservationId!
+  igrins2: Igrins2StaticInput!
+
+  """
+  Idempotency key, if any.  The IdempotencyKey may be provided by clients when
+  the visit is created and is used to enable problem-free retry in the case of
+  failure.
+  """
+  idempotencyKey: IdempotencyKey
+}
+
+"""Result for recordIgrins2Visit mutation."""
+type RecordIgrins2VisitResult {
   """The newly added visit record itself."""
   visit: Visit!
 }
@@ -8530,6 +8592,17 @@ type SpectroscopyConfigOption {
   site: Site!
 
   """
+  For Flamingos2 options, the Flamingos 2configuration.  Null for other
+  instruments.
+  """
+  flamingos2: SpectroscopyConfigOptionFlamingos2
+
+  """
+  For GHOST options, the GHOST configuration.  Null for other instruments.
+  """
+  ghost: SpectroscopyConfigOptionGhost
+
+  """
   For GMOS North options, the GMOS North configuration.  Null for other
   instruments.
   """
@@ -8540,12 +8613,17 @@ type SpectroscopyConfigOption {
   instruments.
   """
   gmosSouth: SpectroscopyConfigOptionGmosSouth
+}
 
-  """
-  For Flamingos2 options, the Flamingos 2configuration.  Null for other
-  instruments.
-  """
-  flamingos2: SpectroscopyConfigOptionFlamingos2
+type SpectroscopyConfigOptionFlamingos2 {
+  fpu: Flamingos2Fpu!
+  disperser: Flamingos2Disperser!
+  filter: Flamingos2Filter!
+}
+
+type SpectroscopyConfigOptionGhost {
+  resolutionMode: GhostResolutionMode!
+  binning: GhostBinning!
 }
 
 type SpectroscopyConfigOptionGmosNorth {
@@ -8558,12 +8636,6 @@ type SpectroscopyConfigOptionGmosSouth {
   fpu: GmosSouthBuiltinFpu!
   grating: GmosSouthGrating!
   filter: GmosSouthFilter
-}
-
-type SpectroscopyConfigOptionFlamingos2 {
-  fpu: Flamingos2Fpu!
-  disperser: Flamingos2Disperser!
-  filter: Flamingos2Filter!
 }
 
 """Edit or create imaging science requirements"""
@@ -11208,6 +11280,12 @@ type StepRecord {
   unless the `instrument` discriminator is "GMOS_SOUTH".
   """
   gmosSouth: GmosSouthDynamic
+
+  """
+  IGRINS-2 instrument configuration for this step, if any.  This will be null
+  unless the `instrument` discriminator is "IGRINS2".
+  """
+  igrins2: Igrins2Dynamic
 }
 
 """StepRecord query results, limited to a maximum of 1000 entries."""
@@ -11891,6 +11969,13 @@ type Visit {
   `GMOS_SOUTH`.
   """
   gmosSouth: GmosSouthStatic
+
+  """
+  IGRINS-2 static instrument configuration, for IGRINS-2 visits.  See the
+  `instrument` discriminator.  This will be null unless the instrument is
+  `IGRINS2`.
+  """
+  igrins2: Igrins2Static
 }
 
 """Matching visit results, limited to a maximum of 1000 entries."""
@@ -14364,6 +14449,18 @@ input GmosSouthStepInput {
   observeClass: ObserveClass!
 }
 
+input Igrins2DynamicInput {
+  exposure: TimeSpanInput!
+}
+
+input Igrins2StepInput {
+  instrumentConfig: Igrins2DynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
 input Flamingos2AtomInput {
   description: NonEmptyString
   steps: [Flamingos2StepInput!]!
@@ -14377,6 +14474,11 @@ input GmosNorthAtomInput {
 input GmosSouthAtomInput {
   description: NonEmptyString
   steps: [GmosSouthStepInput!]!
+}
+
+input Igrins2AtomInput {
+  description: NonEmptyString
+  steps: [Igrins2StepInput!]!
 }
 
 """
@@ -14461,4 +14563,32 @@ sequence.
 """
 type ReplaceGmosSouthSequenceResult {
   sequence: [GmosSouthAtom!]!
+}
+
+"""
+Replace IGRINS-2 sequence input.  Select the observation using one of the
+observation ID or the observation reference.  If both are provided, they must
+refer to the same observation.
+"""
+input ReplaceIgrins2SequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+
+  """Specifies which sequence should be replaced."""
+  sequenceType: SequenceType!
+
+  """
+  The new sequence.  Any unexecuted steps are deleted and replaced with the
+  provided sequence.  Steps that were previously executed, or for which at least
+  one execution event was received, are preserved.
+  """
+  sequence: [Igrins2AtomInput!]
+}
+
+"""
+The result of a replace sequence mutation, consisting of the newly inserted
+sequence.
+"""
+type ReplaceIgrins2SequenceResult {
+  sequence: [Igrins2Atom!]!
 }
