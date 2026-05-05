@@ -1,62 +1,46 @@
 GPP Client Documentation
 ========================
 
-Welcome to the documentation for the **GPP Python Client**, a modern,
-fully asynchronous interface for interacting with GPP *without requiring any
-GraphQL knowledge*.
+The GPP Client is an asynchronous Python client for interacting with the
+Gemini Program Platform (GPP).
 
-The client provides a clean Python API for GPP resources such as programs,
-observations, targets, and more. It also includes a configuration system,
-credential manager, command-line interface, and a high-level orchestration
-layer for complex multi-manager workflows.
+It provides:
 
-This documentation serves both users of the client and developers maintaining
-or extending the library.
+- A high-level domain-based interface for GPP resources.
+- Automatic environment-aware authentication and configuration.
+- Generated GraphQL models for advanced/custom API interactions.
+- Built-in CLI tooling for common tasks.
 
-What This Documentation Covers
-------------------------------
+Quick Start
+-----------
 
-The documentation is organized to guide you from basic usage to advanced
-internals:
+Install the package:
 
-- :doc:`Getting Started <getting-started>`
-  — Install the client, configure credentials, and connect to GPP in minutes.
+.. code-block:: bash
 
-- :doc:`Client Overview <client>`
-  — How ``GPPClient`` resolves credentials, selects environments, and executes operations.
+   pip install gpp-client
 
-- :doc:`Configuration <configuration/index>`
-  — Learn how settings, tokens, and environments are stored and managed.
+Configure your authentication token:
 
-- :doc:`Authentication and Credentials <credentials>`
-  — All supported authentication methods and how resolution precedence works.
+.. code-block:: bash
 
-- :doc:`CLI Reference <cli/index>`
-  — Command-line tools for configuring and interacting with GPP.
+   export GPP_TOKEN=...
 
-- :doc:`Resource Managers <managers/index>`
-  — Program-level APIs for resources such as programs, observations, and calls for proposals.
+Create a client and fetch data:
 
-- :doc:`Orchestration Layer <orchestration/index>`
-  — Directors and Coordinators for service-specific, multi-manager workflows.
+.. code-block:: python
 
-- :doc:`GPP GraphQL Building Blocks <api/index>`
-  — Auto-generated types, inputs, and fields used internally by the client.
+   from gpp_client import GPPClient
 
-- :doc:`Exceptions <exceptions>`
-  — All exception types raised by the client.
+   async with GPPClient() as client:
+      program = await client.program.get_by_id("p-123")
 
-Getting Started
----------------
+Documentation Overview
+----------------------
 
-If you're new to the client:
-
-1. Start with :doc:`Getting Started <getting-started>`.
-2. Continue with the :doc:`Client Overview <client>` to understand the core
-   execution model.
-
-These two pages provide everything needed to authenticate and begin interacting
-with GPP.
+Use the **User Guide** for learning standard library usage, the
+**API Reference** for detailed technical documentation, and the
+**Developer Guide** for contributing or maintaining the project.
 
 Contents
 --------
@@ -65,27 +49,27 @@ Contents
    :maxdepth: 2
    :caption: User Guide
 
-   getting-started
    client
-   configuration/index
-   credentials
+   configuration
    cli/index
-   managers/index
+   domains/index
    exceptions
+
 
 .. toctree::
    :maxdepth: 2
-   :caption: Advanced
+   :caption: API Reference
 
-   orchestration/index
-   api/index
+   graphql-api/index
+   rest-client
+   environment
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Developer Guide
 
    developer/setup
-   developer/architecture
    developer/schema
    developer/codegen
    developer/workflow

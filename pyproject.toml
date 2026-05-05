@@ -8,13 +8,12 @@ description = "Gemini Program Platform client."
 readme = "README.md"
 authors = [{ name = "NOIRLab" }]
 license = { file = "LICENSE" }
-requires-python = ">=3.10.0"
+requires-python = ">=3.11.0"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -27,7 +26,7 @@ dependencies = [
     "graphql-core>=3.2.0",
     "httpx>=0.23",
     "pydantic>=2.12.0",
-    "toml>=0.10",
+    "pydantic-settings>=2.13.1",
     "typer>=0.21.1",
     "websockets>=14.2",
 ]
@@ -36,6 +35,7 @@ keywords = ["gemini", "gpp", "client", "program", "platform"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["gpp_client*"]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"
@@ -50,22 +50,12 @@ docstring-code-line-length = "dynamic"
 
 [tool.ruff]
 # Ignore generated code.
-extend-exclude = ["api"]
+extend-exclude = ["generated"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-r A -v -n auto"
 asyncio_default_fixture_loop_scope = "session"
-
-[tool.ariadne-codegen]
-client_name = "_GPPClient"
-client_file_name = "_client"
-enable_custom_operations = true
-target_package_name = "api"
-target_package_path = "src/gpp_client"
-convert_to_snake_case = true
-plugins = ["custom_plugins.AliasStrWrapperPlugin"]
-queries_path = "src/queries"
 
 [tool.numpydoc_validation]
 checks = [
@@ -103,6 +93,10 @@ docs = [
     "sphinx-autobuild>=2024.10.3",
     "sphinx-copybutton>=0.5.2",
     "sphinxcontrib-typer>=0.7.2",
+]
+notebook = [
+    "ipykernel>=7.2.0",
+    "jupyter>=1.1.1",
 ]
 schema = [
     "aiohttp>=3.13.3",

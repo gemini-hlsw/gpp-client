@@ -1,0 +1,22 @@
+subscription TargetEdit($targetEdit: TargetId) {
+  targetEdit(input: { targetId: $targetEdit }) {
+    editType
+    targetId
+    value {
+      id
+      name
+      nonsidereal {
+        des
+        key
+      }
+      sidereal {
+        ra {
+          degrees
+        }
+        dec {
+          degrees
+        }
+      }
+    }
+  }
+}

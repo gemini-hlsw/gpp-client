@@ -3,9 +3,9 @@ import ast
 import pytest
 from ariadne_codegen.client_generators.input_types import InputTypesGenerator
 from ariadne_codegen.plugins.manager import PluginManager
-from graphql import build_schema
 
 from custom_plugins.alias_str_wrapper import AliasStrWrapperPlugin
+from graphql import build_schema
 
 
 @pytest.fixture
@@ -15,7 +15,9 @@ def plugin_manager(schema_str):
 
 
 def test_alias_str_wrapper(plugin_manager, schema_str):
-    """Test wrapping the alias with 'str()' for IDE."""
+    """
+    Test wrapping the alias with 'str()' for IDE.
+    """
     schema = build_schema(schema_str)
 
     generator = InputTypesGenerator(

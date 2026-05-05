@@ -1,157 +1,117 @@
-from pathlib import Path
-from typing import Annotated, Optional
+"""
+Program CLI commands.
+"""
+
+__all__ = ["program_app"]
+
+from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.json import JSON
-from rich.table import Table
 
-from gpp_client.api.input_types import ProgramPropertiesInput
-from gpp_client.cli.utils import (
-    async_command,
-    print_not_found,
-    truncate_short,
-)
+from gpp_client.cli import output
+from gpp_client.cli.utils import async_command, require_exactly_one
 from gpp_client.client import GPPClient
 
-console = Console()
-app = typer.Typer(name="program", help="Manage programs.")
+program_app = typer.Typer(name="program", help="Program operations.")
 
 
-@app.command("list")
+@program_app.command("get")
 @async_command
-async def get_all(
-    limit: Annotated[Optional[int], typer.Option(help="Max number of results.")] = None,
+async def get_program(
+    program_id: Annotated[
+        str | None,
+        typer.Option("--program-id", help="Get a program by ID."),
+    ] = None,
+    program_reference: Annotated[
+        str | None,
+        typer.Option(
+            "--program-reference",
+            help="Get a program by reference.",
+        ),
+    ] = None,
+    proposal_reference: Annotated[
+        str | None,
+        typer.Option(
+            "--proposal-reference",
+            help="Get a program by proposal reference.",
+        ),
+    ] = None,
     include_deleted: Annotated[
-        bool, typer.Option(help="Include deleted entries.")
-    ] = False,
-):
-    """Get all programs."""
-    client = GPPClient()
-    result = await client.program.get_all(
-        limit=limit,
-        include_deleted=include_deleted,
-    )
-    items = result.get("matches", [])
-
-    if not items:
-        print_not_found()
-        return
-
-    table = Table(title="Programs")
-    table.add_column("ID", no_wrap=True)
-    table.add_column("Name")
-    table.add_column("Type")
-    table.add_column("Active - Start Date")
-    table.add_column("Active - End Date")
-    table.add_column("Existence")
-
-    for item in items:
-        id_ = truncate_short(item.get("id"))
-        name = truncate_short(item.get("name"))
-        type_ = truncate_short(item.get("type"))
-        active = item.get("active", {})
-        start = truncate_short(active.get("start"))
-        end = truncate_short(active.get("end"))
-        existence = truncate_short(item.get("existence"))
-        table.add_row(id_, name, type_, start, end, existence)
-
-    console.print(table)
-
-
-@app.command("get")
-@async_command
-async def get_by_id(
-    program_id: Annotated[str, typer.Argument(help="Program ID.")],
-    include_deleted: Annotated[
-        bool, typer.Option(help="Include deleted entries.")
-    ] = False,
-):
-    """Get program by ID."""
-    client = GPPClient()
-    result = await client.program.get_by_id(program_id, include_deleted=include_deleted)
-    console.print(JSON.from_data(result))
-
-
-@app.command("delete")
-@async_command
-async def delete_by_id(
-    program_id: Annotated[str, typer.Argument(help="Program ID.")],
-):
-    """Delete a program by ID."""
-    client = GPPClient()
-    result = await client.program.delete_by_id(program_id)
-    console.print(JSON.from_data(result))
-
-
-@app.command("restore")
-@async_command
-async def restore_by_id(
-    program_id: Annotated[str, typer.Argument(help="Program ID.")],
-):
-    """Restore a program by ID."""
-    client = GPPClient()
-    result = await client.program.restore_by_id(program_id)
-    console.print(JSON.from_data(result))
-
-
-@app.command("create")
-@async_command
-async def create(
-    from_json: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            exists=True,
-            help="JSON file with the properties definition.",
-        ),
-    ],
-):
-    """Create a new program."""
-    client = GPPClient()
-    result = client.program.create(from_json=from_json)
-    console.print(JSON.from_data(result))
-
-
-@app.command("update")
-@async_command
-async def update_by_id(
-    program_id: Annotated[str, typer.Argument(..., help="Program ID to update.")],
-    from_json: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            exists=True,
-            help="JSON file with the properties definition.",
-        ),
-    ],
-):
-    """Update a program by ID."""
-    client = GPPClient()
-    result = await client.program.update_by_id(program_id, from_json=from_json)
-    console.print(JSON.from_data(result))
-
-
-@app.command("schema")
-def schema(
-    indent: Annotated[
-        int,
-        typer.Option(
-            show_default=True,
-            help="Indentation level for pretty printing.",
-        ),
-    ] = 2,
-    sort_keys: Annotated[
         bool,
         typer.Option(
-            help="Sort object keys alphabetically.",
+            "--include-deleted",
+            help="Include deleted related records.",
         ),
     ] = False,
-):
-    """Display the JSON Schema for the input properties.
-
-    Use this when crafting or validating the JSON files passed with
-    --from-json to the `create` or `update` commands.
+) -> None:
     """
-    schema = ProgramPropertiesInput.model_json_schema()
-    console.print(JSON.from_data(schema, indent=indent, sort_keys=sort_keys))
+    Get a program using exactly one selector.
+    """
+    selector_name, selector_value = require_exactly_one(
+        program_id=program_id,
+        program_reference=program_reference,
+        proposal_reference=proposal_reference,
+    )
+
+    with output.status("Fetching program..."):
+        async with GPPClient() as client:
+            match selector_name:
+                case "program_id":
+                    result = await client.program.get_by_id(
+                        program_id=selector_value,
+                        include_deleted=include_deleted,
+                    )
+                case "program_reference":
+                    result = await client.program.get_by_reference(
+                        program_reference=selector_value,
+                        include_deleted=include_deleted,
+                    )
+                case "proposal_reference":
+                    result = await client.program.get_by_proposal_reference(
+                        proposal_reference=selector_value,
+                        include_deleted=include_deleted,
+                    )
+                case _:
+                    raise typer.BadParameter(f"Unsupported selector: {selector_name}")
+
+    output.json_pydantic(result)
+
+
+@program_app.command("list")
+@async_command
+async def list_programs(
+    include_deleted: Annotated[
+        bool,
+        typer.Option(
+            "--include-deleted",
+            help="Include deleted programs.",
+        ),
+    ] = False,
+    offset: Annotated[
+        str | None,
+        typer.Option(
+            "--offset",
+            help="Pagination offset.",
+        ),
+    ] = None,
+    limit: Annotated[
+        int | None,
+        typer.Option(
+            "--limit",
+            min=1,
+            help="Maximum number of programs to return.",
+        ),
+    ] = None,
+) -> None:
+    """
+    List programs.
+    """
+    with output.status("Fetching programs..."):
+        async with GPPClient() as client:
+            result = await client.program.get_all(
+                include_deleted=include_deleted,
+                offset=offset,
+                limit=limit,
+            )
+
+    output.json_pydantic(result)

@@ -1,199 +1,94 @@
-from pathlib import Path
-from typing import Annotated, Optional
+"""
+Target CLI commands.
+"""
+
+__all__ = ["target_app"]
+
+from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.json import JSON
-from rich.table import Table
 
-from gpp_client.api.input_types import TargetPropertiesInput
-from gpp_client.cli.utils import (
-    async_command,
-    print_not_found,
-    truncate_long,
-    truncate_short,
-)
+from gpp_client.cli import output
+from gpp_client.cli.utils import async_command, require_exactly_one
 from gpp_client.client import GPPClient
 
-console = Console()
-app = typer.Typer(name="target", help="Manage targets.")
+target_app = typer.Typer(name="target", help="Target operations.")
 
 
-@app.command("list")
+@target_app.command("get")
 @async_command
-async def get_all(
-    limit: Annotated[Optional[int], typer.Option(help="Max number of results.")] = None,
-    include_deleted: Annotated[
-        bool, typer.Option(help="Include deleted entries.")
-    ] = False,
-):
-    """Get all targets."""
-    client = GPPClient()
-    result = await client.target.get_all(
-        limit=limit,
-        include_deleted=include_deleted,
-    )
-    items = result.get("matches", [])
-
-    if not items:
-        print_not_found()
-        return
-
-    table = Table(title="Targets")
-    table.add_column("ID", no_wrap=True)
-    table.add_column("Name")
-    table.add_column("Calibration Role")
-    table.add_column("Program ID")
-    table.add_column("Existence")
-
-    for item in items:
-        id_ = item.get("id")
-        name = truncate_short(item.get("name"))
-        description = truncate_long(item.get("calibrationRole"))
-        program_id = truncate_short(item.get("program").get("id"))
-        existence = truncate_short(item.get("existence"))
-        table.add_row(id_, name, description, program_id, existence)
-
-    console.print(table)
-
-
-@app.command("get")
-@async_command
-async def get_by_id(
-    target_id: Annotated[str, typer.Argument(help="Target ID.")],
-    include_deleted: Annotated[
-        bool, typer.Option(help="Include deleted entries.")
-    ] = False,
-):
-    """Get target by ID."""
-    client = GPPClient()
-    result = await client.target.get_by_id(target_id, include_deleted=include_deleted)
-    console.print(JSON.from_data(result))
-
-
-@app.command("delete")
-@async_command
-async def delete_by_id(
-    target_id: Annotated[str, typer.Argument(help="Target ID.")],
-):
-    """Delete a target by ID."""
-    client = GPPClient()
-    result = await client.target.delete_by_id(target_id)
-    console.print(JSON.from_data(result))
-
-
-@app.command("restore")
-@async_command
-async def restore_by_id(
-    target_id: Annotated[str, typer.Argument(help="Target ID.")],
-):
-    """Restore a target by ID."""
-    client = GPPClient()
-    result = await client.target.restore_by_id(target_id)
-    console.print(JSON.from_data(result))
-
-
-@app.command("create")
-@async_command
-async def create(
-    from_json: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            exists=True,
-            help="JSON file with the properties definition.",
-        ),
-    ],
-    program_id: Annotated[
-        Optional[str],
-        typer.Option(help="Program ID (supply exactly one identifier)."),
-    ] = None,
-    proposal_reference: Annotated[
-        Optional[str],
-        typer.Option(help="Proposal reference label (supply exactly one identifier)."),
-    ] = None,
-    program_reference: Annotated[
-        Optional[str],
-        typer.Option(help="Program label reference (supply exactly one identifier)."),
-    ] = None,
-):
-    """Create a new target.
-
-    Exactly one of --program-id, --proposal-reference, or --program-reference
-    must be provided to identify the program. Supplying more than one (or none)
-    will result in an error.
-    """
-    client = GPPClient()
-    result = await client.target.create(
-        from_json=from_json,
-        program_id=program_id,
-        program_reference=program_reference,
-        proposal_reference=proposal_reference,
-    )
-    console.print(JSON.from_data(result))
-
-
-@app.command("update")
-@async_command
-async def update_by_id(
-    target_id: Annotated[str, typer.Argument(..., help="Target ID to update.")],
-    from_json: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            exists=True,
-            help="JSON file with the properties definition.",
-        ),
-    ],
-):
-    """Update a target by ID."""
-    client = GPPClient()
-    result = await client.target.update_by_id(target_id, from_json=from_json)
-    console.print(JSON.from_data(result))
-
-
-@app.command("clone")
-@async_command
-async def clone(
+async def get_target(
     target_id: Annotated[
-        str, typer.Option(..., "--target-id", help="Target ID to clone.")
-    ],
-    from_json: Annotated[
-        Path,
+        str | None,
         typer.Option(
-            ...,
-            "--from-json",
-            exists=True,
-            help="JSON file with the properties definition for the new target.",
+            "--target-id",
+            help="Get a target by ID.",
         ),
-    ],
-):
-    """Clone a target by ID."""
-    client = GPPClient()
-    result = await client.target.clone(target_id=target_id, from_json=from_json)
-    console.print(JSON.from_data(result))
-
-
-@app.command("schema")
-def schema(
-    indent: Annotated[
-        int,
-        typer.Option(
-            show_default=True,
-            help="Indentation level for pretty printing.",
-        ),
-    ] = 2,
-    sort_keys: Annotated[
+    ] = None,
+    include_deleted: Annotated[
         bool,
         typer.Option(
-            help="Sort object keys alphabetically.",
+            "--include-deleted",
+            help="Include deleted program data in the result.",
         ),
     ] = False,
-):
-    """Display the JSON Schema for the input properties.
-
-    Use this when crafting or validating the JSON files passed with
-    --from-json to the `create` or `update` commands.
+) -> None:
     """
-    schema = TargetPropertiesInput.model_json_schema()
-    console.print(JSON.from_data(schema, indent=indent, sort_keys=sort_keys))
+    Get a target using exactly one selector.
+    """
+    selector_name, selector_value = require_exactly_one(
+        target_id=target_id,
+    )
+
+    with output.status("Fetching target..."):
+        async with GPPClient() as client:
+            match selector_name:
+                case "target_id":
+                    result = await client.target.get_by_id(
+                        target_id=selector_value,
+                        include_deleted=include_deleted,
+                    )
+                case _:
+                    raise typer.BadParameter(f"Unsupported selector: {selector_name}")
+
+    output.json_pydantic(result)
+
+
+@target_app.command("list")
+@async_command
+async def list_targets(
+    include_deleted: Annotated[
+        bool,
+        typer.Option(
+            "--include-deleted",
+            help="Include deleted targets.",
+        ),
+    ] = False,
+    offset: Annotated[
+        str | None,
+        typer.Option(
+            "--offset",
+            help="Pagination offset.",
+        ),
+    ] = None,
+    limit: Annotated[
+        int | None,
+        typer.Option(
+            "--limit",
+            min=1,
+            help="Maximum number of targets to return.",
+        ),
+    ] = None,
+) -> None:
+    """
+    List targets.
+    """
+    with output.status("Fetching targets..."):
+        async with GPPClient() as client:
+            result = await client.target.get_all(
+                include_deleted=include_deleted,
+                offset=offset,
+                limit=limit,
+            )
+
+    output.json_pydantic(result)

@@ -1,10 +1,34 @@
-from gpp_client.client import GPPClient
-from gpp_client.director import GPPDirector
+"""
+Top-level package for gpp_client.
+"""
 
-__all__ = ["GPPClient", "GPPDirector"]
+from typing import Any
 
-import logging
+__all__ = ["GPPClient"]
 
-logger = logging.getLogger(__name__)
-# Attach a null handler by default to avoid "No handler found" warnings.
-logger.addHandler(logging.NullHandler())
+
+def __getattr__(name: str) -> Any:
+    """
+    Lazily import top-level package attributes.
+
+    Parameters
+    ----------
+    name : str
+        The attribute name being accessed.
+
+    Returns
+    -------
+    Any
+        The resolved attribute.
+
+    Raises
+    ------
+    AttributeError
+        If the attribute is not supported.
+    """
+    if name == "GPPClient":
+        from .client import GPPClient
+
+        return GPPClient
+
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

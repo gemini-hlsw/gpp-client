@@ -1,43 +1,85 @@
-import re
-from typing import Optional
+"""Shared pytest fixtures for CLI tests."""
+
+from typing import Any, Callable
 
 import pytest
 from typer.testing import CliRunner
 
-runner = CliRunner()
+from gpp_client.cli.cli import app
 
 
-@pytest.fixture(scope="module")
-def cli_runner():
-    return runner
+class DummyAsyncClient:
+    """
+    Minimal async context manager client for CLI tests.
+    """
 
-
-class Helpers:
-    @staticmethod
-    def extract_first_resource_id(output: str, prefix: str) -> Optional[str]:
-        """Extract the first resource ID with the given prefix from a rich table output.
+    def __init__(self, **services: Any) -> None:
+        """
+        Initialize the dummy client.
 
         Parameters
         ----------
-        output : str
-            The table text.
-        prefix : str
-            The ID prefix to match (e.g., "p", "u", etc.).
+        **services : Any
+            Attributes to attach to the client.
+        """
+        for name, value in services.items():
+            setattr(self, name, value)
+
+    async def __aenter__(self) -> "DummyAsyncClient":
+        """
+        Enter the async context.
 
         Returns
         -------
-        str, optional
-            The first matched ID, or None if not found.
+        DummyAsyncClient
+            This client instance.
         """
-        pattern = re.compile(rf"│\s+({re.escape(prefix)}-[a-z0-9]+)\s+│")
+        return self
 
-        for line in output.splitlines():
-            match = pattern.match(line)
-            if match:
-                return match.group(1)
+    async def __aexit__(self, exc_type, exc, tb) -> None:
+        """
+        Exit the async context.
+        """
         return None
 
 
-@pytest.fixture
-def helpers():
-    return Helpers
+@pytest.fixture()
+def runner() -> CliRunner:
+    """
+    Return a Typer CLI runner.
+
+    Returns
+    -------
+    CliRunner
+        CLI test runner.
+    """
+    return CliRunner()
+
+
+@pytest.fixture()
+def cli_app():
+    """
+    Import the CLI app lazily.
+
+    Returns
+    -------
+    typer.Typer
+        CLI application.
+    """
+
+    return app
+
+
+@pytest.fixture()
+def dummy_async_client_factory() -> Callable[..., DummyAsyncClient]:
+    """
+    Return a factory for dummy async clients.
+    """
+
+    def factory(**services: Any) -> DummyAsyncClient:
+        """
+        Build a dummy async client.
+        """
+        return DummyAsyncClient(**services)
+
+    return factory

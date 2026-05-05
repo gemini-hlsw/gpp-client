@@ -1,12 +1,52 @@
 Code Generation
 ===============
 
-The GPP Client uses `ariadne-codegen <https://github.com/mirumee/ariadne-codegen>`_ to generate all GraphQL models, enums,
-inputs, fragments, and the underlying ``_GPPClient`` transport layer.
+The GPP Client uses `ariadne-codegen <https://github.com/mirumee/ariadne-codegen>`_
+to generate the GraphQL transport client, operations, models, enums, input types,
+fragments, and related API code.
 
 All generated code lives in:
 
-``src/gpp_client/api/``
+``src/gpp_client/generated/``
+
+
+GraphQL Operations Structure
+----------------------------
+
+GraphQL operations are organized to support both shared and environment-specific behavior.
+
+Directory layout:
+
+- ``graphql/operations/shared/``
+  Contains operations and fragments used in both development and production.
+
+- ``graphql/operations/development_only.graphql``
+  Contains operations and fragments that exist only in the development schema.
+
+Behavior:
+
+- **Production**
+  Uses only ``shared/``.
+
+- **Development**
+  Uses ``shared/`` + ``development_only.graphql``.
+
+During code generation, these are assembled into a temporary build directory
+and passed to ``ariadne-codegen``.
+
+Rules:
+
+- ``development_only.graphql`` must be **additive only**.
+- Operation and fragment names must not collide with anything in ``shared/``.
+- Violations will fail code generation.
+- Empty or missing ``development_only.graphql`` is ignored.
+
+Guidelines:
+
+- Use ``shared/`` for stable operations supported in both environments.
+- Use ``development_only.graphql`` for experimental or unreleased schema usage.
+- When promoting operations to production, move them into ``shared/``.
+
 
 Running Codegen
 ---------------
@@ -15,38 +55,75 @@ Use the provided script:
 
 .. code-block:: bash
 
-   uv run python scripts/run_codegen.py PRODUCTION
+   uv run --group codegen python scripts/run_codegen.py PRODUCTION
 
-This script:
+Or for development:
 
-1. Validates that the schema exists.
-2. Writes a temporary ``codegen.toml`` based on project defaults.
-3. Creates a backup of the existing ``src/gpp_client/api`` directory.
+.. code-block:: bash
+
+   uv run --group codegen python scripts/run_codegen.py DEVELOPMENT
+
+The environment argument is case-insensitive and must match a valid ``GPPEnvironment``.
+
+
+What the Script Does
+--------------------
+
+The codegen script performs the following steps:
+
+1. Resolves the config file at:
+
+   ``graphql/codegen/<environment>.toml``
+
+2. Assembles GraphQL operations:
+
+   - Copies ``shared/`` into a temporary build directory.
+   - Adds ``development_only.graphql`` for development.
+
+3. Cleans previous artifacts:
+
+   - Removes the ``build/`` directory.
+   - Removes the generated package directory.
+
 4. Runs ``ariadne-codegen``.
-5. Restores the backup on failure.
-6. Deletes the backup on success.
+
+5. Writes a generated module:
+
+   ``package_environment.py``
+
+   into the generated package.
+
+
+Generated Package Environment
+-----------------------------
+
+After code generation completes, the script writes:
+
+``src/gpp_client/generated/package_environment.py``
+
+This module contains:
+
+.. code-block:: python
+
+   PACKAGE_ENVIRONMENT = "PRODUCTION"
+
+or:
+
+.. code-block:: python
+
+   PACKAGE_ENVIRONMENT = "DEVELOPMENT"
+
+This allows the generated package to retain knowledge of the environment it was built against.
+
 
 Codegen Configuration
 ---------------------
 
-The configuration is constructed dynamically, but corresponds to:
+Code generation is configured per environment:
 
-.. code-block:: toml
+- ``graphql/codegen/development.toml``
+- ``graphql/codegen/production.toml``
 
-   [tool.ariadne-codegen]
-   schema_path = "schemas/production.schema.graphql"
-   query_path = "src/queries"
-   target_package_path = "src/gpp_client"
-   target_package_name = "api"
-   convert_to_snake_case = true
-   enable_custom_operations = true
-   client_name = "_GPPClient"
-   client_file_name = "_client"
-   plugins = ["custom_plugins.AliasStrWrapperPlugin"]
-
-This produces:
-
-``src/gpp_client/api/``
 
 Custom Plugins
 --------------
@@ -55,24 +132,20 @@ The project currently uses:
 
 ``custom_plugins.AliasStrWrapperPlugin``
 
-This plugin corrects how certain scalar wrappers behave with aliases.
+This plugin corrects alias behavior for wrapped scalar types in the generated code.
+
 
 Why Codegen Is Required
 -----------------------
 
-The GPP schema changes regularly. Each change may add:
+The GPP schema changes regularly. These changes may introduce:
 
 - New input types
 - New enums
 - New fields
 - Updated nullability
+- New operations
 - New custom types
 
-Rather than maintain all Pydantic models manually, the project regenerates them
-using the upstream schema.
-
-.. note::
-
-   The GPP Client itself is intentionally *thin*. Most logic resides in resource
-   managers and higher-level abstractions. The generated code is not intended to
-   contain business logic except for the defined queries, mutations, and subscriptions.
+Rather than manually maintaining the GraphQL layer, the client regenerates it
+directly from the upstream schema.
