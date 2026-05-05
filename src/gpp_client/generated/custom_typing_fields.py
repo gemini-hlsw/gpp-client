@@ -589,12 +589,6 @@ class SmartGcalGraphQLField(GraphQLField):
         return self
 
 
-class VisitorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "VisitorGraphQLField":
-        self._alias = alias
-        return self
-
-
 class SetAllocationsResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SetAllocationsResultGraphQLField":
         self._alias = alias
@@ -1303,12 +1297,6 @@ class SpectroscopyConfigOptionGmosSouthGraphQLField(GraphQLField):
         return self
 
 
-class SpectroscopyConfigOptionGnirsGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SpectroscopyConfigOptionGnirsGraphQLField":
-        self._alias = alias
-        return self
-
-
 class ImagingScienceRequirementsGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ImagingScienceRequirementsGraphQLField":
         self._alias = alias
@@ -1477,12 +1465,6 @@ class ConfigurationConditionsGraphQLField(GraphQLField):
 
 class ConfigurationObservingModeGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationObservingModeGraphQLField":
-        self._alias = alias
-        return self
-
-
-class ConfigurationVisitorGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ConfigurationVisitorGraphQLField":
         self._alias = alias
         return self
 

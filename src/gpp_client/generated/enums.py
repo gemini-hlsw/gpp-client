@@ -412,16 +412,6 @@ class ObservingModeType(str, Enum):
     IGRINS_2_LONG_SLIT = "IGRINS_2_LONG_SLIT"
 
 
-class VisitorObservingModeType(str, Enum):
-    ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
-    ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
-    MAROON_X = "MAROON_X"
-    VISITOR_NORTH = "VISITOR_NORTH"
-    VISITOR_SOUTH = "VISITOR_SOUTH"
-    ZORRO_SPECKLE = "ZORRO_SPECKLE"
-    ZORRO_WIDE_FIELD = "ZORRO_WIDE_FIELD"
-
-
 class CoolStarTemperature(str, Enum):
     T400_K = "T400_K"
     T600_K = "T600_K"
@@ -811,8 +801,7 @@ class PortDisposition(str, Enum):
 
 
 class Instrument(str, Enum):
-    ACQ_CAM_NORTH = "ACQ_CAM_NORTH"
-    ACQ_CAM_SOUTH = "ACQ_CAM_SOUTH"
+    ACQ_CAM = "ACQ_CAM"
     FLAMINGOS2 = "FLAMINGOS2"
     GHOST = "GHOST"
     GMOS_NORTH = "GMOS_NORTH"
@@ -822,58 +811,10 @@ class Instrument(str, Enum):
     GSAOI = "GSAOI"
     IGRINS2 = "IGRINS2"
     NIRI = "NIRI"
-    VISITOR_NORTH = "VISITOR_NORTH"
-    VISITOR_SOUTH = "VISITOR_SOUTH"
+    VISITOR = "VISITOR"
     SCORPIO = "SCORPIO"
     ALOPEKE = "ALOPEKE"
     ZORRO = "ZORRO"
-    MAROON_X = "MAROON_X"
-
-
-class GnirsPrism(str, Enum):
-    MIRROR = "MIRROR"
-    SXD = "SXD"
-    LXD = "LXD"
-
-
-class GnirsCamera(str, Enum):
-    LONG_BLUE = "LONG_BLUE"
-    LONG_RED = "LONG_RED"
-    SHORT_BLUE = "SHORT_BLUE"
-    SHORT_RED = "SHORT_RED"
-
-
-class GnirsGrating(str, Enum):
-    D10 = "D10"
-    D32 = "D32"
-    D111 = "D111"
-
-
-class GnirsFilter(str, Enum):
-    CROSS_DISPERSED = "CROSS_DISPERSED"
-    ORDER6 = "ORDER6"
-    ORDER5 = "ORDER5"
-    ORDER4 = "ORDER4"
-    ORDER3 = "ORDER3"
-    ORDER2 = "ORDER2"
-    ORDER1 = "ORDER1"
-    H2 = "H2"
-    H_ND100X = "H_ND100X"
-    H2_ND100X = "H2_ND100X"
-    PAH = "PAH"
-    Y = "Y"
-    J = "J"
-    K = "K"
-
-
-class GnirsFpuSlit(str, Enum):
-    LONG_SLIT_0_10 = "LONG_SLIT_0_10"
-    LONG_SLIT_0_15 = "LONG_SLIT_0_15"
-    LONG_SLIT_0_20 = "LONG_SLIT_0_20"
-    LONG_SLIT_0_30 = "LONG_SLIT_0_30"
-    LONG_SLIT_0_45 = "LONG_SLIT_0_45"
-    LONG_SLIT_0_675 = "LONG_SLIT_0_675"
-    LONG_SLIT_1_00 = "LONG_SLIT_1_00"
 
 
 class ItcType(str, Enum):

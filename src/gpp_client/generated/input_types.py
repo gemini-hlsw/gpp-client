@@ -113,7 +113,6 @@ from .enums import (
     TimingWindowInclusion,
     ToOActivation,
     UserType,
-    VisitorObservingModeType,
     WaterVapor,
     WavelengthOrder,
 )
@@ -1541,18 +1540,6 @@ class ObservingModeInput(BaseModel):
         alias=str("igrins2LongSlit"), default=None
     )
     "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
-    visitor: Optional["VisitorInput"] = None
-    "A visiting instrument mode. It cannot be unset with a null value."
-
-
-class VisitorInput(BaseModel):
-    mode: Optional[VisitorObservingModeType] = None
-    central_wavelength: Optional["WavelengthInput"] = Field(
-        alias=str("centralWavelength"), default=None
-    )
-    guide_star_min_sep: Optional["AngleInput"] = Field(
-        alias=str("guideStarMinSep"), default=None
-    )
 
 
 class ScienceRequirementsInput(BaseModel):
@@ -1859,8 +1846,6 @@ class ObscalcUpdateInput(BaseModel):
     new_state: Optional["WhereOptionEqCalculationState"] = Field(
         alias=str("newState"), default=None
     )
-    executable_only: Optional[bool] = Field(alias=str("executableOnly"), default=False)
-    "When set to `true`, events will be limited to those that impact executable\nobservations only.  Changes to observations that are not yet `READY` or\n`ONGOING`, or which have already completed, will not trigger events."
 
 
 class WhereOrderCalculationState(BaseModel):
@@ -4567,7 +4552,6 @@ ProposalPropertiesInput.model_rebuild()
 RecordGmosNorthVisitInput.model_rebuild()
 RecordGmosSouthVisitInput.model_rebuild()
 ObservingModeInput.model_rebuild()
-VisitorInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
 SetAllocationsInput.model_rebuild()
 SetProgramReferenceInput.model_rebuild()
