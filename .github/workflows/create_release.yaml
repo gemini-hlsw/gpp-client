@@ -3,39 +3,53 @@ name: Create Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version (e.g., 25.11.0 or or 25.11.0-dev.1). Do not include a leading 'v' or unnecessary zero padding."
+      tag:
+        description: "Release tag, e.g. v26.5.0 or v26.5.0.dev1."
         required: true
-      base_branch:
-        description: "Branch the PR should target (main or dev)."
-        required: true
-        default: "main"
+
+permissions:
+  contents: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version:
-          - "3.12"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ inputs.base_branch }}
 
-      - name: Create tag
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Validate release
+        run: python scripts/validate_release.py "${{ inputs.tag }}"
+
+      - name: Check tag does not already exist
+        run: |
+          if git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
+            echo "Tag already exists: ${{ inputs.tag }}"
+            exit 1
+          fi
+
+      - name: Show release commit
+        run: |
+          echo "Tagging commit:"
+          git log -1 --oneline
+
+      - name: Create and push tag
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}."
-          git push origin "v${{ inputs.version }}"
+          git tag -a "${{ inputs.tag }}" -m "Release ${{ inputs.tag }}."
+          git push origin "${{ inputs.tag }}"
 
-      - name: Create GitHub release and upload artifacts
+      - name: Create draft GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ inputs.version }}"
-          name: "v${{ inputs.version }}"
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
           draft: true
           generate_release_notes: true
