@@ -89,13 +89,22 @@ def _get_token(env: GPPEnvironment) -> tuple[str, GPPEnvironment]:
     Raises
     ------
     SchemaDownloadError
-        Raised if no valid token is available for the active environment.
+        Raised if no valid token is available for the active environment or if the
+        resolved environment does not match the requested environment.
+
     """
     try:
         settings = GPPSettings(environment_override=env)
-        return settings.resolved_token, settings.environment
     except GPPAuthError as exc:
         raise SchemaDownloadError(str(exc)) from exc
+
+    if settings.environment is not env:
+        raise SchemaDownloadError(
+            "Resolved environment does not match requested environment. "
+            f"Requested {env.value}, resolved {settings.environment.value}."
+        )
+
+    return settings.resolved_token, settings.environment
 
 
 def _download_schema(url: str, token: str) -> str:
@@ -185,7 +194,7 @@ def _run(env: GPPEnvironment) -> None:
     output.info(f"Using URL: {url}")
 
     schema_text = _download_schema(url, token)
-    output_file = paths.schema_file_path(env)
+    output_file = paths.schema_file_path(effective_env)
     _write_schema(schema_text, output_file)
 
     output.info(f"Schema saved to {output_file}")

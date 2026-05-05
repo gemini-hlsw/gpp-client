@@ -20,6 +20,7 @@ from .enums import (
     ConditionsExpectationType,
     ConditionsMeasurementSource,
     ConfigurationRequestStatus,
+    ConsiderForBand3,
     CoolStarTemperature,
     DatabaseOperation,
     DatasetQaState,
@@ -112,6 +113,7 @@ from .enums import (
     TimingWindowInclusion,
     ToOActivation,
     UserType,
+    VisitorObservingModeType,
     WaterVapor,
     WavelengthOrder,
 )
@@ -1315,6 +1317,18 @@ class ClassicalInput(BaseModel):
         alias=str("partnerSplits"), default=None
     )
     "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
+    aeon_multi_facility: Optional[bool] = Field(
+        alias=str("aeonMultiFacility"), default=None
+    )
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
+    "Whether this proposal has JWST synergy."
+    us_long_term: Optional[bool] = Field(alias=str("usLongTerm"), default=None)
+    "Whether this is a US Long Term proposal."
+    consider_for_band_3: Optional[ConsiderForBand3] = Field(
+        alias=str("considerForBand3"), default=None
+    )
+    "Whether this proposal should be considered for Band 3."
 
 
 class DemoScienceInput(BaseModel):
@@ -1361,6 +1375,12 @@ class LargeProgramInput(BaseModel):
     "The minimum percentage of time required over the lifetime of the program to\nconsider this proposal a success.  If not set, 100% is assumed."
     total_time: Optional["TimeSpanInput"] = Field(alias=str("totalTime"), default=None)
     "The total time requested over the lifetime of the program.  If not set, zero\nhours are assumed."
+    aeon_multi_facility: Optional[bool] = Field(
+        alias=str("aeonMultiFacility"), default=None
+    )
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
+    "Whether this proposal has JWST synergy."
 
 
 class PoorWeatherInput(BaseModel):
@@ -1383,6 +1403,18 @@ class QueueInput(BaseModel):
         alias=str("partnerSplits"), default=None
     )
     "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
+    consider_for_band_3: Optional[ConsiderForBand3] = Field(
+        alias=str("considerForBand3"), default=None
+    )
+    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
+    aeon_multi_facility: Optional[bool] = Field(
+        alias=str("aeonMultiFacility"), default=None
+    )
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
+    "Whether this proposal has JWST synergy."
+    us_long_term: Optional[bool] = Field(alias=str("usLongTerm"), default=None)
+    "Whether this is a US Long Term proposal."
 
 
 class SystemVerificationInput(BaseModel):
@@ -1509,6 +1541,18 @@ class ObservingModeInput(BaseModel):
         alias=str("igrins2LongSlit"), default=None
     )
     "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    visitor: Optional["VisitorInput"] = None
+    "A visiting instrument mode. It cannot be unset with a null value."
+
+
+class VisitorInput(BaseModel):
+    mode: Optional[VisitorObservingModeType] = None
+    central_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("centralWavelength"), default=None
+    )
+    guide_star_min_sep: Optional["AngleInput"] = Field(
+        alias=str("guideStarMinSep"), default=None
+    )
 
 
 class ScienceRequirementsInput(BaseModel):
@@ -1815,6 +1859,8 @@ class ObscalcUpdateInput(BaseModel):
     new_state: Optional["WhereOptionEqCalculationState"] = Field(
         alias=str("newState"), default=None
     )
+    executable_only: Optional[bool] = Field(alias=str("executableOnly"), default=False)
+    "When set to `true`, events will be limited to those that impact executable\nobservations only.  Changes to observations that are not yet `READY` or\n`ONGOING`, or which have already completed, will not trigger events."
 
 
 class WhereOrderCalculationState(BaseModel):
@@ -2392,7 +2438,7 @@ class GhostDetectorConfigInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
-    "Exposure time mode for the detector.  If not specified, the exposure time mode\nof the observation's science requirements are used."
+    "Exposure time mode for the detector.  If not specified, the exposure time mode\nof the observation's science requirements are used.  Note, only TimeAndCount\nexposure time modes are accepted at this time."
     explicit_binning: Optional[GhostBinning] = Field(
         alias=str("explicitBinning"), default=None
     )
@@ -2406,14 +2452,20 @@ class GhostDetectorConfigInput(BaseModel):
 class GhostIfuInput(BaseModel):
     """Edit or create GHOST IFU Mode"""
 
+    step_count: Optional[Any] = Field(alias=str("stepCount"), default=None)
+    "Requested step count. If not specified, a default of 1 will applied.  Cannot\nbe unset with a null value."
     resolution_mode: Optional[GhostResolutionMode] = Field(
         alias=str("resolutionMode"), default=None
     )
     "The disperser field must be specified.  It cannot be unset with a null value."
     red: Optional["GhostDetectorConfigInput"] = None
-    "Red camera detector config.  If not specified, defaults will be applied.\nCannot be unset with a null value."
+    "Red config.  If not specified, defaults will be applied. Cannot be unset with\na null value."
     blue: Optional["GhostDetectorConfigInput"] = None
-    "Blue camera detector config.  If not specified, defaults will be applied.\nCannot be unset with a null value."
+    "Blue config.  If not specified, defaults will be applied. Cannot be unset with\na null value."
+    slit_viewing_camera_exposure_time: Optional["TimeSpanInput"] = Field(
+        alias=str("slitViewingCameraExposureTime"), default=None
+    )
+    "Slit viewing camera exposure time.  If not specified, this will remain null.\nMay be unset with a null value."
     explicit_ifu_1_agitator: Optional[GhostIfu1FiberAgitator] = Field(
         alias=str("explicitIfu1Agitator"), default=None
     )
@@ -2443,6 +2495,10 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("explicitOffsets"), default=None
     )
     "Spatial offsets. May be unset by assigning null, or ignored by skipping.\nFor NodAlongSlit mode, all offsets must have P = 0."
+    telluric_type: Optional["TelluricTypeInput"] = Field(
+        alias=str("telluricType"), default=None
+    )
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
 
 
 class GmosImagingVariantInput(BaseModel):
@@ -4511,6 +4567,7 @@ ProposalPropertiesInput.model_rebuild()
 RecordGmosNorthVisitInput.model_rebuild()
 RecordGmosSouthVisitInput.model_rebuild()
 ObservingModeInput.model_rebuild()
+VisitorInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
 SetAllocationsInput.model_rebuild()
 SetProgramReferenceInput.model_rebuild()

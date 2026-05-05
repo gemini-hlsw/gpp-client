@@ -3968,6 +3968,21 @@ input ObservingModeInput {
   The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   igrins2LongSlit: Igrins2LongSlitInput
+
+  """A visiting instrument mode. It cannot be unset with a null value."""
+  visitor: VisitorInput
+}
+
+input VisitorInput {
+  mode: VisitorObservingModeType
+  centralWavelength: WavelengthInput
+  guideStarMinSep: AngleInput
+}
+
+type Visitor {
+  mode: VisitorObservingModeType!
+  centralWavelength: Wavelength!
+  guideStarMinSep: Angle!
 }
 
 """Edit science requirements"""
@@ -4447,6 +4462,13 @@ input ObscalcUpdateInput {
   oldState: WhereOptionEqCalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
   newCalculationState: WhereOptionEqCalculationState
   newState: WhereOptionEqCalculationState @deprecated(reason: "Use `newCalculationState` instead.")
+
+  """
+  When set to `true`, events will be limited to those that impact executable
+  observations only.  Changes to observations that are not yet `READY` or
+  `ONGOING`, or which have already completed, will not trigger events.
+  """
+  executableOnly: Boolean = false
 }
 
 input WhereOrderCalculationState {
@@ -5593,6 +5615,17 @@ enum ObservingModeType {
   IGRINS_2_LONG_SLIT
 }
 
+"""VisitorObservingModeType"""
+enum VisitorObservingModeType {
+  ALOPEKE_SPECKLE
+  ALOPEKE_WIDE_FIELD
+  MAROON_X
+  VISITOR_NORTH
+  VISITOR_SOUTH
+  ZORRO_SPECKLE
+  ZORRO_WIDE_FIELD
+}
+
 type ConstraintSet {
   """Image quality"""
   imageQuality: ImageQualityPreset!
@@ -6149,6 +6182,11 @@ type ExecutionConfig {
   `FLAMINGOS2`.
   """
   flamingos2: Flamingos2ExecutionConfig
+
+  """
+  GHOST execution config.  This will be null unless the `instrument` is `GHOST`.
+  """
+  ghost: GhostExecutionConfig
 
   """
   GMOS North execution config.  This will be null unless the `instrument` is
@@ -6953,7 +6991,7 @@ enum GhostIfu2FiberAgitator {
   ENABLED
 }
 
-input GhostDetectorInput {
+input GhostDetectorConfigInput {
   """
   Exposure time mode for the detector.  If not specified, the exposure time mode
   of the observation's science requirements are used.  Note, only TimeAndCount
@@ -6977,6 +7015,12 @@ input GhostDetectorInput {
 """Edit or create GHOST IFU Mode"""
 input GhostIfuInput {
   """
+  Requested step count. If not specified, a default of 1 will applied.  Cannot
+  be unset with a null value.
+  """
+  stepCount: PosInt
+
+  """
   The disperser field must be specified.  It cannot be unset with a null value.
   """
   resolutionMode: GhostResolutionMode
@@ -6985,13 +7029,19 @@ input GhostIfuInput {
   Red config.  If not specified, defaults will be applied. Cannot be unset with
   a null value.
   """
-  red: GhostDetectorInput
+  red: GhostDetectorConfigInput
 
   """
   Blue config.  If not specified, defaults will be applied. Cannot be unset with
   a null value.
   """
-  blue: GhostDetectorInput
+  blue: GhostDetectorConfigInput
+
+  """
+  Slit viewing camera exposure time.  If not specified, this will remain null.
+  May be unset with a null value.
+  """
+  slitViewingCameraExposureTime: TimeSpanInput
 
   """
   IFU1 fiber agitator setting.  If not specified, a default (DISABLED) will be
@@ -7006,7 +7056,7 @@ input GhostIfuInput {
   explicitIfu2Agitator: GhostIfu2FiberAgitator
 }
 
-type GhostDetector {
+type GhostDetectorConfig {
   """Exposure time mode for the detector."""
   exposureTimeMode: ExposureTimeMode!
 
@@ -7037,14 +7087,20 @@ type GhostDetector {
 
 """GHOST IFU observing mode."""
 type GhostIfu {
+  """Number of steps requested."""
+  stepCount: PosInt!
+
   """Resolution mode."""
   resolutionMode: GhostResolutionMode!
 
   """Red detector config."""
-  red: GhostDetector!
+  red: GhostDetectorConfig!
 
   """Blue detector config."""
-  blue: GhostDetector!
+  blue: GhostDetectorConfig!
+
+  """Slit viewing camera exposure time (if specified)."""
+  slitViewingCameraExposureTime: TimeSpan
 
   """
   IFU 1 fiber agitator setting, either explicitly specified or else default.
@@ -7071,6 +7127,96 @@ type GhostIfu {
 
   """IFU 2 fiber agitator setting, if explicitly specified."""
   explicitIfu2Agitator: GhostIfu2FiberAgitator
+}
+
+"""GHOST configuration that applies across all steps."""
+type GhostStatic {
+  resolutionMode: GhostResolutionMode!
+  slitViewingCameraExposureTime: TimeSpan
+}
+
+"""GHOST detector configuration for a single step."""
+type GhostDetector {
+  exposureTime: TimeSpan!
+  exposureCount: PosInt!
+  binning: GhostBinning!
+  readMode: GhostReadMode!
+}
+
+"""GHOST instrument configuration for a single step."""
+type GhostDynamic {
+  red: GhostDetector!
+  blue: GhostDetector!
+  ifu1FiberAgitator: GhostIfu1FiberAgitator!
+  ifu2FiberAgitator: GhostIfu2FiberAgitator!
+}
+
+"""GHOST step with potential breakpoint."""
+type GhostStep {
+  """Instrument configuration for this step"""
+  instrumentConfig: GhostDynamic!
+
+  """Step id"""
+  id: StepId!
+
+  """Whether to pause before the execution of this step"""
+  breakpoint: Breakpoint!
+
+  """The sequence step itself"""
+  stepConfig: StepConfig!
+
+  """The telescope configuration at this step."""
+  telescopeConfig: TelescopeConfig!
+
+  """Time estimate for this step's execution"""
+  estimate: StepEstimate!
+
+  """Observe class for this step"""
+  observeClass: ObserveClass!
+}
+
+"""
+GHOST atom, a collection of steps that should be executed in their entirety
+"""
+type GhostAtom {
+  """Atom id"""
+  id: AtomId!
+
+  """Optional description of the atom."""
+  description: String
+
+  """
+  Observe class for this atom as a whole (combined observe class for each of
+  its steps).
+  """
+  observeClass: ObserveClass!
+
+  """Individual steps that comprise the atom"""
+  steps: [GhostStep!]!
+}
+
+"""Next atom to execute and potential future atoms."""
+type GhostExecutionSequence {
+  """Next atom to execute."""
+  nextAtom: GhostAtom!
+
+  """(Prefix of the) remaining atoms to execute, if any."""
+  possibleFuture: [GhostAtom!]!
+
+  """
+  Whether there are more anticipated atoms than those that appear in
+  'possibleFuture'.
+  """
+  hasMore: Boolean!
+}
+
+"""GHOST Execution Config"""
+type GhostExecutionConfig {
+  """GHOST static configuration"""
+  static: GhostStatic!
+
+  """GHOST science execution"""
+  science: GhostExecutionSequence
 }
 
 """IGRINS-2 Offset Mode"""
@@ -7133,6 +7279,9 @@ type Igrins2LongSlit {
   Optional explicitly specified spatial offsets. If set, overrides the default.
   """
   explicitOffsets: [Offset!]
+
+  """Telluric type configuration for this observation."""
+  telluricType: TelluricType!
 }
 
 """Edit or create IGRINS-2 Long Slit configuration"""
@@ -7160,6 +7309,12 @@ input Igrins2LongSlitInput {
   For NodAlongSlit mode, all offsets must have P = 0.
   """
   explicitOffsets: [OffsetInput!]
+
+  """
+  The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.
+  On create the default is HOT.
+  """
+  telluricType: TelluricTypeInput
 }
 
 """Metadata for `enum FilterType`"""
@@ -8744,8 +8899,11 @@ enum PortDisposition {
 
 """Instrument"""
 enum Instrument {
-  """Instrument AcqCam"""
-  ACQ_CAM
+  """Instrument AcqCam at Gemini North"""
+  ACQ_CAM_NORTH
+
+  """Instrument AcqCam at Gemini South"""
+  ACQ_CAM_SOUTH
 
   """Instrument Flamingos2"""
   FLAMINGOS2
@@ -8774,8 +8932,11 @@ enum Instrument {
   """Instrument Niri"""
   NIRI
 
-  """Instrument Visitor"""
-  VISITOR
+  """Visitor Instrument at Gemini North"""
+  VISITOR_NORTH
+
+  """Visitor Instrument at Gemini North"""
+  VISITOR_SOUTH
 
   """Instrument Scorpio"""
   SCORPIO
@@ -8785,6 +8946,9 @@ enum Instrument {
 
   """Instrument Zorro"""
   ZORRO
+
+  """Instrument MAROON-X"""
+  MAROON_X
 }
 
 """Describes an instrument configuration option for spectroscopy."""
@@ -8830,6 +8994,11 @@ type SpectroscopyConfigOption {
   instruments.
   """
   gmosSouth: SpectroscopyConfigOptionGmosSouth
+
+  """
+  For GNIRS options, the GNIRS configuration.  Null for other instruments.
+  """
+  gnirs: SpectroscopyConfigOptionGnirs
 }
 
 type SpectroscopyConfigOptionFlamingos2 {
@@ -8853,6 +9022,60 @@ type SpectroscopyConfigOptionGmosSouth {
   fpu: GmosSouthBuiltinFpu!
   grating: GmosSouthGrating!
   filter: GmosSouthFilter
+}
+
+type SpectroscopyConfigOptionGnirs {
+  grating: GnirsGrating!
+  filter: GnirsFilter!
+  fpu: GnirsFpuSlit!
+  prism: GnirsPrism!
+  camera: GnirsCamera!
+}
+
+enum GnirsPrism {
+  MIRROR
+  SXD
+  LXD
+}
+
+enum GnirsCamera {
+  LONG_BLUE
+  LONG_RED
+  SHORT_BLUE
+  SHORT_RED
+}
+
+enum GnirsGrating {
+  D10
+  D32
+  D111
+}
+
+enum GnirsFilter {
+  CROSS_DISPERSED
+  ORDER6
+  ORDER5
+  ORDER4
+  ORDER3
+  ORDER2
+  ORDER1
+  H2
+  H_ND100X
+  H2_ND100X
+  PAH
+  Y
+  J
+  K
+}
+
+enum GnirsFpuSlit {
+  LONG_SLIT_0_10
+  LONG_SLIT_0_15
+  LONG_SLIT_0_20
+  LONG_SLIT_0_30
+  LONG_SLIT_0_45
+  LONG_SLIT_0_675
+  LONG_SLIT_1_00
 }
 
 """Edit or create imaging science requirements"""
@@ -9359,6 +9582,12 @@ type ConfigurationObservingMode {
   gmosSouthImaging: ConfigurationGmosSouthImaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
   igrins2LongSlit: ConfigurationIgrins2LongSlit
+  visitor: ConfigurationVisitor
+}
+
+type ConfigurationVisitor {
+  mode: VisitorObservingModeType!
+  radius: Angle!
 }
 
 type ConfigurationGmosNorthLongSlit {
@@ -10367,6 +10596,7 @@ type ObservingMode {
 
   """IGRINS-2 Long Slit mode"""
   igrins2LongSlit: Igrins2LongSlit
+  visitor: Visitor
 }
 
 type ObservingModeGroup {
@@ -11496,6 +11726,12 @@ type StepRecord {
   unless the `instrument` discriminator is "FLAMINGOS2".
   """
   flamingos2: Flamingos2Dynamic
+
+  """
+  Ghost instrument configuration for this step, if any. This will be null unless
+  the `instrument` discriminator is "GHOST".
+  """
+  ghost: GhostDynamic
 
   """
   GMOS North instrument configuration for this step, if any.  This will be null

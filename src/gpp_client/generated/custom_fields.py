@@ -61,6 +61,7 @@ from .custom_typing_fields import (
     ConfigurationRequestGraphQLField,
     ConfigurationRequestSelectResultGraphQLField,
     ConfigurationTargetGraphQLField,
+    ConfigurationVisitorGraphQLField,
     ConstraintSetGraphQLField,
     ConstraintSetGroupGraphQLField,
     ConstraintSetGroupSelectResultGraphQLField,
@@ -122,8 +123,15 @@ from .custom_typing_fields import (
     FluxDensityEntryGraphQLField,
     GaussianSourceGraphQLField,
     GcalGraphQLField,
+    GhostAtomGraphQLField,
     GhostDetectorConfigGraphQLField,
+    GhostDetectorGraphQLField,
+    GhostDynamicGraphQLField,
+    GhostExecutionConfigGraphQLField,
+    GhostExecutionSequenceGraphQLField,
     GhostIfuGraphQLField,
+    GhostStaticGraphQLField,
+    GhostStepGraphQLField,
     GmosCcdModeGraphQLField,
     GmosCustomMaskGraphQLField,
     GmosGroupedImagingVariantGraphQLField,
@@ -176,6 +184,7 @@ from .custom_typing_fields import (
     ImagingConfigOptionGmosSouthGraphQLField,
     ImagingConfigOptionGraphQLField,
     ImagingScienceRequirementsGraphQLField,
+    ItcGhostIfuGraphQLField,
     ItcGmosNorthImagingGraphQLField,
     ItcGmosNorthImagingResultSetGraphQLField,
     ItcGmosSouthImagingGraphQLField,
@@ -265,6 +274,7 @@ from .custom_typing_fields import (
     SpectroscopyConfigOptionGhostGraphQLField,
     SpectroscopyConfigOptionGmosNorthGraphQLField,
     SpectroscopyConfigOptionGmosSouthGraphQLField,
+    SpectroscopyConfigOptionGnirsGraphQLField,
     SpectroscopyConfigOptionGraphQLField,
     SpectroscopyScienceRequirementsGraphQLField,
     SpiralTelescopeConfigGeneratorGraphQLField,
@@ -317,6 +327,7 @@ from .custom_typing_fields import (
     UserInvitationGraphQLField,
     UserProfileGraphQLField,
     VisitGraphQLField,
+    VisitorGraphQLField,
     VisitSelectResultGraphQLField,
     WavelengthDitherGraphQLField,
     WavelengthGraphQLField,
@@ -1425,6 +1436,19 @@ class ClassicalFields(GraphQLField):
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
+    aeon_multi_facility: "ClassicalGraphQLField" = ClassicalGraphQLField(
+        "aeonMultiFacility"
+    )
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: "ClassicalGraphQLField" = ClassicalGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
+    us_long_term: "ClassicalGraphQLField" = ClassicalGraphQLField("usLongTerm")
+    "Whether this is a US Long Term proposal."
+    consider_for_band_3: "ClassicalGraphQLField" = ClassicalGraphQLField(
+        "considerForBand3"
+    )
+    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
+
     def fields(
         self, *subfields: Union[ClassicalGraphQLField, "PartnerSplitFields"]
     ) -> "ClassicalFields":
@@ -1867,6 +1891,10 @@ class ConfigurationObservingModeFields(GraphQLField):
     def igrins_2_long_slit(cls) -> "ConfigurationIgrins2LongSlitFields":
         return ConfigurationIgrins2LongSlitFields("igrins2LongSlit")
 
+    @classmethod
+    def visitor(cls) -> "ConfigurationVisitorFields":
+        return ConfigurationVisitorFields("visitor")
+
     def fields(
         self,
         *subfields: Union[
@@ -1877,6 +1905,7 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
             "ConfigurationIgrins2LongSlitFields",
+            "ConfigurationVisitorFields",
         ],
     ) -> "ConfigurationObservingModeFields":
         """Subfields should come from the ConfigurationObservingModeFields class"""
@@ -1975,6 +2004,25 @@ class ConfigurationTargetFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationTargetFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationVisitorFields(GraphQLField):
+    mode: "ConfigurationVisitorGraphQLField" = ConfigurationVisitorGraphQLField("mode")
+
+    @classmethod
+    def radius(cls) -> "AngleFields":
+        return AngleFields("radius")
+
+    def fields(
+        self, *subfields: Union[ConfigurationVisitorGraphQLField, "AngleFields"]
+    ) -> "ConfigurationVisitorFields":
+        """Subfields should come from the ConfigurationVisitorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationVisitorFields":
         self._alias = alias
         return self
 
@@ -3251,6 +3299,11 @@ class ExecutionConfigFields(GraphQLField):
         return Flamingos2ExecutionConfigFields("flamingos2")
 
     @classmethod
+    def ghost(cls) -> "GhostExecutionConfigFields":
+        """GHOST execution config.  This will be null unless the `instrument` is `GHOST`."""
+        return GhostExecutionConfigFields("ghost")
+
+    @classmethod
     def gmos_north(cls) -> "GmosNorthExecutionConfigFields":
         """GMOS North execution config.  This will be null unless the `instrument` is
         `GMOS_NORTH`."""
@@ -3273,6 +3326,7 @@ class ExecutionConfigFields(GraphQLField):
         *subfields: Union[
             ExecutionConfigGraphQLField,
             "Flamingos2ExecutionConfigFields",
+            "GhostExecutionConfigFields",
             "GmosNorthExecutionConfigFields",
             "GmosSouthExecutionConfigFields",
             "Igrins2ExecutionConfigFields",
@@ -4036,6 +4090,58 @@ class GcalFields(GraphQLField):
         return self
 
 
+class GhostAtomFields(GraphQLField):
+    """GHOST atom, a collection of steps that should be executed in their entirety"""
+
+    id: "GhostAtomGraphQLField" = GhostAtomGraphQLField("id")
+    "Atom id"
+    description: "GhostAtomGraphQLField" = GhostAtomGraphQLField("description")
+    "Optional description of the atom."
+    observe_class: "GhostAtomGraphQLField" = GhostAtomGraphQLField("observeClass")
+    "Observe class for this atom as a whole (combined observe class for each of\nits steps)."
+
+    @classmethod
+    def steps(cls) -> "GhostStepFields":
+        """Individual steps that comprise the atom"""
+        return GhostStepFields("steps")
+
+    def fields(
+        self, *subfields: Union[GhostAtomGraphQLField, "GhostStepFields"]
+    ) -> "GhostAtomFields":
+        """Subfields should come from the GhostAtomFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostAtomFields":
+        self._alias = alias
+        return self
+
+
+class GhostDetectorFields(GraphQLField):
+    """GHOST detector configuration for a single step."""
+
+    @classmethod
+    def exposure_time(cls) -> "TimeSpanFields":
+        return TimeSpanFields("exposureTime")
+
+    exposure_count: "GhostDetectorGraphQLField" = GhostDetectorGraphQLField(
+        "exposureCount"
+    )
+    binning: "GhostDetectorGraphQLField" = GhostDetectorGraphQLField("binning")
+    read_mode: "GhostDetectorGraphQLField" = GhostDetectorGraphQLField("readMode")
+
+    def fields(
+        self, *subfields: Union[GhostDetectorGraphQLField, "TimeSpanFields"]
+    ) -> "GhostDetectorFields":
+        """Subfields should come from the GhostDetectorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostDetectorFields":
+        self._alias = alias
+        return self
+
+
 class GhostDetectorConfigFields(GraphQLField):
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
@@ -4080,21 +4186,118 @@ class GhostDetectorConfigFields(GraphQLField):
         return self
 
 
+class GhostDynamicFields(GraphQLField):
+    """GHOST instrument configuration for a single step."""
+
+    @classmethod
+    def red(cls) -> "GhostDetectorFields":
+        return GhostDetectorFields("red")
+
+    @classmethod
+    def blue(cls) -> "GhostDetectorFields":
+        return GhostDetectorFields("blue")
+
+    ifu_1_fiber_agitator: "GhostDynamicGraphQLField" = GhostDynamicGraphQLField(
+        "ifu1FiberAgitator"
+    )
+    ifu_2_fiber_agitator: "GhostDynamicGraphQLField" = GhostDynamicGraphQLField(
+        "ifu2FiberAgitator"
+    )
+
+    def fields(
+        self, *subfields: Union[GhostDynamicGraphQLField, "GhostDetectorFields"]
+    ) -> "GhostDynamicFields":
+        """Subfields should come from the GhostDynamicFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostDynamicFields":
+        self._alias = alias
+        return self
+
+
+class GhostExecutionConfigFields(GraphQLField):
+    """GHOST Execution Config"""
+
+    @classmethod
+    def static(cls) -> "GhostStaticFields":
+        """GHOST static configuration"""
+        return GhostStaticFields("static")
+
+    @classmethod
+    def science(cls) -> "GhostExecutionSequenceFields":
+        """GHOST science execution"""
+        return GhostExecutionSequenceFields("science")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GhostExecutionConfigGraphQLField,
+            "GhostExecutionSequenceFields",
+            "GhostStaticFields",
+        ],
+    ) -> "GhostExecutionConfigFields":
+        """Subfields should come from the GhostExecutionConfigFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostExecutionConfigFields":
+        self._alias = alias
+        return self
+
+
+class GhostExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
+    @classmethod
+    def next_atom(cls) -> "GhostAtomFields":
+        """Next atom to execute."""
+        return GhostAtomFields("nextAtom")
+
+    @classmethod
+    def possible_future(cls) -> "GhostAtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
+        return GhostAtomFields("possibleFuture")
+
+    has_more: "GhostExecutionSequenceGraphQLField" = GhostExecutionSequenceGraphQLField(
+        "hasMore"
+    )
+    "Whether there are more anticipated atoms than those that appear in\n'possibleFuture'."
+
+    def fields(
+        self, *subfields: Union[GhostExecutionSequenceGraphQLField, "GhostAtomFields"]
+    ) -> "GhostExecutionSequenceFields":
+        """Subfields should come from the GhostExecutionSequenceFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostExecutionSequenceFields":
+        self._alias = alias
+        return self
+
+
 class GhostIfuFields(GraphQLField):
     """GHOST IFU observing mode."""
 
+    step_count: "GhostIfuGraphQLField" = GhostIfuGraphQLField("stepCount")
+    "Number of steps requested."
     resolution_mode: "GhostIfuGraphQLField" = GhostIfuGraphQLField("resolutionMode")
     "Resolution mode."
 
     @classmethod
     def red(cls) -> "GhostDetectorConfigFields":
-        """Red camera detector config."""
+        """Red detector config."""
         return GhostDetectorConfigFields("red")
 
     @classmethod
     def blue(cls) -> "GhostDetectorConfigFields":
-        """Blue camera detector config."""
+        """Blue detector config."""
         return GhostDetectorConfigFields("blue")
+
+    @classmethod
+    def slit_viewing_camera_exposure_time(cls) -> "TimeSpanFields":
+        """Slit viewing camera exposure time (if specified)."""
+        return TimeSpanFields("slitViewingCameraExposureTime")
 
     ifu_1_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField("ifu1Agitator")
     "IFU 1 fiber agitator setting, either explicitly specified or else default."
@@ -4118,13 +4321,89 @@ class GhostIfuFields(GraphQLField):
     "IFU 2 fiber agitator setting, if explicitly specified."
 
     def fields(
-        self, *subfields: Union[GhostIfuGraphQLField, "GhostDetectorConfigFields"]
+        self,
+        *subfields: Union[
+            GhostIfuGraphQLField, "GhostDetectorConfigFields", "TimeSpanFields"
+        ],
     ) -> "GhostIfuFields":
         """Subfields should come from the GhostIfuFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GhostIfuFields":
+        self._alias = alias
+        return self
+
+
+class GhostStaticFields(GraphQLField):
+    """GHOST configuration that applies across all steps."""
+
+    resolution_mode: "GhostStaticGraphQLField" = GhostStaticGraphQLField(
+        "resolutionMode"
+    )
+
+    @classmethod
+    def slit_viewing_camera_exposure_time(cls) -> "TimeSpanFields":
+        return TimeSpanFields("slitViewingCameraExposureTime")
+
+    def fields(
+        self, *subfields: Union[GhostStaticGraphQLField, "TimeSpanFields"]
+    ) -> "GhostStaticFields":
+        """Subfields should come from the GhostStaticFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostStaticFields":
+        self._alias = alias
+        return self
+
+
+class GhostStepFields(GraphQLField):
+    """GHOST step with potential breakpoint."""
+
+    @classmethod
+    def instrument_config(cls) -> "GhostDynamicFields":
+        """Instrument configuration for this step"""
+        return GhostDynamicFields("instrumentConfig")
+
+    id: "GhostStepGraphQLField" = GhostStepGraphQLField("id")
+    "Step id"
+    breakpoint: "GhostStepGraphQLField" = GhostStepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
+
+    @classmethod
+    def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
+        return StepConfigInterface("stepConfig")
+
+    @classmethod
+    def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
+        return TelescopeConfigFields("telescopeConfig")
+
+    @classmethod
+    def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
+        return StepEstimateFields("estimate")
+
+    observe_class: "GhostStepGraphQLField" = GhostStepGraphQLField("observeClass")
+    "Observe class for this step"
+
+    def fields(
+        self,
+        *subfields: Union[
+            GhostStepGraphQLField,
+            "GhostDynamicFields",
+            "StepConfigInterface",
+            "StepEstimateFields",
+            "TelescopeConfigFields",
+        ],
+    ) -> "GhostStepFields":
+        """Subfields should come from the GhostStepFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GhostStepFields":
         self._alias = alias
         return self
 
@@ -6046,10 +6325,18 @@ class Igrins2LongSlitFields(GraphQLField):
         """Optional explicitly specified spatial offsets. If set, overrides the default."""
         return OffsetFields("explicitOffsets")
 
+    @classmethod
+    def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
+        return TelluricTypeFields("telluricType")
+
     def fields(
         self,
         *subfields: Union[
-            Igrins2LongSlitGraphQLField, "ExposureTimeModeFields", "OffsetFields"
+            Igrins2LongSlitGraphQLField,
+            "ExposureTimeModeFields",
+            "OffsetFields",
+            "TelluricTypeFields",
         ],
     ) -> "Igrins2LongSlitFields":
         """Subfields should come from the Igrins2LongSlitFields class"""
@@ -6263,6 +6550,32 @@ class ItcInterface(GraphQLField):
 
     def on(self, type_name: str, *subfields: GraphQLField) -> "ItcInterface":
         self._inline_fragments[type_name] = subfields
+        return self
+
+
+class ItcGhostIfuFields(GraphQLField):
+    """GHOST IFU ITC results.  Each channel is paired with its result set."""
+
+    itc_type: "ItcGhostIfuGraphQLField" = ItcGhostIfuGraphQLField("itcType")
+    "The type of the Itc results."
+
+    @classmethod
+    def red(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("red")
+
+    @classmethod
+    def blue(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("blue")
+
+    def fields(
+        self, *subfields: Union[ItcGhostIfuGraphQLField, "ItcResultSetFields"]
+    ) -> "ItcGhostIfuFields":
+        """Subfields should come from the ItcGhostIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGhostIfuFields":
+        self._alias = alias
         return self
 
 
@@ -6512,6 +6825,13 @@ class LargeProgramFields(GraphQLField):
     def total_time(cls) -> "TimeSpanFields":
         """Total time requested (over multiple all semesters) for this proposal."""
         return TimeSpanFields("totalTime")
+
+    aeon_multi_facility: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
+        "aeonMultiFacility"
+    )
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: "LargeProgramGraphQLField" = LargeProgramGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
 
     def fields(
         self, *subfields: Union[LargeProgramGraphQLField, "TimeSpanFields"]
@@ -6944,6 +7264,10 @@ class ObservingModeFields(GraphQLField):
         """IGRINS-2 Long Slit mode"""
         return Igrins2LongSlitFields("igrins2LongSlit")
 
+    @classmethod
+    def visitor(cls) -> "VisitorFields":
+        return VisitorFields("visitor")
+
     def fields(
         self,
         *subfields: Union[
@@ -6955,6 +7279,7 @@ class ObservingModeFields(GraphQLField):
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
             "Igrins2LongSlitFields",
+            "VisitorFields",
         ],
     ) -> "ObservingModeFields":
         """Subfields should come from the ObservingModeFields class"""
@@ -7793,6 +8118,15 @@ class QueueFields(GraphQLField):
     def partner_splits(cls) -> "PartnerSplitFields":
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
+
+    consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
+    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
+    aeon_multi_facility: "QueueGraphQLField" = QueueGraphQLField("aeonMultiFacility")
+    "Whether this proposal is part of the AEON/Multi-facility program."
+    jwst_synergy: "QueueGraphQLField" = QueueGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
+    us_long_term: "QueueGraphQLField" = QueueGraphQLField("usLongTerm")
+    "Whether this is a US Long Term proposal."
 
     def fields(
         self, *subfields: Union[QueueGraphQLField, "PartnerSplitFields"]
@@ -8834,6 +9168,11 @@ class SpectroscopyConfigOptionFields(GraphQLField):
         instruments."""
         return SpectroscopyConfigOptionGmosSouthFields("gmosSouth")
 
+    @classmethod
+    def gnirs(cls) -> "SpectroscopyConfigOptionGnirsFields":
+        """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
+        return SpectroscopyConfigOptionGnirsFields("gnirs")
+
     def fields(
         self,
         *subfields: Union[
@@ -8843,6 +9182,7 @@ class SpectroscopyConfigOptionFields(GraphQLField):
             "SpectroscopyConfigOptionGhostFields",
             "SpectroscopyConfigOptionGmosNorthFields",
             "SpectroscopyConfigOptionGmosSouthFields",
+            "SpectroscopyConfigOptionGnirsFields",
             "WavelengthFields",
         ],
     ) -> "SpectroscopyConfigOptionFields":
@@ -8940,6 +9280,35 @@ class SpectroscopyConfigOptionGmosSouthFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SpectroscopyConfigOptionGmosSouthFields":
+        self._alias = alias
+        return self
+
+
+class SpectroscopyConfigOptionGnirsFields(GraphQLField):
+    grating: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("grating")
+    )
+    filter_: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("filter")
+    )
+    fpu: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("fpu")
+    )
+    prism: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("prism")
+    )
+    camera: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("camera")
+    )
+
+    def fields(
+        self, *subfields: SpectroscopyConfigOptionGnirsGraphQLField
+    ) -> "SpectroscopyConfigOptionGnirsFields":
+        """Subfields should come from the SpectroscopyConfigOptionGnirsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionGnirsFields":
         self._alias = alias
         return self
 
@@ -9217,6 +9586,12 @@ class StepRecordFields(GraphQLField):
         return Flamingos2DynamicFields("flamingos2")
 
     @classmethod
+    def ghost(cls) -> "GhostDynamicFields":
+        """Ghost instrument configuration for this step, if any. This will be null unless
+        the `instrument` discriminator is "GHOST"."""
+        return GhostDynamicFields("ghost")
+
+    @classmethod
     def gmos_north(cls) -> "GmosNorthDynamicFields":
         """GMOS North instrument configuration for this step, if any.  This will be null
         unless the `instrument` discriminator is "GMOS_NORTH"."""
@@ -9242,6 +9617,7 @@ class StepRecordFields(GraphQLField):
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
             "Flamingos2DynamicFields",
+            "GhostDynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
             "Igrins2DynamicFields",
@@ -10785,6 +11161,29 @@ class VisitSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "VisitSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class VisitorFields(GraphQLField):
+    mode: "VisitorGraphQLField" = VisitorGraphQLField("mode")
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def guide_star_min_sep(cls) -> "AngleFields":
+        return AngleFields("guideStarMinSep")
+
+    def fields(
+        self, *subfields: Union[VisitorGraphQLField, "AngleFields", "WavelengthFields"]
+    ) -> "VisitorFields":
+        """Subfields should come from the VisitorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "VisitorFields":
         self._alias = alias
         return self
 

@@ -197,30 +197,24 @@ def test_run_downloads_and_writes_schema(repo_root, paths, mocker):
     assert output_file.read_text(encoding="utf-8") == "type Query { ping: String }"
 
 
-def test_run_uses_effective_environment_for_url_lookup(repo_root, paths, mocker):
+def test_get_token_raises_schema_download_error_for_environment_mismatch(mocker):
     """
-    Effective environment is used for URL lookup.
+    Environment mismatch is treated as a configuration error.
     """
     settings_mock = mocker.Mock()
     settings_mock.resolved_token = "secret-token"
     settings_mock.environment = GPPEnvironment.PRODUCTION
 
-    mocker.patch("scripts.download_schema.GPPSettings", return_value=settings_mock)
-    get_graphql_url = mocker.patch(
-        "scripts.download_schema.get_graphql_url",
-        return_value="https://example.test/prod/odb",
-    )
     mocker.patch(
-        "scripts.download_schema._download_schema",
-        return_value="type Query { ping: String }",
+        "scripts.download_schema.GPPSettings",
+        return_value=settings_mock,
     )
 
-    _run(GPPEnvironment.DEVELOPMENT)
-
-    get_graphql_url.assert_called_once_with(GPPEnvironment.PRODUCTION)
-
-    output_file = paths.schema_file_path(GPPEnvironment.DEVELOPMENT)
-    assert output_file.exists()
+    with pytest.raises(
+        SchemaDownloadError,
+        match="Requested DEVELOPMENT, resolved PRODUCTION",
+    ):
+        _get_token(GPPEnvironment.DEVELOPMENT)
 
 
 @pytest.mark.parametrize(
