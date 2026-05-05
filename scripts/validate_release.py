@@ -8,7 +8,9 @@ import sys
 from pathlib import Path
 from typing import Final
 
-TAG_PATTERN: Final[re.Pattern[str]] = re.compile(r"^v\d{2}\.\d{1,2}\.\d+(?:\.dev\d+)?$")
+TAG_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^v\d{2}\.(?:[1-9]|1[0-2])\.\d+(?:\.dev\d+)?$"
+)
 ENV_PATTERN: Final[re.Pattern[str]] = re.compile(
     r'^PACKAGE_ENVIRONMENT\s*=\s*["\']'
     r'(?P<environment>DEVELOPMENT|PRODUCTION)["\']\s*$',
@@ -71,7 +73,7 @@ def _expected_environment(tag: str) -> str:
     return "DEVELOPMENT" if ".dev" in tag else "PRODUCTION"
 
 
-def validate_release(tag: str, env_file: Path = ENV_FILE) -> None:
+def validate_release(tag: str, env_file: Path | None = None) -> None:
     """
     Validate release tag format and package environment consistency.
 
@@ -79,14 +81,17 @@ def validate_release(tag: str, env_file: Path = ENV_FILE) -> None:
     ----------
     tag : str
         Release tag, including the leading ``v``.
-    env_file : Path, optional
-        Path to the generated package environment file.
+    env_file : Path | None, optional
+        Path to the generated package environment file. If ``None``, the default
+        ``ENV_FILE`` is used.
 
     Raises
     ------
     ReleaseValidationError
         Raised if the release tag or package environment is invalid.
     """
+    if env_file is None:
+        env_file = ENV_FILE
     if TAG_PATTERN.fullmatch(tag) is None:
         raise ReleaseValidationError(
             f"Invalid release tag: {tag}. Expected format: v26.5.0 or v26.5.0.dev1."
