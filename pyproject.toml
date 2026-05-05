@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
 
 [project]
 name = "gpp-client"
@@ -30,12 +30,28 @@ dependencies = [
     "typer>=0.21.1",
     "websockets>=14.2",
 ]
-version = "26.4.1.dev1"
+dynamic = ["version"]
 keywords = ["gemini", "gpp", "client", "program", "platform"]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["gpp_client*"]
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+style = "pep440"
+pattern = '^v(?P<base>\d{2}\.\d{1,2}\.\d+)(?:\.(?P<stage>dev)(?P<revision>\d+))?$'
+strict = true
+metadata = false
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gpp_client"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/gpp_client",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [project.scripts]
 gpp = "gpp_client.cli.cli:main"

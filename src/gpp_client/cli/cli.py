@@ -5,11 +5,11 @@ CLI entry point for GPP Client.
 __all__ = ["app"]
 
 from dataclasses import dataclass
-from importlib.metadata import version as get_version
 from typing import Annotated
 
 import typer
 
+from gpp_client import GPPClient, __version__
 from gpp_client.cli import output
 from gpp_client.cli.commands import (
     attachment_app,
@@ -22,10 +22,7 @@ from gpp_client.cli.commands import (
     workflow_state_app,
 )
 from gpp_client.cli.utils import async_command
-from gpp_client.client import GPPClient
 from gpp_client.settings import get_config_path as _get_config_path
-
-__version__ = get_version("gpp-client").strip()
 
 
 @dataclass(slots=True)

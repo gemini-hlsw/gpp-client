@@ -2,9 +2,22 @@
 Top-level package for gpp_client.
 """
 
-from typing import Any
+import importlib.metadata
+from typing import TYPE_CHECKING, Any
 
-__all__ = ["GPPClient"]
+if TYPE_CHECKING:
+    from .client import GPPClient
+
+__all__ = ["GPPClient", "__version__"]
+
+_FALLBACK_VERSION = "0.0.0"
+
+
+try:
+    __version__ = importlib.metadata.version(__name__)
+except importlib.metadata.PackageNotFoundError:
+    # Have fallback version for development environments.
+    __version__ = _FALLBACK_VERSION
 
 
 def __getattr__(name: str) -> Any:
