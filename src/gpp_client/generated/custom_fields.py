@@ -61,6 +61,7 @@ from .custom_typing_fields import (
     ConfigurationRequestGraphQLField,
     ConfigurationRequestSelectResultGraphQLField,
     ConfigurationTargetGraphQLField,
+    ConfigurationVisitorGraphQLField,
     ConstraintSetGraphQLField,
     ConstraintSetGroupGraphQLField,
     ConstraintSetGroupSelectResultGraphQLField,
@@ -273,6 +274,7 @@ from .custom_typing_fields import (
     SpectroscopyConfigOptionGhostGraphQLField,
     SpectroscopyConfigOptionGmosNorthGraphQLField,
     SpectroscopyConfigOptionGmosSouthGraphQLField,
+    SpectroscopyConfigOptionGnirsGraphQLField,
     SpectroscopyConfigOptionGraphQLField,
     SpectroscopyScienceRequirementsGraphQLField,
     SpiralTelescopeConfigGeneratorGraphQLField,
@@ -325,6 +327,7 @@ from .custom_typing_fields import (
     UserInvitationGraphQLField,
     UserProfileGraphQLField,
     VisitGraphQLField,
+    VisitorGraphQLField,
     VisitSelectResultGraphQLField,
     WavelengthDitherGraphQLField,
     WavelengthGraphQLField,
@@ -1888,6 +1891,10 @@ class ConfigurationObservingModeFields(GraphQLField):
     def igrins_2_long_slit(cls) -> "ConfigurationIgrins2LongSlitFields":
         return ConfigurationIgrins2LongSlitFields("igrins2LongSlit")
 
+    @classmethod
+    def visitor(cls) -> "ConfigurationVisitorFields":
+        return ConfigurationVisitorFields("visitor")
+
     def fields(
         self,
         *subfields: Union[
@@ -1898,6 +1905,7 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
             "ConfigurationIgrins2LongSlitFields",
+            "ConfigurationVisitorFields",
         ],
     ) -> "ConfigurationObservingModeFields":
         """Subfields should come from the ConfigurationObservingModeFields class"""
@@ -1996,6 +2004,25 @@ class ConfigurationTargetFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationTargetFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationVisitorFields(GraphQLField):
+    mode: "ConfigurationVisitorGraphQLField" = ConfigurationVisitorGraphQLField("mode")
+
+    @classmethod
+    def radius(cls) -> "AngleFields":
+        return AngleFields("radius")
+
+    def fields(
+        self, *subfields: Union[ConfigurationVisitorGraphQLField, "AngleFields"]
+    ) -> "ConfigurationVisitorFields":
+        """Subfields should come from the ConfigurationVisitorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationVisitorFields":
         self._alias = alias
         return self
 
@@ -4177,8 +4204,16 @@ class GhostDynamicFields(GraphQLField):
         "ifu2FiberAgitator"
     )
 
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is fixed at 655 nm."""
+        return WavelengthFields("centralWavelength")
+
     def fields(
-        self, *subfields: Union[GhostDynamicGraphQLField, "GhostDetectorFields"]
+        self,
+        *subfields: Union[
+            GhostDynamicGraphQLField, "GhostDetectorFields", "WavelengthFields"
+        ],
     ) -> "GhostDynamicFields":
         """Subfields should come from the GhostDynamicFields class"""
         self._subfields.extend(subfields)
@@ -5882,6 +5917,9 @@ class GroupFields(GraphQLField):
     def maximum_interval(cls) -> "TimeSpanFields":
         return TimeSpanFields("maximumInterval")
 
+    same_night: "GroupGraphQLField" = GroupGraphQLField("sameNight")
+    "If true, all observations in this group must be scheduled on the same night.\nMutually exclusive with `maximumInterval`.\nOnly valid for AND groups."
+
     @classmethod
     def elements(cls, include_deleted: bool) -> "GroupElementFields":
         """Contained elements"""
@@ -7237,6 +7275,10 @@ class ObservingModeFields(GraphQLField):
         """IGRINS-2 Long Slit mode"""
         return Igrins2LongSlitFields("igrins2LongSlit")
 
+    @classmethod
+    def visitor(cls) -> "VisitorFields":
+        return VisitorFields("visitor")
+
     def fields(
         self,
         *subfields: Union[
@@ -7248,6 +7290,7 @@ class ObservingModeFields(GraphQLField):
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
             "Igrins2LongSlitFields",
+            "VisitorFields",
         ],
     ) -> "ObservingModeFields":
         """Subfields should come from the ObservingModeFields class"""
@@ -9136,6 +9179,11 @@ class SpectroscopyConfigOptionFields(GraphQLField):
         instruments."""
         return SpectroscopyConfigOptionGmosSouthFields("gmosSouth")
 
+    @classmethod
+    def gnirs(cls) -> "SpectroscopyConfigOptionGnirsFields":
+        """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
+        return SpectroscopyConfigOptionGnirsFields("gnirs")
+
     def fields(
         self,
         *subfields: Union[
@@ -9145,6 +9193,7 @@ class SpectroscopyConfigOptionFields(GraphQLField):
             "SpectroscopyConfigOptionGhostFields",
             "SpectroscopyConfigOptionGmosNorthFields",
             "SpectroscopyConfigOptionGmosSouthFields",
+            "SpectroscopyConfigOptionGnirsFields",
             "WavelengthFields",
         ],
     ) -> "SpectroscopyConfigOptionFields":
@@ -9242,6 +9291,35 @@ class SpectroscopyConfigOptionGmosSouthFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SpectroscopyConfigOptionGmosSouthFields":
+        self._alias = alias
+        return self
+
+
+class SpectroscopyConfigOptionGnirsFields(GraphQLField):
+    grating: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("grating")
+    )
+    filter_: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("filter")
+    )
+    fpu: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("fpu")
+    )
+    prism: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("prism")
+    )
+    camera: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("camera")
+    )
+
+    def fields(
+        self, *subfields: SpectroscopyConfigOptionGnirsGraphQLField
+    ) -> "SpectroscopyConfigOptionGnirsFields":
+        """Subfields should come from the SpectroscopyConfigOptionGnirsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionGnirsFields":
         self._alias = alias
         return self
 
@@ -11094,6 +11172,29 @@ class VisitSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "VisitSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class VisitorFields(GraphQLField):
+    mode: "VisitorGraphQLField" = VisitorGraphQLField("mode")
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def guide_star_min_sep(cls) -> "AngleFields":
+        return AngleFields("guideStarMinSep")
+
+    def fields(
+        self, *subfields: Union[VisitorGraphQLField, "AngleFields", "WavelengthFields"]
+    ) -> "VisitorFields":
+        """Subfields should come from the VisitorFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "VisitorFields":
         self._alias = alias
         return self
 
