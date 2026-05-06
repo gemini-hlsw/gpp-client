@@ -14,6 +14,7 @@ updates:
           - "graphql-core"
           - "httpx"
           - "pydantic"
+          - "pydantic-settings"
           - "typer"
           - "websockets"
       codegen-dependencies:
@@ -31,6 +32,10 @@ updates:
       schema-dependencies:
         patterns:
           - "gql"
+      notebook-dependencies:
+        patterns:
+          - "ipykernel"
+          - "jupyter"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
