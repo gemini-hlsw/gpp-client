@@ -6212,8 +6212,16 @@ class Igrins2DynamicFields(GraphQLField):
         """IGRINS-2 exposure time"""
         return TimeSpanFields("exposure")
 
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is fixed at 2.1 microns."""
+        return WavelengthFields("centralWavelength")
+
     def fields(
-        self, *subfields: Union[Igrins2DynamicGraphQLField, "TimeSpanFields"]
+        self,
+        *subfields: Union[
+            Igrins2DynamicGraphQLField, "TimeSpanFields", "WavelengthFields"
+        ],
     ) -> "Igrins2DynamicFields":
         """Subfields should come from the Igrins2DynamicFields class"""
         self._subfields.extend(subfields)

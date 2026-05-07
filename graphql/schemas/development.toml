@@ -1,0 +1,12 @@
+[tool.ariadne-codegen]
+remote_schema_url = "https://lucuma-postgres-odb-dev.herokuapp.com/odb"
+target_file_path = "graphql/schemas/development.graphql"
+remote_schema_headers = { Authorization = "Bearer $GPP_DEVELOPMENT_TOKEN" }
+remote_schema_verify_ssl = true
+remote_schema_timeout = 10
+introspection_descriptions = true
+introspection_input_value_deprecation = true
+introspection_specified_by_url = true
+introspection_schema_description = false
+introspection_directive_is_repeatable = true
+introspection_input_object_one_of = true

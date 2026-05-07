@@ -114,10 +114,7 @@ notebook = [
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
 ]
-schema = [
-    "aiohttp>=3.13.3",
-    "gql>=3.5.0,<4.0.0",
-]
+schema = [{ include-group = "codegen" }]
 
 [project.urls]
 Homepage = "https://github.com/gemini-hlsw/gpp-client"

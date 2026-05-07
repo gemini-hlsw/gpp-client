@@ -12,9 +12,6 @@ import typer
 
 from gpp_client.cli import output
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import GPPAuthError
-from gpp_client.settings import GPPSettings
-from gpp_client.urls import get_graphql_url
 
 app = typer.Typer(
     help="Download the GraphQL schema for a given GPP environment.",
@@ -53,9 +50,9 @@ class SchemaPaths:
         """
         return self.root / "graphql" / "schemas"
 
-    def schema_file_path(self, env: GPPEnvironment) -> Path:
+    def schema_toml_path(self, env: GPPEnvironment) -> Path:
         """
-        Return the schema file path for an environment.
+        Return the schema TOML path for an environment.
 
         Parameters
         ----------
@@ -65,110 +62,49 @@ class SchemaPaths:
         Returns
         -------
         Path
-            Schema file path.
+            Schema TOML path.
         """
-        return self.schemas_dir / f"{env.value.lower()}.graphql"
+        return self.schemas_dir / f"{env.value.lower()}.toml"
 
 
-def _get_token(env: GPPEnvironment) -> tuple[str, GPPEnvironment]:
+def _run_schema_download(toml_path: Path) -> None:
     """
-    Resolve the auth token and effective environment.
+    Download a GraphQL schema using Ariadne Codegen.
 
     Parameters
     ----------
-    env : GPPEnvironment
-        Target environment for the schema download.
-
-    Returns
-    -------
-    str
-        Resolved auth token.
-    GPPEnvironment
-        Effective environment used for the download.
+    toml_path : Path
+        Path to the schema TOML configuration.
 
     Raises
     ------
     SchemaDownloadError
-        Raised if no valid token is available for the active environment or if the
-        resolved environment does not match the requested environment.
-
+        Raised if Ariadne Codegen fails.
     """
-    try:
-        settings = GPPSettings(environment_override=env)
-    except GPPAuthError as exc:
-        raise SchemaDownloadError(str(exc)) from exc
-
-    if settings.environment is not env:
-        raise SchemaDownloadError(
-            "Resolved environment does not match requested environment. "
-            f"Requested {env.value}, resolved {settings.environment.value}."
-        )
-
-    return settings.resolved_token, settings.environment
-
-
-def _download_schema(url: str, token: str) -> str:
-    """
-    Download a GraphQL schema from a URL.
-
-    Parameters
-    ----------
-    url : str
-        GraphQL endpoint URL.
-    token : str
-        Bearer token.
-
-    Returns
-    -------
-    str
-        Downloaded schema text.
-
-    Raises
-    ------
-    SchemaDownloadError
-        Raised if the download command fails.
-    """
-    cmd = [
-        "gql-cli",
-        url,
-        "--transport",
-        "aiohttp",
-        "--print-schema",
-        "--schema-download",
-        "input_value_deprecation:true",
-        "-H",
-        f"Authorization: Bearer {token}",
-    ]
-
     with output.status("Downloading schema..."):
         try:
-            result = subprocess.run(
-                cmd,
+            process = subprocess.run(
+                [
+                    "ariadne-codegen",
+                    "graphqlschema",
+                    "--config",
+                    str(toml_path),
+                ],
                 check=True,
                 capture_output=True,
                 text=True,
                 cwd=Path.cwd(),
             )
+
+            if process.stdout:
+                output.dim_info(process.stdout)
+
         except subprocess.CalledProcessError as exc:
+            if exc.stdout:
+                output.dim_info(exc.stdout)
+
             stderr = exc.stderr.strip() if exc.stderr else "Schema download failed."
             raise SchemaDownloadError(stderr) from exc
-
-    return result.stdout
-
-
-def _write_schema(schema_text: str, output_file: Path) -> None:
-    """
-    Write schema text to disk.
-
-    Parameters
-    ----------
-    schema_text : str
-        Schema text to write.
-    output_file : Path
-        Output file path.
-    """
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(schema_text, encoding="utf-8")
 
 
 def _run(env: GPPEnvironment) -> None:
@@ -189,15 +125,14 @@ def _run(env: GPPEnvironment) -> None:
 
     output.info(f"Downloading schema for environment: {env.value}")
 
-    token, effective_env = _get_token(env)
-    url = get_graphql_url(effective_env)
-    output.info(f"Using URL: {url}")
+    toml_path = paths.schema_toml_path(env)
 
-    schema_text = _download_schema(url, token)
-    output_file = paths.schema_file_path(effective_env)
-    _write_schema(schema_text, output_file)
+    if not toml_path.exists():
+        raise SchemaDownloadError(f"Schema config file not found at {toml_path}")
 
-    output.info(f"Schema saved to {output_file}")
+    output.info(f"Using config: {toml_path}")
+
+    _run_schema_download(toml_path)
 
 
 @app.command()

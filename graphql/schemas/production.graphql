@@ -63,7 +63,7 @@ enum ProposalStatus {
 }
 
 """Email address, matching ^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"""
-scalar EmailAddress
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 
 """DatasetEvent creation parameters."""
 input AddDatasetEventInput {
@@ -195,7 +195,7 @@ input AllocationInput {
 """
 Create an angle from a signed value.  Choose exactly one of the available units.
 """
-input AngleInput {
+input AngleInput @oneOf {
   microarcseconds: Long
   microseconds: BigDecimal
   milliarcseconds: BigDecimal
@@ -989,7 +989,7 @@ type DateInterval {
 }
 
 """Declination, choose one of the available units"""
-input DeclinationInput {
+input DeclinationInput @oneOf {
   microarcseconds: Long
   degrees: BigDecimal
   dms: DmsString
@@ -1176,7 +1176,7 @@ enum ExecutionEventType {
 """
 Exposure time mode input.  Specify fixed or signal to noise, but not both
 """
-input ExposureTimeModeInput {
+input ExposureTimeModeInput @oneOf {
   """
   The signalToNoise field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
@@ -2908,7 +2908,7 @@ type Offset {
 """
 Offset component (p or q) input parameters. Choose one angle units definition.
 """
-input OffsetComponentInput {
+input OffsetComponentInput @oneOf {
   """Angle in µas"""
   microarcseconds: Long
 
@@ -2948,7 +2948,7 @@ An offset generator is specified by defining one of the `enumerated`, `random`,
 `spiral` or `uniform` options.  If none are defined, the generator type will be
 `NONE`.
 """
-input TelescopeConfigGeneratorInput {
+input TelescopeConfigGeneratorInput @oneOf {
   enumerated: EnumeratedTelescopeConfigGeneratorInput
   random: RandomTelescopeConfigGeneratorInput
   spiral: SpiralTelescopeConfigGeneratorInput
@@ -3031,7 +3031,7 @@ input UniformTelescopeConfigGeneratorInput {
 }
 
 """Parallax, choose one of the available units"""
-input ParallaxInput {
+input ParallaxInput @oneOf {
   microarcseconds: Long
   milliarcseconds: BigDecimal
 }
@@ -3350,7 +3350,7 @@ type ProgramUser {
 }
 
 """Proper motion component, choose one of the available units"""
-input ProperMotionComponentInput {
+input ProperMotionComponentInput @oneOf {
   microarcsecondsPerYear: Long
   milliarcsecondsPerYear: BigDecimal
 }
@@ -3568,7 +3568,7 @@ type SystemVerification implements ProposalType {
 Properties associated with particular proposal types.  Exactly one of
 these should be set upon creation or editing.
 """
-input ProposalTypeInput {
+input ProposalTypeInput @oneOf {
   classical: ClassicalInput
   demoScience: DemoScienceInput
   directorsTime: DirectorsTimeInput
@@ -3792,7 +3792,7 @@ input ProposalPropertiesInput {
 }
 
 """Radial velocity, choose one of the available units"""
-input RadialVelocityInput {
+input RadialVelocityInput @oneOf {
   centimetersPerSecond: Long
   metersPerSecond: BigDecimal
   kilometersPerSecond: BigDecimal
@@ -3901,7 +3901,7 @@ type ResetAcquisitionResult {
 }
 
 """Right Ascension, choose one of the available units"""
-input RightAscensionInput {
+input RightAscensionInput @oneOf {
   microseconds: Long
   degrees: BigDecimal
   hours: BigDecimal
@@ -3933,7 +3933,7 @@ type SmartGcal implements StepConfig {
 }
 
 """Edit or create an observation's observing mode"""
-input ObservingModeInput {
+input ObservingModeInput @oneOf {
   """
   The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
@@ -3968,6 +3968,21 @@ input ObservingModeInput {
   The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   igrins2LongSlit: Igrins2LongSlitInput
+
+  """A visiting instrument mode. It cannot be unset with a null value."""
+  visitor: VisitorInput
+}
+
+input VisitorInput {
+  mode: VisitorObservingModeType
+  centralWavelength: WavelengthInput
+  guideStarMinSep: AngleInput
+}
+
+type Visitor {
+  mode: VisitorObservingModeType!
+  centralWavelength: Wavelength!
+  guideStarMinSep: Angle!
 }
 
 """Edit science requirements"""
@@ -4057,7 +4072,7 @@ input SetProgramReferenceInput {
 Properties for the chosen program reference type.  Supply the value for exactly
 one of the inputs.
 """
-input ProgramReferencePropertiesInput {
+input ProgramReferencePropertiesInput @oneOf {
   calibration: ProgramReferencePropertiesCalibrationInput
   commissioning: ProgramReferencePropertiesCommissioningInput
   engineering: ProgramReferencePropertiesEngineeringInput
@@ -4212,7 +4227,7 @@ input SignalToNoiseExposureTimeModeInput {
 """
 Create or edit a source profile.  Exactly one of "point", "uniform" or "gaussian" is required.
 """
-input SourceProfileInput {
+input SourceProfileInput @oneOf {
   point: SpectralDefinitionIntegratedInput
   uniform: SpectralDefinitionSurfaceInput
   gaussian: GaussianInput
@@ -4221,7 +4236,7 @@ input SourceProfileInput {
 """
 Spectral definition input with integrated units.  Specify exactly one of "bandNormalized" or "emissionLines"
 """
-input SpectralDefinitionIntegratedInput {
+input SpectralDefinitionIntegratedInput @oneOf {
   bandNormalized: BandNormalizedIntegratedInput
   emissionLines: EmissionLinesIntegratedInput
 }
@@ -4229,7 +4244,7 @@ input SpectralDefinitionIntegratedInput {
 """
 Spectral definition input with surface units.  Specify exactly one of "bandNormalized" or "emissionLines"
 """
-input SpectralDefinitionSurfaceInput {
+input SpectralDefinitionSurfaceInput @oneOf {
   bandNormalized: BandNormalizedSurfaceInput
   emissionLines: EmissionLinesSurfaceInput
 }
@@ -4274,7 +4289,7 @@ interface StepConfig {
 }
 
 """Step configuration.  Choose exactly one step type."""
-input StepConfigInput {
+input StepConfigInput @oneOf {
   """Bias step creation option"""
   bias: Boolean
 
@@ -4447,6 +4462,13 @@ input ObscalcUpdateInput {
   oldState: WhereOptionEqCalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
   newCalculationState: WhereOptionEqCalculationState
   newState: WhereOptionEqCalculationState @deprecated(reason: "Use `newCalculationState` instead.")
+
+  """
+  When set to `true`, events will be limited to those that impact executable
+  observations only.  Changes to observations that are not yet `READY` or
+  `ONGOING`, or which have already completed, will not trigger events.
+  """
+  executableOnly: Boolean = false
 }
 
 input WhereOrderCalculationState {
@@ -4771,7 +4793,7 @@ input TimingWindowInput {
 }
 
 """Un-normalized SED input parameters.  Define one value only."""
-input UnnormalizedSedInput {
+input UnnormalizedSedInput @oneOf {
   stellarLibrary: StellarLibrarySpectrum
   coolStar: CoolStarTemperature
   galaxy: GalaxySpectrum
@@ -5207,7 +5229,7 @@ type UpdateTargetsResult {
 }
 
 """Wavelength, choose one of the available units"""
-input WavelengthInput {
+input WavelengthInput @oneOf {
   picometers: PosInt
   angstroms: PosBigDecimal
   nanometers: PosBigDecimal
@@ -5215,7 +5237,7 @@ input WavelengthInput {
 }
 
 """WavelengthDither, choose one of the available units"""
-input WavelengthDitherInput {
+input WavelengthDitherInput @oneOf {
   picometers: Int
   angstroms: BigDecimal
   nanometers: BigDecimal
@@ -5591,6 +5613,17 @@ enum ObservingModeType {
 
   """ObservingModeType Igrins2LongSlit"""
   IGRINS_2_LONG_SLIT
+}
+
+"""VisitorObservingModeType"""
+enum VisitorObservingModeType {
+  ALOPEKE_SPECKLE
+  ALOPEKE_WIDE_FIELD
+  MAROON_X
+  VISITOR_NORTH
+  VISITOR_SOUTH
+  ZORRO_SPECKLE
+  ZORRO_WIDE_FIELD
 }
 
 type ConstraintSet {
@@ -7116,6 +7149,9 @@ type GhostDynamic {
   blue: GhostDetector!
   ifu1FiberAgitator: GhostIfu1FiberAgitator!
   ifu2FiberAgitator: GhostIfu2FiberAgitator!
+
+  """Central wavelength, which is fixed at 655 nm."""
+  centralWavelength: Wavelength
 }
 
 """GHOST step with potential breakpoint."""
@@ -7836,7 +7872,7 @@ Input that specifies which imaging sub-type is desired along with its configurat
 details.  Exactly one of the options should be defined and the other two left
 unspecified.
 """
-input GmosImagingVariantInput {
+input GmosImagingVariantInput @oneOf {
   """
   Grouped mode collects all datasets for each filter before changing filters.
   """
@@ -8630,6 +8666,13 @@ type Group {
   minimumInterval: TimeSpan
   maximumInterval: TimeSpan
 
+  """
+  If true, all observations in this group must be scheduled on the same night.
+  Mutually exclusive with `maximumInterval`.
+  Only valid for AND groups.
+  """
+  sameNight: Boolean!
+
   """Contained elements"""
   elements(includeDeleted: Boolean! = false): [GroupElement!]!
 
@@ -8677,7 +8720,7 @@ type GroupElement {
 """
 A group element identifier. Exactly one of groupId and observationId must be provided.
 """
-input GroupElementInput {
+input GroupElementInput @oneOf {
   groupId: GroupId
   observationId: ObservationId
 }
@@ -8706,6 +8749,13 @@ input GroupPropertiesInput {
 
   """If specified, elements will be separated by at most `maximumInterval`."""
   maximumInterval: TimeSpanInput
+
+  """
+  If true, all observations in this group must be scheduled on the same night.
+  Mutually exclusive with `maximumInterval`.
+  Only valid for AND groups.
+  """
+  sameNight: Boolean
 
   """
   Parent group (optional). If specified then parent index must also be specified.
@@ -8866,8 +8916,11 @@ enum PortDisposition {
 
 """Instrument"""
 enum Instrument {
-  """Instrument AcqCam"""
-  ACQ_CAM
+  """Instrument AcqCam at Gemini North"""
+  ACQ_CAM_NORTH
+
+  """Instrument AcqCam at Gemini South"""
+  ACQ_CAM_SOUTH
 
   """Instrument Flamingos2"""
   FLAMINGOS2
@@ -8896,8 +8949,11 @@ enum Instrument {
   """Instrument Niri"""
   NIRI
 
-  """Instrument Visitor"""
-  VISITOR
+  """Visitor Instrument at Gemini North"""
+  VISITOR_NORTH
+
+  """Visitor Instrument at Gemini North"""
+  VISITOR_SOUTH
 
   """Instrument Scorpio"""
   SCORPIO
@@ -8907,6 +8963,9 @@ enum Instrument {
 
   """Instrument Zorro"""
   ZORRO
+
+  """Instrument MAROON-X"""
+  MAROON_X
 }
 
 """Describes an instrument configuration option for spectroscopy."""
@@ -8952,6 +9011,11 @@ type SpectroscopyConfigOption {
   instruments.
   """
   gmosSouth: SpectroscopyConfigOptionGmosSouth
+
+  """
+  For GNIRS options, the GNIRS configuration.  Null for other instruments.
+  """
+  gnirs: SpectroscopyConfigOptionGnirs
 }
 
 type SpectroscopyConfigOptionFlamingos2 {
@@ -8975,6 +9039,60 @@ type SpectroscopyConfigOptionGmosSouth {
   fpu: GmosSouthBuiltinFpu!
   grating: GmosSouthGrating!
   filter: GmosSouthFilter
+}
+
+type SpectroscopyConfigOptionGnirs {
+  grating: GnirsGrating!
+  filter: GnirsFilter!
+  fpu: GnirsFpuSlit!
+  prism: GnirsPrism!
+  camera: GnirsCamera!
+}
+
+enum GnirsPrism {
+  MIRROR
+  SXD
+  LXD
+}
+
+enum GnirsCamera {
+  LONG_BLUE
+  LONG_RED
+  SHORT_BLUE
+  SHORT_RED
+}
+
+enum GnirsGrating {
+  D10
+  D32
+  D111
+}
+
+enum GnirsFilter {
+  CROSS_DISPERSED
+  ORDER6
+  ORDER5
+  ORDER4
+  ORDER3
+  ORDER2
+  ORDER1
+  H2
+  H_ND100X
+  H2_ND100X
+  PAH
+  Y
+  J
+  K
+}
+
+enum GnirsFpuSlit {
+  LONG_SLIT_0_10
+  LONG_SLIT_0_15
+  LONG_SLIT_0_20
+  LONG_SLIT_0_30
+  LONG_SLIT_0_45
+  LONG_SLIT_0_675
+  LONG_SLIT_1_00
 }
 
 """Edit or create imaging science requirements"""
@@ -9481,6 +9599,12 @@ type ConfigurationObservingMode {
   gmosSouthImaging: ConfigurationGmosSouthImaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
   igrins2LongSlit: ConfigurationIgrins2LongSlit
+  visitor: ConfigurationVisitor
+}
+
+type ConfigurationVisitor {
+  mode: VisitorObservingModeType!
+  radius: Angle!
 }
 
 type ConfigurationGmosNorthLongSlit {
@@ -10489,6 +10613,7 @@ type ObservingMode {
 
   """IGRINS-2 Long Slit mode"""
   igrins2LongSlit: Igrins2LongSlit
+  visitor: Visitor
 }
 
 type ObservingModeGroup {
@@ -12123,7 +12248,7 @@ type TimeSpan {
 """
 Equivalent time amount in several unit options (exactly one must be specified)
 """
-input TimeSpanInput {
+input TimeSpanInput @oneOf {
   """TimeSpan in µs"""
   microseconds: Long
 

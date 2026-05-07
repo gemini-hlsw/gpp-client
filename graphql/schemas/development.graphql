@@ -63,7 +63,7 @@ enum ProposalStatus {
 }
 
 """Email address, matching ^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"""
-scalar EmailAddress
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 
 """DatasetEvent creation parameters."""
 input AddDatasetEventInput {
@@ -195,7 +195,7 @@ input AllocationInput {
 """
 Create an angle from a signed value.  Choose exactly one of the available units.
 """
-input AngleInput {
+input AngleInput @oneOf {
   microarcseconds: Long
   microseconds: BigDecimal
   milliarcseconds: BigDecimal
@@ -989,7 +989,7 @@ type DateInterval {
 }
 
 """Declination, choose one of the available units"""
-input DeclinationInput {
+input DeclinationInput @oneOf {
   microarcseconds: Long
   degrees: BigDecimal
   dms: DmsString
@@ -1176,7 +1176,7 @@ enum ExecutionEventType {
 """
 Exposure time mode input.  Specify fixed or signal to noise, but not both
 """
-input ExposureTimeModeInput {
+input ExposureTimeModeInput @oneOf {
   """
   The signalToNoise field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
@@ -2908,7 +2908,7 @@ type Offset {
 """
 Offset component (p or q) input parameters. Choose one angle units definition.
 """
-input OffsetComponentInput {
+input OffsetComponentInput @oneOf {
   """Angle in µas"""
   microarcseconds: Long
 
@@ -2948,7 +2948,7 @@ An offset generator is specified by defining one of the `enumerated`, `random`,
 `spiral` or `uniform` options.  If none are defined, the generator type will be
 `NONE`.
 """
-input TelescopeConfigGeneratorInput {
+input TelescopeConfigGeneratorInput @oneOf {
   enumerated: EnumeratedTelescopeConfigGeneratorInput
   random: RandomTelescopeConfigGeneratorInput
   spiral: SpiralTelescopeConfigGeneratorInput
@@ -3031,7 +3031,7 @@ input UniformTelescopeConfigGeneratorInput {
 }
 
 """Parallax, choose one of the available units"""
-input ParallaxInput {
+input ParallaxInput @oneOf {
   microarcseconds: Long
   milliarcseconds: BigDecimal
 }
@@ -3350,7 +3350,7 @@ type ProgramUser {
 }
 
 """Proper motion component, choose one of the available units"""
-input ProperMotionComponentInput {
+input ProperMotionComponentInput @oneOf {
   microarcsecondsPerYear: Long
   milliarcsecondsPerYear: BigDecimal
 }
@@ -3568,7 +3568,7 @@ type SystemVerification implements ProposalType {
 Properties associated with particular proposal types.  Exactly one of
 these should be set upon creation or editing.
 """
-input ProposalTypeInput {
+input ProposalTypeInput @oneOf {
   classical: ClassicalInput
   demoScience: DemoScienceInput
   directorsTime: DirectorsTimeInput
@@ -3792,7 +3792,7 @@ input ProposalPropertiesInput {
 }
 
 """Radial velocity, choose one of the available units"""
-input RadialVelocityInput {
+input RadialVelocityInput @oneOf {
   centimetersPerSecond: Long
   metersPerSecond: BigDecimal
   kilometersPerSecond: BigDecimal
@@ -3901,7 +3901,7 @@ type ResetAcquisitionResult {
 }
 
 """Right Ascension, choose one of the available units"""
-input RightAscensionInput {
+input RightAscensionInput @oneOf {
   microseconds: Long
   degrees: BigDecimal
   hours: BigDecimal
@@ -3933,7 +3933,7 @@ type SmartGcal implements StepConfig {
 }
 
 """Edit or create an observation's observing mode"""
-input ObservingModeInput {
+input ObservingModeInput @oneOf {
   """
   The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
@@ -4072,7 +4072,7 @@ input SetProgramReferenceInput {
 Properties for the chosen program reference type.  Supply the value for exactly
 one of the inputs.
 """
-input ProgramReferencePropertiesInput {
+input ProgramReferencePropertiesInput @oneOf {
   calibration: ProgramReferencePropertiesCalibrationInput
   commissioning: ProgramReferencePropertiesCommissioningInput
   engineering: ProgramReferencePropertiesEngineeringInput
@@ -4227,7 +4227,7 @@ input SignalToNoiseExposureTimeModeInput {
 """
 Create or edit a source profile.  Exactly one of "point", "uniform" or "gaussian" is required.
 """
-input SourceProfileInput {
+input SourceProfileInput @oneOf {
   point: SpectralDefinitionIntegratedInput
   uniform: SpectralDefinitionSurfaceInput
   gaussian: GaussianInput
@@ -4236,7 +4236,7 @@ input SourceProfileInput {
 """
 Spectral definition input with integrated units.  Specify exactly one of "bandNormalized" or "emissionLines"
 """
-input SpectralDefinitionIntegratedInput {
+input SpectralDefinitionIntegratedInput @oneOf {
   bandNormalized: BandNormalizedIntegratedInput
   emissionLines: EmissionLinesIntegratedInput
 }
@@ -4244,7 +4244,7 @@ input SpectralDefinitionIntegratedInput {
 """
 Spectral definition input with surface units.  Specify exactly one of "bandNormalized" or "emissionLines"
 """
-input SpectralDefinitionSurfaceInput {
+input SpectralDefinitionSurfaceInput @oneOf {
   bandNormalized: BandNormalizedSurfaceInput
   emissionLines: EmissionLinesSurfaceInput
 }
@@ -4289,7 +4289,7 @@ interface StepConfig {
 }
 
 """Step configuration.  Choose exactly one step type."""
-input StepConfigInput {
+input StepConfigInput @oneOf {
   """Bias step creation option"""
   bias: Boolean
 
@@ -4793,7 +4793,7 @@ input TimingWindowInput {
 }
 
 """Un-normalized SED input parameters.  Define one value only."""
-input UnnormalizedSedInput {
+input UnnormalizedSedInput @oneOf {
   stellarLibrary: StellarLibrarySpectrum
   coolStar: CoolStarTemperature
   galaxy: GalaxySpectrum
@@ -5229,7 +5229,7 @@ type UpdateTargetsResult {
 }
 
 """Wavelength, choose one of the available units"""
-input WavelengthInput {
+input WavelengthInput @oneOf {
   picometers: PosInt
   angstroms: PosBigDecimal
   nanometers: PosBigDecimal
@@ -5237,7 +5237,7 @@ input WavelengthInput {
 }
 
 """WavelengthDither, choose one of the available units"""
-input WavelengthDitherInput {
+input WavelengthDitherInput @oneOf {
   picometers: Int
   angstroms: BigDecimal
   nanometers: BigDecimal
@@ -6498,6 +6498,9 @@ type Igrins2Static {
 type Igrins2Dynamic {
   """IGRINS-2 exposure time"""
   exposure: TimeSpan!
+
+  """Central wavelength, which is fixed at 2.1 microns."""
+  centralWavelength: Wavelength
 }
 
 """
@@ -7872,7 +7875,7 @@ Input that specifies which imaging sub-type is desired along with its configurat
 details.  Exactly one of the options should be defined and the other two left
 unspecified.
 """
-input GmosImagingVariantInput {
+input GmosImagingVariantInput @oneOf {
   """
   Grouped mode collects all datasets for each filter before changing filters.
   """
@@ -8720,7 +8723,7 @@ type GroupElement {
 """
 A group element identifier. Exactly one of groupId and observationId must be provided.
 """
-input GroupElementInput {
+input GroupElementInput @oneOf {
   groupId: GroupId
   observationId: ObservationId
 }
@@ -9093,6 +9096,18 @@ enum GnirsFpuSlit {
   LONG_SLIT_0_45
   LONG_SLIT_0_675
   LONG_SLIT_1_00
+}
+
+enum GnirsReadMode {
+  VERY_BRIGHT
+  BRIGHT
+  FAINT
+  VERY_FAINT
+}
+
+enum GnirsWellDepth {
+  SHALLOW
+  DEEP
 }
 
 """Edit or create imaging science requirements"""
@@ -12248,7 +12263,7 @@ type TimeSpan {
 """
 Equivalent time amount in several unit options (exactly one must be specified)
 """
-input TimeSpanInput {
+input TimeSpanInput @oneOf {
   """TimeSpan in µs"""
   microseconds: Long
 
