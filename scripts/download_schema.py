@@ -12,6 +12,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
+from gpp_client.constants import DEVELOPMENT_TOKEN_ENV_VAR, TOKEN_ENV_VAR
 from gpp_client.environment import GPPEnvironment
 
 app = typer.Typer(
@@ -82,9 +83,9 @@ def _required_token_env_var(env: GPPEnvironment) -> str:
         Required token environment variable.
     """
     if env is GPPEnvironment.DEVELOPMENT:
-        return "GPP_DEVELOPMENT_TOKEN"
+        return DEVELOPMENT_TOKEN_ENV_VAR
 
-    return "GPP_TOKEN"
+    return TOKEN_ENV_VAR
 
 
 def _validate_token_env_var(env: GPPEnvironment) -> None:
