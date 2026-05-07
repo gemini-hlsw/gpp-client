@@ -16,10 +16,7 @@ from gpp_client.cli import output
 from gpp_client.environment import GPPEnvironment
 from graphql import DocumentNode, FragmentDefinitionNode, OperationDefinitionNode, parse
 
-app = typer.Typer(
-    help="Run the code generator for a given GPP environment.",
-    add_completion=False,
-)
+app = typer.Typer(add_completion=False)
 
 
 class CodegenError(RuntimeError):
@@ -556,6 +553,10 @@ def main(
 ) -> None:
     """
     Run code generation for a specific GPP environment.
+
+    The following environment variables must be set:
+    - DEVELOPMENT: GPP_DEVELOPMENT_TOKEN
+    - PRODUCTION: GPP_TOKEN
     """
     try:
         _run(env)

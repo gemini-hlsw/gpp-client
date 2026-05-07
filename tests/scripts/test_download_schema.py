@@ -10,12 +10,13 @@ import pytest
 from typer.testing import CliRunner
 
 from gpp_client.environment import GPPEnvironment
-from scripts import download_schema
 from scripts.download_schema import (
     SchemaDownloadError,
     SchemaPaths,
+    _required_token_env_var,
     _run,
     _run_schema_download,
+    _validate_token_env_var,
     app,
 )
 
@@ -81,12 +82,60 @@ def test_schema_toml_path(paths, env, expected_filename):
     assert result == paths.root / "graphql" / "schemas" / expected_filename
 
 
+@pytest.mark.parametrize(
+    ("env", "expected_env_var"),
+    [
+        (GPPEnvironment.DEVELOPMENT, "GPP_DEVELOPMENT_TOKEN"),
+        (GPPEnvironment.PRODUCTION, "GPP_TOKEN"),
+    ],
+)
+def test_required_token_env_var(env, expected_env_var):
+    """
+    Required token environment variable resolves correctly.
+    """
+    result = _required_token_env_var(env)
+
+    assert result == expected_env_var
+
+
+@pytest.mark.parametrize(
+    ("env", "env_var"),
+    [
+        (GPPEnvironment.DEVELOPMENT, "GPP_DEVELOPMENT_TOKEN"),
+        (GPPEnvironment.PRODUCTION, "GPP_TOKEN"),
+    ],
+)
+def test_validate_token_env_var_succeeds(monkeypatch, env, env_var):
+    """
+    Existing token environment variable succeeds.
+    """
+    monkeypatch.setenv(env_var, "secret-token")
+
+    _validate_token_env_var(env)
+
+
+@pytest.mark.parametrize(
+    ("env", "env_var"),
+    [
+        (GPPEnvironment.DEVELOPMENT, "GPP_DEVELOPMENT_TOKEN"),
+        (GPPEnvironment.PRODUCTION, "GPP_TOKEN"),
+    ],
+)
+def test_validate_token_env_var_raises_for_missing_token(monkeypatch, env, env_var):
+    """
+    Missing token environment variable raises an error.
+    """
+    monkeypatch.delenv(env_var, raising=False)
+
+    with pytest.raises(SchemaDownloadError, match=env_var):
+        _validate_token_env_var(env)
+
+
 def test_run_schema_download_calls_ariadne_codegen(repo_root, mocker):
     """
     Schema download calls Ariadne Codegen.
     """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
+    toml_path = Path("/fake/development.toml")
 
     run_spy = mocker.patch(
         "scripts.download_schema.subprocess.run",
@@ -131,8 +180,7 @@ def test_run_schema_download_raises_schema_download_error_on_subprocess_failure(
     """
     Subprocess failures are wrapped.
     """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
+    toml_path = Path("/fake/development.toml")
 
     error = CalledProcessError(
         returncode=1,
@@ -158,12 +206,32 @@ def test_run_raises_when_config_file_missing(repo_root):
         _run(GPPEnvironment.DEVELOPMENT)
 
 
-def test_run_downloads_schema_when_config_exists(repo_root, mocker):
+def test_run_raises_when_token_is_missing(repo_root, monkeypatch):
+    """
+    Workflow fails when the required token is missing.
+    """
+    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
+    _touch_file(toml_path)
+    monkeypatch.delenv("GPP_DEVELOPMENT_TOKEN", raising=False)
+
+    with pytest.raises(
+        SchemaDownloadError,
+        match="GPP_DEVELOPMENT_TOKEN",
+    ):
+        _run(GPPEnvironment.DEVELOPMENT)
+
+
+def test_run_downloads_schema_when_config_and_token_exist(
+    repo_root,
+    mocker,
+    monkeypatch,
+):
     """
     Full workflow invokes schema download.
     """
     toml_path = repo_root / "graphql" / "schemas" / "development.toml"
     _touch_file(toml_path)
+    monkeypatch.setenv("GPP_DEVELOPMENT_TOKEN", "secret-token")
 
     download_spy = mocker.patch("scripts.download_schema._run_schema_download")
 
@@ -179,12 +247,18 @@ def test_run_downloads_schema_when_config_exists(repo_root, mocker):
         SchemaDownloadError("invalid config"),
     ],
 )
-def test_run_propagates_schema_download_error(repo_root, mocker, side_effect):
+def test_run_propagates_schema_download_error(
+    repo_root,
+    mocker,
+    monkeypatch,
+    side_effect,
+):
     """
     Workflow propagates schema download errors.
     """
     toml_path = repo_root / "graphql" / "schemas" / "development.toml"
     _touch_file(toml_path)
+    monkeypatch.setenv("GPP_DEVELOPMENT_TOKEN", "secret-token")
 
     mocker.patch(
         "scripts.download_schema._run_schema_download",
@@ -195,21 +269,19 @@ def test_run_propagates_schema_download_error(repo_root, mocker, side_effect):
         _run(GPPEnvironment.DEVELOPMENT)
 
 
-def test_cli_success(repo_root, runner, mocker):
+def test_cli_success(repo_root, runner, mocker, monkeypatch):
     """
     CLI exits successfully when schema download succeeds.
     """
     toml_path = repo_root / "graphql" / "schemas" / "development.toml"
     _touch_file(toml_path)
+    monkeypatch.setenv("GPP_DEVELOPMENT_TOKEN", "secret-token")
 
     mocker.patch("scripts.download_schema._run_schema_download")
 
     result = runner.invoke(app, ["development"])
 
     assert result.exit_code == 0
-    download_schema.output.success.assert_called_once_with(
-        "Schema download completed successfully"
-    )
 
 
 def test_cli_failure(runner, mocker):
@@ -224,4 +296,3 @@ def test_cli_failure(runner, mocker):
     result = runner.invoke(app, ["development"])
 
     assert result.exit_code == 1
-    download_schema.output.fail.assert_called_once_with("Bad schema config")

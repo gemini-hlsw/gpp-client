@@ -3,6 +3,7 @@
 Download the GraphQL schema for a specific GPP environment.
 """
 
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,7 +15,6 @@ from gpp_client.cli import output
 from gpp_client.environment import GPPEnvironment
 
 app = typer.Typer(
-    help="Download the GraphQL schema for a given GPP environment.",
     add_completion=False,
 )
 
@@ -65,6 +65,48 @@ class SchemaPaths:
             Schema TOML path.
         """
         return self.schemas_dir / f"{env.value.lower()}.toml"
+
+
+def _required_token_env_var(env: GPPEnvironment) -> str:
+    """
+    Return the required token environment variable.
+
+    Parameters
+    ----------
+    env : GPPEnvironment
+        Target environment.
+
+    Returns
+    -------
+    str
+        Required token environment variable.
+    """
+    if env is GPPEnvironment.DEVELOPMENT:
+        return "GPP_DEVELOPMENT_TOKEN"
+
+    return "GPP_TOKEN"
+
+
+def _validate_token_env_var(env: GPPEnvironment) -> None:
+    """
+    Ensure the required token environment variable is set.
+
+    Parameters
+    ----------
+    env : GPPEnvironment
+        Target environment.
+
+    Raises
+    ------
+    SchemaDownloadError
+        Raised if the required token environment variable is not set.
+    """
+    env_var = _required_token_env_var(env)
+
+    if not os.getenv(env_var):
+        raise SchemaDownloadError(
+            f"Required environment variable '{env_var}' is not set."
+        )
 
 
 def _run_schema_download(toml_path: Path) -> None:
@@ -130,6 +172,8 @@ def _run(env: GPPEnvironment) -> None:
     if not toml_path.exists():
         raise SchemaDownloadError(f"Schema config file not found at {toml_path}")
 
+    _validate_token_env_var(env)
+
     output.info(f"Using config: {toml_path}")
 
     _run_schema_download(toml_path)
@@ -147,6 +191,10 @@ def main(
 ) -> None:
     """
     Download the GraphQL schema for a specific environment.
+
+    The following environment variables must be set:
+    - DEVELOPMENT: GPP_DEVELOPMENT_TOKEN
+    - PRODUCTION: GPP_TOKEN
     """
     try:
         _run(env)
