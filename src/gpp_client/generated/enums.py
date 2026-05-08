@@ -876,18 +876,6 @@ class GnirsFpuSlit(str, Enum):
     LONG_SLIT_1_00 = "LONG_SLIT_1_00"
 
 
-class GnirsReadMode(str, Enum):
-    VERY_BRIGHT = "VERY_BRIGHT"
-    BRIGHT = "BRIGHT"
-    FAINT = "FAINT"
-    VERY_FAINT = "VERY_FAINT"
-
-
-class GnirsWellDepth(str, Enum):
-    SHALLOW = "SHALLOW"
-    DEEP = "DEEP"
-
-
 class ItcType(str, Enum):
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
@@ -1049,12 +1037,7 @@ class SlewStage(str, Enum):
     END_SLEW = "END_SLEW"
 
 
-class ImagingCapability(str, Enum):
-    SPECKLE = "SPECKLE"
-    WIDE_FIELD = "WIDE_FIELD"
-
-
-class SpectroscopyCapability(str, Enum):
+class SpectroscopyCapabilities(str, Enum):
     NOD_AND_SHUFFLE = "NOD_AND_SHUFFLE"
     POLARIMETRY = "POLARIMETRY"
     CORONAGRAPHY = "CORONAGRAPHY"
