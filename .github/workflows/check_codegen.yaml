@@ -3,8 +3,22 @@ name: Codegen Check
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "graphql/**"
+      - "scripts/run_codegen.py"
+      - "src/custom_plugins/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/check_codegen.yaml"
+
   push:
     branches: [main]
+
+  workflow_dispatch:
+
+concurrency:
+  group: codegen-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   codegen_check:
