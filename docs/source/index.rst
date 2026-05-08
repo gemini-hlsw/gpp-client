@@ -76,4 +76,4 @@ Contents
    developer/documentation
    developer/pull-requests
    developer/releases
-   contributing
+   developer/contributing
