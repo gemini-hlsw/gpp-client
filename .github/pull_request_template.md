@@ -1,12 +1,14 @@
-<!--
-Thank you for contributing to gpp-client!
+## Summary
 
-Please select the appropriate pull request template below by clicking preview and
-selecting the link. This helps maintain project consistency and ensures PRs go through
-the correct checks and release workflow.
--->
+<!-- Briefly describe the change and motivation. -->
 
-### Choose a template:
+## Checklist
 
-- [Default](?expand=1&template=default.md) — for all development and feature changes.
-- [Release](?expand=1&template=release.md) — for version bumps and release preparation.
+- [ ] Documentation was updated, if needed.
+- [ ] Generated GraphQL code was updated, if schema or operation files changed.
+
+## Breaking Changes
+
+- [ ] This change introduces a breaking API or behavior change.
+
+<!-- If checked, describe the migration impact below. -->

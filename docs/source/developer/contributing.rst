@@ -19,7 +19,7 @@ If you encounter a bug or would like to request a feature:
 Development Status
 ------------------
 
-This client is currently in **alpha**. The API and CLI interface are evolving rapidly and subject to change.
+This client is currently in **beta**. The API and CLI interface are evolving rapidly and subject to change.
 
 Contribution Guidelines
 -----------------------
