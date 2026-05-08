@@ -1049,7 +1049,12 @@ class SlewStage(str, Enum):
     END_SLEW = "END_SLEW"
 
 
-class SpectroscopyCapabilities(str, Enum):
+class ImagingCapability(str, Enum):
+    SPECKLE = "SPECKLE"
+    WIDE_FIELD = "WIDE_FIELD"
+
+
+class SpectroscopyCapability(str, Enum):
     NOD_AND_SHUFFLE = "NOD_AND_SHUFFLE"
     POLARIMETRY = "POLARIMETRY"
     CORONAGRAPHY = "CORONAGRAPHY"
