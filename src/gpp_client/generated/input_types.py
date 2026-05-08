@@ -78,7 +78,6 @@ from .enums import (
     Ignore,
     Igrins2OffsetMode,
     ImageQualityPreset,
-    ImagingCapability,
     Instrument,
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
@@ -103,7 +102,7 @@ from .enums import (
     SkyBackground,
     SlewStage,
     SmartGcalType,
-    SpectroscopyCapability,
+    SpectroscopyCapabilities,
     StellarLibrarySpectrum,
     StepStage,
     TacCategory,
@@ -1802,7 +1801,7 @@ class SpectroscopyScienceRequirementsInput(BaseModel):
         alias=str("focalPlaneAngle"), default=None
     )
     "The focalPlaneAngle field may be unset by assigning a null value, or ignored by skipping it altogether"
-    capability: Optional[SpectroscopyCapability] = None
+    capability: Optional[SpectroscopyCapabilities] = None
     "The capabilities field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
@@ -2463,10 +2462,6 @@ class GhostIfuInput(BaseModel):
     "Red config.  If not specified, defaults will be applied. Cannot be unset with\na null value."
     blue: Optional["GhostDetectorConfigInput"] = None
     "Blue config.  If not specified, defaults will be applied. Cannot be unset with\na null value."
-    sky_position: Optional["CoordinatesInput"] = Field(
-        alias=str("skyPosition"), default=None
-    )
-    "Coordinates for taking sky images.  When specified, the observation is\nconsidered to be a Target + Sky and is validated to ensure that only a single\ntarget exists in its asterism.  If not specified, this will remain null.  May\nbe unset with a null value."
     slit_viewing_camera_exposure_time: Optional["TimeSpanInput"] = Field(
         alias=str("slitViewingCameraExposureTime"), default=None
     )
@@ -3363,35 +3358,21 @@ class WhereEqScienceSubtype(BaseModel):
     "Matches if the subtype is none of the supplied values."
 
 
-class WhereOptionEqImagingCapability(BaseModel):
-    """Filters on equality (or not) of the ImagingCapability property. All
-    supplied criteria must match, but usually only one is selected."""
-
-    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
-    "When `true`, matches if the imaging capability value is not defined."
-    eq: Optional[ImagingCapability] = Field(alias=str("EQ"), default=None)
-    "Matches if the imaging capability is the supplied value."
-    neq: Optional[ImagingCapability] = Field(alias=str("NEQ"), default=None)
-    "Matches if the imaging capability is anything other than the supplied\nvalue."
-    in_: Optional[list[ImagingCapability]] = Field(alias=str("IN"), default=None)
-    "Matches if the imaging capability is any one of the supplied values."
-    nin: Optional[list[ImagingCapability]] = Field(alias=str("NIN"), default=None)
-    "Matches if the imaging capability is not any one of the supplied values."
-
-
-class WhereOptionEqSpectroscopyCapability(BaseModel):
-    """Filters on equality (or not) of the SpectroscopyCapability property. All
+class WhereOptionEqSpectroscopyCapabilities(BaseModel):
+    """Filters on equality (or not) of the SpectroscopyCapabilities property. All
     supplied criteria must match, but usually only one is selected."""
 
     is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
     "When `true`, matches if the spectroscopy capability value is not defined."
-    eq: Optional[SpectroscopyCapability] = Field(alias=str("EQ"), default=None)
+    eq: Optional[SpectroscopyCapabilities] = Field(alias=str("EQ"), default=None)
     "Matches if the spectroscopy capability is the supplied value."
-    neq: Optional[SpectroscopyCapability] = Field(alias=str("NEQ"), default=None)
+    neq: Optional[SpectroscopyCapabilities] = Field(alias=str("NEQ"), default=None)
     "Matches if the spectroscopy capability is anything other than the supplied\nvalue."
-    in_: Optional[list[SpectroscopyCapability]] = Field(alias=str("IN"), default=None)
+    in_: Optional[list[SpectroscopyCapabilities]] = Field(alias=str("IN"), default=None)
     "Matches if the spectroscopy capability is any one of the supplied values."
-    nin: Optional[list[SpectroscopyCapability]] = Field(alias=str("NIN"), default=None)
+    nin: Optional[list[SpectroscopyCapabilities]] = Field(
+        alias=str("NIN"), default=None
+    )
     "Matches if the spectroscopy capability is not any one of the supplied values."
 
 
@@ -4229,7 +4210,7 @@ class WhereSpectroscopyConfigOption(BaseModel):
     adaptive_optics: Optional["WhereBoolean"] = Field(
         alias=str("adaptiveOptics"), default=None
     )
-    capability: Optional["WhereOptionEqSpectroscopyCapability"] = None
+    capability: Optional["WhereOptionEqSpectroscopyCapabilities"] = None
     focal_plane: Optional["WhereEqFocalPlane"] = Field(
         alias=str("focalPlane"), default=None
     )
@@ -4268,7 +4249,6 @@ class WhereImagingConfigOption(BaseModel):
     instrument: Optional["WhereEqInstrument"] = None
     fov: Optional["WhereAngle"] = None
     site: Optional["WhereEqSite"] = None
-    capability: Optional["WhereOptionEqImagingCapability"] = None
 
 
 class WhereString(BaseModel):
