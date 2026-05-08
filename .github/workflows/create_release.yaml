@@ -10,34 +10,62 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v7
         with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
           python-version: "3.11"
 
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
       - name: Validate release
-        run: python scripts/validate_release.py "${{ inputs.tag }}"
+        run: uv run python scripts/validate_release.py "${{ inputs.tag }}"
 
       - name: Check tag does not already exist
         run: |
-          if git rev-parse "${{ inputs.tag }}" >/dev/null 2>&1; then
-            echo "Tag already exists: ${{ inputs.tag }}"
+          TAG="${{ inputs.tag }}"
+          if git show-ref --tags --verify --quiet "refs/tags/${TAG}"; then
+            echo "Tag already exists: ${TAG}"
             exit 1
           fi
+          echo "Tag does not exist: ${TAG}"
 
-      - name: Show release commit
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Clean distributions
+        run: rm -rf dist
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Smoke test wheel
         run: |
-          echo "Tagging commit:"
-          git log -1 --oneline
+          uv venv /tmp/gpp-client-smoke --clear
+          uv pip install --python /tmp/gpp-client-smoke/bin/python dist/*.whl
+          /tmp/gpp-client-smoke/bin/python -c "import gpp_client; print(gpp_client.__version__)"
 
       - name: Create and push tag
         run: |
@@ -52,4 +80,9 @@ jobs:
           tag_name: ${{ inputs.tag }}
           name: ${{ inputs.tag }}
           draft: true
+          prerelease: ${{ contains(inputs.tag, '.dev') }}
           generate_release_notes: true
+          files: dist/*
+
+      - name: Minimize uv cache
+        run: uv cache prune --ci
