@@ -55,6 +55,12 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
+      - name: Create local tag
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ inputs.tag }}" -m "Release ${{ inputs.tag }}."
+
       - name: Clean distributions
         run: rm -rf dist
 
@@ -67,12 +73,8 @@ jobs:
           uv pip install --python /tmp/gpp-client-smoke/bin/python dist/*.whl
           /tmp/gpp-client-smoke/bin/python -c "import gpp_client; print(gpp_client.__version__)"
 
-      - name: Create and push tag
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "${{ inputs.tag }}" -m "Release ${{ inputs.tag }}."
-          git push origin "${{ inputs.tag }}"
+      - name: Push tag
+        run: git push origin "${{ inputs.tag }}"
 
       - name: Create draft GitHub release
         uses: softprops/action-gh-release@v3
