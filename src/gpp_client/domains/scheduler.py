@@ -5,9 +5,10 @@ Module for retrieving scheduler information.
 __all__ = ["SchedulerDomain"]
 
 from datetime import datetime
-from typing import Any
+from typing import Any, AsyncIterator
 
 from gpp_client.domains.base import BaseDomain
+from gpp_client.generated import SchedulerObservationsUpdates
 from gpp_client.generated.get_scheduler_all_programs_id import (
     GetSchedulerAllProgramsId,
 )
@@ -278,3 +279,20 @@ class SchedulerDomain(BaseDomain):
         today = datetime.today().date().isoformat() if date is None else date
         response = await self.get_program_ids(today=today)
         return [(p.reference.label, p.id) for p in response.programs.matches]
+
+    async def subscribe_to_calculation_updates(
+        self,
+    ) -> AsyncIterator[SchedulerObservationsUpdates]:
+        """
+        Subscribe to observation calculation update events with the
+        execution flag set to true so only executed events are sent.
+
+        Yields
+        ------
+        SchedulerObservationsUpdates
+            Observation calculation update events.
+        """
+        async for event in self._graphql.scheduler_observations_updates(
+            executable_only=True
+        ):
+            yield event

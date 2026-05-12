@@ -1,0 +1,34 @@
+# =============================================================================
+# SchedulerObservationUpdates
+# Uses a ObsCalculationUpdate subscription to retrieve update events from
+# executed sequences/observations.
+# =============================================================================
+
+subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
+  obscalcUpdate (input: {
+     executableOnly: $executableOnly
+  }) {
+    oldCalculationState
+    newCalculationState
+    editType
+    value {
+      id
+      observationTime
+      execution {
+        visits {
+          matches {
+            observation {
+              id
+            }
+            atomRecords {
+              matches {
+                executionState
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

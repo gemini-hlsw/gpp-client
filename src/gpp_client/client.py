@@ -142,6 +142,8 @@ class GPPClient:
             url=graphql_url,
             headers=headers,
             ws_url=ws_url,
+            ws_headers=headers,
+            ws_connection_init_payload=headers,
         )
 
     def _build_rest_client(self) -> RESTClient:
