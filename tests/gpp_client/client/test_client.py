@@ -128,6 +128,8 @@ def test_build_graphql_client_uses_expected_settings(
         url="https://graphql.example.test",
         headers={"Authorization": "Bearer resolved-token"},
         ws_url="wss://ws.example.test",
+        ws_headers={"Authorization": "Bearer resolved-token"},
+        ws_connection_init_payload={"Authorization": "Bearer resolved-token"},
     )
 
 
