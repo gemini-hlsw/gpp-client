@@ -80,6 +80,7 @@ from .restore_observation_by_id import RestoreObservationById
 from .restore_observation_by_reference import RestoreObservationByReference
 from .restore_program_by_id import RestoreProgramById
 from .restore_target_by_id import RestoreTargetById
+from .scheduler_observations_updates import SchedulerObservationsUpdates
 from .set_observation_workflow_state import SetObservationWorkflowState
 from .target_edit import TargetEdit
 from .update_call_for_proposals_by_id import UpdateCallForProposalsById
@@ -98,6 +99,46 @@ def gql(q: str) -> str:
 
 
 class GraphQLClient(AsyncBaseClient):
+    async def scheduler_observations_updates(
+        self, executable_only: Union[Optional[bool], UnsetType] = UNSET, **kwargs: Any
+    ) -> AsyncIterator[SchedulerObservationsUpdates]:
+        query = gql("""
+            subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
+              obscalcUpdate(input: {executableOnly: $executableOnly}) {
+                oldCalculationState
+                newCalculationState
+                editType
+                value {
+                  id
+                  observationTime
+                  execution {
+                    visits {
+                      matches {
+                        observation {
+                          id
+                        }
+                        atomRecords {
+                          matches {
+                            executionState
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {"executableOnly": executable_only}
+        async for data in self.execute_ws(
+            query=query,
+            operation_name="SchedulerObservationsUpdates",
+            variables=variables,
+            **kwargs,
+        ):
+            yield SchedulerObservationsUpdates.model_validate(data)
+
     async def get_observation_attachments_by_id(
         self, observation_id: Any, **kwargs: Any
     ) -> GetObservationAttachmentsById:

@@ -4303,6 +4303,11 @@ class GhostIfuFields(GraphQLField):
         return GhostDetectorConfigFields("blue")
 
     @classmethod
+    def sky_position(cls) -> "CoordinatesFields":
+        """Sky position, if any."""
+        return CoordinatesFields("skyPosition")
+
+    @classmethod
     def slit_viewing_camera_exposure_time(cls) -> "TimeSpanFields":
         """Slit viewing camera exposure time (if specified)."""
         return TimeSpanFields("slitViewingCameraExposureTime")
@@ -4331,7 +4336,10 @@ class GhostIfuFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            GhostIfuGraphQLField, "GhostDetectorConfigFields", "TimeSpanFields"
+            GhostIfuGraphQLField,
+            "CoordinatesFields",
+            "GhostDetectorConfigFields",
+            "TimeSpanFields",
         ],
     ) -> "GhostIfuFields":
         """Subfields should come from the GhostIfuFields class"""
@@ -6212,8 +6220,16 @@ class Igrins2DynamicFields(GraphQLField):
         """IGRINS-2 exposure time"""
         return TimeSpanFields("exposure")
 
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is fixed at 2.1 microns."""
+        return WavelengthFields("centralWavelength")
+
     def fields(
-        self, *subfields: Union[Igrins2DynamicGraphQLField, "TimeSpanFields"]
+        self,
+        *subfields: Union[
+            Igrins2DynamicGraphQLField, "TimeSpanFields", "WavelengthFields"
+        ],
     ) -> "Igrins2DynamicFields":
         """Subfields should come from the Igrins2DynamicFields class"""
         self._subfields.extend(subfields)
@@ -6441,6 +6457,10 @@ class ImagingConfigOptionFields(GraphQLField):
     adaptive_optics: "ImagingConfigOptionGraphQLField" = (
         ImagingConfigOptionGraphQLField("adaptiveOptics")
     )
+    capability: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField(
+        "capability"
+    )
+    "A special capability (if any) that the configuration may have."
     site: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField("site")
 
     @classmethod
