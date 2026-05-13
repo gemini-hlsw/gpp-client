@@ -101,6 +101,46 @@ class ConstraintSetDetailsElevationRangeHourAngle(BaseModel):
     max_hours: Any = Field(alias="maxHours")
 
 
+class ExecutionDetails(BaseModel):
+    digest: Optional["ExecutionDetailsDigest"]
+
+
+class ExecutionDetailsDigest(BaseModel):
+    value: Optional["ExecutionDetailsDigestValue"]
+
+
+class ExecutionDetailsDigestValue(BaseModel):
+    acquisition: Optional["ExecutionDetailsDigestValueAcquisition"]
+    setup: "ExecutionDetailsDigestValueSetup"
+
+
+class ExecutionDetailsDigestValueAcquisition(BaseModel):
+    time_estimate: "ExecutionDetailsDigestValueAcquisitionTimeEstimate" = Field(
+        alias="timeEstimate"
+    )
+
+
+class ExecutionDetailsDigestValueAcquisitionTimeEstimate(BaseModel):
+    total: "ExecutionDetailsDigestValueAcquisitionTimeEstimateTotal"
+
+
+class ExecutionDetailsDigestValueAcquisitionTimeEstimateTotal(BaseModel):
+    seconds: Any
+
+
+class ExecutionDetailsDigestValueSetup(BaseModel):
+    full: "ExecutionDetailsDigestValueSetupFull"
+    reacquisition: "ExecutionDetailsDigestValueSetupReacquisition"
+
+
+class ExecutionDetailsDigestValueSetupFull(BaseModel):
+    seconds: Any
+
+
+class ExecutionDetailsDigestValueSetupReacquisition(BaseModel):
+    seconds: Any
+
+
 class ExposureTimeModeDetails(BaseModel):
     signal_to_noise: Optional["ExposureTimeModeDetailsSignalToNoise"] = Field(
         alias="signalToNoise"
@@ -490,6 +530,14 @@ class ObservationDetailsTargetEnvironment(TargetEnvironmentDetails):
     pass
 
 
+class ObservationExecution(BaseModel):
+    execution: "ObservationExecutionExecution"
+
+
+class ObservationExecutionExecution(ExecutionDetails):
+    pass
+
+
 class ObservationWorkflowCore(BaseModel):
     state: ObservationWorkflowState
 
@@ -654,6 +702,7 @@ AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
 ConstraintSetDetails.model_rebuild()
+ExecutionDetails.model_rebuild()
 ExposureTimeModeDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
@@ -671,6 +720,7 @@ TimingWindowDetails.model_rebuild()
 WorkflowCore.model_rebuild()
 WorkflowDetails.model_rebuild()
 ObservationDetails.model_rebuild()
+ObservationExecution.model_rebuild()
 ObservationWorkflowCore.model_rebuild()
 ObservationWorkflowDetails.model_rebuild()
 OpportunityTargetDetails.model_rebuild()

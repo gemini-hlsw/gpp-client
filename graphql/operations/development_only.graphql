@@ -32,3 +32,32 @@ subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
     }
   }
 }
+
+
+fragment ObservationExecution on Observation {
+    execution {
+    ...ExecutionDetails
+  }
+}
+
+fragment ExecutionDetails on Execution {
+  digest {
+    value {
+      acquisition {
+        timeEstimate {
+          total {
+            seconds
+          }
+        }
+      }
+      setup {
+        full{
+          seconds
+        }
+        reacquisition {
+          seconds
+        }
+      }
+    }
+  }
+}

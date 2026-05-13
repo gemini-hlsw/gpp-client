@@ -92,6 +92,8 @@ class SchedulerDomain(BaseDomain):
                 time_estimate,
                 step_types,
                 lamp_types,
+                step_index,
+                step_count,
             ) = atom_digest.split("\t")
             obs_atoms_mapping.setdefault(obs_id, [])
             obs_atoms_mapping[obs_id].append(
@@ -102,6 +104,8 @@ class SchedulerDomain(BaseDomain):
                     "time_estimate": time_estimate,
                     "step_types": step_types,
                     "lamp_types": lamp_types,
+                    "step_index": step_index,
+                    "step_count": step_count,
                 }
             )
 
