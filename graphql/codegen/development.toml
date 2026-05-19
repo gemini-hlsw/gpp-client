@@ -7,5 +7,7 @@ client_name = "GraphQLClient"
 client_file_name = "client"
 plugins = ["custom_plugins.AliasStrWrapperPlugin"]
 enable_custom_operations = true
+# DO NOT CHANGE: SCHEDULER NEEDS THIS ON
 convert_to_snake_case = true
+##########
 include_comments = "none"
