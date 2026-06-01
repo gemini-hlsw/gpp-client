@@ -6,16 +6,19 @@ __all__ = ["WorkflowStateDomain"]
 
 import asyncio
 import logging
-from typing import Any
 
 from gpp_client.domains.base import BaseDomain
 from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
 from gpp_client.generated.enums import CalculationState, ObservationWorkflowState
 from gpp_client.generated.get_observation_workflow_state_by_id import (
     GetObservationWorkflowStateById,
+    GetObservationWorkflowStateByIdObservationWorkflow,
 )
 from gpp_client.generated.get_observation_workflow_state_by_reference import (
     GetObservationWorkflowStateByReference,
+)
+from gpp_client.generated.set_observation_workflow_state import (
+    SetObservationWorkflowStateSetObservationWorkflowState,
 )
 
 logger = logging.getLogger(__name__)
@@ -73,7 +76,7 @@ class WorkflowStateDomain(BaseDomain):
         observation_id: str,
         *,
         workflow_state: ObservationWorkflowState,
-    ) -> dict[str, Any]:
+    ) -> SetObservationWorkflowStateSetObservationWorkflowState:
         """
         Update the workflow state of an observation by its ID, or return the current
         workflow if already set.
@@ -95,8 +98,8 @@ class WorkflowStateDomain(BaseDomain):
 
         Returns
         -------
-        dict[str, Any]
-            The returned workflow state for the observation.
+        SetObservationWorkflowStateSetObservationWorkflowState
+            The workflow details for the observation after the operation.
 
         Raises
         ------
@@ -113,7 +116,7 @@ class WorkflowStateDomain(BaseDomain):
             workflow_state.value,
         )
         result = await self.get_by_id(observation_id=observation_id)
-        workflow = result["workflow"]
+        workflow = result.observation.workflow
 
         # If calculation is not 'READY', raise an error to retry later.
         try:
@@ -121,25 +124,35 @@ class WorkflowStateDomain(BaseDomain):
         except RuntimeError as exc:
             self.raise_error(GPPRetryableError, exc)
 
-        # If the desired state is already set, return as-is.
+        # If the desired state is already set, return the current workflow
+        # rebuilt as the mutation response model.
         if _check_already_set(workflow, workflow_state):
-            # Return the same shape as other return paths.
             logger.debug(
                 "Workflow state for observation ID %s is already %s; no update needed.",
                 observation_id,
                 workflow_state.value,
             )
-            return workflow["value"]
+            return (
+                SetObservationWorkflowStateSetObservationWorkflowState.model_validate(
+                    workflow.value.model_dump(by_alias=True)
+                )
+            )
         # Validate the requested workflow state against 'validTransitions'.
         try:
             _check_valid_transition(workflow, workflow_state)
         except ValueError as exc:
             self.raise_error(GPPValidationError, exc)
 
-        return await self._graphql.set_observation_workflow_state(
+        mutation_result = await self._graphql.set_observation_workflow_state(
             observation_id=observation_id,
             state=workflow_state,
         )
+        payload = mutation_result.set_observation_workflow_state
+        if payload is None:
+            raise GPPClientError(
+                "GPP returned no payload for setObservationWorkflowState."
+            )
+        return payload
 
     async def update_by_id_with_retry(
         self,
@@ -149,7 +162,7 @@ class WorkflowStateDomain(BaseDomain):
         max_attempts: int = 10,
         initial_delay: float = 0.0,
         retry_delay: float = 1.0,
-    ) -> dict[str, Any]:
+    ) -> SetObservationWorkflowStateSetObservationWorkflowState:
         """
         Update the workflow state of an observation by its ID, retrying if the
         observation is not ready.
@@ -172,8 +185,8 @@ class WorkflowStateDomain(BaseDomain):
 
         Returns
         -------
-        dict[str, Any]
-            The returned workflow state for the observation.
+        SetObservationWorkflowStateSetObservationWorkflowState
+            The workflow details for the observation after the operation.
 
         Raises
         ------
@@ -216,30 +229,30 @@ class WorkflowStateDomain(BaseDomain):
         self.raise_error(type(exc), exc)
 
 
-def _check_ready(workflow: dict[str, Any]) -> None:
+def _check_ready(workflow: GetObservationWorkflowStateByIdObservationWorkflow) -> None:
     """
     Raise an error if the observation calculation is not in the ``READY`` state.
 
     Parameters
     ----------
-    workflow : dict[str, Any]
-        The workflow data structure returned by ``get_by_id()``.
+    workflow : GetObservationWorkflowStateByIdObservationWorkflow
+        The workflow Pydantic model returned by ``get_by_id().observation.workflow``.
 
     Raises
     ------
     RuntimeError
         If the calculation state is not ``READY``.
     """
-    if workflow["state"] != CalculationState.READY.value:
+    if workflow.state != CalculationState.READY:
         raise RuntimeError(
             "Observation calculation is not READY (current state: "
-            f"{workflow['state']}). Please retry after background processing "
+            f"{workflow.state.value}). Please retry after background processing "
             "is complete."
         )
 
 
 def _check_already_set(
-    workflow: dict[str, Any],
+    workflow: GetObservationWorkflowStateByIdObservationWorkflow,
     workflow_state: ObservationWorkflowState,
 ) -> bool:
     """
@@ -247,8 +260,8 @@ def _check_already_set(
 
     Parameters
     ----------
-    workflow : dict[str, Any]
-        The workflow data structure returned by ``get_by_id()``.
+    workflow : GetObservationWorkflowStateByIdObservationWorkflow
+        The workflow Pydantic model returned by ``get_by_id().observation.workflow``.
     workflow_state : ObservationWorkflowState
         The desired workflow state.
 
@@ -258,11 +271,11 @@ def _check_already_set(
         ``True`` if the current workflow state matches the desired state,
         otherwise ``False``.
     """
-    return workflow["value"]["state"] == workflow_state.value
+    return workflow.value.state == workflow_state
 
 
 def _check_valid_transition(
-    workflow: dict[str, Any],
+    workflow: GetObservationWorkflowStateByIdObservationWorkflow,
     workflow_state: ObservationWorkflowState,
 ) -> None:
     """
@@ -270,8 +283,8 @@ def _check_valid_transition(
 
     Parameters
     ----------
-    workflow : dict[str, Any]
-        The workflow data structure returned by ``get_by_id()``.
+    workflow : GetObservationWorkflowStateByIdObservationWorkflow
+        The workflow Pydantic model returned by ``get_by_id().observation.workflow``.
     workflow_state : ObservationWorkflowState
         The desired workflow state to transition to.
 
@@ -281,9 +294,9 @@ def _check_valid_transition(
         If the requested transition is not allowed based on
         ``validTransitions``.
     """
-    valid_transitions = workflow["value"].get("validTransitions", [])
-    if workflow_state.value not in valid_transitions:
-        valid_str = ", ".join(valid_transitions) or "None"
+    valid_transitions = workflow.value.valid_transitions or []
+    if workflow_state not in valid_transitions:
+        valid_str = ", ".join(t.value for t in valid_transitions) or "None"
         raise ValueError(
             f"Cannot transition to '{workflow_state.value}'. "
             f"Valid transitions are: {valid_str}."

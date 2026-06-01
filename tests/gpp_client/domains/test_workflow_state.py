@@ -14,6 +14,64 @@ from gpp_client.domains.workflow_state import (
 )
 from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
 from gpp_client.generated.enums import CalculationState, ObservationWorkflowState
+from gpp_client.generated.fragments import WorkflowDetailsValue
+from gpp_client.generated.get_observation_workflow_state_by_id import (
+    GetObservationWorkflowStateById,
+    GetObservationWorkflowStateByIdObservation,
+    GetObservationWorkflowStateByIdObservationWorkflow,
+)
+from gpp_client.generated.set_observation_workflow_state import (
+    SetObservationWorkflowState,
+    SetObservationWorkflowStateSetObservationWorkflowState,
+)
+
+
+def _build_workflow(
+    calculation_state: CalculationState,
+    workflow_state: ObservationWorkflowState,
+    valid_transitions: list[ObservationWorkflowState],
+) -> GetObservationWorkflowStateByIdObservationWorkflow:
+    """
+    Build a workflow Pydantic model for testing.
+    """
+    value = WorkflowDetailsValue.model_construct(
+        state=workflow_state,
+        valid_transitions=valid_transitions,
+        validation_errors=[],
+    )
+    return GetObservationWorkflowStateByIdObservationWorkflow.model_construct(
+        state=calculation_state,
+        value=value,
+    )
+
+
+def _build_get_by_id_result(
+    workflow: GetObservationWorkflowStateByIdObservationWorkflow,
+) -> GetObservationWorkflowStateById:
+    """
+    Wrap a workflow into the full ``get_by_id`` response model.
+    """
+    observation = GetObservationWorkflowStateByIdObservation.model_construct(
+        workflow=workflow,
+    )
+    return GetObservationWorkflowStateById.model_construct(observation=observation)
+
+
+def _build_mutation_result(
+    workflow_state: ObservationWorkflowState,
+    valid_transitions: list[ObservationWorkflowState] | None = None,
+) -> SetObservationWorkflowState:
+    """
+    Build a ``set_observation_workflow_state`` mutation response model.
+    """
+    payload = SetObservationWorkflowStateSetObservationWorkflowState.model_construct(
+        state=workflow_state,
+        valid_transitions=valid_transitions or [],
+        validation_errors=[],
+    )
+    return SetObservationWorkflowState.model_construct(
+        set_observation_workflow_state=payload,
+    )
 
 
 @pytest.fixture()
@@ -74,9 +132,11 @@ def test_check_ready_allows_ready_state() -> None:
     """
     Ensure _check_ready accepts READY workflows.
     """
-    workflow = {
-        "state": CalculationState.READY.value,
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[],
+    )
 
     _check_ready(workflow)
 
@@ -85,9 +145,11 @@ def test_check_ready_raises_for_non_ready_state() -> None:
     """
     Ensure _check_ready raises for non-READY workflows.
     """
-    workflow = {
-        "state": "PENDING",
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.PENDING,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[],
+    )
 
     with pytest.raises(RuntimeError):
         _check_ready(workflow)
@@ -97,11 +159,11 @@ def test_check_already_set_returns_true_when_matching() -> None:
     """
     Ensure _check_already_set returns true for matching states.
     """
-    workflow = {
-        "value": {
-            "state": ObservationWorkflowState.READY.value,
-        }
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[],
+    )
 
     assert _check_already_set(workflow, ObservationWorkflowState.READY) is True
 
@@ -110,11 +172,11 @@ def test_check_already_set_returns_false_when_different() -> None:
     """
     Ensure _check_already_set returns false for different states.
     """
-    workflow = {
-        "value": {
-            "state": ObservationWorkflowState.READY.value,
-        }
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[],
+    )
 
     assert _check_already_set(workflow, ObservationWorkflowState.ONGOING) is False
 
@@ -123,11 +185,11 @@ def test_check_valid_transition_allows_valid_transition() -> None:
     """
     Ensure _check_valid_transition accepts valid transitions.
     """
-    workflow = {
-        "value": {
-            "validTransitions": [ObservationWorkflowState.ONGOING.value],
-        }
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
 
     _check_valid_transition(workflow, ObservationWorkflowState.ONGOING)
 
@@ -136,11 +198,11 @@ def test_check_valid_transition_raises_for_invalid_transition() -> None:
     """
     Ensure _check_valid_transition raises for invalid transitions.
     """
-    workflow = {
-        "value": {
-            "validTransitions": [ObservationWorkflowState.ONGOING.value],
-        }
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
 
     with pytest.raises(ValueError):
         _check_valid_transition(workflow, ObservationWorkflowState.INACTIVE)
@@ -154,16 +216,15 @@ async def test_update_by_id_returns_existing_value_when_already_set(
     """
     Ensure update_by_id returns existing workflow when already set.
     """
-    workflow_value = {
-        "state": ObservationWorkflowState.READY.value,
-        "validTransitions": [ObservationWorkflowState.ONGOING.value],
-    }
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
     get_by_id = mocker.patch.object(
         workflow_state_domain,
         "get_by_id",
-        return_value={
-            "workflow": {"state": CalculationState.READY.value, "value": workflow_value}
-        },
+        return_value=_build_get_by_id_result(workflow),
     )
     set_state = mocker.patch.object(
         workflow_state_domain._graphql,
@@ -176,7 +237,9 @@ async def test_update_by_id_returns_existing_value_when_already_set(
         workflow_state=ObservationWorkflowState.READY,
     )
 
-    assert result == workflow_value
+    assert isinstance(result, SetObservationWorkflowStateSetObservationWorkflowState)
+    assert result.state == ObservationWorkflowState.READY
+    assert result.valid_transitions == [ObservationWorkflowState.ONGOING]
     get_by_id.assert_called_once_with(observation_id="o-1")
     set_state.assert_not_called()
 
@@ -189,24 +252,23 @@ async def test_update_by_id_sets_new_state_when_valid(
     """
     Ensure update_by_id performs mutation for valid transitions.
     """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
     get_by_id = mocker.patch.object(
         workflow_state_domain,
         "get_by_id",
-        return_value={
-            "workflow": {
-                "state": CalculationState.READY.value,
-                "value": {
-                    "state": ObservationWorkflowState.READY.value,
-                    "validTransitions": [ObservationWorkflowState.ONGOING.value],
-                },
-            }
-        },
+        return_value=_build_get_by_id_result(workflow),
     )
-    result_model = {"state": ObservationWorkflowState.ONGOING.value}
+    mutation_result = _build_mutation_result(
+        workflow_state=ObservationWorkflowState.ONGOING,
+    )
     set_state = mocker.patch.object(
         workflow_state_domain._graphql,
         "set_observation_workflow_state",
-        new=mocker.AsyncMock(return_value=result_model),
+        new=mocker.AsyncMock(return_value=mutation_result),
     )
 
     result = await workflow_state_domain.update_by_id(
@@ -214,12 +276,48 @@ async def test_update_by_id_sets_new_state_when_valid(
         workflow_state=ObservationWorkflowState.ONGOING,
     )
 
-    assert result == result_model
+    assert isinstance(result, SetObservationWorkflowStateSetObservationWorkflowState)
+    assert result.state == ObservationWorkflowState.ONGOING
+    assert result.valid_transitions == []
     get_by_id.assert_called_once_with(observation_id="o-1")
     set_state.assert_called_once_with(
         observation_id="o-1",
         state=ObservationWorkflowState.ONGOING,
     )
+
+
+@pytest.mark.asyncio
+async def test_update_by_id_raises_when_mutation_payload_missing(
+    workflow_state_domain,
+    mocker,
+) -> None:
+    """
+    Ensure update_by_id raises when GPP returns no mutation payload.
+    """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
+    mocker.patch.object(
+        workflow_state_domain,
+        "get_by_id",
+        return_value=_build_get_by_id_result(workflow),
+    )
+    empty_result = SetObservationWorkflowState.model_construct(
+        set_observation_workflow_state=None,
+    )
+    mocker.patch.object(
+        workflow_state_domain._graphql,
+        "set_observation_workflow_state",
+        new=mocker.AsyncMock(return_value=empty_result),
+    )
+
+    with pytest.raises(GPPClientError):
+        await workflow_state_domain.update_by_id(
+            observation_id="o-1",
+            workflow_state=ObservationWorkflowState.ONGOING,
+        )
 
 
 @pytest.mark.asyncio
@@ -230,18 +328,15 @@ async def test_update_by_id_raises_retryable_error_when_not_ready(
     """
     Ensure update_by_id raises retryable error when calculation is not ready.
     """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.PENDING,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
     mocker.patch.object(
         workflow_state_domain,
         "get_by_id",
-        return_value={
-            "workflow": {
-                "state": "PENDING",
-                "value": {
-                    "state": ObservationWorkflowState.READY.value,
-                    "validTransitions": [ObservationWorkflowState.ONGOING.value],
-                },
-            }
-        },
+        return_value=_build_get_by_id_result(workflow),
     )
 
     with pytest.raises(GPPRetryableError):
@@ -259,18 +354,15 @@ async def test_update_by_id_raises_validation_error_for_invalid_transition(
     """
     Ensure update_by_id raises validation error for invalid transitions.
     """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
     mocker.patch.object(
         workflow_state_domain,
         "get_by_id",
-        return_value={
-            "workflow": {
-                "state": CalculationState.READY.value,
-                "value": {
-                    "state": ObservationWorkflowState.READY.value,
-                    "validTransitions": [ObservationWorkflowState.ONGOING.value],
-                },
-            }
-        },
+        return_value=_build_get_by_id_result(workflow),
     )
 
     with pytest.raises(GPPValidationError):
