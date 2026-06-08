@@ -73,10 +73,19 @@ from .enums import (
     GmosSouthFilter,
     GmosSouthGrating,
     GmosSouthStageMode,
+    GnirsAcquisitionType,
+    GnirsCamera,
+    GnirsDecker,
+    GnirsFilter,
+    GnirsFpuOther,
+    GnirsFpuSlit,
+    GnirsGrating,
+    GnirsPrism,
+    GnirsReadMode,
+    GnirsWellDepth,
     GuideState,
     HiiRegionSpectrum,
     Ignore,
-    Igrins2OffsetMode,
     ImageQualityPreset,
     ImagingCapability,
     Instrument,
@@ -102,6 +111,7 @@ from .enums import (
     Site,
     SkyBackground,
     SlewStage,
+    SlitOffsetMode,
     SmartGcalType,
     SpectroscopyCapability,
     StellarLibrarySpectrum,
@@ -765,7 +775,7 @@ class GmosNorthLongSlitInput(BaseModel):
 class GmosNorthImagingInput(BaseModel):
     """Edit or create GMOS North Imaging advanced configuration"""
 
-    variant: Optional["GmosImagingVariantInput"] = None
+    variant: Optional["ImagingVariantInput"] = None
     filters: Optional[list["GmosNorthImagingFilterInput"]] = None
     "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
@@ -927,7 +937,7 @@ class GmosSouthImagingFilterInput(BaseModel):
 class GmosSouthImagingInput(BaseModel):
     """Edit or create GMOS South Imaging advanced configuration"""
 
-    variant: Optional["GmosImagingVariantInput"] = None
+    variant: Optional["ImagingVariantInput"] = None
     filters: Optional[list["GmosSouthImagingFilterInput"]] = None
     "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
     explicit_bin: Optional[GmosBinning] = Field(alias=str("explicitBin"), default=None)
@@ -1061,6 +1071,19 @@ class ConfigurationRequestProperties(BaseModel):
     justification: Optional[Any] = None
 
 
+class SchedulingConstraintsInput(BaseModel):
+    """Configuration that controls how and when the Scheduler may plan execution of an
+    observation, including whether it can be split across multiple visits and any
+    timing constraints."""
+
+    is_splittable: Optional[bool] = Field(alias=str("isSplittable"), default=True)
+    'Controls whether the observation may be split across multiple visits. When\ntrue (default), the scheduler may divide the science sequence into discrete\nsegments (i.e. "atoms") scheduled in order across separate visits. When false,\nthe entire science sequence must complete within a single uninterrupted visit.'
+    timing_windows: Optional[list["TimingWindowInput"]] = Field(
+        alias=str("timingWindows"), default=None
+    )
+    "One or more windows during which the observation is permitted to execute.\nDefaults to empty (unconstrained) if omitted. To modify existing windows,\nsupply the complete desired array — the new value replaces the previous one\nentirely. When this input is used to edit an observation, assigning a `null`\nvalue clears all existing timing windows."
+
+
 class ObservationPropertiesInput(BaseModel):
     """Observation properties"""
 
@@ -1083,7 +1106,11 @@ class ObservationPropertiesInput(BaseModel):
     timing_windows: Optional[list["TimingWindowInput"]] = Field(
         alias=str("timingWindows"), default=None
     )
-    "The timingWindows defaults to empty if not specified on creation, and may be edited by specifying a new whole array"
+    "Deprecated in favor of the `schedulingConstraints` field — use that instead.\nIf both this field and `schedulingConstraints` are specified in the same\nmutation, the mutation will be rejected with a validation error.\n\nSpecifies one or more timing windows during which the observation may execute.\nDefaults to empty (unconstrained) if omitted. To modify, supply the complete\ndesired array — it replaces the previous value entirely."
+    scheduling_constraints: Optional["SchedulingConstraintsInput"] = Field(
+        alias=str("schedulingConstraints"), default=None
+    )
+    "Scheduling configuration for this observation, controlling visit splitting and\ntiming windows. If omitted, scheduling defaults apply (observation is\nsplittable, no timing windows). Set to `null` to reset any existing scheduling\nconfiguration to those defaults."
     attachments: Optional[list[Any]] = None
     "The attachments defaults to empty if not specified on creation, and may be edited by specifying a new whole array"
     science_requirements: Optional["ScienceRequirementsInput"] = Field(
@@ -1265,6 +1292,10 @@ class ProgramUserPropertiesInput(BaseModel):
     "Investigator affiliation."
     has_data_access: Optional[bool] = Field(alias=str("hasDataAccess"), default=None)
     "Whether the user has data access.  This property may be changed only by the\nPI (or staff).  If a COI attempts to change the data access flag, the entire\nupdate is ignored."
+    classical_visitor: Optional[bool] = Field(
+        alias=str("classicalVisitor"), default=None
+    )
+    "Whether this investigator will visit to carry out the observations.\nThis property is only meaningful for classical proposals."
 
 
 class ProperMotionComponentInput(BaseModel):
@@ -1326,10 +1357,6 @@ class ClassicalInput(BaseModel):
     "Whether this proposal has JWST synergy."
     us_long_term: Optional[bool] = Field(alias=str("usLongTerm"), default=None)
     "Whether this is a US Long Term proposal."
-    consider_for_band_3: Optional[ConsiderForBand3] = Field(
-        alias=str("considerForBand3"), default=None
-    )
-    "Whether this proposal should be considered for Band 3."
 
 
 class DemoScienceInput(BaseModel):
@@ -1382,6 +1409,16 @@ class LargeProgramInput(BaseModel):
     "Whether this proposal is part of the AEON/Multi-facility program."
     jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
     "Whether this proposal has JWST synergy."
+
+
+class DeleteSequenceInput(BaseModel):
+    """Input parameters for deleting a materialized sequence.
+    Select one of `observationId` or `observationReference`."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
 
 
 class PoorWeatherInput(BaseModel):
@@ -1516,6 +1553,10 @@ class RightAscensionInput(BaseModel):
 class ObservingModeInput(BaseModel):
     """Edit or create an observation's observing mode"""
 
+    flamingos_2_imaging: Optional["Flamingos2ImagingInput"] = Field(
+        alias=str("flamingos2Imaging"), default=None
+    )
+    "The flamingos2Imaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
     flamingos_2_long_slit: Optional["Flamingos2LongSlitInput"] = Field(
         alias=str("flamingos2LongSlit"), default=None
     )
@@ -1542,6 +1583,10 @@ class ObservingModeInput(BaseModel):
         alias=str("igrins2LongSlit"), default=None
     )
     "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gnirs_long_slit: Optional["GnirsLongSlitInput"] = Field(
+        alias=str("gnirsLongSlit"), default=None
+    )
+    "The gnirsLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     visitor: Optional["VisitorInput"] = None
     "A visiting instrument mode. It cannot be unset with a null value."
 
@@ -1551,9 +1596,14 @@ class VisitorInput(BaseModel):
     central_wavelength: Optional["WavelengthInput"] = Field(
         alias=str("centralWavelength"), default=None
     )
-    guide_star_min_sep: Optional["AngleInput"] = Field(
-        alias=str("guideStarMinSep"), default=None
+    ags_diameter: Optional["AngleInput"] = Field(alias=str("agsDiameter"), default=None)
+    "AGS field of view, understood as the diameter of a circular area."
+    name: Optional[Any] = None
+    "Optional descriptive name for this visitor mode selection."
+    total_request_time: Optional["TimeSpanInput"] = Field(
+        alias=str("totalRequestTime"), default=None
     )
+    "Optional total requested observing time."
 
 
 class ScienceRequirementsInput(BaseModel):
@@ -2326,9 +2376,7 @@ class Igrins2StaticInput(BaseModel):
 
     save_svc_images: Optional[bool] = Field(alias=str("saveSVCImages"), default=None)
     "Whether to save SVC images (defaults to false)"
-    offset_mode: Optional[Igrins2OffsetMode] = Field(
-        alias=str("offsetMode"), default=None
-    )
+    offset_mode: Optional[SlitOffsetMode] = Field(alias=str("offsetMode"), default=None)
     "Offset mode (defaults to NOD_ALONG_SLIT)"
 
 
@@ -2435,6 +2483,42 @@ class Flamingos2LongSlitInput(BaseModel):
     "Acquisition properties that, when set, override default values."
 
 
+class Flamingos2ImagingFilterInput(BaseModel):
+    """Defines a Flamingos2 imaging filter to use along with its exposure time mode."""
+
+    filter_: Flamingos2Filter = Field(alias=str("filter"))
+    "The filter to use for this imaging configuration."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for this filter.\nIf not specified, it is taken from the observation's requirements."
+
+
+class Flamingos2ImagingInput(BaseModel):
+    """Flamingos2 Imaging creation and edit input parameters."""
+
+    variant: Optional["ImagingVariantInput"] = None
+    "Details specific to the type of imaging being performed.  On creation, if not\nspecified, defaults to a grouped variant with an increasing-wavelength,\n30 arcsec spiral offset generator."
+    filters: Optional[list["Flamingos2ImagingFilterInput"]] = None
+    "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
+    explicit_read_mode: Optional[Flamingos2ReadMode] = Field(
+        alias=str("explicitReadMode"), default=None
+    )
+    "The explicitReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_reads: Optional[Flamingos2Reads] = Field(
+        alias=str("explicitReads"), default=None
+    )
+    "The explicitReads field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_decker: Optional[Flamingos2Decker] = Field(
+        alias=str("explicitDecker"), default=None
+    )
+    "The explicitDecker field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
+        alias=str("explicitReadoutMode"), default=None
+    )
+    "The explicitReadoutMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+
+
 class GhostDetectorConfigInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
@@ -2488,7 +2572,7 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("exposureTimeMode"), default=None
     )
     "The exposureTimeMode field may be unset by assigning a null value, or ignored\nby skipping it altogether"
-    explicit_offset_mode: Optional[Igrins2OffsetMode] = Field(
+    explicit_offset_mode: Optional[SlitOffsetMode] = Field(
         alias=str("explicitOffsetMode"), default=None
     )
     "The offset mode field may be unset by assigning a null value, or ignored by\nskipping it altogether"
@@ -2506,22 +2590,93 @@ class Igrins2LongSlitInput(BaseModel):
     "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
 
 
-class GmosImagingVariantInput(BaseModel):
+class GnirsLongSlitAcquisitionInput(BaseModel):
+    explicit_filter: Optional[GnirsFilter] = Field(
+        alias=str("explicitFilter"), default=None
+    )
+    explicit_acquisition_type: Optional[GnirsAcquisitionType] = Field(
+        alias=str("explicitAcquisitionType"), default=None
+    )
+    coadds: Optional[Any] = None
+    sky_offset: Optional["OffsetInput"] = Field(alias=str("skyOffset"), default=None)
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+
+
+class TelescopeConfigAlongSlitInput(BaseModel):
+    q: "OffsetComponentInput"
+    guiding: GuideState
+
+
+class SlitTelescopeConfigsInput(BaseModel):
+    along_slit: Optional[list["TelescopeConfigAlongSlitInput"]] = Field(
+        alias=str("alongSlit"), default=None
+    )
+    to_sky: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("toSky"), default=None
+    )
+
+
+class GnirsLongSlitInput(BaseModel):
+    """Edit or create GNIRS Long Slit configuration"""
+
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    coadds: Optional[Any] = None
+    filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
+    fpu: Optional[GnirsFpuSlit] = None
+    camera: Optional[GnirsCamera] = None
+    grating: Optional[GnirsGrating] = None
+    prism: Optional[GnirsPrism] = None
+    explicit_decker: Optional[GnirsDecker] = Field(
+        alias=str("explicitDecker"), default=None
+    )
+    explicit_grating_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("explicitGratingWavelength"), default=None
+    )
+    explicit_grating: Optional[GnirsGrating] = Field(
+        alias=str("explicitGrating"), default=None
+    )
+    explicit_prism: Optional[GnirsPrism] = Field(
+        alias=str("explicitPrism"), default=None
+    )
+    explicit_focus_motor_steps: Optional[int] = Field(
+        alias=str("explicitFocusMotorSteps"), default=None
+    )
+    explicit_read_mode: Optional[GnirsReadMode] = Field(
+        alias=str("explicitReadMode"), default=None
+    )
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(
+        alias=str("explicitWellDepth"), default=None
+    )
+    explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    acquisition: Optional["GnirsLongSlitAcquisitionInput"] = None
+    telluric_type: Optional["TelluricTypeInput"] = Field(
+        alias=str("telluricType"), default=None
+    )
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+
+
+class ImagingVariantInput(BaseModel):
     """Input that specifies which imaging sub-type is desired along with its configuration
     details.  Exactly one of the options should be defined and the other two left
     unspecified."""
 
-    grouped: Optional["GmosGroupedImagingVariantInput"] = None
+    grouped: Optional["GroupedImagingVariantInput"] = None
     "Grouped mode collects all datasets for each filter before changing filters."
-    interleaved: Optional["GmosInterleavedImagingVariantInput"] = None
+    interleaved: Optional["InterleavedImagingVariantInput"] = None
     "Interleaved mode cycles through all filters repeatedly."
-    pre_imaging: Optional["GmosPreImagingVariantInput"] = Field(
+    pre_imaging: Optional["PreImagingVariantInput"] = Field(
         alias=str("preImaging"), default=None
     )
     "PreImaging mode is used for MOS mask creation."
 
 
-class GmosGroupedImagingVariantInput(BaseModel):
+class GroupedImagingVariantInput(BaseModel):
     """Input used for specifying GMOS grouped filter imaging."""
 
     order: Optional[WavelengthOrder] = None
@@ -2536,7 +2691,7 @@ class GmosGroupedImagingVariantInput(BaseModel):
     "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used."
 
 
-class GmosInterleavedImagingVariantInput(BaseModel):
+class InterleavedImagingVariantInput(BaseModel):
     """Input used for specifying GMOS interleaved filter imaging."""
 
     offsets: Optional["TelescopeConfigGeneratorInput"] = None
@@ -2549,7 +2704,7 @@ class GmosInterleavedImagingVariantInput(BaseModel):
     "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used.  When specifying an offset generator, the skyCount should be set to\na value greater than 0."
 
 
-class GmosPreImagingVariantInput(BaseModel):
+class PreImagingVariantInput(BaseModel):
     """MOS pre-imaging offsets, each of which default to (0, 0)."""
 
     offset_1: Optional["OffsetInput"] = Field(alias=str("offset1"), default=None)
@@ -4458,6 +4613,52 @@ class Igrins2AtomInput(BaseModel):
     steps: list["Igrins2StepInput"]
 
 
+class GnirsAcquisitionMirrorOutInput(BaseModel):
+    """Spectroscopy configuration that travels with a GNIRS step when the acquisition
+    mirror is out of the beam."""
+
+    prism: GnirsPrism
+    grating: GnirsGrating
+    wavelength: "WavelengthInput"
+
+
+class GnirsDynamicInput(BaseModel):
+    """GNIRS dynamic step configuration input.
+
+    Exactly one of `fpuSlit` / `fpuOther` must be provided.  `acquisitionMirrorOut`
+    is provided when the acquisition mirror is "out" (spectroscopy mode); its
+    absence indicates the mirror is "in".  `focusMotorSteps` is omitted when focus
+    is "Best" (instrument-chosen)."""
+
+    exposure: "TimeSpanInput"
+    coadds: Any
+    filter_: GnirsFilter = Field(alias=str("filter"))
+    decker: GnirsDecker
+    fpu_slit: Optional[GnirsFpuSlit] = Field(alias=str("fpuSlit"), default=None)
+    fpu_other: Optional[GnirsFpuOther] = Field(alias=str("fpuOther"), default=None)
+    acquisition_mirror_out: Optional["GnirsAcquisitionMirrorOutInput"] = Field(
+        alias=str("acquisitionMirrorOut"), default=None
+    )
+    camera: GnirsCamera
+    focus_motor_steps: Optional[int] = Field(alias=str("focusMotorSteps"), default=None)
+    read_mode: GnirsReadMode = Field(alias=str("readMode"))
+
+
+class GnirsStepInput(BaseModel):
+    instrument_config: "GnirsDynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
+class GnirsAtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["GnirsStepInput"]
+
+
 class ReplaceFlamingos2SequenceInput(BaseModel):
     """Replace Flamingos 2 sequence input.  Select the observation using one of the
     observation ID or the observation reference.  If both are provided, they must
@@ -4518,6 +4719,21 @@ class ReplaceIgrins2SequenceInput(BaseModel):
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
 
 
+class ReplaceGnirsSequenceInput(BaseModel):
+    """Replace GNIRS sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["GnirsAtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
 AddProgramUserInput.model_rebuild()
 AddTimeChargeCorrectionInput.model_rebuild()
 AllocationInput.model_rebuild()
@@ -4569,6 +4785,7 @@ CloneGroupInput.model_rebuild()
 UserSuppliedEphemerisElement.model_rebuild()
 UserSuppliedEphemeris.model_rebuild()
 NonsiderealInput.model_rebuild()
+SchedulingConstraintsInput.model_rebuild()
 ObservationPropertiesInput.model_rebuild()
 ObservationTimesInput.model_rebuild()
 OffsetInput.model_rebuild()
@@ -4634,13 +4851,19 @@ Flamingos2DynamicInput.model_rebuild()
 Flamingos2FpuMaskInput.model_rebuild()
 Flamingos2LongSlitAcquisitionInput.model_rebuild()
 Flamingos2LongSlitInput.model_rebuild()
+Flamingos2ImagingFilterInput.model_rebuild()
+Flamingos2ImagingInput.model_rebuild()
 GhostDetectorConfigInput.model_rebuild()
 GhostIfuInput.model_rebuild()
 Igrins2LongSlitInput.model_rebuild()
-GmosImagingVariantInput.model_rebuild()
-GmosGroupedImagingVariantInput.model_rebuild()
-GmosInterleavedImagingVariantInput.model_rebuild()
-GmosPreImagingVariantInput.model_rebuild()
+GnirsLongSlitAcquisitionInput.model_rebuild()
+TelescopeConfigAlongSlitInput.model_rebuild()
+SlitTelescopeConfigsInput.model_rebuild()
+GnirsLongSlitInput.model_rebuild()
+ImagingVariantInput.model_rebuild()
+GroupedImagingVariantInput.model_rebuild()
+InterleavedImagingVariantInput.model_rebuild()
+PreImagingVariantInput.model_rebuild()
 GmosNorthImagingFilterInput.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
@@ -4682,7 +4905,12 @@ Flamingos2AtomInput.model_rebuild()
 GmosNorthAtomInput.model_rebuild()
 GmosSouthAtomInput.model_rebuild()
 Igrins2AtomInput.model_rebuild()
+GnirsAcquisitionMirrorOutInput.model_rebuild()
+GnirsDynamicInput.model_rebuild()
+GnirsStepInput.model_rebuild()
+GnirsAtomInput.model_rebuild()
 ReplaceFlamingos2SequenceInput.model_rebuild()
 ReplaceGmosNorthSequenceInput.model_rebuild()
 ReplaceGmosSouthSequenceInput.model_rebuild()
 ReplaceIgrins2SequenceInput.model_rebuild()
+ReplaceGnirsSequenceInput.model_rebuild()

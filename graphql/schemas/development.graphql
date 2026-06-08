@@ -31,37 +31,6 @@ enum ConditionsExpectationType {
   THIN_CLOUDS
 }
 
-enum FilterType {
-  """Broad-Band Filter"""
-  BroadBand
-
-  """Combination Filter"""
-  Combination
-
-  """Engineering Filter"""
-  Engineering
-
-  """Narrow-Band Filter"""
-  NarrowBand
-
-  """Spectroscopic Filter"""
-  Spectroscopic
-}
-
-enum ProposalStatus {
-  """Not Submitted"""
-  NOT_SUBMITTED
-
-  """Submitted"""
-  SUBMITTED
-
-  """Accepted"""
-  ACCEPTED
-
-  """Not Accepted"""
-  NOT_ACCEPTED
-}
-
 """Email address, matching ^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"""
 scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 
@@ -1801,7 +1770,7 @@ input GmosNorthLongSlitInput {
 
 """Edit or create GMOS North Imaging advanced configuration"""
 input GmosNorthImagingInput {
-  variant: GmosImagingVariantInput
+  variant: ImagingVariantInput
 
   """
   The filters field must be specified with at least one filter. It cannot be
@@ -2166,7 +2135,7 @@ input GmosSouthImagingFilterInput {
 
 """Edit or create GMOS South Imaging advanced configuration"""
 input GmosSouthImagingInput {
-  variant: GmosImagingVariantInput
+  variant: ImagingVariantInput
 
   """
   The filters field must be specified with at least one filter. It cannot be
@@ -2556,6 +2525,9 @@ type Mutation {
   """Deletes the given program's proposal, if any."""
   deleteProposal(input: DeleteProposalInput!): DeleteProposalResult!
 
+  """Deletes a materialized sequence, if any."""
+  deleteSequence(input: DeleteSequenceInput!): DeleteSequenceResult!
+
   """
   Ties a specific user to an existing ProgramUser, which must not already be
   associated with any user.
@@ -2624,6 +2596,13 @@ type Mutation {
   deleted.  Any ongoing steps are abandoned.
   """
   replaceIgrins2Sequence(input: ReplaceIgrins2SequenceInput!): ReplaceIgrins2SequenceResult!
+
+  """
+  Replaces the remaining steps in an execution sequence with the provided
+  sequence.  Previously executed (or even partially executed) steps are not
+  deleted.  Any ongoing steps are abandoned.
+  """
+  replaceGnirsSequence(input: ReplaceGnirsSequenceInput!): ReplaceGnirsSequenceResult!
 
   """
   Resets the acquisition sequence to start from the initial step regardless of
@@ -2819,6 +2798,51 @@ input ConfigurationRequestProperties {
   justification: NonEmptyString
 }
 
+"""
+Configuration that controls how and when the Scheduler may plan execution of an
+observation, including whether it can be split across multiple visits and any
+timing constraints.
+"""
+input SchedulingConstraintsInput {
+  """
+  Controls whether the observation may be split across multiple visits. When
+  true (default), the scheduler may divide the science sequence into discrete
+  segments (i.e. "atoms") scheduled in order across separate visits. When false,
+  the entire science sequence must complete within a single uninterrupted visit.
+  """
+  isSplittable: Boolean = true
+
+  """
+  One or more windows during which the observation is permitted to execute.
+  Defaults to empty (unconstrained) if omitted. To modify existing windows,
+  supply the complete desired array — the new value replaces the previous one
+  entirely. When this input is used to edit an observation, assigning a `null`
+  value clears all existing timing windows.
+  """
+  timingWindows: [TimingWindowInput!]
+}
+
+"""
+Configuration that controls how and when the Scheduler may plan execution of an
+observation, including whether it can be split across multiple visits and any
+timing constraints.
+"""
+type SchedulingConstraints {
+  """
+  Controls whether the observation may be split across multiple visits. When
+  true, the scheduler may divide the science sequence into discrete segments
+  (i.e. "atoms") scheduled in order across separate visits. When false, the
+  entire science sequence must complete within a single uninterrupted visit.
+  """
+  isSplittable: Boolean!
+
+  """
+  One or more windows during which the observation is permitted to execute.  If
+  empty, there are no timing constraints for the observation.
+  """
+  timingWindows: [TimingWindow!]!
+}
+
 """Observation properties"""
 input ObservationPropertiesInput {
   """
@@ -2848,9 +2872,23 @@ input ObservationPropertiesInput {
   constraintSet: ConstraintSetInput
 
   """
-  The timingWindows defaults to empty if not specified on creation, and may be edited by specifying a new whole array
+  Deprecated in favor of the `schedulingConstraints` field — use that instead.
+  If both this field and `schedulingConstraints` are specified in the same
+  mutation, the mutation will be rejected with a validation error.
+  
+  Specifies one or more timing windows during which the observation may execute.
+  Defaults to empty (unconstrained) if omitted. To modify, supply the complete
+  desired array — it replaces the previous value entirely.
   """
-  timingWindows: [TimingWindowInput!]
+  timingWindows: [TimingWindowInput!] @deprecated(reason: "Use `schedulingConstraints` instead. (Deprecated June 4, 2026)")
+
+  """
+  Scheduling configuration for this observation, controlling visit splitting and
+  timing windows. If omitted, scheduling defaults apply (observation is
+  splittable, no timing windows). Set to `null` to reset any existing scheduling
+  configuration to those defaults.
+  """
+  schedulingConstraints: SchedulingConstraintsInput
 
   """
   The attachments defaults to empty if not specified on creation, and may be edited by specifying a new whole array
@@ -3271,6 +3309,12 @@ input ProgramUserPropertiesInput {
   update is ignored.
   """
   hasDataAccess: Boolean
+
+  """
+  Whether this investigator will visit to carry out the observations.
+  This property is only meaningful for classical proposals.
+  """
+  classicalVisitor: Boolean
 }
 
 """The role a user a plays when assigned to a program."""
@@ -3337,6 +3381,12 @@ type ProgramUser {
   hasDataAccess: Boolean!
 
   """
+  Whether this investigator will visit to carry out the observations.
+  This property is only meaningful for classical proposals.
+  """
+  classicalVisitor: Boolean!
+
+  """
   Name created preferentially from the fields of the preferred profile, falling back
   to the Orcid profile if the preferred fields are not set.
   """
@@ -3394,13 +3444,6 @@ type Classical implements ProposalType {
 
   """Whether this is a US Long Term proposal."""
   usLongTerm: Boolean!
-
-  """
-  Whether this proposal should be considered for Band 3. Defaults to UNSET
-  on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
-  be submitted.
-  """
-  considerForBand3: ConsiderForBand3!
 }
 
 """Proposal properties for Demo Science CallForProposals."""
@@ -3601,9 +3644,6 @@ input ClassicalInput {
 
   """Whether this is a US Long Term proposal."""
   usLongTerm: Boolean
-
-  """Whether this proposal should be considered for Band 3."""
-  considerForBand3: ConsiderForBand3
 }
 
 input DemoScienceInput {
@@ -3690,6 +3730,21 @@ input LargeProgramInput {
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean
+}
+
+"""
+Input parameters for deleting a materialized sequence.
+Select one of `observationId` or `observationReference`.
+"""
+input DeleteSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+}
+
+"""The result of deleting a materialized sequence."""
+type DeleteSequenceResult {
+  """The observation whose sequence was deleted."""
+  observation: Observation!
 }
 
 """
@@ -3935,6 +3990,11 @@ type SmartGcal implements StepConfig {
 """Edit or create an observation's observing mode"""
 input ObservingModeInput @oneOf {
   """
+  The flamingos2Imaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  flamingos2Imaging: Flamingos2ImagingInput
+
+  """
   The flamingos2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   flamingos2LongSlit: Flamingos2LongSlitInput
@@ -3969,6 +4029,11 @@ input ObservingModeInput @oneOf {
   """
   igrins2LongSlit: Igrins2LongSlitInput
 
+  """
+  The gnirsLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gnirsLongSlit: GnirsLongSlitInput
+
   """A visiting instrument mode. It cannot be unset with a null value."""
   visitor: VisitorInput
 }
@@ -3976,13 +4041,29 @@ input ObservingModeInput @oneOf {
 input VisitorInput {
   mode: VisitorObservingModeType
   centralWavelength: WavelengthInput
-  guideStarMinSep: AngleInput
+
+  """AGS field of view, understood as the diameter of a circular area."""
+  agsDiameter: AngleInput
+
+  """Optional descriptive name for this visitor mode selection."""
+  name: NonEmptyString
+
+  """Optional total requested observing time."""
+  totalRequestTime: TimeSpanInput
 }
 
 type Visitor {
   mode: VisitorObservingModeType!
   centralWavelength: Wavelength!
-  guideStarMinSep: Angle!
+
+  """AGS field of view, understood as the diameter of a circular area."""
+  agsDiameter: Angle!
+
+  """Optional descriptive name for this visitor mode selection."""
+  name: NonEmptyString
+
+  """Optional total requested observing time."""
+  totalRequestTime: TimeSpan
 }
 
 """Edit science requirements"""
@@ -4646,6 +4727,12 @@ type GroupEdit {
 
   """Assocated program"""
   program: Program!
+
+  """
+  The groupId of the edited group, or null if it's the top-level group.
+  it is present even when the group has been deleted.
+  """
+  groupId: GroupId
 
   """Edited group, or null if it's the top-level group."""
   value: Group
@@ -5593,6 +5680,15 @@ enum CloudExtinctionPreset {
 
 """ObservingMode"""
 enum ObservingModeType {
+  """ObservingModeType AlopekeSpeckle"""
+  ALOPEKE_SPECKLE
+
+  """ObservingModeType AlopekeWideField"""
+  ALOPEKE_WIDE_FIELD
+
+  """ObservingModeType Flamingos2Imaging"""
+  FLAMINGOS_2_IMAGING
+
   """ObservingModeType Flamingos2LongSlit"""
   FLAMINGOS_2_LONG_SLIT
 
@@ -5611,8 +5707,26 @@ enum ObservingModeType {
   """ObservingModeType GmosSouthLongSlit"""
   GMOS_SOUTH_LONG_SLIT
 
+  """ObservingModeType GnirsLongSlit"""
+  GNIRS_LONG_SLIT
+
   """ObservingModeType Igrins2LongSlit"""
   IGRINS_2_LONG_SLIT
+
+  """ObservingModeType MaroonX"""
+  MAROON_X
+
+  """ObservingModeType VisitorNorth"""
+  VISITOR_NORTH
+
+  """ObservingModeType VisitorSouth"""
+  VISITOR_SOUTH
+
+  """ObservingModeType ZorroSpeckle"""
+  ZORRO_SPECKLE
+
+  """ObservingModeType ZorroWideField"""
+  ZORRO_WIDE_FIELD
 }
 
 """VisitorObservingModeType"""
@@ -6165,6 +6279,18 @@ type Execution {
 
   """Time accounting calculation for this observation."""
   timeCharge: CategorizedTime!
+
+  """
+  Whether the science sequence has been materialized.
+  This will happen when the sequence is executed or if it is manually edited.
+  """
+  scienceSequenceIsMaterialized: Boolean!
+
+  """
+  Whether the acquisition sequence has been materialized.
+  This will happen when the sequence is executed or if it is manually edited.
+  """
+  acquisitionSequenceIsMaterialized: Boolean!
 }
 
 """
@@ -6205,6 +6331,12 @@ type ExecutionConfig {
   `IGRINS2`.
   """
   igrins2: Igrins2ExecutionConfig
+
+  """
+  GNIRS execution config.  This will be null unless the `instrument` is
+  `GNIRS`.
+  """
+  gnirs: GnirsExecutionConfig
 }
 
 """Execution event (sequence, step, or dataset events)"""
@@ -6363,7 +6495,7 @@ input Igrins2StaticInput {
   saveSVCImages: Boolean
 
   """Offset mode (defaults to NOD_ALONG_SLIT)"""
-  offsetMode: Igrins2OffsetMode
+  offsetMode: SlitOffsetMode
 }
 
 """Input parameters for creating a new IGRINS-2 Visit"""
@@ -6491,7 +6623,7 @@ type Igrins2Static {
   saveSVCImages: Boolean!
 
   """Offset mode."""
-  offsetMode: Igrins2OffsetMode!
+  offsetMode: SlitOffsetMode!
 }
 
 """IGRINS-2 dynamic step configuration"""
@@ -6524,6 +6656,150 @@ type Igrins2Atom {
 type Igrins2Step {
   """Instrument configuration for this step"""
   instrumentConfig: Igrins2Dynamic!
+
+  """Step id"""
+  id: StepId!
+
+  """Whether to pause before the execution of this step"""
+  breakpoint: Breakpoint!
+
+  """The sequence step itself"""
+  stepConfig: StepConfig!
+
+  """The telescope configuration at this step."""
+  telescopeConfig: TelescopeConfig!
+
+  """Time estimate for this step's execution"""
+  estimate: StepEstimate!
+
+  """Observe class for this step"""
+  observeClass: ObserveClass!
+}
+
+"""GNIRS Execution Config"""
+type GnirsExecutionConfig {
+  """GNIRS static configuration"""
+  static: GnirsStatic!
+
+  """GNIRS acquisition execution (not yet implemented; always null)"""
+  acquisition: GnirsExecutionSequence
+
+  """GNIRS science execution"""
+  science: GnirsExecutionSequence
+}
+
+"""GNIRS execution sequence: next atom and (a prefix of) future atoms."""
+type GnirsExecutionSequence {
+  """Next atom to execute."""
+  nextAtom: GnirsAtom!
+
+  """(Prefix of the) remaining atoms to execute, if any."""
+  possibleFuture: [GnirsAtom!]!
+
+  """
+  Whether there are additional atoms beyond those listed in possibleFuture.
+  """
+  hasMore: Boolean!
+}
+
+"""
+GNIRS static configuration: per-observation values that do not change
+between steps.
+"""
+type GnirsStatic {
+  """Well depth (low / deep)."""
+  wellDepth: GnirsWellDepth!
+}
+
+"""
+GNIRS dynamic step configuration.
+
+Exposes every field needed to reconstruct a
+`lucuma.core.model.sequence.gnirs.GnirsDynamicConfig` on the client side.
+
+Exactly one of `fpuSlit` / `fpuOther` is non-null per step. The
+`acquisitionMirrorOut` field is non-null when the acquisition mirror is "out"
+(spectroscopy mode) — its absence indicates the mirror is "in" (imaging /
+acquisition mode). The `focusMotorSteps` field is null when focus is "Best" (instrument-
+chosen); otherwise it carries the motor-step value.
+"""
+type GnirsDynamic {
+  """Exposure time for this step."""
+  exposure: TimeSpan!
+
+  """Coadds per step."""
+  coadds: PosInt!
+
+  """Central wavelength for this step."""
+  centralWavelength: Wavelength!
+
+  """Filter."""
+  filter: GnirsFilter!
+
+  """Decker."""
+  decker: GnirsDecker!
+
+  """FPU slit value, when the FPU is a long-slit FPU."""
+  fpuSlit: GnirsFpuSlit
+
+  """
+  Non-slit FPU value (acquisition mirror, pupil viewer, pinholes), when not
+  a long-slit FPU.
+  """
+  fpuOther: GnirsFpuOther
+
+  """
+  Spectroscopy configuration carried when the acquisition mirror is "out" of
+  the beam. `null` means the mirror is "in".
+  """
+  acquisitionMirrorOut: GnirsAcquisitionMirrorOut
+
+  """Camera."""
+  camera: GnirsCamera!
+
+  """Focus motor steps. `null` indicates "Best" (instrument-chosen) focus."""
+  focusMotorSteps: Int
+
+  """Read mode for this step."""
+  readMode: GnirsReadMode!
+}
+
+"""
+Spectroscopy configuration that travels with a GNIRS step when the acquisition
+mirror is out of the beam.
+"""
+type GnirsAcquisitionMirrorOut {
+  """Prism in use."""
+  prism: GnirsPrism!
+
+  """Grating in use."""
+  grating: GnirsGrating!
+
+  """Effective grating wavelength."""
+  wavelength: Wavelength!
+}
+
+"""
+GNIRS atom, a collection of steps that should be executed in their entirety.
+"""
+type GnirsAtom {
+  """Atom id"""
+  id: AtomId!
+
+  """Atom description, if any"""
+  description: String
+
+  """Observe class for this atom"""
+  observeClass: ObserveClass!
+
+  """Individual steps that comprise the atom"""
+  steps: [GnirsStep!]!
+}
+
+"""GNIRS step with potential breakpoint."""
+type GnirsStep {
+  """Instrument configuration for this step"""
+  instrumentConfig: GnirsDynamic!
 
   """Step id"""
   id: StepId!
@@ -6984,6 +7260,124 @@ input Flamingos2LongSlitInput {
   acquisition: Flamingos2LongSlitAcquisitionInput
 }
 
+"""Imaging filters combine an actual filter with an exposure time mode."""
+type Flamingos2ImagingFilter {
+  """The filter to use for this imaging configuration."""
+  filter: Flamingos2Filter!
+
+  """
+  Exposure time mode for this filter.
+  If not specified, it is taken from the observation's requirements.
+  """
+  exposureTimeMode: ExposureTimeMode!
+}
+
+"""
+Defines a Flamingos2 imaging filter to use along with its exposure time mode.
+"""
+input Flamingos2ImagingFilterInput {
+  """The filter to use for this imaging configuration."""
+  filter: Flamingos2Filter!
+
+  """
+  Exposure time mode for this filter.
+  If not specified, it is taken from the observation's requirements.
+  """
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+"""Flamingos2 Imaging mode"""
+type Flamingos2Imaging {
+  """Details specific to the type of imaging being performed."""
+  variant: ImagingVariant!
+
+  """The filters (at least one is required) to be used for data collection."""
+  filters: [Flamingos2ImagingFilter!]!
+
+  """Filters as initially selected when creating the imaging mode."""
+  initialFilters: [Flamingos2ImagingFilter!]!
+
+  """Default read mode."""
+  defaultReadMode: Flamingos2ReadMode!
+
+  """
+  Optional explicitly specified F2 ReadMode. If set it overrides the default.
+  """
+  explicitReadMode: Flamingos2ReadMode
+
+  """Default reads."""
+  defaultReads: Flamingos2Reads!
+
+  """
+  Optional explicitly specified F2 Reads. If set it overrides the default.
+  """
+  explicitReads: Flamingos2Reads
+
+  """
+  The decker field is either explicitly specified in explicitDecker or else taken
+  from defaultDecker.
+  """
+  decker: Flamingos2Decker!
+
+  """Default decker."""
+  defaultDecker: Flamingos2Decker!
+
+  """
+  Optional explicitly specified F2 Decker. If set it overrides the default.
+  """
+  explicitDecker: Flamingos2Decker
+
+  """
+  The readoutMode field is either explicitly specified in explicitReadoutMode or
+  else taken from defaultReadoutMode.
+  """
+  readoutMode: Flamingos2ReadoutMode!
+
+  """Default readout mode."""
+  defaultReadoutMode: Flamingos2ReadoutMode!
+
+  """
+  Optional explicitly specified F2 Readout mode. If set it overrides the default.
+  """
+  explicitReadoutMode: Flamingos2ReadoutMode
+}
+
+"""Flamingos2 Imaging creation and edit input parameters."""
+input Flamingos2ImagingInput {
+  """
+  Details specific to the type of imaging being performed.  On creation, if not
+  specified, defaults to a grouped variant with an increasing-wavelength,
+  30 arcsec spiral offset generator.
+  """
+  variant: ImagingVariantInput
+
+  """
+  The filters field must be specified with at least one filter. It cannot be
+  unset with a null value.
+  """
+  filters: [Flamingos2ImagingFilterInput!]
+
+  """
+  The explicitReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitReadMode: Flamingos2ReadMode
+
+  """
+  The explicitReads field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitReads: Flamingos2Reads
+
+  """
+  The explicitDecker field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitDecker: Flamingos2Decker
+
+  """
+  The explicitReadoutMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitReadoutMode: Flamingos2ReadoutMode
+}
+
 enum GhostIfu1FiberAgitator {
   DISABLED
   ENABLED
@@ -7143,9 +7537,62 @@ type GhostIfu {
   explicitIfu2Agitator: GhostIfu2FiberAgitator
 }
 
+enum GhostIfuMappingType {
+  SINGLE_TARGET
+  TARGET_PLUS_SKY
+  SKY_PLUS_TARGET
+  DUAL_TARGET
+}
+
+"""
+Describes how the target(s) and sky position (if any) are mapped to the GHOST
+IFUs.  If the `mappingType` is `NONSIDEREAL` then all other fields will be
+`null`.  Otherwise, there will be a single non-null field that corresponds to
+the `mappingType`.
+"""
+type GhostIfuMapping {
+  mappingType: GhostIfuMappingType!
+  singleTarget: GhostSingleTarget
+  targetPlusSky: GhostTargetPlusSky
+  skyPlusTarget: GhostSkyPlusTarget
+  dualTarget: GhostDualTarget
+}
+
+"""In the GhostSingleTarget mapping, IFU1 is assigned the target."""
+type GhostSingleTarget {
+  ifu1: TargetId!
+}
+
+"""
+In the GhostTargetPlusSky mapping, IFU1 is assigned the target and IFU2 the sky
+position.
+"""
+type GhostTargetPlusSky {
+  ifu1: TargetId!
+  ifu2: Coordinates!
+}
+
+"""
+In the GhostSkyPlusTarget mapping, IFU1 is assigned the sky position and IFU2
+the target.
+"""
+type GhostSkyPlusTarget {
+  ifu1: Coordinates!
+  ifu2: TargetId!
+}
+
+"""
+In the GhostDualTarget mapping, IFU1 is assigned target1 and IFU2 target2.
+"""
+type GhostDualTarget {
+  ifu1: TargetId!
+  ifu2: TargetId!
+}
+
 """GHOST configuration that applies across all steps."""
 type GhostStatic {
   resolutionMode: GhostResolutionMode!
+  ifuMapping: GhostIfuMapping!
   slitViewingCameraExposureTime: TimeSpan
 }
 
@@ -7236,12 +7683,12 @@ type GhostExecutionConfig {
   science: GhostExecutionSequence
 }
 
-"""IGRINS-2 Offset Mode"""
-enum Igrins2OffsetMode {
-  """Igrins2OffsetMode NodAlongSlit"""
+"""Slit Offset Mode"""
+enum SlitOffsetMode {
+  """SlitOffsetMode NodAlongSlit"""
   NOD_ALONG_SLIT
 
-  """Igrins2OffsetMode NodToSky"""
+  """SlitOffsetMode NodToSky"""
   NOD_TO_SKY
 }
 
@@ -7254,15 +7701,15 @@ type Igrins2LongSlit {
   The offset mode is either explicitly specified in explicitOffsetMode or else
   taken from defaultOffsetMode
   """
-  offsetMode: Igrins2OffsetMode!
+  offsetMode: SlitOffsetMode!
 
   """Default offset mode"""
-  defaultOffsetMode: Igrins2OffsetMode!
+  defaultOffsetMode: SlitOffsetMode!
 
   """
   Optional explicitly specified offset mode. If set it overrides the default.
   """
-  explicitOffsetMode: Igrins2OffsetMode
+  explicitOffsetMode: SlitOffsetMode
 
   """
   Whether to save SVC images, either explicitly specified in
@@ -7313,7 +7760,7 @@ input Igrins2LongSlitInput {
   The offset mode field may be unset by assigning a null value, or ignored by
   skipping it altogether
   """
-  explicitOffsetMode: Igrins2OffsetMode
+  explicitOffsetMode: SlitOffsetMode
 
   """
   The save SVC images field may be unset by assigning a null value, or ignored
@@ -7334,11 +7781,114 @@ input Igrins2LongSlitInput {
   telluricType: TelluricTypeInput
 }
 
-"""Metadata for `enum FilterType`"""
-type FilterTypeMeta {
-  tag: FilterType!
-  shortName: String!
-  longName: String!
+type GnirsLongSlitAcquisition {
+  exposureTimeMode: ExposureTimeMode!
+  coadds: PosInt!
+  explicitAcquisitionType: GnirsAcquisitionType
+
+  """
+  An explicitly specified acquisition filter. When null, the filter is determined automatically from the acquisition mode at sequence-generation time.
+  """
+  explicitFilter: GnirsFilter
+  skyOffset: Offset
+}
+
+"""GNIRS Long Slit mode"""
+type GnirsLongSlit {
+  exposureTimeMode: ExposureTimeMode!
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+  gratingWavelength: Wavelength!
+  explicitGratingWavelength: Wavelength
+  defaultGratingWavelength: Wavelength!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  fpu: GnirsFpuSlit!
+  initialFpu: GnirsFpuSlit!
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  coadds: PosInt!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  acquisition: GnirsLongSlitAcquisition!
+
+  """Telluric type configuration for this observation."""
+  telluricType: TelluricType!
+}
+
+input GnirsLongSlitAcquisitionInput {
+  explicitFilter: GnirsFilter
+  explicitAcquisitionType: GnirsAcquisitionType
+  coadds: PosInt
+  skyOffset: OffsetInput
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+"""
+Telescope configuration along the slit: a single `q` offset plus guide state.
+"""
+type TelescopeConfigAlongSlit {
+  q: OffsetQ!
+  guiding: GuideState!
+}
+
+"""
+A list of telescope configurations associated with a slit. The discriminant
+`offsetMode` selects which of `alongSlit` or `toSky` is populated.
+"""
+type SlitTelescopeConfigs {
+  offsetMode: SlitOffsetMode!
+  alongSlit: [TelescopeConfigAlongSlit!]
+  toSky: [TelescopeConfig!]
+}
+
+input TelescopeConfigAlongSlitInput {
+  q: OffsetComponentInput!
+  guiding: GuideState!
+}
+
+input SlitTelescopeConfigsInput {
+  alongSlit: [TelescopeConfigAlongSlitInput!]
+  toSky: [TelescopeConfigInput!]
+}
+
+"""Edit or create GNIRS Long Slit configuration"""
+input GnirsLongSlitInput {
+  exposureTimeMode: ExposureTimeModeInput
+  coadds: PosInt
+  filter: GnirsFilter
+  fpu: GnirsFpuSlit
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGratingWavelength: WavelengthInput
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  acquisition: GnirsLongSlitAcquisitionInput
+
+  """
+  The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.
+  On create the default is HOT.
+  """
+  telluricType: TelluricTypeInput
 }
 
 """Time and Count exposure time mode."""
@@ -7856,7 +8406,7 @@ enum WavelengthOrder {
 The available GMOS imaging categories.  Each category will produce a distinct
 sequence.
 """
-enum GmosImagingVariantType {
+enum ImagingVariantType {
   GROUPED
   INTERLEAVED
   PRE_IMAGING
@@ -7866,19 +8416,19 @@ enum GmosImagingVariantType {
 The specific imaging sub-type, one of which will be defined and the remaining
 options null.
 """
-type GmosImagingVariant {
-  variantType: GmosImagingVariantType!
+type ImagingVariant {
+  variantType: ImagingVariantType!
 
   """
   Grouped mode collects all datasets for each filter before changing filters.
   """
-  grouped: GmosGroupedImagingVariant
+  grouped: GroupedImagingVariant
 
   """Interleaved mode cycles through all filters repeatedly."""
-  interleaved: GmosInterleavedImagingVariant
+  interleaved: InterleavedImagingVariant
 
   """PreImaging mode is used for MOS mask creation."""
-  preImaging: GmosPreImagingVariant
+  preImaging: PreImagingVariant
 }
 
 """
@@ -7886,17 +8436,17 @@ Input that specifies which imaging sub-type is desired along with its configurat
 details.  Exactly one of the options should be defined and the other two left
 unspecified.
 """
-input GmosImagingVariantInput @oneOf {
+input ImagingVariantInput @oneOf {
   """
   Grouped mode collects all datasets for each filter before changing filters.
   """
-  grouped: GmosGroupedImagingVariantInput
+  grouped: GroupedImagingVariantInput
 
   """Interleaved mode cycles through all filters repeatedly."""
-  interleaved: GmosInterleavedImagingVariantInput
+  interleaved: InterleavedImagingVariantInput
 
   """PreImaging mode is used for MOS mask creation."""
-  preImaging: GmosPreImagingVariantInput
+  preImaging: PreImagingVariantInput
 }
 
 """
@@ -7904,7 +8454,7 @@ When doing "grouped" filter imaging, datasets associated with a particular
 filter are collected consecutively before moving on to other filters (if any).
 Sky datasets may be collected before and after each group of object datasets.
 """
-type GmosGroupedImagingVariant {
+type GroupedImagingVariant {
   """
   Whether the filters should appear in the sequence in increasing or decreasing
   order by their wavelength.
@@ -7929,7 +8479,7 @@ type GmosGroupedImagingVariant {
 }
 
 """Input used for specifying GMOS grouped filter imaging."""
-input GmosGroupedImagingVariantInput {
+input GroupedImagingVariantInput {
   """
   Whether the filters should appear in the sequence in increasing or decreasing
   order by their wavelength.  Defaults to `INCREASING` on create, absent (i.e.,
@@ -7963,7 +8513,7 @@ input GmosGroupedImagingVariantInput {
 When doing "interleaved" filter imaging, the sequence repeatedly alternates
 through the set of filters in use.
 """
-type GmosInterleavedImagingVariant {
+type InterleavedImagingVariant {
   """
   Offset generator for the science object datasets. The offset pattern is
   applied to the sequence of science datasets as a whole.
@@ -7982,7 +8532,7 @@ type GmosInterleavedImagingVariant {
 }
 
 """Input used for specifying GMOS interleaved filter imaging."""
-input GmosInterleavedImagingVariantInput {
+input InterleavedImagingVariantInput {
   """
   Offset generator for the science object datasets. The offset pattern is
   created for the sequence of science datasets as a whole.
@@ -8007,7 +8557,7 @@ input GmosInterleavedImagingVariantInput {
 """
 A special imaging case, MOS pre-imaging is defined by an offset region.
 """
-type GmosPreImagingVariant {
+type PreImagingVariant {
   offset1: Offset!
   offset2: Offset!
   offset3: Offset!
@@ -8015,7 +8565,7 @@ type GmosPreImagingVariant {
 }
 
 """MOS pre-imaging offsets, each of which default to (0, 0)."""
-input GmosPreImagingVariantInput {
+input PreImagingVariantInput {
   offset1: OffsetInput
   offset2: OffsetInput
   offset3: OffsetInput
@@ -8041,7 +8591,7 @@ input GmosNorthImagingFilterInput {
 """GMOS North Imaging mode"""
 type GmosNorthImaging {
   """Details specific to the type of imaging being performed."""
-  variant: GmosImagingVariant!
+  variant: ImagingVariant!
 
   """
   The filters (at least one is required) to be used for data collection. How
@@ -8516,7 +9066,7 @@ type GmosSouthLongSlit {
 """GMOS South Imaging mode"""
 type GmosSouthImaging {
   """Details specific to the type of imaging being performed."""
-  variant: GmosImagingVariant!
+  variant: ImagingVariant!
 
   """
   The filters (at least one is required) to be used for data collection. How
@@ -9109,6 +9659,14 @@ enum GnirsFpuSlit {
   LONG_SLIT_1_00
 }
 
+"""Non-slit FPU options for GNIRS (acquisition, pupil viewer, pinholes)."""
+enum GnirsFpuOther {
+  ACQUISITION
+  PUPIL_VIEWER
+  PINHOLE1
+  PINHOLE3
+}
+
 enum GnirsReadMode {
   VERY_BRIGHT
   BRIGHT
@@ -9119,6 +9677,25 @@ enum GnirsReadMode {
 enum GnirsWellDepth {
   SHALLOW
   DEEP
+}
+
+"""
+GNIRS acquisition target brightness classification, derived from the
+acquisition exposure time (VeryBright < 1 s, Bright ≤ 10 s, Faint > 10 s).
+"""
+enum GnirsAcquisitionType {
+  VERY_BRIGHT
+  BRIGHT
+  FAINT
+}
+
+enum GnirsDecker {
+  ACQUISITION
+  PUPIL_VIEWER
+  SHORT_CAM_CROSS_DISPERSED
+  LONG_CAM_LONG_SLIT
+  SHORT_CAM_LONG_SLIT
+  LONG_CAM_CROSS_DISPERSED
 }
 
 """Edit or create imaging science requirements"""
@@ -9204,6 +9781,12 @@ type ImagingConfigOption {
   instruments.
   """
   gmosSouth: ImagingConfigOptionGmosSouth
+
+  """
+  For Flamingos2 options, the Flamingos2 configuration.  Null for other
+  instruments.
+  """
+  flamingos2: ImagingConfigOptionFlamingos2
 }
 
 type ImagingConfigOptionGmosNorth {
@@ -9212,6 +9795,10 @@ type ImagingConfigOptionGmosNorth {
 
 type ImagingConfigOptionGmosSouth {
   filter: GmosSouthFilter!
+}
+
+type ImagingConfigOptionFlamingos2 {
+  filter: Flamingos2Filter!
 }
 
 """An 'Int` in the range 0 to 100"""
@@ -9231,6 +9818,7 @@ enum ItcType {
   GMOS_NORTH_IMAGING
   GMOS_SOUTH_IMAGING
   IGRINS_2_SPECTROSCOPY
+  GNIRS_SPECTROSCOPY
   SPECTROSCOPY
 }
 
@@ -9519,8 +10107,14 @@ type Observation {
   """The constraint set for the observation"""
   constraintSet: ConstraintSet!
 
-  """Observation timing windows"""
-  timingWindows: [TimingWindow!]!
+  """
+  Deprecated (using `schedulingConstraints` instead).  Observation timing
+  windows.
+  """
+  timingWindows: [TimingWindow!]! @deprecated(reason: "Use `schedulingConstraints` instead. (Deprecated June 5, 2026)")
+
+  """Observation scheduling constraints."""
+  schedulingConstraints: SchedulingConstraints!
 
   """attachments"""
   attachments: [Attachment!]!
@@ -9598,6 +10192,9 @@ enum ExecutionState {
   User marked the observation complete regardless of any remaining steps.
   """
   DECLARED_COMPLETE
+
+  """Staff marked the observation as ongoing (visitor modes only)."""
+  DECLARED_ONGOING
 }
 
 """A configuration target will define either coordinates or a region."""
@@ -9627,6 +10224,7 @@ type ConfigurationObservingMode {
   gmosNorthImaging: ConfigurationGmosNorthImaging
   gmosSouthImaging: ConfigurationGmosSouthImaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
+  gnirsLongSlit: ConfigurationGnirsLongSlit
   igrins2LongSlit: ConfigurationIgrins2LongSlit
   visitor: ConfigurationVisitor
 }
@@ -9654,6 +10252,12 @@ type ConfigurationGmosSouthImaging {
 
 type ConfigurationFlamingos2LongSlit {
   disperser: Flamingos2Disperser!
+}
+
+type ConfigurationGnirsLongSlit {
+  grating: GnirsGrating!
+  camera: GnirsCamera!
+  prism: GnirsPrism!
 }
 
 type ConfigurationIgrins2LongSlit {
@@ -10097,6 +10701,13 @@ enum ProgramType {
   SYSTEM
 }
 
+enum ProposalStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  ACCEPTED
+  NOT_ACCEPTED
+}
+
 """
 The matching program user results, limited to a maximum of 1000 entries.
 """
@@ -10166,12 +10777,6 @@ Proposal reference for science programs, formatted as G-YYYY[AB]-NNNN+. For
 example, G-2024B-1234 where 2024B refers to the associated semester.
 """
 scalar ProposalReferenceLabel
-
-"""Metadata for `enum ProposalStatus`"""
-type ProposalStatusMeta {
-  tag: ProposalStatus!
-  name: String!
-}
 
 """Quasar spectrum"""
 enum QuasarSpectrum {
@@ -10345,9 +10950,6 @@ type Query {
     """
     futureLimit: NonNegInt = 25
   ): ExecutionConfig
-
-  """Metadata for `enum FilterType`"""
-  filterTypeMeta: [FilterTypeMeta!]!
 
   """
   Obtains a list of program references for which the user with ORCiD `orcidId`
@@ -10524,9 +11126,6 @@ type Query {
     includeDeleted: Boolean! = false
   ): ProgramUserSelectResult!
 
-  """Metadata for `enum ProposalStatus"""
-  proposalStatusMeta: [ProposalStatusMeta!]!
-
   """Spectroscopy configuration options matching the WHERE parameter."""
   spectroscopyConfigOptions(WHERE: WhereSpectroscopyConfigOption): [SpectroscopyConfigOption!]!
 
@@ -10622,6 +11221,9 @@ type ObservingMode {
   """Mode type"""
   mode: ObservingModeType!
 
+  """Flamingos 2 Imaging mode"""
+  flamingos2Imaging: Flamingos2Imaging
+
   """Flamingos 2 Long Slit mode"""
   flamingos2LongSlit: Flamingos2LongSlit
 
@@ -10642,6 +11244,9 @@ type ObservingMode {
 
   """IGRINS-2 Long Slit mode"""
   igrins2LongSlit: Igrins2LongSlit
+
+  """GNIRS Long Slit mode"""
+  gnirsLongSlit: GnirsLongSlit
   visitor: Visitor
 }
 
@@ -11805,6 +12410,12 @@ type StepRecord {
   unless the `instrument` discriminator is "IGRINS2".
   """
   igrins2: Igrins2Dynamic
+
+  """
+  GNIRS instrument configuration for this step, if any.  This will be null
+  unless the `instrument` discriminator is "GNIRS".
+  """
+  gnirs: GnirsDynamic
 }
 
 """StepRecord query results, limited to a maximum of 1000 entries."""
@@ -11986,6 +12597,56 @@ type Region {
   declinationArc: DeclinationArc!
 }
 
+"""
+Discriminator for `BasePosition`.
+`SINGLE_TARGET` indicates the asterism has exactly one target (sideral/non-sidereal/too) with no explicit base override
+`ASTERISM` indicates a multi-target asterism whose base is the calculated center position at observation time;
+`EXPLICIT_BASE` indicates the base position has been explicitly overridden on the target environment.
+"""
+enum BasePositionType {
+  SINGLE_TARGET
+  ASTERISM
+  EXPLICIT_BASE
+}
+
+"""
+The base position used by navigate to slew and track the target.
+The display name can be the original name or a composite.
+`type` indicates which of the tracking types are returned.
+At most one of `sidereal` / `nonsidereal` / `coordinates` is non-null.
+"""
+type BasePosition {
+  """
+  Source of this base position: a single science target, the center
+  position of a multi-target asterism, or an explicit base override.
+  """
+  type: BasePositionType!
+
+  """
+  For single-target bases this is the target's name. For
+  multi-target asterisms this is a truncated comma-separated list of target names.
+  """
+  name: NonEmptyString!
+
+  """
+  Sidereal tracking record.
+  Populated only when the base is a single sidereal target with no explicit base override.
+  """
+  sidereal: Sidereal
+
+  """
+  Nonsidereal tracking record.
+  Populated only when the base is a single nonsidereal target with no explicit base override.
+  """
+  nonsidereal: Nonsidereal
+
+  """
+  Fixed base coordinates at observation time. Populated for multi-target
+  asterisms and for explicit base overrides.
+  """
+  coordinates: Coordinates
+}
+
 type TargetEnvironment {
   """All the observation's science targets, if any"""
   asterism(
@@ -12000,18 +12661,12 @@ type TargetEnvironment {
   ): Target
 
   """
-  Explicit (if defined) or computed base position at the specified time, if known.
+  The base position used by navigate to slew and track the target.
+  Uses the observation's stored observation time.
+  Returns a GraphQL error when the observation time is required
+  to compute the base but is not set on the observation.
   """
-  basePosition(
-    """The time used for the base position calculations."""
-    observationTime: Timestamp!
-  ): Coordinates
-
-  """The guide star(s) and related information"""
-  guideEnvironments(
-    """The time used for the guide star calculations."""
-    observationTime: Timestamp!
-  ): [GuideEnvironment!]! @deprecated(reason: "use guideEnvironment instead")
+  basePosition: BasePosition
 
   """
   The guide target(s) and related information.
@@ -12509,6 +13164,13 @@ type Visit {
   `IGRINS2`.
   """
   igrins2: Igrins2Static
+
+  """
+  GNIRS static instrument configuration, for GNIRS visits.  See the
+  `instrument` discriminator.  This will be null unless the instrument is
+  `GNIRS`.
+  """
+  gnirs: GnirsStatic
 }
 
 """Matching visit results, limited to a maximum of 1000 entries."""
@@ -15042,6 +15704,50 @@ input Igrins2AtomInput {
 }
 
 """
+Spectroscopy configuration that travels with a GNIRS step when the acquisition
+mirror is out of the beam.
+"""
+input GnirsAcquisitionMirrorOutInput {
+  prism: GnirsPrism!
+  grating: GnirsGrating!
+  wavelength: WavelengthInput!
+}
+
+"""
+GNIRS dynamic step configuration input.
+
+Exactly one of `fpuSlit` / `fpuOther` must be provided.  `acquisitionMirrorOut`
+is provided when the acquisition mirror is "out" (spectroscopy mode); its
+absence indicates the mirror is "in".  `focusMotorSteps` is omitted when focus
+is "Best" (instrument-chosen).
+"""
+input GnirsDynamicInput {
+  exposure: TimeSpanInput!
+  coadds: PosInt!
+  filter: GnirsFilter!
+  decker: GnirsDecker!
+  fpuSlit: GnirsFpuSlit
+  fpuOther: GnirsFpuOther
+  acquisitionMirrorOut: GnirsAcquisitionMirrorOutInput
+  camera: GnirsCamera!
+  focusMotorSteps: Int
+  readMode: GnirsReadMode!
+}
+
+input GnirsStepInput {
+  instrumentConfig: GnirsDynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input GnirsAtomInput {
+  description: NonEmptyString
+  steps: [GnirsStepInput!]!
+}
+
+"""
 Replace Flamingos 2 sequence input.  Select the observation using one of the
 observation ID or the observation reference.  If both are provided, they must
 refer to the same observation.
@@ -15151,4 +15857,32 @@ sequence.
 """
 type ReplaceIgrins2SequenceResult {
   sequence: [Igrins2Atom!]!
+}
+
+"""
+Replace GNIRS sequence input.  Select the observation using one of the
+observation ID or the observation reference.  If both are provided, they must
+refer to the same observation.
+"""
+input ReplaceGnirsSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+
+  """Specifies which sequence should be replaced."""
+  sequenceType: SequenceType!
+
+  """
+  The new sequence.  Any unexecuted steps are deleted and replaced with the
+  provided sequence.  Steps that were previously executed, or for which at least
+  one execution event was received, are preserved.
+  """
+  sequence: [GnirsAtomInput!]
+}
+
+"""
+The result of a replace sequence mutation, consisting of the newly inserted
+sequence.
+"""
+type ReplaceGnirsSequenceResult {
+  sequence: [GnirsAtom!]!
 }

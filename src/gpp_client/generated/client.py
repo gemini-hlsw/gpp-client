@@ -111,6 +111,15 @@ class GraphQLClient(AsyncBaseClient):
                 value {
                   id
                   observationTime
+                  constraintSet {
+                    cloudExtinction
+                    imageQuality
+                  }
+                  workflow {
+                    value {
+                      state
+                    }
+                  }
                   execution {
                     visits {
                       matches {

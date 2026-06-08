@@ -14,6 +14,15 @@ subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
     value {
       id
       observationTime
+      constraintSet {
+        cloudExtinction
+        imageQuality
+      }
+      workflow {
+        value {
+          state
+        }
+      }
       execution {
         visits {
           matches {
@@ -59,5 +68,75 @@ fragment ExecutionDetails on Execution {
         }
       }
     }
+  }
+}
+
+# =============================================================================
+# fragments to add IGRINS2 and Visitor instruments to the ObservingMode data.
+# =============================================================================
+
+
+fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+  exposureTimeMode {
+    ...ExposureTimeModeDetails
+  }
+  offsetMode
+  defaultOffsetMode
+  explicitOffsetMode
+  saveSVCImages
+  defaultSaveSVCImages
+  explicitSaveSVCImages
+  offsets {
+    q {
+      arcseconds
+    }
+    p {
+      arcseconds
+    }
+  }
+  defaultOffsets {
+    q {
+      arcseconds
+    }
+    p {
+      arcseconds
+    }
+  }
+  explicitOffsets {
+    q {
+      arcseconds
+    }
+    p {
+      arcseconds
+    }
+  }
+  telluricType {
+    tag
+    starTypes
+  }
+}
+
+fragment VisitorDetails on Visitor {
+    mode
+    name
+    centralWavelength {
+      nanometers
+    }
+    totalRequestTime {
+      seconds
+    }
+    agsDiameter{
+      dms
+      hms
+    }
+
+}
+
+fragment Igrins2LongSlitAndVisitorOnObservingMode on ObservingMode {
+  igrins2LongSlit {
+    ...Igrins2LongSlitDetails
+  }
+  visitor {
+    ...VisitorDetails
   }
 }

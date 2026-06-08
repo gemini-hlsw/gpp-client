@@ -3,7 +3,14 @@ from typing import Any, Optional
 from pydantic import Field
 
 from .base_model import BaseModel
-from .enums import AtomExecutionState, CalculationState, EditType
+from .enums import (
+    AtomExecutionState,
+    CalculationState,
+    CloudExtinctionPreset,
+    EditType,
+    ImageQualityPreset,
+    ObservationWorkflowState,
+)
 
 
 class SchedulerObservationsUpdates(BaseModel):
@@ -26,7 +33,24 @@ class SchedulerObservationsUpdatesObscalcUpdate(BaseModel):
 class SchedulerObservationsUpdatesObscalcUpdateValue(BaseModel):
     id: Any
     observation_time: Optional[Any] = Field(alias="observationTime")
+    constraint_set: "SchedulerObservationsUpdatesObscalcUpdateValueConstraintSet" = (
+        Field(alias="constraintSet")
+    )
+    workflow: Optional["SchedulerObservationsUpdatesObscalcUpdateValueWorkflow"]
     execution: "SchedulerObservationsUpdatesObscalcUpdateValueExecution"
+
+
+class SchedulerObservationsUpdatesObscalcUpdateValueConstraintSet(BaseModel):
+    cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
+    image_quality: ImageQualityPreset = Field(alias="imageQuality")
+
+
+class SchedulerObservationsUpdatesObscalcUpdateValueWorkflow(BaseModel):
+    value: "SchedulerObservationsUpdatesObscalcUpdateValueWorkflowValue"
+
+
+class SchedulerObservationsUpdatesObscalcUpdateValueWorkflowValue(BaseModel):
+    state: ObservationWorkflowState
 
 
 class SchedulerObservationsUpdatesObscalcUpdateValueExecution(BaseModel):
@@ -70,6 +94,7 @@ class SchedulerObservationsUpdatesObscalcUpdateValueExecutionVisitsMatchesAtomRe
 SchedulerObservationsUpdates.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdate.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValue.model_rebuild()
+SchedulerObservationsUpdatesObscalcUpdateValueWorkflow.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValueExecution.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValueExecutionVisits.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValueExecutionVisitsMatches.model_rebuild()
