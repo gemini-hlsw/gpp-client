@@ -23,6 +23,7 @@ from .custom_fields import (
     CreateUserInvitationResultFields,
     DeleteProgramUserResultFields,
     DeleteProposalResultFields,
+    DeleteSequenceResultFields,
     LinkUserResultFields,
     ObservationWorkflowFields,
     RecordDatasetResultFields,
@@ -35,6 +36,7 @@ from .custom_fields import (
     ReplaceFlamingos2SequenceResultFields,
     ReplaceGmosNorthSequenceResultFields,
     ReplaceGmosSouthSequenceResultFields,
+    ReplaceGnirsSequenceResultFields,
     ReplaceIgrins2SequenceResultFields,
     ResetAcquisitionResultFields,
     RevokeUserInvitationResultFields,
@@ -79,6 +81,7 @@ from .input_types import (
     CreateUserInvitationInput,
     DeleteProgramUserInput,
     DeleteProposalInput,
+    DeleteSequenceInput,
     LinkUserInput,
     RecordDatasetInput,
     RecordFlamingos2VisitInput,
@@ -90,6 +93,7 @@ from .input_types import (
     ReplaceFlamingos2SequenceInput,
     ReplaceGmosNorthSequenceInput,
     ReplaceGmosSouthSequenceInput,
+    ReplaceGnirsSequenceInput,
     ReplaceIgrins2SequenceInput,
     ResetAcquisitionInput,
     RevokeUserInvitationInput,
@@ -410,6 +414,19 @@ class Mutation:
         )
 
     @classmethod
+    def delete_sequence(cls, input: DeleteSequenceInput) -> DeleteSequenceResultFields:
+        """Deletes a materialized sequence, if any."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "DeleteSequenceInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DeleteSequenceResultFields(
+            field_name="deleteSequence", arguments=cleared_arguments
+        )
+
+    @classmethod
     def link_user(cls, input: LinkUserInput) -> LinkUserResultFields:
         """Ties a specific user to an existing ProgramUser, which must not already be
         associated with any user."""
@@ -573,6 +590,23 @@ class Mutation:
         }
         return ReplaceIgrins2SequenceResultFields(
             field_name="replaceIgrins2Sequence", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def replace_gnirs_sequence(
+        cls, input: ReplaceGnirsSequenceInput
+    ) -> ReplaceGnirsSequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "ReplaceGnirsSequenceInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ReplaceGnirsSequenceResultFields(
+            field_name="replaceGnirsSequence", arguments=cleared_arguments
         )
 
     @classmethod

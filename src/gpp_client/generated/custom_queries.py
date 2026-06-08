@@ -11,7 +11,6 @@ from .custom_fields import (
     DatasetSelectResultFields,
     ExecutionConfigFields,
     ExecutionEventSelectResultFields,
-    FilterTypeMetaFields,
     GroupFields,
     ImagingConfigOptionFields,
     ObservationFields,
@@ -22,7 +21,6 @@ from .custom_fields import (
     ProgramNoteSelectResultFields,
     ProgramSelectResultFields,
     ProgramUserSelectResultFields,
-    ProposalStatusMetaFields,
     SpectroscopyConfigOptionFields,
     TargetFields,
     TargetGroupSelectResultFields,
@@ -270,11 +268,6 @@ class Query:
         )
 
     @classmethod
-    def filter_type_meta(cls) -> FilterTypeMetaFields:
-        """Metadata for `enum FilterType`"""
-        return FilterTypeMetaFields(field_name="filterTypeMeta")
-
-    @classmethod
     def goa_data_download_access(cls, orcid_id: str) -> GraphQLField:
         """Obtains a list of program references for which the user with ORCiD `orcidId`
         has GOA data-download access privileges.  These will be those for which the
@@ -514,11 +507,6 @@ class Query:
         return ProgramUserSelectResultFields(
             field_name="programUsers", arguments=cleared_arguments
         )
-
-    @classmethod
-    def proposal_status_meta(cls) -> ProposalStatusMetaFields:
-        """Metadata for `enum ProposalStatus"""
-        return ProposalStatusMetaFields(field_name="proposalStatusMeta")
 
     @classmethod
     def spectroscopy_config_options(

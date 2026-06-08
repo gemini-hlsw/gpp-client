@@ -19,21 +19,6 @@ class ConditionsExpectationType(str, Enum):
     THIN_CLOUDS = "THIN_CLOUDS"
 
 
-class FilterType(str, Enum):
-    BroadBand = "BroadBand"
-    Combination = "Combination"
-    Engineering = "Engineering"
-    NarrowBand = "NarrowBand"
-    Spectroscopic = "Spectroscopic"
-
-
-class ProposalStatus(str, Enum):
-    NOT_SUBMITTED = "NOT_SUBMITTED"
-    SUBMITTED = "SUBMITTED"
-    ACCEPTED = "ACCEPTED"
-    NOT_ACCEPTED = "NOT_ACCEPTED"
-
-
 class AtomExecutionState(str, Enum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -403,13 +388,22 @@ class CloudExtinctionPreset(str, Enum):
 
 
 class ObservingModeType(str, Enum):
+    ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
+    ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
+    FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
     FLAMINGOS_2_LONG_SLIT = "FLAMINGOS_2_LONG_SLIT"
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_NORTH_LONG_SLIT = "GMOS_NORTH_LONG_SLIT"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
     GMOS_SOUTH_LONG_SLIT = "GMOS_SOUTH_LONG_SLIT"
+    GNIRS_LONG_SLIT = "GNIRS_LONG_SLIT"
     IGRINS_2_LONG_SLIT = "IGRINS_2_LONG_SLIT"
+    MAROON_X = "MAROON_X"
+    VISITOR_NORTH = "VISITOR_NORTH"
+    VISITOR_SOUTH = "VISITOR_SOUTH"
+    ZORRO_SPECKLE = "ZORRO_SPECKLE"
+    ZORRO_WIDE_FIELD = "ZORRO_WIDE_FIELD"
 
 
 class VisitorObservingModeType(str, Enum):
@@ -581,7 +575,14 @@ class GhostIfu2FiberAgitator(str, Enum):
     ENABLED = "ENABLED"
 
 
-class Igrins2OffsetMode(str, Enum):
+class GhostIfuMappingType(str, Enum):
+    SINGLE_TARGET = "SINGLE_TARGET"
+    TARGET_PLUS_SKY = "TARGET_PLUS_SKY"
+    SKY_PLUS_TARGET = "SKY_PLUS_TARGET"
+    DUAL_TARGET = "DUAL_TARGET"
+
+
+class SlitOffsetMode(str, Enum):
     NOD_ALONG_SLIT = "NOD_ALONG_SLIT"
     NOD_TO_SKY = "NOD_TO_SKY"
 
@@ -699,7 +700,7 @@ class WavelengthOrder(str, Enum):
     INCREASING = "INCREASING"
 
 
-class GmosImagingVariantType(str, Enum):
+class ImagingVariantType(str, Enum):
     GROUPED = "GROUPED"
     INTERLEAVED = "INTERLEAVED"
     PRE_IMAGING = "PRE_IMAGING"
@@ -876,6 +877,13 @@ class GnirsFpuSlit(str, Enum):
     LONG_SLIT_1_00 = "LONG_SLIT_1_00"
 
 
+class GnirsFpuOther(str, Enum):
+    ACQUISITION = "ACQUISITION"
+    PUPIL_VIEWER = "PUPIL_VIEWER"
+    PINHOLE1 = "PINHOLE1"
+    PINHOLE3 = "PINHOLE3"
+
+
 class GnirsReadMode(str, Enum):
     VERY_BRIGHT = "VERY_BRIGHT"
     BRIGHT = "BRIGHT"
@@ -888,11 +896,27 @@ class GnirsWellDepth(str, Enum):
     DEEP = "DEEP"
 
 
+class GnirsAcquisitionType(str, Enum):
+    VERY_BRIGHT = "VERY_BRIGHT"
+    BRIGHT = "BRIGHT"
+    FAINT = "FAINT"
+
+
+class GnirsDecker(str, Enum):
+    ACQUISITION = "ACQUISITION"
+    PUPIL_VIEWER = "PUPIL_VIEWER"
+    SHORT_CAM_CROSS_DISPERSED = "SHORT_CAM_CROSS_DISPERSED"
+    LONG_CAM_LONG_SLIT = "LONG_CAM_LONG_SLIT"
+    SHORT_CAM_LONG_SLIT = "SHORT_CAM_LONG_SLIT"
+    LONG_CAM_CROSS_DISPERSED = "LONG_CAM_CROSS_DISPERSED"
+
+
 class ItcType(str, Enum):
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
     IGRINS_2_SPECTROSCOPY = "IGRINS_2_SPECTROSCOPY"
+    GNIRS_SPECTROSCOPY = "GNIRS_SPECTROSCOPY"
     SPECTROSCOPY = "SPECTROSCOPY"
 
 
@@ -935,6 +959,7 @@ class ExecutionState(str, Enum):
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
     DECLARED_COMPLETE = "DECLARED_COMPLETE"
+    DECLARED_ONGOING = "DECLARED_ONGOING"
 
 
 class ConfigurationRequestStatus(str, Enum):
@@ -989,6 +1014,13 @@ class ProgramType(str, Enum):
     LIBRARY = "LIBRARY"
     SCIENCE = "SCIENCE"
     SYSTEM = "SYSTEM"
+
+
+class ProposalStatus(str, Enum):
+    NOT_SUBMITTED = "NOT_SUBMITTED"
+    SUBMITTED = "SUBMITTED"
+    ACCEPTED = "ACCEPTED"
+    NOT_ACCEPTED = "NOT_ACCEPTED"
 
 
 class QuasarSpectrum(str, Enum):
@@ -1275,6 +1307,12 @@ class ArcType(str, Enum):
     EMPTY = "EMPTY"
     FULL = "FULL"
     PARTIAL = "PARTIAL"
+
+
+class BasePositionType(str, Enum):
+    SINGLE_TARGET = "SINGLE_TARGET"
+    ASTERISM = "ASTERISM"
+    EXPLICIT_BASE = "EXPLICIT_BASE"
 
 
 class TimeChargeCorrectionOp(str, Enum):

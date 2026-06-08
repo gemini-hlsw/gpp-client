@@ -13,7 +13,6 @@ from .enums import (
     GalaxySpectrum,
     GmosAmpReadMode,
     GmosBinning,
-    GmosImagingVariantType,
     GmosNorthBuiltinFpu,
     GmosNorthFilter,
     GmosNorthGrating,
@@ -24,6 +23,7 @@ from .enums import (
     GuideState,
     HiiRegionSpectrum,
     ImageQualityPreset,
+    ImagingVariantType,
     Instrument,
     ObservationValidationCode,
     ObservationWorkflowState,
@@ -705,7 +705,7 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImagingFilter
 class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImagingVariant(
     BaseModel
 ):
-    variant_type: GmosImagingVariantType = Field(alias="variantType")
+    variant_type: ImagingVariantType = Field(alias="variantType")
     grouped: Optional[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImagingVariantGrouped"
     ]
@@ -1573,7 +1573,7 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthImagingFilter
 class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthImagingVariant(
     BaseModel
 ):
-    variant_type: GmosImagingVariantType = Field(alias="variantType")
+    variant_type: ImagingVariantType = Field(alias="variantType")
     grouped: Optional[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthImagingVariantGrouped"
     ]

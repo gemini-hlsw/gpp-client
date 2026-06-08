@@ -35,8 +35,10 @@ from .enums import (
     ScienceBand,
     ScienceMode,
     SkyBackground,
+    SlitOffsetMode,
     TelluricTag,
     TimingWindowInclusion,
+    VisitorObservingModeType,
     WaterVapor,
 )
 
@@ -299,6 +301,114 @@ class GmosSouthLongSlitDetailsCentralWavelength(BaseModel):
 
 class GmosSouthLongSlitDetailsOffsets(BaseModel):
     arcseconds: Any
+
+
+class Igrins2LongSlitDetails(BaseModel):
+    exposure_time_mode: "Igrins2LongSlitDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    default_offset_mode: SlitOffsetMode = Field(alias="defaultOffsetMode")
+    explicit_offset_mode: Optional[SlitOffsetMode] = Field(alias="explicitOffsetMode")
+    save_svc_images: bool = Field(alias="saveSVCImages")
+    default_save_svc_images: bool = Field(alias="defaultSaveSVCImages")
+    explicit_save_svc_images: Optional[bool] = Field(alias="explicitSaveSVCImages")
+    offsets: list["Igrins2LongSlitDetailsOffsets"]
+    default_offsets: list["Igrins2LongSlitDetailsDefaultOffsets"] = Field(
+        alias="defaultOffsets"
+    )
+    explicit_offsets: Optional[list["Igrins2LongSlitDetailsExplicitOffsets"]] = Field(
+        alias="explicitOffsets"
+    )
+    telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
+
+
+class Igrins2LongSlitDetailsExposureTimeMode(ExposureTimeModeDetails):
+    pass
+
+
+class Igrins2LongSlitDetailsOffsets(BaseModel):
+    q: "Igrins2LongSlitDetailsOffsetsQ"
+    p: "Igrins2LongSlitDetailsOffsetsP"
+
+
+class Igrins2LongSlitDetailsOffsetsQ(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsOffsetsP(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsDefaultOffsets(BaseModel):
+    q: "Igrins2LongSlitDetailsDefaultOffsetsQ"
+    p: "Igrins2LongSlitDetailsDefaultOffsetsP"
+
+
+class Igrins2LongSlitDetailsDefaultOffsetsQ(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsDefaultOffsetsP(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsExplicitOffsets(BaseModel):
+    q: "Igrins2LongSlitDetailsExplicitOffsetsQ"
+    p: "Igrins2LongSlitDetailsExplicitOffsetsP"
+
+
+class Igrins2LongSlitDetailsExplicitOffsetsQ(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsExplicitOffsetsP(BaseModel):
+    arcseconds: Any
+
+
+class Igrins2LongSlitDetailsTelluricType(BaseModel):
+    tag: TelluricTag
+    star_types: Optional[list[str]] = Field(alias="starTypes")
+
+
+class VisitorDetails(BaseModel):
+    mode: VisitorObservingModeType
+    name: Optional[Any]
+    central_wavelength: "VisitorDetailsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    total_request_time: Optional["VisitorDetailsTotalRequestTime"] = Field(
+        alias="totalRequestTime"
+    )
+    ags_diameter: "VisitorDetailsAgsDiameter" = Field(alias="agsDiameter")
+
+
+class VisitorDetailsCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class VisitorDetailsTotalRequestTime(BaseModel):
+    seconds: Any
+
+
+class VisitorDetailsAgsDiameter(BaseModel):
+    dms: str
+    hms: str
+
+
+class Igrins2LongSlitAndVisitorOnObservingMode(BaseModel):
+    igrins_2_long_slit: Optional[
+        "Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit"
+    ] = Field(alias="igrins2LongSlit")
+    visitor: Optional["Igrins2LongSlitAndVisitorOnObservingModeVisitor"]
+
+
+class Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit(Igrins2LongSlitDetails):
+    pass
+
+
+class Igrins2LongSlitAndVisitorOnObservingModeVisitor(VisitorDetails):
+    pass
 
 
 class NonsiderealTargetDetails(BaseModel):
@@ -709,6 +819,9 @@ GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
+Igrins2LongSlitDetails.model_rebuild()
+VisitorDetails.model_rebuild()
+Igrins2LongSlitAndVisitorOnObservingMode.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
 ObservationCore.model_rebuild()
 ObservingModeDetails.model_rebuild()
