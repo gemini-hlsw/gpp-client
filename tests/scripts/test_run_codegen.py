@@ -2,7 +2,6 @@
 Tests for the codegen runner script.
 """
 
-import shutil
 import subprocess
 from subprocess import CompletedProcess
 
