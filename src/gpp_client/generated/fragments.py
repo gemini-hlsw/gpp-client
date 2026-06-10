@@ -323,8 +323,36 @@ class Igrins2LongSlitDetails(BaseModel):
     telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
 
 
-class Igrins2LongSlitDetailsExposureTimeMode(ExposureTimeModeDetails):
-    pass
+class Igrins2LongSlitDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["Igrins2LongSlitDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["Igrins2LongSlitDetailsExposureTimeModeTimeAndCount"] = (
+        Field(alias="timeAndCount")
+    )
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
+    time: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
 
 
 class Igrins2LongSlitDetailsOffsets(BaseModel):
@@ -448,6 +476,10 @@ class ObservingModeDetails(BaseModel):
     flamingos_2_long_slit: Optional["ObservingModeDetailsFlamingos2LongSlit"] = Field(
         alias="flamingos2LongSlit"
     )
+    igrins_2_long_slit: Optional["ObservingModeDetailsIgrins2LongSlit"] = Field(
+        alias="igrins2LongSlit"
+    )
+    visitor: Optional["ObservingModeDetailsVisitor"]
 
 
 class ObservingModeDetailsGmosNorthLongSlit(GmosNorthLongSlitDetails):
@@ -467,6 +499,14 @@ class ObservingModeDetailsGmosSouthImaging(GmosSouthImagingDetails):
 
 
 class ObservingModeDetailsFlamingos2LongSlit(Flamingos2LongSlitDetails):
+    pass
+
+
+class ObservingModeDetailsIgrins2LongSlit(Igrins2LongSlitDetails):
+    pass
+
+
+class ObservingModeDetailsVisitor(VisitorDetails):
     pass
 
 
@@ -610,6 +650,7 @@ class ObservationDetails(ObservationCore):
     target_environment: "ObservationDetailsTargetEnvironment" = Field(
         alias="targetEnvironment"
     )
+    execution: "ObservationDetailsExecution"
 
 
 class ObservationDetailsProgram(ProgramCore):
@@ -637,6 +678,10 @@ class ObservationDetailsTimingWindows(TimingWindowDetails):
 
 
 class ObservationDetailsTargetEnvironment(TargetEnvironmentDetails):
+    pass
+
+
+class ObservationDetailsExecution(ExecutionDetails):
     pass
 
 
