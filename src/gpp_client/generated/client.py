@@ -1841,6 +1841,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -1945,6 +1967,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -1988,6 +2064,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -2007,6 +2086,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -2073,6 +2158,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -2131,6 +2231,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -2235,6 +2357,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -2278,6 +2454,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -2297,6 +2476,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -2363,6 +2548,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -2422,6 +2622,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -2526,6 +2748,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -2569,6 +2845,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -2588,6 +2867,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -2654,6 +2939,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -2715,6 +3015,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -2819,6 +3141,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -2862,6 +3238,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -2881,6 +3260,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -2947,6 +3332,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -3011,6 +3411,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3115,6 +3537,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -3158,6 +3634,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -3177,6 +3656,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -3243,6 +3728,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -3307,6 +3807,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3411,6 +3933,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -3454,6 +4030,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -3473,6 +4052,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -3539,6 +4124,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -3600,6 +4200,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3704,6 +4326,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -3747,6 +4423,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -3766,6 +4445,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -3832,6 +4517,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -3893,6 +4593,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3997,6 +4719,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -4040,6 +4816,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -4059,6 +4838,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -4125,6 +4910,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -4186,6 +4986,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -4290,6 +5112,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -4333,6 +5209,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -4352,6 +5231,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -4418,6 +5303,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -4480,6 +5380,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -4584,6 +5506,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -4627,6 +5603,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -4646,6 +5625,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -4712,6 +5697,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 
@@ -4781,6 +5781,28 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment ExecutionDetails on Execution {
+              digest {
+                value {
+                  acquisition {
+                    timeEstimate {
+                      total {
+                        seconds
+                      }
+                    }
+                  }
+                  setup {
+                    full {
+                      seconds
+                    }
+                    reacquisition {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -4885,6 +5907,60 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              offsetMode
+              defaultOffsetMode
+              explicitOffsetMode
+              saveSVCImages
+              defaultSaveSVCImages
+              explicitSaveSVCImages
+              offsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              defaultOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              explicitOffsets {
+                q {
+                  arcseconds
+                }
+                p {
+                  arcseconds
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
             fragment NonsiderealTargetDetails on Nonsidereal {
               des
               keyType
@@ -4928,6 +6004,9 @@ class GraphQLClient(AsyncBaseClient):
               targetEnvironment {
                 ...TargetEnvironmentDetails
               }
+              execution {
+                ...ExecutionDetails
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -4947,6 +6026,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
               }
             }
 
@@ -5013,6 +6098,21 @@ class GraphQLClient(AsyncBaseClient):
                     times
                   }
                 }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
               }
             }
 

@@ -2,10 +2,12 @@
 Tests for the codegen runner script.
 """
 
+import shutil
 import subprocess
 from subprocess import CompletedProcess
 
 import pytest
+from graphql import parse as parse_graphql
 
 from gpp_client.environment import GPPEnvironment
 from scripts.run_codegen import (
@@ -13,9 +15,11 @@ from scripts.run_codegen import (
     CodegenPaths,
     _assemble_operations,
     _collect_definition_names,
+    _collect_spread_names,
     _file_has_content,
     _get_codegen_settings,
     _get_target_package_dir,
+    _inject_dev_only_fragments,
     _iter_graphql_files,
     _load_codegen_config,
     _parse_graphql_file,
@@ -618,3 +622,122 @@ def test_run_raises_when_dev_only_collides(paths, development_config_text):
 
     with pytest.raises(CodegenError, match="Development-only GraphQL must be additive"):
         _run(GPPEnvironment.DEVELOPMENT)
+
+
+def test_collect_spread_names_finds_direct_spread():
+    """Direct fragment spreads are collected."""
+    doc = parse_graphql("fragment Foo on Bar { ...A }")
+    frag = doc.definitions[0]
+    assert _collect_spread_names(frag.selection_set) == {"A"}
+
+
+def test_collect_spread_names_finds_nested_spread():
+    """Fragment spreads nested inside field selections are collected."""
+    doc = parse_graphql("fragment Foo on Bar { id nested { ...B } }")
+    frag = doc.definitions[0]
+    assert _collect_spread_names(frag.selection_set) == {"B"}
+
+
+def test_collect_spread_names_finds_all_spreads():
+    """Both direct and nested fragment spreads are collected."""
+    doc = parse_graphql("fragment Foo on Bar { id ...A nested { ...B } }")
+    frag = doc.definitions[0]
+    assert _collect_spread_names(frag.selection_set) == {"A", "B"}
+
+
+def test_collect_spread_names_empty_when_no_spreads():
+    """No fragment spreads returns an empty set."""
+    doc = parse_graphql("fragment Foo on Bar { id title }")
+    frag = doc.definitions[0]
+    assert _collect_spread_names(frag.selection_set) == set()
+
+
+def test_inject_dev_only_fragments_inlines_fields_into_root_fragment(tmp_path):
+    """
+    Top-level dev-only fragment's field selections are inlined into the root
+    shared fragment (not as a named spread, to avoid same-type spread cycles).
+    """
+    # Two shared fragments on the same type; ObsCore is spread by ObsDetails.
+    shared_file = tmp_path / "shared" / "obs.graphql"
+    _write_file(
+        shared_file,
+        "fragment ObsDetails on Observation { id ...ObsCore }\n"
+        "fragment ObsCore on Observation { title }",
+    )
+
+    dev_only = tmp_path / "development_only.graphql"
+    _write_file(dev_only, "fragment DevExtra on Observation { status }")
+
+    _inject_dev_only_fragments(tmp_path, dev_only)
+
+    content = shared_file.read_text()
+    # ObsDetails is the root — DevExtra's `status` field should be inlined into it.
+    # The fragment spread `...DevExtra` must NOT appear (inlining avoids same-type spreads).
+    assert "...DevExtra" not in content
+    assert "status" in content
+    # ObsCore is a sub-fragment — it should NOT gain the inlined field.
+    obs_core_body = content.split("ObsCore on Observation {")[1].split("}")[0]
+    assert "status" not in obs_core_body
+
+
+def test_inject_dev_only_fragments_skips_dev_sub_fragments(tmp_path):
+    """
+    Dev-only sub-fragments (spread by other dev-only fragments) are not
+    independently injected — only the top-level fragment's selections are inlined.
+    """
+    shared_file = tmp_path / "shared" / "exec.graphql"
+    _write_file(
+        shared_file,
+        "fragment ExecDetails on Execution { duration }",
+    )
+
+    # SubFrag is spread by TopFrag inside dev-only — SubFrag is a sub-fragment.
+    # TopFrag's selection set contains only `...SubFrag`.
+    dev_only = tmp_path / "development_only.graphql"
+    _write_file(
+        dev_only,
+        "fragment TopFrag on Execution { ...SubFrag }\n"
+        "fragment SubFrag on Execution { id }",
+    )
+
+    _inject_dev_only_fragments(tmp_path, dev_only)
+
+    content = shared_file.read_text()
+    # TopFrag's selection (`...SubFrag`) is inlined into ExecDetails — TopFrag
+    # itself is not spread by name.
+    assert "...TopFrag" not in content
+    # `...SubFrag` appears because it was TopFrag's selection and got inlined.
+    assert "...SubFrag" in content
+    # The count must be exactly one — SubFrag was not independently injected
+    # as a second spread on top of what TopFrag already contributed.
+    assert content.count("...SubFrag") == 1
+
+
+def test_inject_dev_only_fragments_no_op_when_dev_only_missing(tmp_path):
+    """
+    Missing dev-only file leaves assembled files unchanged.
+    """
+    shared_file = tmp_path / "shared" / "obs.graphql"
+    _write_file(shared_file, "fragment ObsDetails on Observation { id }")
+
+    dev_only = tmp_path / "development_only.graphql"  # does not exist
+
+    _inject_dev_only_fragments(tmp_path, dev_only)
+
+    assert shared_file.read_text() == "fragment ObsDetails on Observation { id }"
+
+
+def test_inject_dev_only_fragments_no_op_when_type_has_no_shared_fragment(tmp_path):
+    """
+    Dev-only fragment on a type with no matching shared fragment is silently
+    skipped — no files are modified.
+    """
+    shared_file = tmp_path / "shared" / "prog.graphql"
+    _write_file(shared_file, "fragment ProgramDetails on Program { id }")
+
+    dev_only = tmp_path / "development_only.graphql"
+    _write_file(dev_only, "fragment DevExtra on UnrelatedType { status }")
+
+    _inject_dev_only_fragments(tmp_path, dev_only)
+
+    assert "DevExtra" not in shared_file.read_text()

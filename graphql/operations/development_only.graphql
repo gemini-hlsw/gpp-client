@@ -77,8 +77,28 @@ fragment ExecutionDetails on Execution {
 
 
 fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+  # NOTE: exposureTimeMode is inlined here instead of spreading
+  # ...ExposureTimeModeDetails on purpose. Grackle raises a #false-positive
+  # "Fragment cycle starting from 'ObservationDetails'" for the
+  # dev-injected named edge Igrins2LongSlitDetails -> ExposureTimeModeDetails,
+  # even though the identical Gmos/Flamingos edges validate fine. Inlining the
+  # selection breaks that named edge and clears the false cycle.
   exposureTimeMode {
-    ...ExposureTimeModeDetails
+    signalToNoise {
+      value
+      at {
+        nanometers
+      }
+    }
+    timeAndCount {
+      time {
+        seconds
+      }
+      count
+      at {
+        nanometers
+      }
+    }
   }
   offsetMode
   defaultOffsetMode

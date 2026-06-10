@@ -15,6 +15,8 @@ import typer
 from gpp_client.cli import output
 from gpp_client.environment import GPPEnvironment
 from graphql import DocumentNode, FragmentDefinitionNode, OperationDefinitionNode, parse
+from graphql.language.ast import FragmentSpreadNode, SelectionSetNode
+from graphql.language.printer import print_ast
 
 app = typer.Typer(add_completion=False)
 
@@ -370,6 +372,33 @@ def _collect_definition_names(file_paths: list[Path]) -> dict[str, Path]:
     return names_to_paths
 
 
+def _collect_spread_names(node: Any) -> set[str]:
+    """
+    Recursively collect all fragment spread names from a GraphQL AST node.
+
+    Parameters
+    ----------
+    node : Any
+        A graphql-core AST node or selection set.
+
+    Returns
+    -------
+    set[str]
+        All fragment spread names found in the node and its descendants.
+    """
+    names: set[str] = set()
+    if isinstance(node, FragmentSpreadNode):
+        names.add(node.name.value)
+    for attr in ("selections", "selection_set"):
+        val = getattr(node, attr, None)
+        if isinstance(val, (tuple, list)):
+            for child in val:
+                names |= _collect_spread_names(child)
+        elif val is not None and hasattr(val, "selections"):
+            names |= _collect_spread_names(val)
+    return names
+
+
 def _validate_development_only_is_additive(paths: CodegenPaths) -> None:
     """
     Ensure development-only GraphQL definitions do not collide with shared ones.
@@ -460,8 +489,136 @@ def _assemble_operations(paths: CodegenPaths, env: GPPEnvironment) -> Path:
             assembled_dir / paths.development_only_path.name,
         )
 
+        # Inject dev-only fragment spreads into root shared fragment definitions.
+        _inject_dev_only_fragments(
+            assembled_dir,
+            assembled_dir / paths.development_only_path.name,
+        )
+
     output.info(f"Assembled operations into {assembled_dir}")
     return assembled_dir
+
+
+def _inject_dev_only_fragments(assembled_dir: Path, dev_only_path: Path) -> None:
+    """
+    Inline dev-only field selections into root shared fragment definitions.
+
+    For each "top-level" fragment defined in the dev-only file (i.e. not
+    referenced by another dev-only fragment), this function finds the "root"
+    shared fragment(s) with the same GraphQL type condition and appends the
+    dev-only fragment's own selections directly to their selection sets,
+    rather than inserting a named fragment spread causing cycle issues with Grakle.
+
+    Inlining the field selections (instead of inserting a
+    ``RootShared { ...DevFragment }`` spread) avoids a same-type direct
+    fragment spread, Grackle incorrectly flags as a fragment cycle.
+
+    Parameters
+    ----------
+    assembled_dir : Path
+        Directory containing the fully assembled GraphQL operations.
+    dev_only_path : Path
+        Path to the development-only GraphQL file inside ``assembled_dir``.
+    """
+    if not dev_only_path.exists():
+        return
+
+    dev_doc = _parse_graphql_file(dev_only_path)
+
+    dev_frag_defs: dict[str, FragmentDefinitionNode] = {
+        defn.name.value: defn
+        for defn in dev_doc.definitions
+        if isinstance(defn, FragmentDefinitionNode)
+    }
+
+    if not dev_frag_defs:
+        return
+
+    # Fragments referenced by other dev-only fragments are sub-fragments — skip.
+    dev_internal_spreads: set[str] = set()
+    for defn in dev_frag_defs.values():
+        dev_internal_spreads |= _collect_spread_names(defn.selection_set)
+
+    top_level_dev_frags = {
+        name: defn
+        for name, defn in dev_frag_defs.items()
+        if name not in dev_internal_spreads
+    }
+
+    if not top_level_dev_frags:
+        return
+
+    # Map: type_condition -> [top-level dev fragment names to inject]
+    dev_frags_by_type: dict[str, list[str]] = {}
+    for name, defn in top_level_dev_frags.items():
+        tc = defn.type_condition.name.value
+        dev_frags_by_type.setdefault(tc, []).append(name)
+
+    # Parse all assembled shared files (skip the dev-only file itself).
+    shared_files: list[tuple[Path, DocumentNode]] = []
+    shared_frag_type: dict[str, str] = {}  # frag_name -> type_condition
+
+    for fpath in sorted(assembled_dir.rglob("*.graphql")):
+        if fpath == dev_only_path:
+            continue
+        doc = _parse_graphql_file(fpath)
+        shared_files.append((fpath, doc))
+        for defn in doc.definitions:
+            if isinstance(defn, FragmentDefinitionNode):
+                shared_frag_type[defn.name.value] = defn.type_condition.name.value
+
+    # Find shared fragments that are spread by another shared fragment with the
+    # SAME type condition: these are sub-fragments, not injection targets.
+    sub_frags: set[str] = set()
+    for _fpath, doc in shared_files:
+        for defn in doc.definitions:
+            if not isinstance(defn, FragmentDefinitionNode):
+                continue
+            parent_type = defn.type_condition.name.value
+            for spread_name in _collect_spread_names(defn.selection_set):
+                if shared_frag_type.get(spread_name) == parent_type:
+                    sub_frags.add(spread_name)
+
+    # Inline dev-only selections into the root shared fragments.
+    for fpath, doc in shared_files:
+        new_definitions = list(doc.definitions)
+        modified = False
+
+        for i, defn in enumerate(new_definitions):
+            if not isinstance(defn, FragmentDefinitionNode):
+                continue
+            frag_name = defn.name.value
+            type_cond = defn.type_condition.name.value
+
+            if frag_name in sub_frags or type_cond not in dev_frags_by_type:
+                continue
+
+            # Inline the selections from each top-level dev-only fragment
+            # rather than inserting a named fragment spread.  This prevents
+            # same-type direct spreads (both the shared fragment and the
+            # dev-only fragment are on the same type T), which some servers
+            # incorrectly flag as a fragment cycle.
+            inlined: tuple = ()
+            for name in dev_frags_by_type[type_cond]:
+                inlined += tuple(top_level_dev_frags[name].selection_set.selections)
+
+            new_selection_set = SelectionSetNode(
+                selections=tuple(defn.selection_set.selections) + inlined
+            )
+            new_definitions[i] = FragmentDefinitionNode(
+                name=defn.name,
+                type_condition=defn.type_condition,
+                selection_set=new_selection_set,
+                directives=defn.directives,
+                variable_definitions=defn.variable_definitions,
+            )
+            modified = True
+
+        if modified:
+            new_doc = DocumentNode(definitions=tuple(new_definitions))
+            fpath.write_text(print_ast(new_doc), encoding="utf-8")
+
+    output.info("Inlined dev-only selections into assembled shared fragments.")
 
 
 def _remove_dir(path: Path, *, label: str) -> None:
