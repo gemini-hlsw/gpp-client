@@ -11,6 +11,7 @@ import typer
 from gpp_client.cli import output
 from gpp_client.cli.utils import async_command, require_exactly_one
 from gpp_client.client import GPPClient
+from gpp_client.generated import ObservationWorkflowState
 
 workflow_state_app = typer.Typer(
     name="workflow-state",
@@ -59,3 +60,47 @@ async def get_workflow_state(
                     raise typer.BadParameter(f"Unsupported selector: {selector_name}")
 
     output.json_pydantic(result)
+
+
+@workflow_state_app.command("set")
+@async_command
+async def set_workflow_state(
+    observation_id: Annotated[
+        str,
+        typer.Argument(
+            help="Observation ID.",
+        ),
+    ],
+    workflow_state: Annotated[
+        str,
+        typer.Argument(
+            help="Workflow state to be set. Must be on all caps.",
+        ),
+    ],
+    retry: Annotated[
+        bool,
+        typer.Option(
+            "--retry",
+            help="Retry the request if an error occurs.",
+        ),
+    ] = False,
+) -> None:
+    """
+    Set workflow state.
+    """
+    async with GPPClient() as client:
+        try:
+            workflow_state_enum = ObservationWorkflowState[workflow_state]
+        except ValueError:
+            raise typer.BadParameter(
+                "Invalid workflow state. Must be in this options: INACTIVE, UNDEFINED, UNAPPROVED, DEFINED, READY, ONGOING, COMPLETED."
+            )
+        if not retry:
+            result = await client.workflow_state.update_by_id(
+                observation_id=observation_id, workflow_state=workflow_state_enum
+            )
+        else:
+            result = await client.workflow_state.update_by_id_with_retry(
+                observation_id=observation_id, workflow_state=workflow_state_enum
+            )
+        output.json_pydantic(result)

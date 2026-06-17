@@ -111,9 +111,11 @@ class GraphQLClient(AsyncBaseClient):
                 value {
                   id
                   observationTime
-                  constraintSet {
-                    cloudExtinction
-                    imageQuality
+                  program {
+                    active {
+                      end
+                      start
+                    }
                   }
                   workflow {
                     value {
@@ -131,6 +133,73 @@ class GraphQLClient(AsyncBaseClient):
                             executionState
                             id
                           }
+                        }
+                      }
+                    }
+                  }
+                  targetEnvironment {
+                    asterism {
+                      name
+                      sidereal {
+                        ra {
+                          hours
+                          hms
+                          degrees
+                        }
+                        dec {
+                          degrees
+                          dms
+                        }
+                        epoch
+                      }
+                      nonsidereal {
+                        des
+                        keyType
+                        key
+                      }
+                    }
+                    explicitBase {
+                      ra {
+                        hms
+                      }
+                      dec {
+                        dms
+                      }
+                    }
+                  }
+                  constraintSet {
+                    imageQuality
+                    cloudExtinction
+                    skyBackground
+                    waterVapor
+                    elevationRange {
+                      airMass {
+                        min
+                        max
+                      }
+                      hourAngle {
+                        minHours
+                        maxHours
+                      }
+                    }
+                  }
+                  timingWindows {
+                    inclusion
+                    startUtc
+                    end {
+                      __typename
+                      ... on TimingWindowEndAt {
+                        atUtc
+                      }
+                      ... on TimingWindowEndAfter {
+                        after {
+                          seconds
+                        }
+                        repeat {
+                          period {
+                            seconds
+                          }
+                          times
                         }
                       }
                     }
