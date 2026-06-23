@@ -18,6 +18,11 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
+    GhostBinning,
+    GhostIfu1FiberAgitator,
+    GhostIfu2FiberAgitator,
+    GhostReadMode,
+    GhostResolutionMode,
     GmosBinning,
     GmosNorthBuiltinFpu,
     GmosNorthFilter,
@@ -424,11 +429,104 @@ class VisitorDetailsAgsDiameter(BaseModel):
     hms: str
 
 
+class GhostDetectorConfigDetails(BaseModel):
+    binning: GhostBinning
+    default_binning: GhostBinning = Field(alias="defaultBinning")
+    default_read_mode: GhostReadMode = Field(alias="defaultReadMode")
+    explicit_binning: Optional[GhostBinning] = Field(alias="explicitBinning")
+    explicit_read_mode: Optional[GhostReadMode] = Field(alias="explicitReadMode")
+    read_mode: GhostReadMode = Field(alias="readMode")
+    exposure_time_mode: "GhostDetectorConfigDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GhostDetectorConfigDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GhostDetectorConfigDetailsExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GhostDetectorConfigDetailsExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GhostDetectorConfigDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt"
+    time: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GhostIfuDetails(BaseModel):
+    default_ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="defaultIfu1Agitator")
+    default_ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="defaultIfu2Agitator")
+    explicit_ifu_1_agitator: Optional[GhostIfu1FiberAgitator] = Field(
+        alias="explicitIfu1Agitator"
+    )
+    explicit_ifu_2_agitator: Optional[GhostIfu2FiberAgitator] = Field(
+        alias="explicitIfu2Agitator"
+    )
+    ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="ifu1Agitator")
+    ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="ifu2Agitator")
+    resolution_mode: GhostResolutionMode = Field(alias="resolutionMode")
+    step_count: Any = Field(alias="stepCount")
+    blue: "GhostIfuDetailsBlue"
+    red: "GhostIfuDetailsRed"
+    sky_position: Optional["GhostIfuDetailsSkyPosition"] = Field(alias="skyPosition")
+    slit_viewing_camera_exposure_time: Optional[
+        "GhostIfuDetailsSlitViewingCameraExposureTime"
+    ] = Field(alias="slitViewingCameraExposureTime")
+
+
+class GhostIfuDetailsBlue(GhostDetectorConfigDetails):
+    pass
+
+
+class GhostIfuDetailsRed(GhostDetectorConfigDetails):
+    pass
+
+
+class GhostIfuDetailsSkyPosition(BaseModel):
+    dec: "GhostIfuDetailsSkyPositionDec"
+    ra: "GhostIfuDetailsSkyPositionRa"
+
+
+class GhostIfuDetailsSkyPositionDec(BaseModel):
+    degrees: Any
+
+
+class GhostIfuDetailsSkyPositionRa(BaseModel):
+    degrees: Any
+
+
+class GhostIfuDetailsSlitViewingCameraExposureTime(BaseModel):
+    seconds: Any
+
+
 class Igrins2LongSlitAndVisitorOnObservingMode(BaseModel):
     igrins_2_long_slit: Optional[
         "Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit"
     ] = Field(alias="igrins2LongSlit")
     visitor: Optional["Igrins2LongSlitAndVisitorOnObservingModeVisitor"]
+    ghost_ifu: Optional["Igrins2LongSlitAndVisitorOnObservingModeGhostIfu"] = Field(
+        alias="ghostIfu"
+    )
 
 
 class Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit(Igrins2LongSlitDetails):
@@ -436,6 +534,10 @@ class Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit(Igrins2LongSlitDet
 
 
 class Igrins2LongSlitAndVisitorOnObservingModeVisitor(VisitorDetails):
+    pass
+
+
+class Igrins2LongSlitAndVisitorOnObservingModeGhostIfu(GhostIfuDetails):
     pass
 
 
@@ -480,6 +582,7 @@ class ObservingModeDetails(BaseModel):
         alias="igrins2LongSlit"
     )
     visitor: Optional["ObservingModeDetailsVisitor"]
+    ghost_ifu: Optional["ObservingModeDetailsGhostIfu"] = Field(alias="ghostIfu")
 
 
 class ObservingModeDetailsGmosNorthLongSlit(GmosNorthLongSlitDetails):
@@ -507,6 +610,10 @@ class ObservingModeDetailsIgrins2LongSlit(Igrins2LongSlitDetails):
 
 
 class ObservingModeDetailsVisitor(VisitorDetails):
+    pass
+
+
+class ObservingModeDetailsGhostIfu(GhostIfuDetails):
     pass
 
 
@@ -651,6 +758,7 @@ class ObservationDetails(ObservationCore):
         alias="targetEnvironment"
     )
     execution: "ObservationDetailsExecution"
+    execution: "ObservationDetailsExecution"
 
 
 class ObservationDetailsProgram(ProgramCore):
@@ -681,8 +789,44 @@ class ObservationDetailsTargetEnvironment(TargetEnvironmentDetails):
     pass
 
 
-class ObservationDetailsExecution(ExecutionDetails):
-    pass
+class ObservationDetailsExecution(BaseModel):
+    digest: Optional["ObservationDetailsExecutionDigest"]
+
+
+class ObservationDetailsExecutionDigest(BaseModel):
+    value: Optional["ObservationDetailsExecutionDigestValue"]
+
+
+class ObservationDetailsExecutionDigestValue(BaseModel):
+    acquisition: Optional["ObservationDetailsExecutionDigestValueAcquisition"]
+
+
+class ObservationDetailsExecutionDigestValueAcquisition(BaseModel):
+    time_estimate: "ObservationDetailsExecutionDigestValueAcquisitionTimeEstimate" = (
+        Field(alias="timeEstimate")
+    )
+
+
+class ObservationDetailsExecutionDigestValueAcquisitionTimeEstimate(BaseModel):
+    total: "ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateTotal"
+    program: "ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateProgram"
+    non_charged: "ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateNonCharged" = Field(
+        alias="nonCharged"
+    )
+
+
+class ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateTotal(BaseModel):
+    seconds: Any
+
+
+class ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateProgram(BaseModel):
+    seconds: Any
+
+
+class ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateNonCharged(
+    BaseModel
+):
+    seconds: Any
 
 
 class ObservationExecution(BaseModel):
@@ -866,6 +1010,8 @@ GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 VisitorDetails.model_rebuild()
+GhostDetectorConfigDetails.model_rebuild()
+GhostIfuDetails.model_rebuild()
 Igrins2LongSlitAndVisitorOnObservingMode.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
 ObservationCore.model_rebuild()

@@ -2134,6 +2134,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -2161,6 +2180,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -2258,6 +2280,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -2524,6 +2600,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -2551,6 +2646,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -2648,6 +2746,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -2915,6 +3067,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -2942,6 +3113,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -3039,6 +3213,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -3308,6 +3536,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -3335,6 +3582,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -3432,6 +3682,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -3704,6 +4008,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -3731,6 +4054,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -3828,6 +4154,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -4100,6 +4480,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -4127,6 +4526,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -4224,6 +4626,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -4493,6 +4949,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -4520,6 +4995,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -4617,6 +5095,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -4886,6 +5418,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -4913,6 +5464,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -5010,6 +5564,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -5279,6 +5887,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -5306,6 +5933,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -5403,6 +6033,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -5673,6 +6357,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -5700,6 +6403,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -5797,6 +6503,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)
@@ -6074,6 +6834,25 @@ class GraphQLClient(AsyncBaseClient):
                 ...TargetEnvironmentDetails
               }
               execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              execution {
                 ...ExecutionDetails
               }
             }
@@ -6101,6 +6880,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               visitor {
                 ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
               }
             }
 
@@ -6198,6 +6980,60 @@ class GraphQLClient(AsyncBaseClient):
                   code
                   messages
                 }
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
               }
             }
             """)

@@ -55,4 +55,23 @@ fragment ObservationDetails on Observation {
   targetEnvironment {
     ...TargetEnvironmentDetails
   }
+  execution {
+      digest {
+        value {
+          acquisition {
+            timeEstimate {
+              total {
+                seconds
+              }
+              program {
+                seconds
+              }
+              nonCharged {
+                seconds
+              }
+            }
+          }
+        }
+      }
+  }
 }
