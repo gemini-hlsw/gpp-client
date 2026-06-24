@@ -8,9 +8,9 @@ from .enums import (
     ProgramType,
     ProposalStatus,
     ScienceBand,
-    ScienceSubtype,
     TimeAccountingCategory,
 )
+from .fragments import SchedulerProposal
 
 
 class GetSchedulerPrograms(BaseModel):
@@ -61,34 +61,8 @@ class GetSchedulerProgramsProgramsMatchesActive(BaseModel):
     end: Any
 
 
-class GetSchedulerProgramsProgramsMatchesProposal(BaseModel):
-    type_: "GetSchedulerProgramsProgramsMatchesProposalType" = Field(alias="type")
-    call: Optional["GetSchedulerProgramsProgramsMatchesProposalCall"]
-
-
-class GetSchedulerProgramsProgramsMatchesProposalType(BaseModel):
-    typename__: Literal[
-        "Classical",
-        "DemoScience",
-        "DirectorsTime",
-        "FastTurnaround",
-        "LargeProgram",
-        "PoorWeather",
-        "ProposalType",
-        "Queue",
-        "SystemVerification",
-    ] = Field(alias="__typename")
-    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
-
-
-class GetSchedulerProgramsProgramsMatchesProposalCall(BaseModel):
-    active: "GetSchedulerProgramsProgramsMatchesProposalCallActive"
-    semester: Any
-
-
-class GetSchedulerProgramsProgramsMatchesProposalCallActive(BaseModel):
-    start: Any
-    end: Any
+class GetSchedulerProgramsProgramsMatchesProposal(SchedulerProposal):
+    pass
 
 
 class GetSchedulerProgramsProgramsMatchesAllocations(BaseModel):
@@ -170,8 +144,6 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsObservation(BaseModel):
 GetSchedulerPrograms.model_rebuild()
 GetSchedulerProgramsPrograms.model_rebuild()
 GetSchedulerProgramsProgramsMatches.model_rebuild()
-GetSchedulerProgramsProgramsMatchesProposal.model_rebuild()
-GetSchedulerProgramsProgramsMatchesProposalCall.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllocations.model_rebuild()
 GetSchedulerProgramsProgramsMatchesTimeCharge.model_rebuild()
 GetSchedulerProgramsProgramsMatchesTimeChargeTime.model_rebuild()

@@ -41,7 +41,38 @@ class Breakpoint(str, Enum):
     DISABLED = "DISABLED"
 
 
-class CallForProposalsType(str, Enum):
+class Observatory(str, Enum):
+    GEMINI = "GEMINI"
+    KECK = "KECK"
+    SUBARU = "SUBARU"
+
+
+class ExchangePartner(str, Enum):
+    KECK = "KECK"
+    SUBARU = "SUBARU"
+
+
+class KeckInstrument(str, Enum):
+    HIRES = "HIRES"
+    OTHER = "OTHER"
+
+
+class SubaruInstrument(str, Enum):
+    FOCAS = "FOCAS"
+    HDS = "HDS"
+    HSC = "HSC"
+    IRCS = "IRCS"
+    MOIRCS = "MOIRCS"
+    PFS = "PFS"
+    VISITOR = "VISITOR"
+
+
+class SubaruCallForProposalsType(str, Enum):
+    NORMAL = "NORMAL"
+    INTENSIVE = "INTENSIVE"
+
+
+class GeminiCallForProposalsType(str, Enum):
     DEMO_SCIENCE = "DEMO_SCIENCE"
     DIRECTORS_TIME = "DIRECTORS_TIME"
     FAST_TURNAROUND = "FAST_TURNAROUND"
@@ -234,7 +265,8 @@ class Partner(str, Enum):
 
 
 class PartnerLinkType(str, Enum):
-    HAS_PARTNER = "HAS_PARTNER"
+    HAS_GEMINI_PARTNER = "HAS_GEMINI_PARTNER"
+    HAS_EXCHANGE_PARTNER = "HAS_EXCHANGE_PARTNER"
     HAS_NON_PARTNER = "HAS_NON_PARTNER"
     HAS_UNSPECIFIED_PARTNER = "HAS_UNSPECIFIED_PARTNER"
 
@@ -363,6 +395,11 @@ class BrightnessSurfaceUnits(str, Enum):
     ERG_PER_S_PER_CM_SQUARED_PER_HZ_PER_ARCSEC_SQUARED = (
         "ERG_PER_S_PER_CM_SQUARED_PER_HZ_PER_ARCSEC_SQUARED"
     )
+
+
+class CassRotator(str, Enum):
+    FIXED = "FIXED"
+    FOLLOWING = "FOLLOWING"
 
 
 class CatalogName(str, Enum):
@@ -912,6 +949,7 @@ class GnirsDecker(str, Enum):
 
 
 class ItcType(str, Enum):
+    FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
@@ -1301,6 +1339,7 @@ class CalibrationRole(str, Enum):
     PHOTOMETRIC = "PHOTOMETRIC"
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
     TELLURIC = "TELLURIC"
+    DAYTIME_PINHOLE = "DAYTIME_PINHOLE"
 
 
 class ArcType(str, Enum):
