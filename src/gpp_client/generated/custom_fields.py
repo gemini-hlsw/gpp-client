@@ -39,6 +39,7 @@ from .custom_typing_fields import (
     CatalogInfoGraphQLField,
     CategorizedTimeGraphQLField,
     CategorizedTimeRangeGraphQLField,
+    ChangePrincipalInvestigatorResultGraphQLField,
     ChangeProgramUserRoleResultGraphQLField,
     ClassicalGraphQLField,
     CloneGroupResultGraphQLField,
@@ -127,6 +128,8 @@ from .custom_typing_fields import (
     FluxDensityEntryGraphQLField,
     GaussianSourceGraphQLField,
     GcalGraphQLField,
+    GeminiCallPropertiesGraphQLField,
+    GeminiProposalTypeGraphQLField,
     GhostAtomGraphQLField,
     GhostDetectorConfigGraphQLField,
     GhostDetectorGraphQLField,
@@ -184,8 +187,9 @@ from .custom_typing_fields import (
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
+    HasExchangePartnerGraphQLField,
+    HasGeminiPartnerGraphQLField,
     HasNonPartnerGraphQLField,
-    HasPartnerGraphQLField,
     HasUnspecifiedPartnerGraphQLField,
     HourAngleRangeGraphQLField,
     Igrins2AtomGraphQLField,
@@ -202,6 +206,8 @@ from .custom_typing_fields import (
     ImagingScienceRequirementsGraphQLField,
     ImagingVariantGraphQLField,
     InterleavedImagingVariantGraphQLField,
+    ItcFlamingos2ImagingGraphQLField,
+    ItcFlamingos2ImagingResultSetGraphQLField,
     ItcGhostIfuGraphQLField,
     ItcGmosNorthImagingGraphQLField,
     ItcGmosNorthImagingResultSetGraphQLField,
@@ -212,6 +218,8 @@ from .custom_typing_fields import (
     ItcResultGraphQLField,
     ItcResultSetGraphQLField,
     ItcSpectroscopyGraphQLField,
+    KeckCallPropertiesGraphQLField,
+    KeckProposalTypeGraphQLField,
     LargeProgramGraphQLField,
     LibraryProgramReferenceGraphQLField,
     LineFluxIntegratedGraphQLField,
@@ -249,7 +257,6 @@ from .custom_typing_fields import (
     ProperMotionRAGraphQLField,
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
-    ProposalTypeGraphQLField,
     QueueGraphQLField,
     RadialVelocityGraphQLField,
     RandomTelescopeConfigGeneratorGraphQLField,
@@ -279,6 +286,7 @@ from .custom_typing_fields import (
     SetAllocationsResultGraphQLField,
     SetGuideTargetNameResultGraphQLField,
     SetProgramReferenceResultGraphQLField,
+    SetProgramResourceLimitResultGraphQLField,
     SetProposalStatusResultGraphQLField,
     SetupTimeGraphQLField,
     SiderealGraphQLField,
@@ -304,6 +312,8 @@ from .custom_typing_fields import (
     StepEventGraphQLField,
     StepRecordGraphQLField,
     StepRecordSelectResultGraphQLField,
+    SubaruCallPropertiesGraphQLField,
+    SubaruProposalTypeGraphQLField,
     SystemProgramReferenceGraphQLField,
     SystemVerificationGraphQLField,
     TargetEnvironmentGraphQLField,
@@ -1280,15 +1290,8 @@ class CallForProposalsFields(GraphQLField):
     "The unique Call for Proposals id associated with this Call."
     title: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("title")
     "The title of this Call for Proposals."
-    type_: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("type")
-    "Describes which type of proposals are being accepted."
     semester: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("semester")
     "The semester associated with the Call.  Some types may have multiple Calls\nper semester."
-
-    @classmethod
-    def coordinate_limits(cls) -> "SiteCoordinateLimitsFields":
-        """Coordinate limits for targets that may be observed in this Call for Proposals."""
-        return SiteCoordinateLimitsFields("coordinateLimits")
 
     @classmethod
     def active(cls) -> "DateIntervalFields":
@@ -1296,36 +1299,40 @@ class CallForProposalsFields(GraphQLField):
         observed."""
         return DateIntervalFields("active")
 
-    submission_deadline_default: "CallForProposalsGraphQLField" = (
-        CallForProposalsGraphQLField("submissionDeadlineDefault")
-    )
-    "The submission deadline to use for any partners without an explicit partner\ndeadline."
-
     @classmethod
     def partners(cls) -> "CallForProposalsPartnerFields":
         """Partners that may participate in this Call."""
         return CallForProposalsPartnerFields("partners")
 
-    allows_non_partner_pi: "CallForProposalsGraphQLField" = (
-        CallForProposalsGraphQLField("allowsNonPartnerPi")
+    submission_deadline_default: "CallForProposalsGraphQLField" = (
+        CallForProposalsGraphQLField("submissionDeadlineDefault")
     )
-    "Whether this Call allows PIs without a partner to participate."
-    non_partner_deadline: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "nonPartnerDeadline"
-    )
-    "The submission deadline for non-partner PIs, when allowed to participate."
-    instruments: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "instruments"
-    )
-    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
-    proprietary_months: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "proprietaryMonths"
-    )
-    "Default proprietary period to use for propograms linked to this Call."
+    "The submission deadline to use for any partners without an explicit partner\ndeadline."
     existence: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
         "existence"
     )
     "Whether this Call is PRESENT or has been DELETED."
+    observatory: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
+        "observatory"
+    )
+    "The observatory for which proposals are being solicited.  Eactly one of\n`gemini`, `keck` or `subaru` will be non-null, corresponding to this value."
+
+    @classmethod
+    def gemini(cls) -> "GeminiCallPropertiesFields":
+        """Gemini-observatory-specific properties.  Non-null iff the `observatory` is
+        GEMINI."""
+        return GeminiCallPropertiesFields("gemini")
+
+    @classmethod
+    def keck(cls) -> "KeckCallPropertiesFields":
+        """Keck-observatory-specific properties.  Non-null iff the `observatory` is KECK."""
+        return KeckCallPropertiesFields("keck")
+
+    @classmethod
+    def subaru(cls) -> "SubaruCallPropertiesFields":
+        """Subaru-observatory-specific properties.  Non-null iff the `observatory` is
+        SUBARU."""
+        return SubaruCallPropertiesFields("subaru")
 
     def fields(
         self,
@@ -1333,7 +1340,9 @@ class CallForProposalsFields(GraphQLField):
             CallForProposalsGraphQLField,
             "CallForProposalsPartnerFields",
             "DateIntervalFields",
-            "SiteCoordinateLimitsFields",
+            "GeminiCallPropertiesFields",
+            "KeckCallPropertiesFields",
+            "SubaruCallPropertiesFields",
         ],
     ) -> "CallForProposalsFields":
         """Subfields should come from the CallForProposalsFields class"""
@@ -1348,8 +1357,8 @@ class CallForProposalsFields(GraphQLField):
 class CallForProposalsPartnerFields(GraphQLField):
     """Groups a partner with its submission deadline."""
 
-    partner: "CallForProposalsPartnerGraphQLField" = (
-        CallForProposalsPartnerGraphQLField("partner")
+    gemini_partner: "CallForProposalsPartnerGraphQLField" = (
+        CallForProposalsPartnerGraphQLField("geminiPartner")
     )
     submission_deadline_override: "CallForProposalsPartnerGraphQLField" = (
         CallForProposalsPartnerGraphQLField("submissionDeadlineOverride")
@@ -1472,6 +1481,28 @@ class CategorizedTimeRangeFields(GraphQLField):
         return self
 
 
+class ChangePrincipalInvestigatorResultFields(GraphQLField):
+    """Result of changePrincipalInvestigator, which is the program user who is now the PI."""
+
+    @classmethod
+    def program_user(cls) -> "ProgramUserFields":
+        return ProgramUserFields("programUser")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ChangePrincipalInvestigatorResultGraphQLField, "ProgramUserFields"
+        ],
+    ) -> "ChangePrincipalInvestigatorResultFields":
+        """Subfields should come from the ChangePrincipalInvestigatorResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ChangePrincipalInvestigatorResultFields":
+        self._alias = alias
+        return self
+
+
 class ChangeProgramUserRoleResultFields(GraphQLField):
     """Result of the program user role update, which is the updated program user itself."""
 
@@ -1505,6 +1536,8 @@ class ClassicalFields(GraphQLField):
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
+    exchange_partner: "ClassicalGraphQLField" = ClassicalGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     aeon_multi_facility: "ClassicalGraphQLField" = ClassicalGraphQLField(
         "aeonMultiFacility"
     )
@@ -3493,10 +3526,18 @@ class ExecutionDigestFields(GraphQLField):
         """Science sequence summary."""
         return SequenceDigestFields("science")
 
+    @classmethod
+    def full_time_estimate(cls) -> "CategorizedTimeFields":
+        """Full time estimate: science time plus full setup time for every setup."""
+        return CategorizedTimeFields("fullTimeEstimate")
+
     def fields(
         self,
         *subfields: Union[
-            ExecutionDigestGraphQLField, "SequenceDigestFields", "SetupTimeFields"
+            ExecutionDigestGraphQLField,
+            "CategorizedTimeFields",
+            "SequenceDigestFields",
+            "SetupTimeFields",
         ],
     ) -> "ExecutionDigestFields":
         """Subfields should come from the ExecutionDigestFields class"""
@@ -4302,6 +4343,82 @@ class GcalFields(GraphQLField):
 
     def alias(self, alias: str) -> "GcalFields":
         self._alias = alias
+        return self
+
+
+class GeminiCallPropertiesFields(GraphQLField):
+    """Gemini-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
+    type_: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField("type")
+    "Describes which type of Gemini proposals are being accepted."
+
+    @classmethod
+    def coordinate_limits(cls) -> "SiteCoordinateLimitsFields":
+        """Coordinate limits, associated with each site, for targets that may be
+        observed in this Call for Proposals."""
+        return SiteCoordinateLimitsFields("coordinateLimits")
+
+    instruments: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+    proprietary_months: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("proprietaryMonths")
+    )
+    "Default proprietary period to use for propograms linked to this Call."
+    allows_non_partner_pi: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("allowsNonPartnerPi")
+    )
+    "Whether this Call allows PIs without a partner to participate."
+    non_partner_deadline: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("nonPartnerDeadline")
+    )
+    "The submission deadline for non-partner PIs, when allowed to participate."
+    exchange_partners: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("exchangePartners")
+    )
+    "Exchange partners that may apply for Gemini time on this call, if any.\nThese partners use the `submissionDeadlineDefault` from the shared CfP\nproperties."
+
+    def fields(
+        self,
+        *subfields: Union[
+            GeminiCallPropertiesGraphQLField, "SiteCoordinateLimitsFields"
+        ],
+    ) -> "GeminiCallPropertiesFields":
+        """Subfields should come from the GeminiCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GeminiCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class GeminiProposalTypeInterface(GraphQLField):
+    """Proposal properties that depend on the particular call for proposals associated
+    with this proposal."""
+
+    science_subtype: "GeminiProposalTypeGraphQLField" = GeminiProposalTypeGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+
+    def fields(
+        self, *subfields: GeminiProposalTypeGraphQLField
+    ) -> "GeminiProposalTypeInterface":
+        """Subfields should come from the GeminiProposalTypeInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GeminiProposalTypeInterface":
+        self._alias = alias
+        return self
+
+    def on(
+        self, type_name: str, *subfields: GraphQLField
+    ) -> "GeminiProposalTypeInterface":
+        self._inline_fragments[type_name] = subfields
         return self
 
 
@@ -6278,16 +6395,12 @@ class GnirsLongSlitFields(GraphQLField):
     )
 
     @classmethod
-    def grating_wavelength(cls) -> "WavelengthFields":
-        return WavelengthFields("gratingWavelength")
+    def central_wavelength(cls) -> "WavelengthFields":
+        return WavelengthFields("centralWavelength")
 
     @classmethod
-    def explicit_grating_wavelength(cls) -> "WavelengthFields":
-        return WavelengthFields("explicitGratingWavelength")
-
-    @classmethod
-    def default_grating_wavelength(cls) -> "WavelengthFields":
-        return WavelengthFields("defaultGratingWavelength")
+    def initial_central_wavelength(cls) -> "WavelengthFields":
+        return WavelengthFields("initialCentralWavelength")
 
     camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("camera")
     initial_camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
@@ -6752,9 +6865,55 @@ class GuideTargetFields(GraphQLField):
         return self
 
 
+class HasExchangePartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific
+    `ExchangePartner`."""
+
+    link_type: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
+        "linkType"
+    )
+    "Partner link discriminator."
+    exchange_partner: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
+        "exchangePartner"
+    )
+    "The associated partner."
+
+    def fields(
+        self, *subfields: HasExchangePartnerGraphQLField
+    ) -> "HasExchangePartnerFields":
+        """Subfields should come from the HasExchangePartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasExchangePartnerFields":
+        self._alias = alias
+        return self
+
+
+class HasGeminiPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific `Partner`."""
+
+    link_type: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField("linkType")
+    "Partner link discriminator."
+    gemini_partner: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField(
+        "geminiPartner"
+    )
+    "The associated partner."
+
+    def fields(
+        self, *subfields: HasGeminiPartnerGraphQLField
+    ) -> "HasGeminiPartnerFields":
+        """Subfields should come from the HasGeminiPartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasGeminiPartnerFields":
+        self._alias = alias
+        return self
+
+
 class HasNonPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user is explicitly associated with
-    no `Partner`."""
+    """A `PartnerLink` employed when a user is explicitly associated with no `Partner`."""
 
     link_type: "HasNonPartnerGraphQLField" = HasNonPartnerGraphQLField("linkType")
     "Partner link discriminator."
@@ -6769,28 +6928,8 @@ class HasNonPartnerFields(GraphQLField):
         return self
 
 
-class HasPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user is associated with a specific
-    `Partner`."""
-
-    link_type: "HasPartnerGraphQLField" = HasPartnerGraphQLField("linkType")
-    "Partner link discriminator."
-    partner: "HasPartnerGraphQLField" = HasPartnerGraphQLField("partner")
-    "The associated partner."
-
-    def fields(self, *subfields: HasPartnerGraphQLField) -> "HasPartnerFields":
-        """Subfields should come from the HasPartnerFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "HasPartnerFields":
-        self._alias = alias
-        return self
-
-
 class HasUnspecifiedPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user's `PartnerLink` has not
-    (yet) been made."""
+    """A `PartnerLink` employed when a user's `PartnerLink` has not (yet) been made."""
 
     link_type: "HasUnspecifiedPartnerGraphQLField" = HasUnspecifiedPartnerGraphQLField(
         "linkType"
@@ -7324,6 +7463,61 @@ class ItcInterface(GraphQLField):
         return self
 
 
+class ItcFlamingos2ImagingFields(GraphQLField):
+    """Flamingos 2 imaging ITC results.  Here each filter is paired with its result
+    set."""
+
+    itc_type: "ItcFlamingos2ImagingGraphQLField" = ItcFlamingos2ImagingGraphQLField(
+        "itcType"
+    )
+    "The type of the Itc results."
+
+    @classmethod
+    def flamingos_2_imaging_science(cls) -> "ItcFlamingos2ImagingResultSetFields":
+        return ItcFlamingos2ImagingResultSetFields("flamingos2ImagingScience")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcFlamingos2ImagingGraphQLField, "ItcFlamingos2ImagingResultSetFields"
+        ],
+    ) -> "ItcFlamingos2ImagingFields":
+        """Subfields should come from the ItcFlamingos2ImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcFlamingos2ImagingFields":
+        self._alias = alias
+        return self
+
+
+class ItcFlamingos2ImagingResultSetFields(GraphQLField):
+    """Combines a Flamingos 2 filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
+    filter_: "ItcFlamingos2ImagingResultSetGraphQLField" = (
+        ItcFlamingos2ImagingResultSetGraphQLField("filter")
+    )
+
+    @classmethod
+    def results(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("results")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcFlamingos2ImagingResultSetGraphQLField, "ItcResultSetFields"
+        ],
+    ) -> "ItcFlamingos2ImagingResultSetFields":
+        """Subfields should come from the ItcFlamingos2ImagingResultSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcFlamingos2ImagingResultSetFields":
+        self._alias = alias
+        return self
+
+
 class ItcGhostIfuFields(GraphQLField):
     """GHOST IFU ITC results.  Each channel is paired with its result set."""
 
@@ -7568,6 +7762,54 @@ class ItcSpectroscopyFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ItcSpectroscopyFields":
+        self._alias = alias
+        return self
+
+
+class KeckCallPropertiesFields(GraphQLField):
+    """Keck-specific call for proposals properties.  Note, properties shared across all
+    observatories are found in the `CallForProposals` type."""
+
+    instruments: "KeckCallPropertiesGraphQLField" = KeckCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+
+    @classmethod
+    def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Keck, for targets that may be observed in
+        this Call for Proposals."""
+        return CoordinateLimitsFields("coordinateLimits")
+
+    def fields(
+        self,
+        *subfields: Union[KeckCallPropertiesGraphQLField, "CoordinateLimitsFields"],
+    ) -> "KeckCallPropertiesFields":
+        """Subfields should come from the KeckCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "KeckCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class KeckProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Keck."""
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[KeckProposalTypeGraphQLField, "PartnerSplitFields"]
+    ) -> "KeckProposalTypeFields":
+        """Subfields should come from the KeckProposalTypeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "KeckProposalTypeFields":
         self._alias = alias
         return self
 
@@ -8521,6 +8763,11 @@ class ProgramFields(GraphQLField):
         """Observatory archive properties related to this program."""
         return GoaPropertiesFields("goa")
 
+    resource_limit: "ProgramGraphQLField" = ProgramGraphQLField("resourceLimit")
+    "Maximum number of resources (observations, groups, targets, attachments, and\nprogram notes, combined) that may be associated with this program."
+    resource_count: "ProgramGraphQLField" = ProgramGraphQLField("resourceCount")
+    "Current number of resources (present, non-system observations, groups,\ntargets, attachments, and program notes) associated with this program, counted\nagainst `resourceLimit`."
+
     def fields(
         self,
         *subfields: Union[
@@ -8844,18 +9091,32 @@ class ProposalFields(GraphQLField):
     "Proposal TAC category"
 
     @classmethod
-    def type_(cls) -> "ProposalTypeInterface":
-        """Properties of this proposal that are dependent upon the Call for Proposals
-        type."""
-        return ProposalTypeInterface("type")
+    def gemini(cls) -> "GeminiProposalTypeInterface":
+        """Properties of a Gemini proposal that depend upon the Call for Proposals type.
+        Set for Gemini proposals; null otherwise (when `keck` or `subaru` is set)."""
+        return GeminiProposalTypeInterface("gemini")
+
+    @classmethod
+    def keck(cls) -> "KeckProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Keck.  Set for Keck
+        exchange proposals; null otherwise."""
+        return KeckProposalTypeFields("keck")
+
+    @classmethod
+    def subaru(cls) -> "SubaruProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Subaru.  Set for Subaru
+        exchange proposals; null otherwise."""
+        return SubaruProposalTypeFields("subaru")
 
     def fields(
         self,
         *subfields: Union[
             ProposalGraphQLField,
             "CallForProposalsFields",
+            "GeminiProposalTypeInterface",
+            "KeckProposalTypeFields",
             "ProposalReferenceFields",
-            "ProposalTypeInterface",
+            "SubaruProposalTypeFields",
         ],
     ) -> "ProposalFields":
         """Subfields should come from the ProposalFields class"""
@@ -8888,29 +9149,6 @@ class ProposalReferenceFields(GraphQLField):
         return self
 
 
-class ProposalTypeInterface(GraphQLField):
-    """Proposal properties that depend on the particular call for proposals associated
-    with this proposal."""
-
-    science_subtype: "ProposalTypeGraphQLField" = ProposalTypeGraphQLField(
-        "scienceSubtype"
-    )
-    "The science type of this Call for Proposals."
-
-    def fields(self, *subfields: ProposalTypeGraphQLField) -> "ProposalTypeInterface":
-        """Subfields should come from the ProposalTypeInterface class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "ProposalTypeInterface":
-        self._alias = alias
-        return self
-
-    def on(self, type_name: str, *subfields: GraphQLField) -> "ProposalTypeInterface":
-        self._inline_fragments[type_name] = subfields
-        return self
-
-
 class QueueFields(GraphQLField):
     """Proposal properties for Regular Semester (Queue) CallForProposals."""
 
@@ -8926,6 +9164,8 @@ class QueueFields(GraphQLField):
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
+    exchange_partner: "QueueGraphQLField" = QueueGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
     "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
     aeon_multi_facility: "QueueGraphQLField" = QueueGraphQLField("aeonMultiFacility")
@@ -9606,6 +9846,27 @@ class SetProgramReferenceResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SetProgramReferenceResultFields":
+        self._alias = alias
+        return self
+
+
+class SetProgramResourceLimitResultFields(GraphQLField):
+    """The result of `setProgramResourceLimit`."""
+
+    @classmethod
+    def program(cls) -> "ProgramFields":
+        """The updated program."""
+        return ProgramFields("program")
+
+    def fields(
+        self,
+        *subfields: Union[SetProgramResourceLimitResultGraphQLField, "ProgramFields"],
+    ) -> "SetProgramResourceLimitResultFields":
+        """Subfields should come from the SetProgramResourceLimitResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SetProgramResourceLimitResultFields":
         self._alias = alias
         return self
 
@@ -10557,6 +10818,59 @@ class StepRecordSelectResultFields(GraphQLField):
         return self
 
 
+class SubaruCallPropertiesFields(GraphQLField):
+    """Subaru-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
+    type_: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField("type")
+    "Subaru proposal type."
+    instruments: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call may only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+
+    @classmethod
+    def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Subaru, for targets that may be observed in
+        this Call for Proposals."""
+        return CoordinateLimitsFields("coordinateLimits")
+
+    def fields(
+        self,
+        *subfields: Union[SubaruCallPropertiesGraphQLField, "CoordinateLimitsFields"],
+    ) -> "SubaruCallPropertiesFields":
+        """Subfields should come from the SubaruCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SubaruCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class SubaruProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Subaru."""
+
+    type_: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField("type")
+    "The Subaru call for proposals type (normal or intensive)."
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[SubaruProposalTypeGraphQLField, "PartnerSplitFields"]
+    ) -> "SubaruProposalTypeFields":
+        """Subfields should come from the SubaruProposalTypeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SubaruProposalTypeFields":
+        self._alias = alias
+        return self
+
+
 class SystemProgramReferenceFields(GraphQLField):
     label: "SystemProgramReferenceGraphQLField" = SystemProgramReferenceGraphQLField(
         "label"
@@ -10752,6 +11066,10 @@ class TargetEnvironmentFields(GraphQLField):
         "blindOffsetType"
     )
     "The type of blind offset (automatic or manual) if a blind offset exists."
+    cass_rotator: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
+        "cassRotator"
+    )
+    "The cassegrain rotator tracking mode."
 
     def fields(
         self,

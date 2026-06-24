@@ -16,16 +16,7 @@ query GetSchedulerPrograms($programsList: [ProgramId!]) {
       }
       proposalStatus
       proposal {
-        type {
-          scienceSubtype
-        }
-        call {
-          active {
-            start
-            end
-          }
-          semester
-        }
+        ...SchedulerProposal
       }
       allocations {
         category

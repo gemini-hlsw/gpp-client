@@ -1,0 +1,9 @@
+fragment SchedulerProposal on Proposal {
+  call {
+    active {
+      start
+      end
+    }
+    semester
+  }
+}

@@ -8,6 +8,7 @@ from .custom_fields import (
     AddSlewEventResultFields,
     AddStepEventResultFields,
     AddTimeChargeCorrectionResultFields,
+    ChangePrincipalInvestigatorResultFields,
     ChangeProgramUserRoleResultFields,
     CloneGroupResultFields,
     CloneObservationResultFields,
@@ -43,6 +44,7 @@ from .custom_fields import (
     SetAllocationsResultFields,
     SetGuideTargetNameResultFields,
     SetProgramReferenceResultFields,
+    SetProgramResourceLimitResultFields,
     SetProposalStatusResultFields,
     UnlinkUserResultFields,
     UpdateAsterismsResultFields,
@@ -65,6 +67,7 @@ from .input_types import (
     AddSlewEventInput,
     AddStepEventInput,
     AddTimeChargeCorrectionInput,
+    ChangePrincipalInvestigatorInput,
     ChangeProgramUserRoleInput,
     CloneGroupInput,
     CloneObservationInput,
@@ -101,6 +104,7 @@ from .input_types import (
     SetGuideTargetNameInput,
     SetObservationWorkflowStateInput,
     SetProgramReferenceInput,
+    SetProgramResourceLimitInput,
     SetProposalStatusInput,
     UnlinkUserInput,
     UpdateAsterismsInput,
@@ -246,6 +250,25 @@ class Mutation:
         }
         return ChangeProgramUserRoleResultFields(
             field_name="changeProgramUserRole", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def change_principal_investigator(
+        cls, input: ChangePrincipalInvestigatorInput
+    ) -> ChangePrincipalInvestigatorResultFields:
+        """Transfer the principal investigator (PI) role of a program to one of its
+        coinvestigators.  The program user identified in the input, which must
+        currently be a coinvestigator, becomes the new PI, and the current PI is
+        demoted to coinvestigator.  Only the current PI of the program or a user with
+        staff access (or greater) may perform this operation."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "ChangePrincipalInvestigatorInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ChangePrincipalInvestigatorResultFields(
+            field_name="changePrincipalInvestigator", arguments=cleared_arguments
         )
 
     @classmethod
@@ -667,6 +690,25 @@ class Mutation:
         }
         return SetProgramReferenceResultFields(
             field_name="setProgramReference", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def set_program_resource_limit(
+        cls, input: SetProgramResourceLimitInput
+    ) -> SetProgramResourceLimitResultFields:
+        """Set a program's resource limit (the maximum combined number of observations,
+        groups, targets, attachments, and program notes). Requires staff access.
+        Lowering the limit below the program's current resource count is allowed (e.g.
+        set it to 0 to prevent any further additions) and succeeds with a warning; no
+        new resources may be added until the count drops below the limit."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "SetProgramResourceLimitInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return SetProgramResourceLimitResultFields(
+            field_name="setProgramResourceLimit", arguments=cleared_arguments
         )
 
     @classmethod

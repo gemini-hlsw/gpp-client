@@ -7,7 +7,6 @@ from .enums import (
     AttachmentType,
     CalculationState,
     CalibrationRole,
-    CallForProposalsType,
     CloudExtinctionPreset,
     EphemerisKeyType,
     Existence,
@@ -18,6 +17,7 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
+    GeminiCallForProposalsType,
     GhostBinning,
     GhostIfu1FiberAgitator,
     GhostIfu2FiberAgitator,
@@ -32,15 +32,20 @@ from .enums import (
     GmosSouthGrating,
     ImageQualityPreset,
     Instrument,
+    KeckInstrument,
     ObservationValidationCode,
     ObservationWorkflowState,
+    Observatory,
     ObservingModeType,
     ProgramType,
     ProposalStatus,
     ScienceBand,
     ScienceMode,
+    ScienceSubtype,
     SkyBackground,
     SlitOffsetMode,
+    SubaruCallForProposalsType,
+    SubaruInstrument,
     TelluricTag,
     TimingWindowInclusion,
     VisitorObservingModeType,
@@ -64,19 +69,56 @@ class CallForProposalsCore(BaseModel):
 
 
 class CallForProposalsDetails(CallForProposalsCore):
-    type_: CallForProposalsType = Field(alias="type")
     semester: Any
     active: "CallForProposalsDetailsActive"
     submission_deadline_default: Optional[Any] = Field(
         alias="submissionDeadlineDefault"
     )
-    instruments: list[Instrument]
     existence: Existence
+    observatory: Observatory
+    gemini: Optional["CallForProposalsDetailsGemini"]
+    keck: Optional["CallForProposalsDetailsKeck"]
+    subaru: Optional["CallForProposalsDetailsSubaru"]
 
 
 class CallForProposalsDetailsActive(BaseModel):
     start: Any
     end: Any
+
+
+class CallForProposalsDetailsGemini(BaseModel):
+    type_: GeminiCallForProposalsType = Field(alias="type")
+    instruments: list[Instrument]
+
+
+class CallForProposalsDetailsKeck(BaseModel):
+    instruments: list[KeckInstrument]
+
+
+class CallForProposalsDetailsSubaru(BaseModel):
+    type_: SubaruCallForProposalsType = Field(alias="type")
+    instruments: list[SubaruInstrument]
+
+
+class CallForProposalsObservatory(BaseModel):
+    observatory: Observatory
+    gemini: Optional["CallForProposalsObservatoryGemini"]
+    keck: Optional["CallForProposalsObservatoryKeck"]
+    subaru: Optional["CallForProposalsObservatorySubaru"]
+
+
+class CallForProposalsObservatoryGemini(BaseModel):
+    type_: GeminiCallForProposalsType = Field(alias="type")
+    instruments: list[Instrument]
+
+
+class CallForProposalsObservatoryKeck(BaseModel):
+    instruments: list[KeckInstrument]
+
+
+class CallForProposalsObservatorySubaru(BaseModel):
+    type_: SubaruCallForProposalsType = Field(alias="type")
+    instruments: list[SubaruInstrument]
 
 
 class ConstraintSetDetails(BaseModel):
@@ -248,6 +290,25 @@ class Flamingos2LongSlitDetailsAcquisition(BaseModel):
 
 class Flamingos2LongSlitDetailsAcquisitionExposureTimeMode(ExposureTimeModeDetails):
     pass
+
+
+class GeminiScienceSubtypeOnProposal(BaseModel):
+    gemini: Optional["GeminiScienceSubtypeOnProposalGemini"]
+
+
+class GeminiScienceSubtypeOnProposalGemini(BaseModel):
+    typename__: Literal[
+        "Classical",
+        "DemoScience",
+        "DirectorsTime",
+        "FastTurnaround",
+        "GeminiProposalType",
+        "LargeProgram",
+        "PoorWeather",
+        "Queue",
+        "SystemVerification",
+    ] = Field(alias="__typename")
+    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
 
 
 class GmosNorthImagingDetails(BaseModel):
@@ -964,6 +1025,36 @@ class ProgramGroupElementsAllGroupElementsGroupMaximumInterval(BaseModel):
     seconds: Any
 
 
+class SchedulerProposal(BaseModel):
+    call: Optional["SchedulerProposalCall"]
+    gemini: Optional["SchedulerProposalGemini"]
+
+
+class SchedulerProposalCall(BaseModel):
+    active: "SchedulerProposalCallActive"
+    semester: Any
+
+
+class SchedulerProposalCallActive(BaseModel):
+    start: Any
+    end: Any
+
+
+class SchedulerProposalGemini(BaseModel):
+    typename__: Literal[
+        "Classical",
+        "DemoScience",
+        "DirectorsTime",
+        "FastTurnaround",
+        "GeminiProposalType",
+        "LargeProgram",
+        "PoorWeather",
+        "Queue",
+        "SystemVerification",
+    ] = Field(alias="__typename")
+    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
+
+
 class TargetCore(BaseModel):
     id: Any
     existence: Existence
@@ -1000,10 +1091,12 @@ class TargetProgramSummaryProgram(ProgramCore):
 AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
+CallForProposalsObservatory.model_rebuild()
 ConstraintSetDetails.model_rebuild()
 ExecutionDetails.model_rebuild()
 ExposureTimeModeDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
+GeminiScienceSubtypeOnProposal.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()
@@ -1030,6 +1123,7 @@ ObservationWorkflowDetails.model_rebuild()
 OpportunityTargetDetails.model_rebuild()
 ProgramDetail.model_rebuild()
 ProgramGroupElements.model_rebuild()
+SchedulerProposal.model_rebuild()
 TargetCore.model_rebuild()
 TargetDetails.model_rebuild()
 TargetProgramSummary.model_rebuild()

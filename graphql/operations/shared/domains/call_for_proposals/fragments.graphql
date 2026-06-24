@@ -5,13 +5,11 @@ fragment CallForProposalsCore on CallForProposals {
 
 fragment CallForProposalsDetails on CallForProposals {
   ...CallForProposalsCore
-  type
   semester
   active {
     start
     end
   }
   submissionDeadlineDefault
-  instruments
   existence
 }

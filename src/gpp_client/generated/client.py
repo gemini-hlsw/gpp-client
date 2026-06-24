@@ -398,15 +398,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {"properties": properties}
@@ -446,15 +456,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {
@@ -498,15 +518,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {
@@ -545,15 +575,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -588,15 +628,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -626,15 +676,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -677,15 +737,25 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment CallForProposalsDetails on CallForProposals {
               ...CallForProposalsCore
-              type
               semester
               active {
                 start
                 end
               }
               submissionDeadlineDefault
-              instruments
               existence
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
             """)
         variables: dict[str, object] = {
@@ -7988,17 +8058,7 @@ class GraphQLClient(AsyncBaseClient):
                   }
                   proposalStatus
                   proposal {
-                    type {
-                      __typename
-                      scienceSubtype
-                    }
-                    call {
-                      active {
-                        start
-                        end
-                      }
-                      semester
-                    }
+                    ...SchedulerProposal
                   }
                   allocations {
                     category
@@ -8044,6 +8104,20 @@ class GraphQLClient(AsyncBaseClient):
                     }
                   }
                 }
+              }
+            }
+
+            fragment SchedulerProposal on Proposal {
+              call {
+                active {
+                  start
+                  end
+                }
+                semester
+              }
+              gemini {
+                __typename
+                scienceSubtype
               }
             }
             """)

@@ -292,3 +292,29 @@ fragment Igrins2LongSlitAndVisitorOnObservingMode on ObservingMode {
     ...ghostIfuDetails
   }
 }
+
+fragment GeminiScienceSubtypeOnProposal on Proposal {
+  gemini {
+    # `gemini` is the GeminiProposalType interface; ariadne-codegen generates a
+    # discriminated model requiring __typename, but only auto-inserts __typename
+    # for interface fields in operation bodies, not inside fragment definitions.
+    # Request it explicitly so the injected selection fetches the discriminator.
+    __typename
+    scienceSubtype
+  }
+}
+
+fragment CallForProposalsObservatory on CallForProposals {
+  observatory
+  gemini {
+    type
+    instruments
+  }
+  keck {
+    instruments
+  }
+  subaru {
+    type
+    instruments
+  }
+}
