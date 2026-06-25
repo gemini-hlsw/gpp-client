@@ -1980,28 +1980,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -2219,11 +2197,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -2446,28 +2429,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -2685,11 +2646,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -2913,28 +2879,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3152,11 +3096,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -3382,28 +3331,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -3621,11 +3548,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -3854,28 +3786,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -4093,11 +4003,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -4326,28 +4241,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -4565,11 +4458,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -4795,28 +4693,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -5034,11 +4910,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -5264,28 +5145,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -5503,11 +5362,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -5733,28 +5597,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -5972,11 +5814,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -6203,28 +6050,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -6442,11 +6267,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 
@@ -6680,28 +6510,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExecutionDetails on Execution {
-              digest {
-                value {
-                  acquisition {
-                    timeEstimate {
-                      total {
-                        seconds
-                      }
-                    }
-                  }
-                  setup {
-                    full {
-                      seconds
-                    }
-                    reacquisition {
-                      seconds
-                    }
-                  }
-                }
-              }
-            }
-
             fragment ExposureTimeModeDetails on ExposureTimeMode {
               signalToNoise {
                 value
@@ -6919,11 +6727,16 @@ class GraphQLClient(AsyncBaseClient):
                         }
                       }
                     }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
                   }
                 }
-              }
-              execution {
-                ...ExecutionDetails
               }
             }
 

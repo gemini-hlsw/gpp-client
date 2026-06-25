@@ -150,46 +150,6 @@ class ConstraintSetDetailsElevationRangeHourAngle(BaseModel):
     max_hours: Any = Field(alias="maxHours")
 
 
-class ExecutionDetails(BaseModel):
-    digest: Optional["ExecutionDetailsDigest"]
-
-
-class ExecutionDetailsDigest(BaseModel):
-    value: Optional["ExecutionDetailsDigestValue"]
-
-
-class ExecutionDetailsDigestValue(BaseModel):
-    acquisition: Optional["ExecutionDetailsDigestValueAcquisition"]
-    setup: "ExecutionDetailsDigestValueSetup"
-
-
-class ExecutionDetailsDigestValueAcquisition(BaseModel):
-    time_estimate: "ExecutionDetailsDigestValueAcquisitionTimeEstimate" = Field(
-        alias="timeEstimate"
-    )
-
-
-class ExecutionDetailsDigestValueAcquisitionTimeEstimate(BaseModel):
-    total: "ExecutionDetailsDigestValueAcquisitionTimeEstimateTotal"
-
-
-class ExecutionDetailsDigestValueAcquisitionTimeEstimateTotal(BaseModel):
-    seconds: Any
-
-
-class ExecutionDetailsDigestValueSetup(BaseModel):
-    full: "ExecutionDetailsDigestValueSetupFull"
-    reacquisition: "ExecutionDetailsDigestValueSetupReacquisition"
-
-
-class ExecutionDetailsDigestValueSetupFull(BaseModel):
-    seconds: Any
-
-
-class ExecutionDetailsDigestValueSetupReacquisition(BaseModel):
-    seconds: Any
-
-
 class ExposureTimeModeDetails(BaseModel):
     signal_to_noise: Optional["ExposureTimeModeDetailsSignalToNoise"] = Field(
         alias="signalToNoise"
@@ -819,7 +779,6 @@ class ObservationDetails(ObservationCore):
         alias="targetEnvironment"
     )
     execution: "ObservationDetailsExecution"
-    execution: "ObservationDetailsExecution"
 
 
 class ObservationDetailsProgram(ProgramCore):
@@ -860,6 +819,7 @@ class ObservationDetailsExecutionDigest(BaseModel):
 
 class ObservationDetailsExecutionDigestValue(BaseModel):
     acquisition: Optional["ObservationDetailsExecutionDigestValueAcquisition"]
+    setup: "ObservationDetailsExecutionDigestValueSetup"
 
 
 class ObservationDetailsExecutionDigestValueAcquisition(BaseModel):
@@ -890,12 +850,17 @@ class ObservationDetailsExecutionDigestValueAcquisitionTimeEstimateNonCharged(
     seconds: Any
 
 
-class ObservationExecution(BaseModel):
-    execution: "ObservationExecutionExecution"
+class ObservationDetailsExecutionDigestValueSetup(BaseModel):
+    full: "ObservationDetailsExecutionDigestValueSetupFull"
+    reacquisition: "ObservationDetailsExecutionDigestValueSetupReacquisition"
 
 
-class ObservationExecutionExecution(ExecutionDetails):
-    pass
+class ObservationDetailsExecutionDigestValueSetupFull(BaseModel):
+    seconds: Any
+
+
+class ObservationDetailsExecutionDigestValueSetupReacquisition(BaseModel):
+    seconds: Any
 
 
 class ObservationWorkflowCore(BaseModel):
@@ -1093,7 +1058,6 @@ CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
 CallForProposalsObservatory.model_rebuild()
 ConstraintSetDetails.model_rebuild()
-ExecutionDetails.model_rebuild()
 ExposureTimeModeDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
 GeminiScienceSubtypeOnProposal.model_rebuild()
@@ -1117,7 +1081,6 @@ TimingWindowDetails.model_rebuild()
 WorkflowCore.model_rebuild()
 WorkflowDetails.model_rebuild()
 ObservationDetails.model_rebuild()
-ObservationExecution.model_rebuild()
 ObservationWorkflowCore.model_rebuild()
 ObservationWorkflowDetails.model_rebuild()
 OpportunityTargetDetails.model_rebuild()

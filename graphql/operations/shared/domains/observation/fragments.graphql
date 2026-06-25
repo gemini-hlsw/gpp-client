@@ -71,6 +71,14 @@ fragment ObservationDetails on Observation {
               }
             }
           }
+          setup {
+            full {
+              seconds
+            }
+            reacquisition {
+              seconds
+            }
+          }
         }
       }
   }
