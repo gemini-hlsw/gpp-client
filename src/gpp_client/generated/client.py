@@ -99,124 +99,6 @@ def gql(q: str) -> str:
 
 
 class GraphQLClient(AsyncBaseClient):
-    async def scheduler_observations_updates(
-        self, executable_only: Union[Optional[bool], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[SchedulerObservationsUpdates]:
-        query = gql("""
-            subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
-              obscalcUpdate(input: {executableOnly: $executableOnly}) {
-                oldCalculationState
-                newCalculationState
-                editType
-                value {
-                  id
-                  observationTime
-                  program {
-                    active {
-                      end
-                      start
-                    }
-                  }
-                  workflow {
-                    value {
-                      state
-                    }
-                  }
-                  execution {
-                    visits {
-                      matches {
-                        observation {
-                          id
-                        }
-                        atomRecords {
-                          matches {
-                            executionState
-                            id
-                          }
-                        }
-                      }
-                    }
-                  }
-                  targetEnvironment {
-                    asterism {
-                      name
-                      sidereal {
-                        ra {
-                          hours
-                          hms
-                          degrees
-                        }
-                        dec {
-                          degrees
-                          dms
-                        }
-                        epoch
-                      }
-                      nonsidereal {
-                        des
-                        keyType
-                        key
-                      }
-                    }
-                    explicitBase {
-                      ra {
-                        hms
-                      }
-                      dec {
-                        dms
-                      }
-                    }
-                  }
-                  constraintSet {
-                    imageQuality
-                    cloudExtinction
-                    skyBackground
-                    waterVapor
-                    elevationRange {
-                      airMass {
-                        min
-                        max
-                      }
-                      hourAngle {
-                        minHours
-                        maxHours
-                      }
-                    }
-                  }
-                  timingWindows {
-                    inclusion
-                    startUtc
-                    end {
-                      __typename
-                      ... on TimingWindowEndAt {
-                        atUtc
-                      }
-                      ... on TimingWindowEndAfter {
-                        after {
-                          seconds
-                        }
-                        repeat {
-                          period {
-                            seconds
-                          }
-                          times
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            """)
-        variables: dict[str, object] = {"executableOnly": executable_only}
-        async for data in self.execute_ws(
-            query=query,
-            operation_name="SchedulerObservationsUpdates",
-            variables=variables,
-            **kwargs,
-        ):
-            yield SchedulerObservationsUpdates.model_validate(data)
-
     async def get_observation_attachments_by_id(
         self, observation_id: Any, **kwargs: Any
     ) -> GetObservationAttachmentsById:
@@ -405,18 +287,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"properties": properties}
@@ -463,18 +333,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -525,18 +383,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -582,18 +428,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -635,18 +469,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -683,18 +505,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -744,18 +554,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -2086,21 +1884,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -2535,21 +2319,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -2985,21 +2755,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -3437,21 +3193,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -3892,21 +3634,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -4347,21 +4075,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -4799,21 +4513,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -5251,21 +4951,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -5703,21 +5389,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -6156,21 +5828,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -6616,21 +6274,7 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                signalToNoise {
-                  value
-                  at {
-                    nanometers
-                  }
-                }
-                timeAndCount {
-                  time {
-                    seconds
-                  }
-                  count
-                  at {
-                    nanometers
-                  }
-                }
+                ...ExposureTimeModeDetails
               }
               offsetMode
               defaultOffsetMode
@@ -7928,10 +7572,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
                 semester
               }
-              gemini {
-                __typename
-                scienceSubtype
-              }
             }
             """)
         variables: dict[str, object] = {"programsList": programs_list}
@@ -7971,6 +7611,125 @@ class GraphQLClient(AsyncBaseClient):
         )
         data = self.get_data(response)
         return GetSchedulerAllProgramsId.model_validate(data)
+
+    async def scheduler_observations_updates(
+        self, executable_only: Union[Optional[bool], UnsetType] = UNSET, **kwargs: Any
+    ) -> AsyncIterator[SchedulerObservationsUpdates]:
+        query = gql("""
+            subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
+              obscalcUpdate(input: {executableOnly: $executableOnly}) {
+                oldCalculationState
+                newCalculationState
+                editType
+                value {
+                  id
+                  observationTime
+                  program {
+                    active {
+                      end
+                      start
+                    }
+                  }
+                  workflow {
+                    value {
+                      state
+                    }
+                  }
+                  execution {
+                    visits {
+                      matches {
+                        observation {
+                          id
+                        }
+                        atomRecords {
+                          matches {
+                            executionState
+                            id
+                          }
+                        }
+                      }
+                    }
+                  }
+                  targetEnvironment {
+                    asterism {
+                      name
+                      sidereal {
+                        ra {
+                          hours
+                          hms
+                          degrees
+                        }
+                        dec {
+                          degrees
+                          dms
+                        }
+                        epoch
+                      }
+                      nonsidereal {
+                        des
+                        keyType
+                        key
+                      }
+                    }
+                    explicitBase {
+                      ra {
+                        hms
+                      }
+                      dec {
+                        dms
+                      }
+                    }
+                  }
+                  constraintSet {
+                    imageQuality
+                    cloudExtinction
+                    skyBackground
+                    waterVapor
+                    elevationRange {
+                      airMass {
+                        min
+                        max
+                      }
+                      hourAngle {
+                        minHours
+                        maxHours
+                      }
+                    }
+                  }
+                  timingWindows {
+                    inclusion
+                    startUtc
+                    end {
+                      __typename
+                      ... on TimingWindowEndAt {
+                        atUtc
+                      }
+                      ... on TimingWindowEndAfter {
+                        after {
+                          seconds
+                        }
+                        repeat {
+                          period {
+                            seconds
+                          }
+                          times
+                        }
+                      }
+                    }
+                  }
+                  instrument
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {"executableOnly": executable_only}
+        async for data in self.execute_ws(
+            query=query,
+            operation_name="SchedulerObservationsUpdates",
+            variables=variables,
+            **kwargs,
+        ):
+            yield SchedulerObservationsUpdates.model_validate(data)
 
     async def clone_target(
         self,

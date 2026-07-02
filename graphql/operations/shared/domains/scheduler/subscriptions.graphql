@@ -1,0 +1,116 @@
+# =============================================================================
+# SchedulerObservationUpdates
+# Uses a ObsCalculationUpdate subscription to retrieve update events from
+# executed sequences/observations.
+# =============================================================================
+
+subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
+  obscalcUpdate(input: {executableOnly: $executableOnly}) {
+    oldCalculationState
+    newCalculationState
+    editType
+    value {
+      id
+      observationTime
+      program {
+        active {
+          end
+          start
+        }
+      }
+      workflow {
+        value {
+          state
+        }
+      }
+      execution {
+        visits {
+          matches {
+            observation {
+              id
+            }
+            atomRecords {
+              matches {
+                executionState
+                id
+              }
+            }
+          }
+        }
+      }
+      targetEnvironment {
+        # ...TargetEnvironmentDetails
+        asterism {
+          name
+          sidereal {
+            #...SiderealTargetDetails
+            ra {
+              hours
+              hms
+              degrees
+            }
+            dec {
+              degrees
+              dms
+            }
+            epoch
+          }
+          nonsidereal {
+            #...NonsiderealTargetDetails
+            des
+            keyType
+            key
+          }
+        }
+        explicitBase {
+          ra {
+            hms
+          }
+          dec {
+            dms
+          }
+        }
+      }
+      constraintSet {
+        #...ConstraintSetDetails
+        imageQuality
+        cloudExtinction
+        skyBackground
+        waterVapor
+        elevationRange {
+          airMass {
+            min
+            max
+          }
+          hourAngle {
+            minHours
+            maxHours
+          }
+        }
+      }
+      timingWindows {
+        #...TimingWindowDetails
+        inclusion
+        startUtc
+        end {
+          __typename
+          ... on TimingWindowEndAt {
+            atUtc
+          }
+          ... on TimingWindowEndAfter {
+            after {
+              seconds
+            }
+            repeat {
+              period {
+                seconds
+              }
+              times
+            }
+          }
+        }
+      }
+      instrument
+    }
+  }
+}

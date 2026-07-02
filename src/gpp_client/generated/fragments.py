@@ -17,7 +17,6 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
-    GeminiCallForProposalsType,
     GhostBinning,
     GhostIfu1FiberAgitator,
     GhostIfu2FiberAgitator,
@@ -32,20 +31,15 @@ from .enums import (
     GmosSouthGrating,
     ImageQualityPreset,
     Instrument,
-    KeckInstrument,
     ObservationValidationCode,
     ObservationWorkflowState,
-    Observatory,
     ObservingModeType,
     ProgramType,
     ProposalStatus,
     ScienceBand,
     ScienceMode,
-    ScienceSubtype,
     SkyBackground,
     SlitOffsetMode,
-    SubaruCallForProposalsType,
-    SubaruInstrument,
     TelluricTag,
     TimingWindowInclusion,
     VisitorObservingModeType,
@@ -75,50 +69,11 @@ class CallForProposalsDetails(CallForProposalsCore):
         alias="submissionDeadlineDefault"
     )
     existence: Existence
-    observatory: Observatory
-    gemini: Optional["CallForProposalsDetailsGemini"]
-    keck: Optional["CallForProposalsDetailsKeck"]
-    subaru: Optional["CallForProposalsDetailsSubaru"]
 
 
 class CallForProposalsDetailsActive(BaseModel):
     start: Any
     end: Any
-
-
-class CallForProposalsDetailsGemini(BaseModel):
-    type_: GeminiCallForProposalsType = Field(alias="type")
-    instruments: list[Instrument]
-
-
-class CallForProposalsDetailsKeck(BaseModel):
-    instruments: list[KeckInstrument]
-
-
-class CallForProposalsDetailsSubaru(BaseModel):
-    type_: SubaruCallForProposalsType = Field(alias="type")
-    instruments: list[SubaruInstrument]
-
-
-class CallForProposalsObservatory(BaseModel):
-    observatory: Observatory
-    gemini: Optional["CallForProposalsObservatoryGemini"]
-    keck: Optional["CallForProposalsObservatoryKeck"]
-    subaru: Optional["CallForProposalsObservatorySubaru"]
-
-
-class CallForProposalsObservatoryGemini(BaseModel):
-    type_: GeminiCallForProposalsType = Field(alias="type")
-    instruments: list[Instrument]
-
-
-class CallForProposalsObservatoryKeck(BaseModel):
-    instruments: list[KeckInstrument]
-
-
-class CallForProposalsObservatorySubaru(BaseModel):
-    type_: SubaruCallForProposalsType = Field(alias="type")
-    instruments: list[SubaruInstrument]
 
 
 class ConstraintSetDetails(BaseModel):
@@ -252,25 +207,6 @@ class Flamingos2LongSlitDetailsAcquisitionExposureTimeMode(ExposureTimeModeDetai
     pass
 
 
-class GeminiScienceSubtypeOnProposal(BaseModel):
-    gemini: Optional["GeminiScienceSubtypeOnProposalGemini"]
-
-
-class GeminiScienceSubtypeOnProposalGemini(BaseModel):
-    typename__: Literal[
-        "Classical",
-        "DemoScience",
-        "DirectorsTime",
-        "FastTurnaround",
-        "GeminiProposalType",
-        "LargeProgram",
-        "PoorWeather",
-        "Queue",
-        "SystemVerification",
-    ] = Field(alias="__typename")
-    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
-
-
 class GmosNorthImagingDetails(BaseModel):
     filters: list["GmosNorthImagingDetailsFilters"]
     bin: GmosBinning
@@ -349,36 +285,8 @@ class Igrins2LongSlitDetails(BaseModel):
     telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
 
 
-class Igrins2LongSlitDetailsExposureTimeMode(BaseModel):
-    signal_to_noise: Optional["Igrins2LongSlitDetailsExposureTimeModeSignalToNoise"] = (
-        Field(alias="signalToNoise")
-    )
-    time_and_count: Optional["Igrins2LongSlitDetailsExposureTimeModeTimeAndCount"] = (
-        Field(alias="timeAndCount")
-    )
-
-
-class Igrins2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
-    value: Any
-    at: "Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
-
-
-class Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
-    nanometers: Any
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
-    time: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime"
-    count: Any
-    at: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt"
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
-    seconds: Any
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
-    nanometers: Any
+class Igrins2LongSlitDetailsExposureTimeMode(ExposureTimeModeDetails):
+    pass
 
 
 class Igrins2LongSlitDetailsOffsets(BaseModel):
@@ -423,6 +331,25 @@ class Igrins2LongSlitDetailsExplicitOffsetsP(BaseModel):
 class Igrins2LongSlitDetailsTelluricType(BaseModel):
     tag: TelluricTag
     star_types: Optional[list[str]] = Field(alias="starTypes")
+
+
+class NonsiderealTargetDetails(BaseModel):
+    des: str
+    key_type: EphemerisKeyType = Field(alias="keyType")
+    key: str
+
+
+class ObservationCore(BaseModel):
+    id: Any
+    existence: Existence
+    reference: Optional["ObservationCoreReference"]
+    title: Any
+    instrument: Optional[Instrument]
+    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
+
+
+class ObservationCoreReference(BaseModel):
+    label: Any
 
 
 class VisitorDetails(BaseModel):
@@ -538,47 +465,6 @@ class GhostIfuDetailsSkyPositionRa(BaseModel):
 
 class GhostIfuDetailsSlitViewingCameraExposureTime(BaseModel):
     seconds: Any
-
-
-class Igrins2LongSlitAndVisitorOnObservingMode(BaseModel):
-    igrins_2_long_slit: Optional[
-        "Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit"
-    ] = Field(alias="igrins2LongSlit")
-    visitor: Optional["Igrins2LongSlitAndVisitorOnObservingModeVisitor"]
-    ghost_ifu: Optional["Igrins2LongSlitAndVisitorOnObservingModeGhostIfu"] = Field(
-        alias="ghostIfu"
-    )
-
-
-class Igrins2LongSlitAndVisitorOnObservingModeIgrins2LongSlit(Igrins2LongSlitDetails):
-    pass
-
-
-class Igrins2LongSlitAndVisitorOnObservingModeVisitor(VisitorDetails):
-    pass
-
-
-class Igrins2LongSlitAndVisitorOnObservingModeGhostIfu(GhostIfuDetails):
-    pass
-
-
-class NonsiderealTargetDetails(BaseModel):
-    des: str
-    key_type: EphemerisKeyType = Field(alias="keyType")
-    key: str
-
-
-class ObservationCore(BaseModel):
-    id: Any
-    existence: Existence
-    reference: Optional["ObservationCoreReference"]
-    title: Any
-    instrument: Optional[Instrument]
-    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
-
-
-class ObservationCoreReference(BaseModel):
-    label: Any
 
 
 class ObservingModeDetails(BaseModel):
@@ -992,7 +878,6 @@ class ProgramGroupElementsAllGroupElementsGroupMaximumInterval(BaseModel):
 
 class SchedulerProposal(BaseModel):
     call: Optional["SchedulerProposalCall"]
-    gemini: Optional["SchedulerProposalGemini"]
 
 
 class SchedulerProposalCall(BaseModel):
@@ -1003,21 +888,6 @@ class SchedulerProposalCall(BaseModel):
 class SchedulerProposalCallActive(BaseModel):
     start: Any
     end: Any
-
-
-class SchedulerProposalGemini(BaseModel):
-    typename__: Literal[
-        "Classical",
-        "DemoScience",
-        "DirectorsTime",
-        "FastTurnaround",
-        "GeminiProposalType",
-        "LargeProgram",
-        "PoorWeather",
-        "Queue",
-        "SystemVerification",
-    ] = Field(alias="__typename")
-    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
 
 
 class TargetCore(BaseModel):
@@ -1056,22 +926,19 @@ class TargetProgramSummaryProgram(ProgramCore):
 AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
-CallForProposalsObservatory.model_rebuild()
 ConstraintSetDetails.model_rebuild()
 ExposureTimeModeDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
-GeminiScienceSubtypeOnProposal.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
+NonsiderealTargetDetails.model_rebuild()
+ObservationCore.model_rebuild()
 VisitorDetails.model_rebuild()
 GhostDetectorConfigDetails.model_rebuild()
 GhostIfuDetails.model_rebuild()
-Igrins2LongSlitAndVisitorOnObservingMode.model_rebuild()
-NonsiderealTargetDetails.model_rebuild()
-ObservationCore.model_rebuild()
 ObservingModeDetails.model_rebuild()
 ProgramCore.model_rebuild()
 ScienceRequirementsDetails.model_rebuild()

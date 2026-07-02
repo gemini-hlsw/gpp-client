@@ -41,38 +41,7 @@ class Breakpoint(str, Enum):
     DISABLED = "DISABLED"
 
 
-class Observatory(str, Enum):
-    GEMINI = "GEMINI"
-    KECK = "KECK"
-    SUBARU = "SUBARU"
-
-
-class ExchangePartner(str, Enum):
-    KECK = "KECK"
-    SUBARU = "SUBARU"
-
-
-class KeckInstrument(str, Enum):
-    HIRES = "HIRES"
-    OTHER = "OTHER"
-
-
-class SubaruInstrument(str, Enum):
-    FOCAS = "FOCAS"
-    HDS = "HDS"
-    HSC = "HSC"
-    IRCS = "IRCS"
-    MOIRCS = "MOIRCS"
-    PFS = "PFS"
-    VISITOR = "VISITOR"
-
-
-class SubaruCallForProposalsType(str, Enum):
-    NORMAL = "NORMAL"
-    INTENSIVE = "INTENSIVE"
-
-
-class GeminiCallForProposalsType(str, Enum):
+class CallForProposalsType(str, Enum):
     DEMO_SCIENCE = "DEMO_SCIENCE"
     DIRECTORS_TIME = "DIRECTORS_TIME"
     FAST_TURNAROUND = "FAST_TURNAROUND"
@@ -265,8 +234,7 @@ class Partner(str, Enum):
 
 
 class PartnerLinkType(str, Enum):
-    HAS_GEMINI_PARTNER = "HAS_GEMINI_PARTNER"
-    HAS_EXCHANGE_PARTNER = "HAS_EXCHANGE_PARTNER"
+    HAS_PARTNER = "HAS_PARTNER"
     HAS_NON_PARTNER = "HAS_NON_PARTNER"
     HAS_UNSPECIFIED_PARTNER = "HAS_UNSPECIFIED_PARTNER"
 
