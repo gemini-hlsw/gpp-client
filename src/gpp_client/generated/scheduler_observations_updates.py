@@ -10,6 +10,7 @@ from .enums import (
     EditType,
     EphemerisKeyType,
     ImageQualityPreset,
+    Instrument,
     ObservationWorkflowState,
     SkyBackground,
     TimingWindowInclusion,
@@ -49,6 +50,7 @@ class SchedulerObservationsUpdatesObscalcUpdateValue(BaseModel):
     timing_windows: list[
         "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindows"
     ] = Field(alias="timingWindows")
+    instrument: Optional[Instrument]
 
 
 class SchedulerObservationsUpdatesObscalcUpdateValueProgram(BaseModel):

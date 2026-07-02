@@ -13,6 +13,7 @@ from .enums import (
     BrightnessSurfaceUnits,
     CalculationState,
     CalibrationRole,
+    CallForProposalsType,
     CatalogName,
     ChargeClass,
     CloudExtinctionPreset,
@@ -26,7 +27,6 @@ from .enums import (
     DatasetStage,
     EducationalStatus,
     EphemerisKeyType,
-    ExchangePartner,
     ExecutionEventType,
     Existence,
     Flamingos2CustomSlitWidth,
@@ -47,7 +47,6 @@ from .enums import (
     GcalDiffuser,
     GcalFilter,
     GcalShutter,
-    GeminiCallForProposalsType,
     Gender,
     GhostBinning,
     GhostIfu1FiberAgitator,
@@ -90,12 +89,10 @@ from .enums import (
     ImageQualityPreset,
     ImagingCapability,
     Instrument,
-    KeckInstrument,
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
     MosPreImaging,
     ObservationWorkflowState,
-    Observatory,
     ObserveClass,
     ObservingModeType,
     Partner,
@@ -120,8 +117,6 @@ from .enums import (
     SpectroscopyCapability,
     StellarLibrarySpectrum,
     StepStage,
-    SubaruCallForProposalsType,
-    SubaruInstrument,
     TacCategory,
     TargetDisposition,
     TelluricTag,
@@ -263,76 +258,37 @@ class BandNormalizedSurfaceInput(BaseModel):
     "The brightnesses field is required when creating a new instance of BandNormalizedSurface, but optional when editing"
 
 
-class GeminiCallPropertiesInput(BaseModel):
-    """Gemini-specific CfP properties input."""
+class CallForProposalsPropertiesInput(BaseModel):
+    """The properties of a Call for Proposal in an input for creation and editing."""
 
-    type_: Optional[GeminiCallForProposalsType] = Field(alias=str("type"), default=None)
+    type_: Optional[CallForProposalsType] = Field(alias=str("type"), default=None)
     "Type of the call. Required on create."
+    semester: Optional[Any] = None
+    "Semester associated with the call. Required on create."
+    title: Optional[Any] = None
+    "The CfP title.  If not set then a title will be determined from the CfP\nproperties.  This property is not required on create and may be assigned\na null value to return to the default."
     coordinate_limits: Optional["SiteCoordinateLimitsInput"] = Field(
         alias=str("coordinateLimits"), default=None
     )
     "Coordinate limits.  If not specified, they will default according to the\ncoordinates that are safely visible during the active period of the call."
+    active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
+    "Active period start date (inclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may begin the\nevening of the indicated date at the site of the observation.\n\nThe start date is required on create and must be before the `activeEnd` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
+    active_end: Optional[Any] = Field(alias=str("activeEnd"), default=None)
+    "Active period end date (exclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may end the\nmorning of the indicated date at the site of the observation.\n\nThe end date is required on create and must be after the `activeStart` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
+    submission_deadline_default: Optional[Any] = Field(
+        alias=str("submissionDeadlineDefault"), default=None
+    )
+    "Specifies a submission deadline to use for any partners without an explicit\npartner deadline."
+    partners: Optional[list["CallForProposalsPartnerInput"]] = None
+    "Partners that may participate in the call along with their respective\ndeadlines.  When editing, supply the entire list of all partners. Defaults to\nall partners."
     instruments: Optional[list[Instrument]] = None
     "When specified, the call is limited to the listed instruments.  When not\nspecified, all otherwise available instruments may be used.  When editing,\nsupply the entire list of instruments to set.  Nullable on edit."
     proprietary_months: Optional[Any] = Field(
         alias=str("proprietaryMonths"), default=None
     )
     "The default proprietary period for proposals linked to this call.  If not\nspecified, the default period for the call type will be used."
-    exchange_partners: Optional[list[ExchangePartner]] = Field(
-        alias=str("exchangePartners"), default=None
-    )
-    "Exchange partners that may apply for Gemini time on this call, if any. These\npartners use the `submissionDeadlineDefault` from the shared CfP properties.\nThis value is optional and defaults to an empty array.  It may be assigned a\nnull value to reset it to the empty array."
-
-
-class KeckCallPropertiesInput(BaseModel):
-    """Keck-specific CfP properties input."""
-
-    instruments: Optional[list[KeckInstrument]] = None
-    "When specified, the call is limited to the listed instruments.  When not\nspecified, all otherwise available instruments may be used.  When editing,\nsupply the entire list of instruments to set.  Nullable on edit."
-    coordinate_limits: Optional["CoordinateLimitsInput"] = Field(
-        alias=str("coordinateLimits"), default=None
-    )
-    "Coordinate limits, associated with Keck, for targets that may be observed in\nthis Call for Proposals.   If not specified, they will default according to\nthe coordinates that are safely visible during the active period of the call."
-
-
-class SubaruCallPropertiesInput(BaseModel):
-    """Subaru-specific call for proposals properties input."""
-
-    type_: Optional[SubaruCallForProposalsType] = Field(alias=str("type"), default=None)
-    "Subaru proposal type.  If not specified, defaults to NORMAL."
-    instruments: Optional[list[SubaruInstrument]] = None
-    "When specified, the call is limited to the listed instruments.  When not\nspecified, all otherwise available instruments may be used.  When editing,\nsupply the entire list of instruments to set.  Nullable on edit."
-    coordinate_limits: Optional["CoordinateLimitsInput"] = Field(
-        alias=str("coordinateLimits"), default=None
-    )
-    "Coordinate limits, associated with Subar, for targets that may be observed in\nthis Call for Proposals.   If not specified, they will default according to\nthe coordinates that are safely visible during the active period of the call."
-
-
-class CallForProposalsPropertiesInput(BaseModel):
-    """The properties of a Call for Proposal in an input for creation and editing."""
-
-    semester: Optional[Any] = None
-    "Semester associated with the call. Required on create."
-    title: Optional[Any] = None
-    "The CfP title.  If not set then a title will be determined from the CfP\nproperties.  This property is not required on create and may be assigned\na null value to return to the default."
-    active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
-    "Active period start date (inclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may begin the\nevening of the indicated date at the site of the observation.\n\nThe start date is required on create and must be before the `activeEnd` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
-    active_end: Optional[Any] = Field(alias=str("activeEnd"), default=None)
-    "Active period end date (exclusive) for this call.  The date is considered to\nbe the local date at each observation site.  Observations may end the\nmorning of the indicated date at the site of the observation.\n\nThe end date is required on create and must be after the `activeStart` date.\nNot nullable.  Limited to dates between 1900 and 2100 (exclusive)."
-    partners: Optional[list["CallForProposalsPartnerInput"]] = None
-    "Partners that may participate in the call along with their respective\ndeadlines.  When editing, supply the entire list of all partners. Defaults to\nall partners."
-    submission_deadline_default: Optional[Any] = Field(
-        alias=str("submissionDeadlineDefault"), default=None
-    )
-    "Specifies a submission deadline to use for any partners without an explicit\npartner deadline."
     existence: Optional[Existence] = None
     "DELETED or PRESENT.  On create defaults to PRESENT."
-    gemini: Optional["GeminiCallPropertiesInput"] = None
-    "Gemini-observatory-specific properties.  Set this value for Gemini-bound\nproposals.  If set, neither `keck` nor `subaru` may be non-null.  Exactly\none of `gemini`, `keck` or `subaru` must be non-null."
-    keck: Optional["KeckCallPropertiesInput"] = None
-    "Keck-observatory-specific properties.  Set this value for Keck-bound\nproposals.  If set, neither `gemini` nor `subaru` may be non-null.  Exactly\none of `gemini`, `keck` or `subaru` must be non-null."
-    subaru: Optional["SubaruCallPropertiesInput"] = None
-    "Subaru-observatory-specific properties.  Set this value for Subaru-bound\nproposals.  If set, neither `gemini` nor `keck` may be non-null.  Exactly\none of `gemini`, `keck` or `subaru` must be non-null."
 
 
 class SiteCoordinateLimitsInput(BaseModel):
@@ -356,7 +312,7 @@ class CoordinateLimitsInput(BaseModel):
 
 
 class CallForProposalsPartnerInput(BaseModel):
-    gemini_partner: Partner = Field(alias=str("geminiPartner"))
+    partner: Partner
     submission_deadline_override: Optional[Any] = Field(
         alias=str("submissionDeadlineOverride"), default=None
     )
@@ -1263,18 +1219,13 @@ class ParallaxInput(BaseModel):
 
 
 class PartnerLinkInput(BaseModel):
-    """Describes the user / partner association.  Only one of `linkType`,
-    `geminiPartner`, or `exchangePartner` should be specified, but as long as they
-    are consistent more than one may be supplied."""
+    """Describes the user / partner association.  Only one of `partner` or `linkType`
+    should be specified, but as long as they are consistent both may be supplied."""
 
     link_type: Optional[PartnerLinkType] = Field(alias=str("linkType"), default=None)
-    "Describes the state of the association between a user and a partner. The\nlink type is assumed to be `HAS_GEMINI_PARTNER` if `geminiPartner` is\nspecified, or `HAS_EXCHANGE_PARTNER` if `exchangePartner` is specified.\nOtherwise, if both are `null`, the link type is required."
-    gemini_partner: Optional[Partner] = Field(alias=str("geminiPartner"), default=None)
-    "If the user should be associated with a particular Gemini partner, it is\nspecified here.  Set at most one of `geminiPartner` or `exchangePartner`, and\ndo not also set `linkType`."
-    exchange_partner: Optional[ExchangePartner] = Field(
-        alias=str("exchangePartner"), default=None
-    )
-    "If the user should be associated with a particular exchange partner\ncommunity, it is specified here.  Set at most one of `partner` or\n`exchangePartner`, and do not also set `linkType`."
+    "Describes the state of the association between a user and a partner. The\nlink type is assumed to be `HAS_PARTNER` if the `partner` is specified.\nOtherwise, if `partner` is `null`, the link type is required."
+    partner: Optional[Partner] = None
+    "If the user should be associated with a particular partner, it is specified\nhere.  Only set `partner` or `linkType`, but not both."
 
 
 class PartnerSplitInput(BaseModel):
@@ -1373,7 +1324,7 @@ class ProperMotionInput(BaseModel):
     dec: "ProperMotionComponentInput"
 
 
-class GeminiProposalTypeInput(BaseModel):
+class ProposalTypeInput(BaseModel):
     """Properties associated with particular proposal types.  Exactly one of
     these should be set upon creation or editing."""
 
@@ -1399,37 +1350,13 @@ class GeminiProposalTypeInput(BaseModel):
     )
 
 
-class KeckProposalTypeInput(BaseModel):
-    """Properties for an exchange proposal requesting time at Keck."""
-
-    partner_splits: Optional[list["PartnerSplitInput"]] = Field(
-        alias=str("partnerSplits"), default=None
-    )
-    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
-
-
-class SubaruProposalTypeInput(BaseModel):
-    """Properties for an exchange proposal requesting time at Subaru."""
-
-    type_: Optional[SubaruCallForProposalsType] = Field(alias=str("type"), default=None)
-    "The Subaru call for proposals type.  If not specified, NORMAL is assumed."
-    partner_splits: Optional[list["PartnerSplitInput"]] = Field(
-        alias=str("partnerSplits"), default=None
-    )
-    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
-
-
 class ClassicalInput(BaseModel):
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
-    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified.  Mutually exclusive with\n`exchangePartner`."
-    exchange_partner: Optional[ExchangePartner] = Field(
-        alias=str("exchangePartner"), default=None
-    )
-    "Set when the time request is on behalf of an exchange partner community (the\nPI is from Keck or Subaru); the entire request is associated with it and\n`partnerSplits` must be empty.  Mutually exclusive with `partnerSplits`."
+    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
     aeon_multi_facility: Optional[bool] = Field(
         alias=str("aeonMultiFacility"), default=None
     )
@@ -1521,11 +1448,7 @@ class QueueInput(BaseModel):
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
-    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified.  Mutually exclusive with\n`exchangePartner`."
-    exchange_partner: Optional[ExchangePartner] = Field(
-        alias=str("exchangePartner"), default=None
-    )
-    "Set when the time request is on behalf of an exchange partner community (the\nPI is from Keck or Subaru); the entire request is associated with it and\n`partnerSplits` must be empty.  Mutually exclusive with `partnerSplits`."
+    "The partnerSplits field specifies how time is apportioned over partners. This\nwill default to empty but if specified, the partner percents must sum to 100.\nBy submission time, it must be specified."
     consider_for_band_3: Optional[ConsiderForBand3] = Field(
         alias=str("considerForBand3"), default=None
     )
@@ -1556,12 +1479,8 @@ class ProposalPropertiesInput(BaseModel):
     "The category field may be unset by assigning a null value, or ignored by skipping it altogether"
     call_id: Optional[Any] = Field(alias=str("callId"), default=None)
     "Sets the associated Call for Proposals. This is optional upon creation, but\nmust be set for a successful submission.  Also, the Call for Proposals type\nmust agree with the proposal type (see 'type' below).  For example a Queue\nproposal must be submitted to a Regular Semester Call and a Demo Science\nproposal must be submitted to a Demo Science Call, etc."
-    gemini: Optional["GeminiProposalTypeInput"] = None
-    "Specifies the properties that depend on the Gemini call type. If none of\n'gemini', 'keck' or 'subaru' is set on creation, a regular semester queue\nproposal is assumed.  The selected call properties must match the call (see\n'callId' above) or a submission attempt will fail with an error. Call\nproperties can be edited, but when switching the call type itself, all\nproperties required for that type must be included.  Mutually exclusive with\n'keck' and 'subaru'."
-    keck: Optional["KeckProposalTypeInput"] = None
-    "Specifies the properties of an exchange proposal requesting time at Keck.\nMutually exclusive with 'gemini' and 'subaru'."
-    subaru: Optional["SubaruProposalTypeInput"] = None
-    "Specifies the properties of an exchange proposal requesting time at Subaru.\nMutually exclusive with 'gemini' and 'keck'."
+    type_: Optional["ProposalTypeInput"] = Field(alias=str("type"), default=None)
+    "Specifies the properties that depend on the call type. If not set on creation,\na regular semester queue proposal is assumed.  The selected call properties\nmust match the call (see 'callId' above) or a submission attempt will fail\nwith an error. Call properties can be edited, but when switching the call\ntype itself, all properties required for that type must be included."
 
 
 class RadialVelocityInput(BaseModel):
@@ -2992,6 +2911,10 @@ class WhereCallForProposals(BaseModel):
     "A nested call for proposals filter that must not match in order for the NOT\nitself to match."
     id: Optional["WhereOrderCallForProposalsId"] = None
     "Matches the call for propsals id."
+    type_: Optional["WhereEqCallForProposalsType"] = Field(
+        alias=str("type"), default=None
+    )
+    "Matches the call for proposals type."
     semester: Optional["WhereOrderSemester"] = None
     "Matches the call for proposals semester."
     active_start: Optional["WhereOrderDate"] = Field(
@@ -3002,34 +2925,6 @@ class WhereCallForProposals(BaseModel):
     "Matches the active period end."
     is_open: Optional["WhereBoolean"] = Field(alias=str("isOpen"), default=None)
     "Matches whether the call is still open for some partner."
-    observatory: Optional["WhereObservatoryEq"] = None
-    "Matches the observatory for which proposals are solicited."
-    gemini: Optional["WhereGeminiCallProperties"] = None
-    "Matches Gemini-specific call properties."
-
-
-class WhereObservatoryEq(BaseModel):
-    """Filters on equality of the observatory.  All supplied criteria must match, but
-    usually only one is selected.  E.g., 'EQ: GEMINI'"""
-
-    eq: Optional[Observatory] = Field(alias=str("EQ"), default=None)
-    "Matches if the observatory is exactly the supplied value."
-    neq: Optional[Observatory] = Field(alias=str("NEQ"), default=None)
-    "Matches if the observatory is not the supplied value."
-    in_: Optional[list[Observatory]] = Field(alias=str("IN"), default=None)
-    "Matches if the observatory is any of the supplied options."
-    nin: Optional[list[Observatory]] = Field(alias=str("NIN"), default=None)
-    "Matches if the observatory is none of the supplied values."
-
-
-class WhereGeminiCallProperties(BaseModel):
-    """Gemini-specific call for proposals filter options. All specified items must
-    match.  Only Gemini calls can match a `WhereGeminiCallProperties` filter."""
-
-    type_: Optional["WhereEqGeminiCallForProposalsType"] = Field(
-        alias=str("type"), default=None
-    )
-    "Matches the call for proposals type."
     allows_non_partner_pi: Optional["WhereBoolean"] = Field(
         alias=str("allowsNonPartnerPi"), default=None
     )
@@ -3146,21 +3041,17 @@ class WhereDatasetReference(BaseModel):
     "Matches the exposure index."
 
 
-class WhereEqGeminiCallForProposalsType(BaseModel):
+class WhereEqCallForProposalsType(BaseModel):
     """Filters on equality (or not) of the call for proposals type.  All supplied
     criteria must match, but usually only one is selected."""
 
-    eq: Optional[GeminiCallForProposalsType] = Field(alias=str("EQ"), default=None)
+    eq: Optional[CallForProposalsType] = Field(alias=str("EQ"), default=None)
     "Matches if the call for proposals type is exactly the supplied value."
-    neq: Optional[GeminiCallForProposalsType] = Field(alias=str("NEQ"), default=None)
+    neq: Optional[CallForProposalsType] = Field(alias=str("NEQ"), default=None)
     "Matches if the call for proposals type is not the supplied value."
-    in_: Optional[list[GeminiCallForProposalsType]] = Field(
-        alias=str("IN"), default=None
-    )
+    in_: Optional[list[CallForProposalsType]] = Field(alias=str("IN"), default=None)
     "Matches if the call for proposals type is any of the supplied options."
-    nin: Optional[list[GeminiCallForProposalsType]] = Field(
-        alias=str("NIN"), default=None
-    )
+    nin: Optional[list[CallForProposalsType]] = Field(alias=str("NIN"), default=None)
     "Matches if the call for proposals type is none of the supplied values."
 
 
@@ -3628,22 +3519,6 @@ class WhereOptionEqPartner(BaseModel):
     "Matches if the partner is any of the supplied options."
     nin: Optional[list[Partner]] = Field(alias=str("NIN"), default=None)
     "Matches if the partner is none of the supplied values."
-
-
-class WhereOptionEqExchangePartner(BaseModel):
-    """Filters on equality (or not) of the (optional) exchange partner. All supplied
-    criteria must match, but usually only one is selected."""
-
-    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
-    "When `true`, matches if the exchange partner is not defined. When `false`\nmatches if the exchange partner is defined."
-    eq: Optional[ExchangePartner] = Field(alias=str("EQ"), default=None)
-    "Matches if the exchange partrner is exactly the supplied value."
-    neq: Optional[ExchangePartner] = Field(alias=str("NEQ"), default=None)
-    "Matches if the exchange partner is not the supplied value."
-    in_: Optional[list[ExchangePartner]] = Field(alias=str("IN"), default=None)
-    "Matches if the exchange partner is any of the supplied options."
-    nin: Optional[list[ExchangePartner]] = Field(alias=str("NIN"), default=None)
-    "Matches if the exchange partner is none of the supplied values."
 
 
 class WhereOptionEqQaState(BaseModel):
@@ -4356,14 +4231,8 @@ class WherePartnerLink(BaseModel):
         alias=str("linkType"), default=None
     )
     "Matches on equality of the link type."
-    gemini_partner: Optional["WhereOptionEqPartner"] = Field(
-        alias=str("geminiPartner"), default=None
-    )
-    "Matches on the partner itself, if applicable.  Only `HAS_GEMINI_PARTNER` link\ntypes will have a partner.  For other link types it will be `null`."
-    exchange_partner: Optional["WhereOptionEqExchangePartner"] = Field(
-        alias=str("exchangePartner"), default=None
-    )
-    "Matches on the exchange partner itself, if applicable.  Only\n`HAS_EXCHANGE_PARTNER` link types will have an exchange partner.  For other\nlink types it will be `null`."
+    partner: Optional["WhereOptionEqPartner"] = None
+    "Matches on the partner itself, if applicable.  Only `HAS_PARTNER` link types\nwill have a partner.  For other link types it will be `null`."
 
 
 class WhereProgram(BaseModel):
@@ -4907,9 +4776,6 @@ AddTimeChargeCorrectionInput.model_rebuild()
 AllocationInput.model_rebuild()
 BandNormalizedIntegratedInput.model_rebuild()
 BandNormalizedSurfaceInput.model_rebuild()
-GeminiCallPropertiesInput.model_rebuild()
-KeckCallPropertiesInput.model_rebuild()
-SubaruCallPropertiesInput.model_rebuild()
 CallForProposalsPropertiesInput.model_rebuild()
 SiteCoordinateLimitsInput.model_rebuild()
 CoordinateLimitsInput.model_rebuild()
@@ -4969,9 +4835,7 @@ PosAngleConstraintInput.model_rebuild()
 ProgramPropertiesInput.model_rebuild()
 ProgramUserPropertiesInput.model_rebuild()
 ProperMotionInput.model_rebuild()
-GeminiProposalTypeInput.model_rebuild()
-KeckProposalTypeInput.model_rebuild()
-SubaruProposalTypeInput.model_rebuild()
+ProposalTypeInput.model_rebuild()
 ClassicalInput.model_rebuild()
 LargeProgramInput.model_rebuild()
 QueueInput.model_rebuild()
@@ -5045,7 +4909,6 @@ CreateConfigurationRequestInput.model_rebuild()
 TimeChargeCorrectionInput.model_rebuild()
 WhereAngle.model_rebuild()
 WhereCallForProposals.model_rebuild()
-WhereGeminiCallProperties.model_rebuild()
 WhereAttachment.model_rebuild()
 WhereDataset.model_rebuild()
 WhereDatasetReference.model_rebuild()

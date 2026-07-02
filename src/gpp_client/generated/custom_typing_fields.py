@@ -79,24 +79,6 @@ class BiasGraphQLField(GraphQLField):
         return self
 
 
-class GeminiCallPropertiesGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GeminiCallPropertiesGraphQLField":
-        self._alias = alias
-        return self
-
-
-class KeckCallPropertiesGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "KeckCallPropertiesGraphQLField":
-        self._alias = alias
-        return self
-
-
-class SubaruCallPropertiesGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SubaruCallPropertiesGraphQLField":
-        self._alias = alias
-        return self
-
-
 class CallForProposalsGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CallForProposalsGraphQLField":
         self._alias = alias
@@ -487,14 +469,8 @@ class PartnerLinkGraphQLField(GraphQLField):
         return self
 
 
-class HasGeminiPartnerGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "HasGeminiPartnerGraphQLField":
-        self._alias = alias
-        return self
-
-
-class HasExchangePartnerGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "HasExchangePartnerGraphQLField":
+class HasPartnerGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "HasPartnerGraphQLField":
         self._alias = alias
         return self
 
@@ -529,20 +505,8 @@ class ProgramUserGraphQLField(GraphQLField):
         return self
 
 
-class GeminiProposalTypeGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GeminiProposalTypeGraphQLField":
-        self._alias = alias
-        return self
-
-
-class KeckProposalTypeGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "KeckProposalTypeGraphQLField":
-        self._alias = alias
-        return self
-
-
-class SubaruProposalTypeGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SubaruProposalTypeGraphQLField":
+class ProposalTypeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ProposalTypeGraphQLField":
         self._alias = alias
         return self
 
