@@ -1778,24 +1778,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -1815,7 +1797,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -1832,7 +1828,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -1884,7 +1894,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -2213,24 +2237,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -2250,7 +2256,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -2267,7 +2287,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -2319,7 +2353,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -2649,24 +2697,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -2686,7 +2716,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -2703,7 +2747,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -2755,7 +2813,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -3087,24 +3159,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -3124,7 +3178,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -3141,7 +3209,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -3193,7 +3275,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -3528,24 +3624,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -3565,7 +3643,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -3582,7 +3674,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -3634,7 +3740,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -3969,24 +4089,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -4006,7 +4108,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -4023,7 +4139,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -4075,7 +4205,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -4407,24 +4551,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -4444,7 +4570,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -4461,7 +4601,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -4513,7 +4667,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -4845,24 +5013,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -4882,7 +5032,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -4899,7 +5063,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -4951,7 +5129,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -5283,24 +5475,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -5320,7 +5494,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -5337,7 +5525,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -5389,7 +5591,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -5722,24 +5938,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -5759,7 +5957,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -5776,7 +5988,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -5828,7 +6054,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode
@@ -6168,24 +6408,6 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
-            fragment ExposureTimeModeDetails on ExposureTimeMode {
-              signalToNoise {
-                value
-                at {
-                  nanometers
-                }
-              }
-              timeAndCount {
-                time {
-                  seconds
-                }
-                count
-                at {
-                  nanometers
-                }
-              }
-            }
-
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -6205,7 +6427,21 @@ class GraphQLClient(AsyncBaseClient):
                 starTypes
               }
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               explicitReadMode
               explicitReads
@@ -6222,7 +6458,21 @@ class GraphQLClient(AsyncBaseClient):
               }
               acquisition {
                 exposureTimeMode {
-                  ...ExposureTimeModeDetails
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
                 }
               }
               initialDisperser
@@ -6274,7 +6524,21 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
-                ...ExposureTimeModeDetails
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
               }
               offsetMode
               defaultOffsetMode

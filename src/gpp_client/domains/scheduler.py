@@ -84,6 +84,8 @@ class SchedulerDomain(BaseDomain):
         """
         obs_atoms_mapping = {}
         for atom_digest in atom_digest_response:
+            if not atom_digest.strip():
+                continue
             (
                 obs_id,
                 atom_idx,
@@ -247,12 +249,14 @@ class SchedulerDomain(BaseDomain):
         obs_mapping = {o["id"]: o for o in obs_payload["matches"]}
 
         # Get sequence
-        async with self._rest as client:
-            atom_digest_response = (await client._get_atom_digests(observations)).split(
-                "\n"
-            )
-
-        obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
+        if observations:
+            async with self._rest as client:
+                atom_digest_response = (
+                    await client._get_atom_digests(observations)
+                ).split("\n")
+            obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
+        else:
+            obs_atoms_mapping = {}
 
         # Fill groups with the data above.
         for program in programs:
