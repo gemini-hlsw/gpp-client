@@ -105,38 +105,6 @@ class ConstraintSetDetailsElevationRangeHourAngle(BaseModel):
     max_hours: Any = Field(alias="maxHours")
 
 
-class ExposureTimeModeDetails(BaseModel):
-    signal_to_noise: Optional["ExposureTimeModeDetailsSignalToNoise"] = Field(
-        alias="signalToNoise"
-    )
-    time_and_count: Optional["ExposureTimeModeDetailsTimeAndCount"] = Field(
-        alias="timeAndCount"
-    )
-
-
-class ExposureTimeModeDetailsSignalToNoise(BaseModel):
-    value: Any
-    at: "ExposureTimeModeDetailsSignalToNoiseAt"
-
-
-class ExposureTimeModeDetailsSignalToNoiseAt(BaseModel):
-    nanometers: Any
-
-
-class ExposureTimeModeDetailsTimeAndCount(BaseModel):
-    time: "ExposureTimeModeDetailsTimeAndCountTime"
-    count: Any
-    at: "ExposureTimeModeDetailsTimeAndCountAt"
-
-
-class ExposureTimeModeDetailsTimeAndCountTime(BaseModel):
-    seconds: Any
-
-
-class ExposureTimeModeDetailsTimeAndCountAt(BaseModel):
-    nanometers: Any
-
-
 class Flamingos2LongSlitDetails(BaseModel):
     decker: Flamingos2Decker
     default_decker: Flamingos2Decker = Field(alias="defaultDecker")
@@ -180,8 +148,36 @@ class Flamingos2LongSlitDetailsTelluricType(BaseModel):
     star_types: Optional[list[str]] = Field(alias="starTypes")
 
 
-class Flamingos2LongSlitDetailsExposureTimeMode(ExposureTimeModeDetails):
-    pass
+class Flamingos2LongSlitDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "Flamingos2LongSlitDetailsExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "Flamingos2LongSlitDetailsExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class Flamingos2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "Flamingos2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class Flamingos2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
+    time: "Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountAt"
+
+
+class Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
 
 
 class Flamingos2LongSlitDetailsOffsets(BaseModel):
@@ -203,8 +199,36 @@ class Flamingos2LongSlitDetailsAcquisition(BaseModel):
     )
 
 
-class Flamingos2LongSlitDetailsAcquisitionExposureTimeMode(ExposureTimeModeDetails):
-    pass
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "Flamingos2LongSlitDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "Flamingos2LongSlitDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+
+
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    time: "Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+
+
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
 
 
 class GmosNorthImagingDetails(BaseModel):
@@ -285,8 +309,36 @@ class Igrins2LongSlitDetails(BaseModel):
     telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
 
 
-class Igrins2LongSlitDetailsExposureTimeMode(ExposureTimeModeDetails):
-    pass
+class Igrins2LongSlitDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["Igrins2LongSlitDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["Igrins2LongSlitDetailsExposureTimeModeTimeAndCount"] = (
+        Field(alias="timeAndCount")
+    )
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
+    time: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
 
 
 class Igrins2LongSlitDetailsOffsets(BaseModel):
@@ -927,7 +979,6 @@ AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
 ConstraintSetDetails.model_rebuild()
-ExposureTimeModeDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()

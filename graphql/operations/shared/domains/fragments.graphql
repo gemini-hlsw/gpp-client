@@ -41,23 +41,10 @@ fragment TimingWindowDetails on TimingWindow {
   }
 }
 
-fragment ExposureTimeModeDetails on ExposureTimeMode {
-  signalToNoise {
-    value
-    at {
-      nanometers
-    }
-  }
-  timeAndCount {
-    time {
-      seconds
-    }
-    count
-    at {
-      nanometers
-    }
-  }
-}
+# NOTE: do not factor exposureTimeMode selections into a shared
+# `ExposureTimeModeDetails` fragment. Grackle (the ODB server) raises a false
+# "Fragment cycle" validation error when two sibling fragments spread the same
+# fragment by name (see GPC-151); the selections below must stay inlined.
 
 fragment GmosNorthLongSlitDetails on GmosNorthLongSlit {
   grating
@@ -120,7 +107,21 @@ fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
     starTypes
   }
   exposureTimeMode {
-    ...ExposureTimeModeDetails
+    signalToNoise {
+      value
+      at {
+        nanometers
+      }
+    }
+    timeAndCount {
+      time {
+        seconds
+      }
+      count
+      at {
+        nanometers
+      }
+    }
   }
   explicitReadMode
   explicitReads
@@ -137,7 +138,21 @@ fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
   }
   acquisition {
     exposureTimeMode {
-      ...ExposureTimeModeDetails
+      signalToNoise {
+        value
+        at {
+          nanometers
+        }
+      }
+      timeAndCount {
+        time {
+          seconds
+        }
+        count
+        at {
+          nanometers
+        }
+      }
     }
   }
   initialDisperser
@@ -218,9 +233,23 @@ fragment VisitorDetails on Visitor {
 }
 
 fragment Igrins2LongSlitDetails on Igrins2LongSlit {
-   exposureTimeMode {
-      ...ExposureTimeModeDetails
-   }
+  exposureTimeMode {
+    signalToNoise {
+      value
+      at {
+        nanometers
+      }
+    }
+    timeAndCount {
+      time {
+        seconds
+      }
+      count
+      at {
+        nanometers
+      }
+    }
+  }
   offsetMode
   defaultOffsetMode
   explicitOffsetMode
