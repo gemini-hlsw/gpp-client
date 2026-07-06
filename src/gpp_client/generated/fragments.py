@@ -17,6 +17,7 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
+    GeminiCallForProposalsType,
     GhostBinning,
     GhostIfu1FiberAgitator,
     GhostIfu2FiberAgitator,
@@ -31,15 +32,20 @@ from .enums import (
     GmosSouthGrating,
     ImageQualityPreset,
     Instrument,
+    KeckInstrument,
     ObservationValidationCode,
     ObservationWorkflowState,
+    Observatory,
     ObservingModeType,
     ProgramType,
     ProposalStatus,
     ScienceBand,
     ScienceMode,
+    ScienceSubtype,
     SkyBackground,
     SlitOffsetMode,
+    SubaruCallForProposalsType,
+    SubaruInstrument,
     TelluricTag,
     TimingWindowInclusion,
     VisitorObservingModeType,
@@ -60,6 +66,24 @@ class AttachmentDetails(BaseModel):
 class CallForProposalsCore(BaseModel):
     id: Any
     title: Any
+    observatory: Observatory
+    gemini: Optional["CallForProposalsCoreGemini"]
+    keck: Optional["CallForProposalsCoreKeck"]
+    subaru: Optional["CallForProposalsCoreSubaru"]
+
+
+class CallForProposalsCoreGemini(BaseModel):
+    type_: GeminiCallForProposalsType = Field(alias="type")
+    instruments: list[Instrument]
+
+
+class CallForProposalsCoreKeck(BaseModel):
+    instruments: list[KeckInstrument]
+
+
+class CallForProposalsCoreSubaru(BaseModel):
+    type_: SubaruCallForProposalsType = Field(alias="type")
+    instruments: list[SubaruInstrument]
 
 
 class CallForProposalsDetails(CallForProposalsCore):
@@ -520,7 +544,7 @@ class GhostIfuDetailsSlitViewingCameraExposureTime(BaseModel):
 
 
 class ObservingModeDetails(BaseModel):
-    instrument: Instrument
+    instrument: Optional[Instrument]
     mode: ObservingModeType
     gmos_north_long_slit: Optional["ObservingModeDetailsGmosNorthLongSlit"] = Field(
         alias="gmosNorthLongSlit"
@@ -871,16 +895,50 @@ class ProgramDetailActive(BaseModel):
 
 class ProgramDetailProposal(BaseModel):
     call: Optional["ProgramDetailProposalCall"]
+    gemini: Optional["ProgramDetailProposalGemini"]
 
 
 class ProgramDetailProposalCall(BaseModel):
     semester: Any
     active: "ProgramDetailProposalCallActive"
+    observatory: Observatory
+    gemini: Optional["ProgramDetailProposalCallGemini"]
+    keck: Optional["ProgramDetailProposalCallKeck"]
+    subaru: Optional["ProgramDetailProposalCallSubaru"]
 
 
 class ProgramDetailProposalCallActive(BaseModel):
     start: Any
     end: Any
+
+
+class ProgramDetailProposalCallGemini(BaseModel):
+    type_: GeminiCallForProposalsType = Field(alias="type")
+    instruments: list[Instrument]
+
+
+class ProgramDetailProposalCallKeck(BaseModel):
+    instruments: list[KeckInstrument]
+
+
+class ProgramDetailProposalCallSubaru(BaseModel):
+    type_: SubaruCallForProposalsType = Field(alias="type")
+    instruments: list[SubaruInstrument]
+
+
+class ProgramDetailProposalGemini(BaseModel):
+    typename__: Literal[
+        "Classical",
+        "DemoScience",
+        "DirectorsTime",
+        "FastTurnaround",
+        "GeminiProposalType",
+        "LargeProgram",
+        "PoorWeather",
+        "Queue",
+        "SystemVerification",
+    ] = Field(alias="__typename")
+    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
 
 
 class ProgramDetailPi(BaseModel):

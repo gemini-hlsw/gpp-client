@@ -20,6 +20,22 @@ fragment ProgramDetail on Program {
         start
         end
       }
+      observatory
+      gemini {
+        type
+        instruments
+      }
+      keck {
+        instruments
+      }
+      subaru {
+        type
+        instruments
+      }
+    }
+    gemini {
+       __typename
+       scienceSubtype
     }
   }
   pi {

@@ -79,6 +79,24 @@ class BiasGraphQLField(GraphQLField):
         return self
 
 
+class GeminiCallPropertiesGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GeminiCallPropertiesGraphQLField":
+        self._alias = alias
+        return self
+
+
+class KeckCallPropertiesGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "KeckCallPropertiesGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SubaruCallPropertiesGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SubaruCallPropertiesGraphQLField":
+        self._alias = alias
+        return self
+
+
 class CallForProposalsGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CallForProposalsGraphQLField":
         self._alias = alias
@@ -469,8 +487,14 @@ class PartnerLinkGraphQLField(GraphQLField):
         return self
 
 
-class HasPartnerGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "HasPartnerGraphQLField":
+class HasGeminiPartnerGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "HasGeminiPartnerGraphQLField":
+        self._alias = alias
+        return self
+
+
+class HasExchangePartnerGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "HasExchangePartnerGraphQLField":
         self._alias = alias
         return self
 
@@ -505,8 +529,20 @@ class ProgramUserGraphQLField(GraphQLField):
         return self
 
 
-class ProposalTypeGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ProposalTypeGraphQLField":
+class GeminiProposalTypeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GeminiProposalTypeGraphQLField":
+        self._alias = alias
+        return self
+
+
+class KeckProposalTypeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "KeckProposalTypeGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SubaruProposalTypeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SubaruProposalTypeGraphQLField":
         self._alias = alias
         return self
 
@@ -609,6 +645,12 @@ class SmartGcalGraphQLField(GraphQLField):
 
 class VisitorGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "VisitorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ExchangeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ExchangeGraphQLField":
         self._alias = alias
         return self
 
@@ -1231,14 +1273,26 @@ class Igrins2LongSlitGraphQLField(GraphQLField):
         return self
 
 
-class GnirsLongSlitAcquisitionGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GnirsLongSlitAcquisitionGraphQLField":
+class GnirsSpectroscopyAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsSpectroscopyAcquisitionGraphQLField":
         self._alias = alias
         return self
 
 
-class GnirsLongSlitGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GnirsLongSlitGraphQLField":
+class GnirsSpectroscopyGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsSpectroscopyGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GnirsSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GnirsIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsIfuGraphQLField":
         self._alias = alias
         return self
 
@@ -1663,6 +1717,12 @@ class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
 
 class ConfigurationGnirsLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGnirsLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGnirsIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGnirsIfuGraphQLField":
         self._alias = alias
         return self
 

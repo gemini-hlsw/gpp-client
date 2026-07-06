@@ -41,7 +41,38 @@ class Breakpoint(str, Enum):
     DISABLED = "DISABLED"
 
 
-class CallForProposalsType(str, Enum):
+class Observatory(str, Enum):
+    GEMINI = "GEMINI"
+    KECK = "KECK"
+    SUBARU = "SUBARU"
+
+
+class ExchangePartner(str, Enum):
+    KECK = "KECK"
+    SUBARU = "SUBARU"
+
+
+class KeckInstrument(str, Enum):
+    HIRES = "HIRES"
+    OTHER = "OTHER"
+
+
+class SubaruInstrument(str, Enum):
+    FOCAS = "FOCAS"
+    HDS = "HDS"
+    HSC = "HSC"
+    IRCS = "IRCS"
+    MOIRCS = "MOIRCS"
+    PFS = "PFS"
+    VISITOR = "VISITOR"
+
+
+class SubaruCallForProposalsType(str, Enum):
+    NORMAL = "NORMAL"
+    INTENSIVE = "INTENSIVE"
+
+
+class GeminiCallForProposalsType(str, Enum):
     DEMO_SCIENCE = "DEMO_SCIENCE"
     DIRECTORS_TIME = "DIRECTORS_TIME"
     FAST_TURNAROUND = "FAST_TURNAROUND"
@@ -234,7 +265,8 @@ class Partner(str, Enum):
 
 
 class PartnerLinkType(str, Enum):
-    HAS_PARTNER = "HAS_PARTNER"
+    HAS_GEMINI_PARTNER = "HAS_GEMINI_PARTNER"
+    HAS_EXCHANGE_PARTNER = "HAS_EXCHANGE_PARTNER"
     HAS_NON_PARTNER = "HAS_NON_PARTNER"
     HAS_UNSPECIFIED_PARTNER = "HAS_UNSPECIFIED_PARTNER"
 
@@ -395,6 +427,8 @@ class CloudExtinctionPreset(str, Enum):
 class ObservingModeType(str, Enum):
     ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
     ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
+    EXCHANGE_KECK = "EXCHANGE_KECK"
+    EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
     FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
     FLAMINGOS_2_LONG_SLIT = "FLAMINGOS_2_LONG_SLIT"
     GHOST_IFU = "GHOST_IFU"
@@ -403,6 +437,7 @@ class ObservingModeType(str, Enum):
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
     GMOS_SOUTH_LONG_SLIT = "GMOS_SOUTH_LONG_SLIT"
     GNIRS_LONG_SLIT = "GNIRS_LONG_SLIT"
+    GNIRS_IFU = "GNIRS_IFU"
     IGRINS_2_LONG_SLIT = "IGRINS_2_LONG_SLIT"
     MAROON_X = "MAROON_X"
     VISITOR_NORTH = "VISITOR_NORTH"
@@ -419,6 +454,11 @@ class VisitorObservingModeType(str, Enum):
     VISITOR_SOUTH = "VISITOR_SOUTH"
     ZORRO_SPECKLE = "ZORRO_SPECKLE"
     ZORRO_WIDE_FIELD = "ZORRO_WIDE_FIELD"
+
+
+class ExchangeObservingModeType(str, Enum):
+    EXCHANGE_KECK = "EXCHANGE_KECK"
+    EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
 
 
 class CoolStarTemperature(str, Enum):
@@ -882,6 +922,11 @@ class GnirsFpuSlit(str, Enum):
     LONG_SLIT_1_00 = "LONG_SLIT_1_00"
 
 
+class GnirsFpuIfu(str, Enum):
+    LOW_RESOLUTION = "LOW_RESOLUTION"
+    HIGH_RESOLUTION = "HIGH_RESOLUTION"
+
+
 class GnirsFpuOther(str, Enum):
     ACQUISITION = "ACQUISITION"
     PUPIL_VIEWER = "PUPIL_VIEWER"
@@ -914,6 +959,8 @@ class GnirsDecker(str, Enum):
     LONG_CAM_LONG_SLIT = "LONG_CAM_LONG_SLIT"
     SHORT_CAM_LONG_SLIT = "SHORT_CAM_LONG_SLIT"
     LONG_CAM_CROSS_DISPERSED = "LONG_CAM_CROSS_DISPERSED"
+    LOW_RESOLUTION_IFU = "LOW_RESOLUTION_IFU"
+    HIGH_RESOLUTION_IFU = "HIGH_RESOLUTION_IFU"
 
 
 class ItcType(str, Enum):

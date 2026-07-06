@@ -57,6 +57,7 @@ from .custom_typing_fields import (
     ConfigurationGmosNorthLongSlitGraphQLField,
     ConfigurationGmosSouthImagingGraphQLField,
     ConfigurationGmosSouthLongSlitGraphQLField,
+    ConfigurationGnirsIfuGraphQLField,
     ConfigurationGnirsLongSlitGraphQLField,
     ConfigurationGraphQLField,
     ConfigurationIgrins2LongSlitGraphQLField,
@@ -104,6 +105,7 @@ from .custom_typing_fields import (
     EngineeringProgramReferenceGraphQLField,
     EnumeratedTelescopeConfigGeneratorGraphQLField,
     ExampleProgramReferenceGraphQLField,
+    ExchangeGraphQLField,
     ExecutionConfigGraphQLField,
     ExecutionDigestGraphQLField,
     ExecutionEventGraphQLField,
@@ -128,6 +130,8 @@ from .custom_typing_fields import (
     FluxDensityEntryGraphQLField,
     GaussianSourceGraphQLField,
     GcalGraphQLField,
+    GeminiCallPropertiesGraphQLField,
+    GeminiProposalTypeGraphQLField,
     GhostAtomGraphQLField,
     GhostDetectorConfigGraphQLField,
     GhostDetectorGraphQLField,
@@ -174,8 +178,10 @@ from .custom_typing_fields import (
     GnirsDynamicGraphQLField,
     GnirsExecutionConfigGraphQLField,
     GnirsExecutionSequenceGraphQLField,
-    GnirsLongSlitAcquisitionGraphQLField,
-    GnirsLongSlitGraphQLField,
+    GnirsIfuGraphQLField,
+    GnirsSlitGraphQLField,
+    GnirsSpectroscopyAcquisitionGraphQLField,
+    GnirsSpectroscopyGraphQLField,
     GnirsStaticGraphQLField,
     GnirsStepGraphQLField,
     GoaPropertiesGraphQLField,
@@ -185,8 +191,9 @@ from .custom_typing_fields import (
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
+    HasExchangePartnerGraphQLField,
+    HasGeminiPartnerGraphQLField,
     HasNonPartnerGraphQLField,
-    HasPartnerGraphQLField,
     HasUnspecifiedPartnerGraphQLField,
     HourAngleRangeGraphQLField,
     Igrins2AtomGraphQLField,
@@ -215,6 +222,8 @@ from .custom_typing_fields import (
     ItcResultGraphQLField,
     ItcResultSetGraphQLField,
     ItcSpectroscopyGraphQLField,
+    KeckCallPropertiesGraphQLField,
+    KeckProposalTypeGraphQLField,
     LargeProgramGraphQLField,
     LibraryProgramReferenceGraphQLField,
     LineFluxIntegratedGraphQLField,
@@ -252,7 +261,6 @@ from .custom_typing_fields import (
     ProperMotionRAGraphQLField,
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
-    ProposalTypeGraphQLField,
     QueueGraphQLField,
     RadialVelocityGraphQLField,
     RandomTelescopeConfigGeneratorGraphQLField,
@@ -308,6 +316,8 @@ from .custom_typing_fields import (
     StepEventGraphQLField,
     StepRecordGraphQLField,
     StepRecordSelectResultGraphQLField,
+    SubaruCallPropertiesGraphQLField,
+    SubaruProposalTypeGraphQLField,
     SystemProgramReferenceGraphQLField,
     SystemVerificationGraphQLField,
     TargetEnvironmentGraphQLField,
@@ -1284,15 +1294,8 @@ class CallForProposalsFields(GraphQLField):
     "The unique Call for Proposals id associated with this Call."
     title: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("title")
     "The title of this Call for Proposals."
-    type_: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("type")
-    "Describes which type of proposals are being accepted."
     semester: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("semester")
     "The semester associated with the Call.  Some types may have multiple Calls\nper semester."
-
-    @classmethod
-    def coordinate_limits(cls) -> "SiteCoordinateLimitsFields":
-        """Coordinate limits for targets that may be observed in this Call for Proposals."""
-        return SiteCoordinateLimitsFields("coordinateLimits")
 
     @classmethod
     def active(cls) -> "DateIntervalFields":
@@ -1300,36 +1303,40 @@ class CallForProposalsFields(GraphQLField):
         observed."""
         return DateIntervalFields("active")
 
-    submission_deadline_default: "CallForProposalsGraphQLField" = (
-        CallForProposalsGraphQLField("submissionDeadlineDefault")
-    )
-    "The submission deadline to use for any partners without an explicit partner\ndeadline."
-
     @classmethod
     def partners(cls) -> "CallForProposalsPartnerFields":
         """Partners that may participate in this Call."""
         return CallForProposalsPartnerFields("partners")
 
-    allows_non_partner_pi: "CallForProposalsGraphQLField" = (
-        CallForProposalsGraphQLField("allowsNonPartnerPi")
+    submission_deadline_default: "CallForProposalsGraphQLField" = (
+        CallForProposalsGraphQLField("submissionDeadlineDefault")
     )
-    "Whether this Call allows PIs without a partner to participate."
-    non_partner_deadline: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "nonPartnerDeadline"
-    )
-    "The submission deadline for non-partner PIs, when allowed to participate."
-    instruments: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "instruments"
-    )
-    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
-    proprietary_months: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
-        "proprietaryMonths"
-    )
-    "Default proprietary period to use for propograms linked to this Call."
+    "The submission deadline to use for any partners without an explicit partner\ndeadline."
     existence: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
         "existence"
     )
     "Whether this Call is PRESENT or has been DELETED."
+    observatory: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
+        "observatory"
+    )
+    "The observatory for which proposals are being solicited.  Eactly one of\n`gemini`, `keck` or `subaru` will be non-null, corresponding to this value."
+
+    @classmethod
+    def gemini(cls) -> "GeminiCallPropertiesFields":
+        """Gemini-observatory-specific properties.  Non-null iff the `observatory` is
+        GEMINI."""
+        return GeminiCallPropertiesFields("gemini")
+
+    @classmethod
+    def keck(cls) -> "KeckCallPropertiesFields":
+        """Keck-observatory-specific properties.  Non-null iff the `observatory` is KECK."""
+        return KeckCallPropertiesFields("keck")
+
+    @classmethod
+    def subaru(cls) -> "SubaruCallPropertiesFields":
+        """Subaru-observatory-specific properties.  Non-null iff the `observatory` is
+        SUBARU."""
+        return SubaruCallPropertiesFields("subaru")
 
     def fields(
         self,
@@ -1337,7 +1344,9 @@ class CallForProposalsFields(GraphQLField):
             CallForProposalsGraphQLField,
             "CallForProposalsPartnerFields",
             "DateIntervalFields",
-            "SiteCoordinateLimitsFields",
+            "GeminiCallPropertiesFields",
+            "KeckCallPropertiesFields",
+            "SubaruCallPropertiesFields",
         ],
     ) -> "CallForProposalsFields":
         """Subfields should come from the CallForProposalsFields class"""
@@ -1352,8 +1361,8 @@ class CallForProposalsFields(GraphQLField):
 class CallForProposalsPartnerFields(GraphQLField):
     """Groups a partner with its submission deadline."""
 
-    partner: "CallForProposalsPartnerGraphQLField" = (
-        CallForProposalsPartnerGraphQLField("partner")
+    gemini_partner: "CallForProposalsPartnerGraphQLField" = (
+        CallForProposalsPartnerGraphQLField("geminiPartner")
     )
     submission_deadline_override: "CallForProposalsPartnerGraphQLField" = (
         CallForProposalsPartnerGraphQLField("submissionDeadlineOverride")
@@ -1531,6 +1540,8 @@ class ClassicalFields(GraphQLField):
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
+    exchange_partner: "ClassicalGraphQLField" = ClassicalGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     aeon_multi_facility: "ClassicalGraphQLField" = ClassicalGraphQLField(
         "aeonMultiFacility"
     )
@@ -1933,6 +1944,24 @@ class ConfigurationGmosSouthLongSlitFields(GraphQLField):
         return self
 
 
+class ConfigurationGnirsIfuFields(GraphQLField):
+    grating: "ConfigurationGnirsIfuGraphQLField" = ConfigurationGnirsIfuGraphQLField(
+        "grating"
+    )
+    fpu: "ConfigurationGnirsIfuGraphQLField" = ConfigurationGnirsIfuGraphQLField("fpu")
+
+    def fields(
+        self, *subfields: ConfigurationGnirsIfuGraphQLField
+    ) -> "ConfigurationGnirsIfuFields":
+        """Subfields should come from the ConfigurationGnirsIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGnirsIfuFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGnirsLongSlitFields(GraphQLField):
     grating: "ConfigurationGnirsLongSlitGraphQLField" = (
         ConfigurationGnirsLongSlitGraphQLField("grating")
@@ -2006,6 +2035,10 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationGnirsLongSlitFields("gnirsLongSlit")
 
     @classmethod
+    def gnirs_ifu(cls) -> "ConfigurationGnirsIfuFields":
+        return ConfigurationGnirsIfuFields("gnirsIfu")
+
+    @classmethod
     def igrins_2_long_slit(cls) -> "ConfigurationIgrins2LongSlitFields":
         return ConfigurationIgrins2LongSlitFields("igrins2LongSlit")
 
@@ -2022,6 +2055,7 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationGmosNorthLongSlitFields",
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
+            "ConfigurationGnirsIfuFields",
             "ConfigurationGnirsLongSlitFields",
             "ConfigurationIgrins2LongSlitFields",
             "ConfigurationVisitorFields",
@@ -3329,6 +3363,30 @@ class ExampleProgramReferenceFields(GraphQLField):
         return self
 
 
+class ExchangeFields(GraphQLField):
+    mode: "ExchangeGraphQLField" = ExchangeGraphQLField("mode")
+    keck_instrument: "ExchangeGraphQLField" = ExchangeGraphQLField("keckInstrument")
+    "Keck instrument, present when mode is EXCHANGE_KECK."
+    subaru_instrument: "ExchangeGraphQLField" = ExchangeGraphQLField("subaruInstrument")
+    "Subaru instrument, present when mode is EXCHANGE_SUBARU."
+
+    @classmethod
+    def total_request_time(cls) -> "TimeSpanFields":
+        """Total requested observing time."""
+        return TimeSpanFields("totalRequestTime")
+
+    def fields(
+        self, *subfields: Union[ExchangeGraphQLField, "TimeSpanFields"]
+    ) -> "ExchangeFields":
+        """Subfields should come from the ExchangeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ExchangeFields":
+        self._alias = alias
+        return self
+
+
 class ExecutionFields(GraphQLField):
     @classmethod
     def digest(cls) -> "CalculatedExecutionDigestFields":
@@ -3438,7 +3496,7 @@ class ExecutionConfigFields(GraphQLField):
     instrument: "ExecutionConfigGraphQLField" = ExecutionConfigGraphQLField(
         "instrument"
     )
-    "Instrument type.  This will indicate which of the instrument-specific fields\nis defined."
+    "Instrument type.  This will indicate which of the instrument-specific fields\nis defined.  Null for exchange observations, which have no Gemini instrument."
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2ExecutionConfigFields":
@@ -3464,16 +3522,16 @@ class ExecutionConfigFields(GraphQLField):
         return GmosSouthExecutionConfigFields("gmosSouth")
 
     @classmethod
-    def igrins_2(cls) -> "Igrins2ExecutionConfigFields":
-        """IGRINS-2 execution config.  This will be null unless the `instrument` is
-        `IGRINS2`."""
-        return Igrins2ExecutionConfigFields("igrins2")
-
-    @classmethod
     def gnirs(cls) -> "GnirsExecutionConfigFields":
         """GNIRS execution config.  This will be null unless the `instrument` is
         `GNIRS`."""
         return GnirsExecutionConfigFields("gnirs")
+
+    @classmethod
+    def igrins_2(cls) -> "Igrins2ExecutionConfigFields":
+        """IGRINS-2 execution config.  This will be null unless the `instrument` is
+        `IGRINS2`."""
+        return Igrins2ExecutionConfigFields("igrins2")
 
     def fields(
         self,
@@ -4336,6 +4394,82 @@ class GcalFields(GraphQLField):
 
     def alias(self, alias: str) -> "GcalFields":
         self._alias = alias
+        return self
+
+
+class GeminiCallPropertiesFields(GraphQLField):
+    """Gemini-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
+    type_: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField("type")
+    "Describes which type of Gemini proposals are being accepted."
+
+    @classmethod
+    def coordinate_limits(cls) -> "SiteCoordinateLimitsFields":
+        """Coordinate limits, associated with each site, for targets that may be
+        observed in this Call for Proposals."""
+        return SiteCoordinateLimitsFields("coordinateLimits")
+
+    instruments: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+    proprietary_months: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("proprietaryMonths")
+    )
+    "Default proprietary period to use for propograms linked to this Call."
+    allows_non_partner_pi: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("allowsNonPartnerPi")
+    )
+    "Whether this Call allows PIs without a partner to participate."
+    non_partner_deadline: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("nonPartnerDeadline")
+    )
+    "The submission deadline for non-partner PIs, when allowed to participate."
+    exchange_partners: "GeminiCallPropertiesGraphQLField" = (
+        GeminiCallPropertiesGraphQLField("exchangePartners")
+    )
+    "Exchange partners that may apply for Gemini time on this call, if any.\nThese partners use the `submissionDeadlineDefault` from the shared CfP\nproperties."
+
+    def fields(
+        self,
+        *subfields: Union[
+            GeminiCallPropertiesGraphQLField, "SiteCoordinateLimitsFields"
+        ],
+    ) -> "GeminiCallPropertiesFields":
+        """Subfields should come from the GeminiCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GeminiCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class GeminiProposalTypeInterface(GraphQLField):
+    """Proposal properties that depend on the particular call for proposals associated
+    with this proposal."""
+
+    science_subtype: "GeminiProposalTypeGraphQLField" = GeminiProposalTypeGraphQLField(
+        "scienceSubtype"
+    )
+    "The science type of this Call for Proposals."
+
+    def fields(
+        self, *subfields: GeminiProposalTypeGraphQLField
+    ) -> "GeminiProposalTypeInterface":
+        """Subfields should come from the GeminiProposalTypeInterface class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GeminiProposalTypeInterface":
+        self._alias = alias
+        return self
+
+    def on(
+        self, type_name: str, *subfields: GraphQLField
+    ) -> "GeminiProposalTypeInterface":
+        self._inline_fragments[type_name] = subfields
         return self
 
 
@@ -6190,6 +6324,8 @@ class GnirsDynamicFields(GraphQLField):
     "FPU slit value, when the FPU is a long-slit FPU."
     fpu_other: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("fpuOther")
     "Non-slit FPU value (acquisition mirror, pupil viewer, pinholes), when not\na long-slit FPU."
+    fpu_ifu: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("fpuIfu")
+    "IFU FPU value, when the FPU is an integral field unit."
 
     @classmethod
     def acquisition_mirror_out(cls) -> "GnirsAcquisitionMirrorOutFields":
@@ -6289,25 +6425,84 @@ class GnirsExecutionSequenceFields(GraphQLField):
         return self
 
 
-class GnirsLongSlitFields(GraphQLField):
-    """GNIRS Long Slit mode"""
+class GnirsIfuFields(GraphQLField):
+    """GNIRS IFU-specific configuration: the IFU FPU plus the telescope configs as full
+    p/q offsets. Present on `GnirsSpectroscopy.ifu` iff the observation is an IFU; null
+    for long slit."""
+
+    fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("fpu")
+    initial_fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialFpu")
+
+    @classmethod
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """Telescope configs (full p/q offsets). Unlike the long slit these have no derived
+        default: they are seeded from the FPU at creation and then edited in place."""
+        return TelescopeConfigFields("telescopeConfigs")
+
+    def fields(
+        self, *subfields: Union[GnirsIfuGraphQLField, "TelescopeConfigFields"]
+    ) -> "GnirsIfuFields":
+        """Subfields should come from the GnirsIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsIfuFields":
+        self._alias = alias
+        return self
+
+
+class GnirsSlitFields(GraphQLField):
+    """GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
+    taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
+    long slit; null for IFU."""
+
+    fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("fpu")
+    initial_fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("initialFpu")
+
+    @classmethod
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
+
+    def fields(
+        self, *subfields: Union[GnirsSlitGraphQLField, "SlitTelescopeConfigsFields"]
+    ) -> "GnirsSlitFields":
+        """Subfields should come from the GnirsSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsSlitFields":
+        self._alias = alias
+        return self
+
+
+class GnirsSpectroscopyFields(GraphQLField):
+    """GNIRS Spectroscopy mode (long slit or IFU, distinguished by the FPU)."""
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
         return ExposureTimeModeFields("exposureTimeMode")
 
-    grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("grating")
-    explicit_grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    grating: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("grating")
+    explicit_grating: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "explicitGrating"
     )
-    initial_grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    initial_grating: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "initialGrating"
     )
-    prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("prism")
-    explicit_prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    prism: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("prism")
+    explicit_prism: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "explicitPrism"
     )
-    initial_prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    initial_prism: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "initialPrism"
     )
 
@@ -6319,53 +6514,54 @@ class GnirsLongSlitFields(GraphQLField):
     def initial_central_wavelength(cls) -> "WavelengthFields":
         return WavelengthFields("initialCentralWavelength")
 
-    camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("camera")
-    initial_camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    camera: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("camera")
+    initial_camera: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "initialCamera"
     )
-    fpu: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("fpu")
-    initial_fpu: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("initialFpu")
-    filter_: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("filter")
-    initial_filter: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+
+    @classmethod
+    def slit(cls) -> "GnirsSlitFields":
+        """Long-slit configuration (FPU + along-slit telescope configs), when this is a
+        long-slit observation. Exactly one of `slit` / `ifu` is present."""
+        return GnirsSlitFields("slit")
+
+    @classmethod
+    def ifu(cls) -> "GnirsIfuFields":
+        """IFU configuration (FPU + p/q telescope configs), when this is an integral field
+        unit observation. Exactly one of `slit` / `ifu` is present."""
+        return GnirsIfuFields("ifu")
+
+    filter_: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("filter")
+    initial_filter: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "initialFilter"
     )
-    coadds: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("coadds")
-    decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("decker")
-    explicit_decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    coadds: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("coadds")
+    decker: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("decker")
+    explicit_decker: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "explicitDecker"
     )
-    default_decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    default_decker: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "defaultDecker"
     )
-    explicit_read_mode: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    explicit_read_mode: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "explicitReadMode"
     )
-    well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("wellDepth")
-    explicit_well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
-        "explicitWellDepth"
+    well_depth: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
+        "wellDepth"
     )
-    default_well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+    explicit_well_depth: "GnirsSpectroscopyGraphQLField" = (
+        GnirsSpectroscopyGraphQLField("explicitWellDepth")
+    )
+    default_well_depth: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "defaultWellDepth"
     )
-    explicit_focus_motor_steps: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
-        "explicitFocusMotorSteps"
+    explicit_focus_motor_steps: "GnirsSpectroscopyGraphQLField" = (
+        GnirsSpectroscopyGraphQLField("explicitFocusMotorSteps")
     )
 
     @classmethod
-    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
-        return SlitTelescopeConfigsFields("telescopeConfigs")
-
-    @classmethod
-    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
-        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
-
-    @classmethod
-    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
-        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
-
-    @classmethod
-    def acquisition(cls) -> "GnirsLongSlitAcquisitionFields":
-        return GnirsLongSlitAcquisitionFields("acquisition")
+    def acquisition(cls) -> "GnirsSpectroscopyAcquisitionFields":
+        return GnirsSpectroscopyAcquisitionFields("acquisition")
 
     @classmethod
     def telluric_type(cls) -> "TelluricTypeFields":
@@ -6375,36 +6571,37 @@ class GnirsLongSlitFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            GnirsLongSlitGraphQLField,
+            GnirsSpectroscopyGraphQLField,
             "ExposureTimeModeFields",
-            "GnirsLongSlitAcquisitionFields",
-            "SlitTelescopeConfigsFields",
+            "GnirsIfuFields",
+            "GnirsSlitFields",
+            "GnirsSpectroscopyAcquisitionFields",
             "TelluricTypeFields",
             "WavelengthFields",
         ],
-    ) -> "GnirsLongSlitFields":
-        """Subfields should come from the GnirsLongSlitFields class"""
+    ) -> "GnirsSpectroscopyFields":
+        """Subfields should come from the GnirsSpectroscopyFields class"""
         self._subfields.extend(subfields)
         return self
 
-    def alias(self, alias: str) -> "GnirsLongSlitFields":
+    def alias(self, alias: str) -> "GnirsSpectroscopyFields":
         self._alias = alias
         return self
 
 
-class GnirsLongSlitAcquisitionFields(GraphQLField):
+class GnirsSpectroscopyAcquisitionFields(GraphQLField):
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
         return ExposureTimeModeFields("exposureTimeMode")
 
-    coadds: "GnirsLongSlitAcquisitionGraphQLField" = (
-        GnirsLongSlitAcquisitionGraphQLField("coadds")
+    coadds: "GnirsSpectroscopyAcquisitionGraphQLField" = (
+        GnirsSpectroscopyAcquisitionGraphQLField("coadds")
     )
-    explicit_acquisition_type: "GnirsLongSlitAcquisitionGraphQLField" = (
-        GnirsLongSlitAcquisitionGraphQLField("explicitAcquisitionType")
+    explicit_acquisition_type: "GnirsSpectroscopyAcquisitionGraphQLField" = (
+        GnirsSpectroscopyAcquisitionGraphQLField("explicitAcquisitionType")
     )
-    explicit_filter: "GnirsLongSlitAcquisitionGraphQLField" = (
-        GnirsLongSlitAcquisitionGraphQLField("explicitFilter")
+    explicit_filter: "GnirsSpectroscopyAcquisitionGraphQLField" = (
+        GnirsSpectroscopyAcquisitionGraphQLField("explicitFilter")
     )
     "An explicitly specified acquisition filter. When null, the filter is determined automatically from the acquisition mode at sequence-generation time."
 
@@ -6415,16 +6612,16 @@ class GnirsLongSlitAcquisitionFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            GnirsLongSlitAcquisitionGraphQLField,
+            GnirsSpectroscopyAcquisitionGraphQLField,
             "ExposureTimeModeFields",
             "OffsetFields",
         ],
-    ) -> "GnirsLongSlitAcquisitionFields":
-        """Subfields should come from the GnirsLongSlitAcquisitionFields class"""
+    ) -> "GnirsSpectroscopyAcquisitionFields":
+        """Subfields should come from the GnirsSpectroscopyAcquisitionFields class"""
         self._subfields.extend(subfields)
         return self
 
-    def alias(self, alias: str) -> "GnirsLongSlitAcquisitionFields":
+    def alias(self, alias: str) -> "GnirsSpectroscopyAcquisitionFields":
         self._alias = alias
         return self
 
@@ -6782,9 +6979,55 @@ class GuideTargetFields(GraphQLField):
         return self
 
 
+class HasExchangePartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific
+    `ExchangePartner`."""
+
+    link_type: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
+        "linkType"
+    )
+    "Partner link discriminator."
+    exchange_partner: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
+        "exchangePartner"
+    )
+    "The associated partner."
+
+    def fields(
+        self, *subfields: HasExchangePartnerGraphQLField
+    ) -> "HasExchangePartnerFields":
+        """Subfields should come from the HasExchangePartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasExchangePartnerFields":
+        self._alias = alias
+        return self
+
+
+class HasGeminiPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific `Partner`."""
+
+    link_type: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField("linkType")
+    "Partner link discriminator."
+    gemini_partner: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField(
+        "geminiPartner"
+    )
+    "The associated partner."
+
+    def fields(
+        self, *subfields: HasGeminiPartnerGraphQLField
+    ) -> "HasGeminiPartnerFields":
+        """Subfields should come from the HasGeminiPartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "HasGeminiPartnerFields":
+        self._alias = alias
+        return self
+
+
 class HasNonPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user is explicitly associated with
-    no `Partner`."""
+    """A `PartnerLink` employed when a user is explicitly associated with no `Partner`."""
 
     link_type: "HasNonPartnerGraphQLField" = HasNonPartnerGraphQLField("linkType")
     "Partner link discriminator."
@@ -6799,28 +7042,8 @@ class HasNonPartnerFields(GraphQLField):
         return self
 
 
-class HasPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user is associated with a specific
-    `Partner`."""
-
-    link_type: "HasPartnerGraphQLField" = HasPartnerGraphQLField("linkType")
-    "Partner link discriminator."
-    partner: "HasPartnerGraphQLField" = HasPartnerGraphQLField("partner")
-    "The associated partner."
-
-    def fields(self, *subfields: HasPartnerGraphQLField) -> "HasPartnerFields":
-        """Subfields should come from the HasPartnerFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "HasPartnerFields":
-        self._alias = alias
-        return self
-
-
 class HasUnspecifiedPartnerFields(GraphQLField):
-    """A `PartnerLink` employed when a user's `PartnerLink` has not
-    (yet) been made."""
+    """A `PartnerLink` employed when a user's `PartnerLink` has not (yet) been made."""
 
     link_type: "HasUnspecifiedPartnerGraphQLField" = HasUnspecifiedPartnerGraphQLField(
         "linkType"
@@ -7657,6 +7880,54 @@ class ItcSpectroscopyFields(GraphQLField):
         return self
 
 
+class KeckCallPropertiesFields(GraphQLField):
+    """Keck-specific call for proposals properties.  Note, properties shared across all
+    observatories are found in the `CallForProposals` type."""
+
+    instruments: "KeckCallPropertiesGraphQLField" = KeckCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+
+    @classmethod
+    def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Keck, for targets that may be observed in
+        this Call for Proposals."""
+        return CoordinateLimitsFields("coordinateLimits")
+
+    def fields(
+        self,
+        *subfields: Union[KeckCallPropertiesGraphQLField, "CoordinateLimitsFields"],
+    ) -> "KeckCallPropertiesFields":
+        """Subfields should come from the KeckCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "KeckCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class KeckProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Keck."""
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[KeckProposalTypeGraphQLField, "PartnerSplitFields"]
+    ) -> "KeckProposalTypeFields":
+        """Subfields should come from the KeckProposalTypeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "KeckProposalTypeFields":
+        self._alias = alias
+        return self
+
+
 class LargeProgramFields(GraphQLField):
     """Proposal properties for Large Program CallForProposals."""
 
@@ -8088,9 +8359,14 @@ class ObservingModeFields(GraphQLField):
     """Base science mode"""
 
     instrument: "ObservingModeGraphQLField" = ObservingModeGraphQLField("instrument")
-    "Instrument"
+    "Instrument, or null for exchange observations (which have no Gemini instrument)."
     mode: "ObservingModeGraphQLField" = ObservingModeGraphQLField("mode")
     "Mode type"
+
+    @classmethod
+    def exchange(cls) -> "ExchangeFields":
+        """Observations executed at Keck or Subaru."""
+        return ExchangeFields("exchange")
 
     @classmethod
     def flamingos_2_imaging(cls) -> "Flamingos2ImagingFields":
@@ -8133,9 +8409,9 @@ class ObservingModeFields(GraphQLField):
         return Igrins2LongSlitFields("igrins2LongSlit")
 
     @classmethod
-    def gnirs_long_slit(cls) -> "GnirsLongSlitFields":
+    def gnirs_spectroscopy(cls) -> "GnirsSpectroscopyFields":
         """GNIRS Long Slit mode"""
-        return GnirsLongSlitFields("gnirsLongSlit")
+        return GnirsSpectroscopyFields("gnirsSpectroscopy")
 
     @classmethod
     def visitor(cls) -> "VisitorFields":
@@ -8145,6 +8421,7 @@ class ObservingModeFields(GraphQLField):
         self,
         *subfields: Union[
             ObservingModeGraphQLField,
+            "ExchangeFields",
             "Flamingos2ImagingFields",
             "Flamingos2LongSlitFields",
             "GhostIfuFields",
@@ -8152,7 +8429,7 @@ class ObservingModeFields(GraphQLField):
             "GmosNorthLongSlitFields",
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
-            "GnirsLongSlitFields",
+            "GnirsSpectroscopyFields",
             "Igrins2LongSlitFields",
             "VisitorFields",
         ],
@@ -8934,18 +9211,32 @@ class ProposalFields(GraphQLField):
     "Proposal TAC category"
 
     @classmethod
-    def type_(cls) -> "ProposalTypeInterface":
-        """Properties of this proposal that are dependent upon the Call for Proposals
-        type."""
-        return ProposalTypeInterface("type")
+    def gemini(cls) -> "GeminiProposalTypeInterface":
+        """Properties of a Gemini proposal that depend upon the Call for Proposals type.
+        Set for Gemini proposals; null otherwise (when `keck` or `subaru` is set)."""
+        return GeminiProposalTypeInterface("gemini")
+
+    @classmethod
+    def keck(cls) -> "KeckProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Keck.  Set for Keck
+        exchange proposals; null otherwise."""
+        return KeckProposalTypeFields("keck")
+
+    @classmethod
+    def subaru(cls) -> "SubaruProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Subaru.  Set for Subaru
+        exchange proposals; null otherwise."""
+        return SubaruProposalTypeFields("subaru")
 
     def fields(
         self,
         *subfields: Union[
             ProposalGraphQLField,
             "CallForProposalsFields",
+            "GeminiProposalTypeInterface",
+            "KeckProposalTypeFields",
             "ProposalReferenceFields",
-            "ProposalTypeInterface",
+            "SubaruProposalTypeFields",
         ],
     ) -> "ProposalFields":
         """Subfields should come from the ProposalFields class"""
@@ -8978,29 +9269,6 @@ class ProposalReferenceFields(GraphQLField):
         return self
 
 
-class ProposalTypeInterface(GraphQLField):
-    """Proposal properties that depend on the particular call for proposals associated
-    with this proposal."""
-
-    science_subtype: "ProposalTypeGraphQLField" = ProposalTypeGraphQLField(
-        "scienceSubtype"
-    )
-    "The science type of this Call for Proposals."
-
-    def fields(self, *subfields: ProposalTypeGraphQLField) -> "ProposalTypeInterface":
-        """Subfields should come from the ProposalTypeInterface class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "ProposalTypeInterface":
-        self._alias = alias
-        return self
-
-    def on(self, type_name: str, *subfields: GraphQLField) -> "ProposalTypeInterface":
-        self._inline_fragments[type_name] = subfields
-        return self
-
-
 class QueueFields(GraphQLField):
     """Proposal properties for Regular Semester (Queue) CallForProposals."""
 
@@ -9016,6 +9284,8 @@ class QueueFields(GraphQLField):
         """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
+    exchange_partner: "QueueGraphQLField" = QueueGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
     "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
     aeon_multi_facility: "QueueGraphQLField" = QueueGraphQLField("aeonMultiFacility")
@@ -10291,9 +10561,14 @@ class SpectroscopyConfigOptionGnirsFields(GraphQLField):
     filter_: "SpectroscopyConfigOptionGnirsGraphQLField" = (
         SpectroscopyConfigOptionGnirsGraphQLField("filter")
     )
-    fpu: "SpectroscopyConfigOptionGnirsGraphQLField" = (
-        SpectroscopyConfigOptionGnirsGraphQLField("fpu")
+    fpu_slit: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("fpuSlit")
     )
+    "Long-slit FPU, when this option is a single-slit configuration. Exactly one of\n`fpuSlit` / `fpuIfu` is present."
+    fpu_ifu: "SpectroscopyConfigOptionGnirsGraphQLField" = (
+        SpectroscopyConfigOptionGnirsGraphQLField("fpuIfu")
+    )
+    "IFU FPU, when this option is an integral field unit configuration. Exactly one\nof `fpuSlit` / `fpuIfu` is present."
     prism: "SpectroscopyConfigOptionGnirsGraphQLField" = (
         SpectroscopyConfigOptionGnirsGraphQLField("prism")
     )
@@ -10664,6 +10939,59 @@ class StepRecordSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "StepRecordSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class SubaruCallPropertiesFields(GraphQLField):
+    """Subaru-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
+    type_: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField("type")
+    "Subaru proposal type."
+    instruments: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField(
+        "instruments"
+    )
+    "When specified, the observations executed in this Call may only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
+
+    @classmethod
+    def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Subaru, for targets that may be observed in
+        this Call for Proposals."""
+        return CoordinateLimitsFields("coordinateLimits")
+
+    def fields(
+        self,
+        *subfields: Union[SubaruCallPropertiesGraphQLField, "CoordinateLimitsFields"],
+    ) -> "SubaruCallPropertiesFields":
+        """Subfields should come from the SubaruCallPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SubaruCallPropertiesFields":
+        self._alias = alias
+        return self
+
+
+class SubaruProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Subaru."""
+
+    type_: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField("type")
+    "The Subaru call for proposals type (normal or intensive)."
+
+    @classmethod
+    def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
+        return PartnerSplitFields("partnerSplits")
+
+    def fields(
+        self, *subfields: Union[SubaruProposalTypeGraphQLField, "PartnerSplitFields"]
+    ) -> "SubaruProposalTypeFields":
+        """Subfields should come from the SubaruProposalTypeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SubaruProposalTypeFields":
         self._alias = alias
         return self
 
