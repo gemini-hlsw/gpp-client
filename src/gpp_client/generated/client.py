@@ -276,6 +276,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -322,6 +334,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -372,6 +396,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -417,6 +453,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -458,6 +506,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -494,6 +554,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -543,6 +615,18 @@ class GraphQLClient(AsyncBaseClient):
             fragment CallForProposalsCore on CallForProposals {
               id
               title
+              observatory
+              gemini {
+                type
+                instruments
+              }
+              keck {
+                instruments
+              }
+              subaru {
+                type
+                instruments
+              }
             }
 
             fragment CallForProposalsDetails on CallForProposals {
@@ -7034,6 +7118,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7119,6 +7219,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7205,6 +7321,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7310,6 +7442,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7386,6 +7534,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7436,6 +7600,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7511,6 +7691,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7589,6 +7785,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {
@@ -7680,6 +7892,22 @@ class GraphQLClient(AsyncBaseClient):
                     start
                     end
                   }
+                  observatory
+                  gemini {
+                    type
+                    instruments
+                  }
+                  keck {
+                    instruments
+                  }
+                  subaru {
+                    type
+                    instruments
+                  }
+                }
+                gemini {
+                  __typename
+                  scienceSubtype
                 }
               }
               pi {

@@ -453,7 +453,7 @@ class GetGOATSObservationsObservationsMatchesScienceRequirementsExposureTimeMode
 
 
 class GetGOATSObservationsObservationsMatchesObservingMode(BaseModel):
-    instrument: Instrument
+    instrument: Optional[Instrument]
     mode: ObservingModeType
     gmos_north_long_slit: Optional[
         "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit"
