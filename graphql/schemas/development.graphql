@@ -3705,6 +3705,12 @@ interface GeminiProposalType {
 """Proposal properties for an exchange proposal requesting time at Keck."""
 type KeckProposalType {
   """
+  Minimum percentage of observing time required to consider this proposal
+  successful.
+  """
+  minPercentTime: IntPercent!
+
+  """
   Describes how time for the program will be apportioned across partners.
   """
   partnerSplits: [PartnerSplit!]!
@@ -3716,6 +3722,12 @@ Proposal properties for an exchange proposal requesting time at Subaru.
 type SubaruProposalType {
   """The Subaru call for proposals type (normal or intensive)."""
   type: SubaruCallForProposalsType!
+
+  """
+  Minimum percentage of observing time required to consider this proposal
+  successful.
+  """
+  minPercentTime: IntPercent!
 
   """
   Describes how time for the program will be apportioned across partners.
@@ -3944,6 +3956,12 @@ input GeminiProposalTypeInput @oneOf {
 """Properties for an exchange proposal requesting time at Keck."""
 input KeckProposalTypeInput {
   """
+  The minimum percentage of time required to consider this proposal a success.
+  If not set, 100% is assumed.
+  """
+  minPercentTime: IntPercent
+
+  """
   The partnerSplits field specifies how time is apportioned over partners. This
   will default to empty but if specified, the partner percents must sum to 100.
   By submission time, it must be specified.
@@ -3957,6 +3975,12 @@ input SubaruProposalTypeInput {
   The Subaru call for proposals type.  If not specified, NORMAL is assumed.
   """
   type: SubaruCallForProposalsType
+
+  """
+  The minimum percentage of time required to consider this proposal a success.
+  If not set, 100% is assumed.
+  """
+  minPercentTime: IntPercent
 
   """
   The partnerSplits field specifies how time is apportioned over partners. This
@@ -6746,6 +6770,14 @@ type Execution {
     LIMIT: NonNegInt
   ): VisitSelectResult!
 
+  """
+  The observation time estimate as it stood when the first 'observe' visit was
+  recorded, at which point the execution sequence was fixed and execution
+  began.  This is null until the first observe visit is recorded, and never
+  changes thereafter.
+  """
+  originalEstimate: ObservationTimeEstimate
+
   """Time accounting calculation for this observation."""
   timeCharge: CategorizedTime!
 
@@ -6858,11 +6890,14 @@ enum Existence {
 
 """Summarizes the execution setup time and sequences."""
 type ExecutionDigest {
+  """Time estimate for executing the observation."""
+  estimate: ObservationTimeEstimate!
+
   """Setup time calculations."""
-  setup: SetupTime!
+  setup: SetupTime! @deprecated(reason: "Use `estimate.setup` instead.")
 
   """Estimated number of setups required to complete this observation."""
-  setupCount: NonNegInt!
+  setupCount: NonNegInt! @deprecated(reason: "Use `estimate.setupCount` instead.")
 
   """Acquisition sequence summary."""
   acquisition: SequenceDigest
@@ -6871,7 +6906,30 @@ type ExecutionDigest {
   science: SequenceDigest
 
   """Full time estimate: science time plus full setup time for every setup."""
-  fullTimeEstimate: CategorizedTime!
+  fullTimeEstimate: CategorizedTime! @deprecated(reason: "Use `estimate.total` instead.")
+}
+
+"""
+Time estimate for executing an observation: the setup time(s) and the science
+sequence time.  In the execution digest this estimate is continually updated
+(and reduces) as the observation is executed; in `originalEstimate` it is
+fixed at the start of execution so that the estimate may be compared with the
+actual time required after the fact.
+"""
+type ObservationTimeEstimate {
+  """Setup time estimates."""
+  setup: SetupTime!
+
+  """Expected number of setups."""
+  setupCount: NonNegInt!
+
+  """Science sequence time estimate."""
+  science: CategorizedTime!
+
+  """
+  Total time estimate: science time plus full setup time for every setup.
+  """
+  total: CategorizedTime!
 }
 
 """Wraps an ExecutionDigest with the background calculation state."""
