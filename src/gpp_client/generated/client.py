@@ -1976,6 +1976,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -2128,6 +2318,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -2435,6 +2631,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -2587,6 +2973,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -2895,6 +3287,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -3047,6 +3629,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -3357,6 +3945,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -3509,6 +4287,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -3822,6 +4606,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -3974,6 +4948,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -4287,6 +5267,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -4439,6 +5609,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -4749,6 +5925,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -4901,6 +6267,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -5211,6 +6583,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -5363,6 +6925,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -5673,6 +7241,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -5825,6 +7583,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -6136,6 +7900,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -6288,6 +8242,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -6606,6 +8566,196 @@ class GraphQLClient(AsyncBaseClient):
               yBin
             }
 
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              coadds
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                coadds
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelength {
+                nanometers
+              }
+              coadds
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialCentralWavelength {
+                nanometers
+              }
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
             fragment Igrins2LongSlitDetails on Igrins2LongSlit {
               exposureTimeMode {
                 signalToNoise {
@@ -6758,6 +8908,12 @@ class GraphQLClient(AsyncBaseClient):
               }
               ghostIfu {
                 ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
               }
             }
 
@@ -8058,11 +10214,27 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment SchedulerProposal on Proposal {
               call {
+                semester
                 active {
                   start
                   end
                 }
-                semester
+                observatory
+                gemini {
+                  type
+                  instruments
+                }
+                keck {
+                  instruments
+                }
+                subaru {
+                  type
+                  instruments
+                }
+              }
+              gemini {
+                __typename
+                scienceSubtype
               }
             }
             """)

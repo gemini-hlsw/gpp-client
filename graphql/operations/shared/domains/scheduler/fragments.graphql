@@ -1,9 +1,25 @@
 fragment SchedulerProposal on Proposal {
   call {
-    active {
-      start
-      end
+      semester
+      active {
+        start
+        end
+      }
+      observatory
+      gemini {
+        type
+        instruments
+      }
+      keck {
+        instruments
+      }
+      subaru {
+        type
+        instruments
+      }
     }
-    semester
+    gemini {
+       __typename
+       scienceSubtype
   }
 }

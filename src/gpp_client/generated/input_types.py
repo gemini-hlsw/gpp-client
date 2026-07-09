@@ -279,10 +279,10 @@ class GeminiCallPropertiesInput(BaseModel):
         alias=str("proprietaryMonths"), default=None
     )
     "The default proprietary period for proposals linked to this call.  If not\nspecified, the default period for the call type will be used."
-    exchange_partners: Optional[list[ExchangePartner]] = Field(
+    exchange_partners: Optional[list["CallForProposalsExchangePartnerInput"]] = Field(
         alias=str("exchangePartners"), default=None
     )
-    "Exchange partners that may apply for Gemini time on this call, if any. These\npartners use the `submissionDeadlineDefault` from the shared CfP properties.\nThis value is optional and defaults to an empty array.  It may be assigned a\nnull value to reset it to the empty array."
+    "Exchange partners that may apply for Gemini time on this call, if any, each\nwith an optional submission deadline override.  This value is optional and\ndefaults to an empty array.  It may be assigned a null value to reset it to\nthe empty array.  When editing, supply the entire list of exchange partners to\nset."
 
 
 class KeckCallPropertiesInput(BaseModel):
@@ -362,6 +362,14 @@ class CallForProposalsPartnerInput(BaseModel):
         alias=str("submissionDeadlineOverride"), default=None
     )
     "If this partner has an explicit submission deadline that overrides the\nCall for Proposals 'defaultSubmissionDeadine' then it is specified here.\nOtherwise, the partner deadline is the default deadline for the call."
+
+
+class CallForProposalsExchangePartnerInput(BaseModel):
+    exchange_partner: ExchangePartner = Field(alias=str("exchangePartner"))
+    submission_deadline_override: Optional[Any] = Field(
+        alias=str("submissionDeadlineOverride"), default=None
+    )
+    "If this exchange partner has an explicit submission deadline that overrides\nthe Call for Proposals 'defaultSubmissionDeadine' then it is specified here.\nOtherwise, the partner deadline is the default deadline for the call."
 
 
 class CatalogInfoInput(BaseModel):
@@ -1122,6 +1130,8 @@ class ConfigurationRequestProperties(BaseModel):
 
     status: Optional[ConfigurationRequestStatus] = None
     justification: Optional[Any] = None
+    feedback: Optional[Any] = None
+    "Staff feedback on the request.  May only be set by staff."
 
 
 class SchedulingConstraintsInput(BaseModel):
@@ -1403,6 +1413,8 @@ class GeminiProposalTypeInput(BaseModel):
 class KeckProposalTypeInput(BaseModel):
     """Properties for an exchange proposal requesting time at Keck."""
 
+    min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
@@ -1414,6 +1426,8 @@ class SubaruProposalTypeInput(BaseModel):
 
     type_: Optional[SubaruCallForProposalsType] = Field(alias=str("type"), default=None)
     "The Subaru call for proposals type.  If not specified, NORMAL is assumed."
+    min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
@@ -1671,14 +1685,18 @@ class ObservingModeInput(BaseModel):
         alias=str("gmosSouthLongSlit"), default=None
     )
     "The gmosSouthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
-    igrins_2_long_slit: Optional["Igrins2LongSlitInput"] = Field(
-        alias=str("igrins2LongSlit"), default=None
+    gnirs_imaging: Optional["GnirsImagingInput"] = Field(
+        alias=str("gnirsImaging"), default=None
     )
-    "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    "The gnirsImaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gnirs_spectroscopy: Optional["GnirsSpectroscopyInput"] = Field(
         alias=str("gnirsSpectroscopy"), default=None
     )
     "The gnirsSpectroscopy field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    igrins_2_long_slit: Optional["Igrins2LongSlitInput"] = Field(
+        alias=str("igrins2LongSlit"), default=None
+    )
+    "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     visitor: Optional["VisitorInput"] = None
     "A visiting instrument mode. It cannot be unset with a null value."
 
@@ -2121,6 +2139,10 @@ class TargetEnvironmentInput(BaseModel):
     )
     "The explicitBase field may be unset by assigning a null value, or ignored by skipping it altogether"
     asterism: Optional[list[Any]] = None
+    explicit_signal_to_noise_target_id: Optional[Any] = Field(
+        alias=str("explicitSignalToNoiseTargetId"), default=None
+    )
+    "Explicitly selects which asterism target drives the signal-to-noise (ITC)\ncalculation, overriding the automatic choice. The target must be a member of\nthe observation's asterism (after applying any `asterism` edit in the same\ninput). Assign null to clear the selection and let a representative target be\nchosen automatically."
     use_blind_offset: Optional[bool] = Field(alias=str("useBlindOffset"), default=None)
     "Whether blind offset is enabled for this observation"
     blind_offset_target: Optional["TargetPropertiesInput"] = Field(
@@ -2704,6 +2726,38 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("telluricType"), default=None
     )
     "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+
+
+class GnirsImagingFilterInput(BaseModel):
+    """Defines a GNIRS imaging filter to use along with its exposure time mode."""
+
+    filter_: GnirsFilter = Field(alias=str("filter"))
+    "The filter to use for this imaging configuration."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for this filter.\nIf not specified, it is taken from the observation's requirements."
+
+
+class GnirsImagingInput(BaseModel):
+    """GNIRS Imaging creation and edit input parameters."""
+
+    variant: Optional["ImagingVariantInput"] = None
+    "Details specific to the type of imaging being performed.  On creation, if not\nspecified, defaults to a grouped variant with an increasing-wavelength,\n10 arcsec spiral offset generator."
+    filters: Optional[list["GnirsImagingFilterInput"]] = None
+    "The filters field must be specified with at least one filter. It cannot be\nunset with a null value."
+    camera: Optional[GnirsCamera] = None
+    "The camera (determines the pixel scale).  Required on creation."
+    coadds: Optional[Any] = None
+    "Coadds per exposure.  On creation, if not specified, defaults to 1."
+    explicit_read_mode: Optional[GnirsReadMode] = Field(
+        alias=str("explicitReadMode"), default=None
+    )
+    "The explicitReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(
+        alias=str("explicitWellDepth"), default=None
+    )
+    "The explicitWellDepth field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class GnirsSpectroscopyAcquisitionInput(BaseModel):
@@ -3549,6 +3603,18 @@ class WhereConfigurationRequest(BaseModel):
     "Matches the associated program."
     status: Optional["WhereOrderConfigurationRequestStatus"] = None
     "Matches the configuration request status."
+    justification: Optional["WhereOptionString"] = None
+    "Matches the justification."
+    feedback: Optional["WhereOptionString"] = None
+    "Matches the staff feedback."
+    created_at: Optional["WhereOrderTimestamp"] = Field(
+        alias=str("createdAt"), default=None
+    )
+    "Matches the creation time."
+    updated_at: Optional["WhereOrderTimestamp"] = Field(
+        alias=str("updatedAt"), default=None
+    )
+    "Matches the last update time."
 
 
 class WhereObservationReference(BaseModel):
@@ -5069,6 +5135,8 @@ Flamingos2ImagingInput.model_rebuild()
 GhostDetectorConfigInput.model_rebuild()
 GhostIfuInput.model_rebuild()
 Igrins2LongSlitInput.model_rebuild()
+GnirsImagingFilterInput.model_rebuild()
+GnirsImagingInput.model_rebuild()
 GnirsSpectroscopyAcquisitionInput.model_rebuild()
 TelescopeConfigAlongSlitInput.model_rebuild()
 SlitTelescopeConfigsInput.model_rebuild()

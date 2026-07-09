@@ -33,6 +33,7 @@ from .custom_typing_fields import (
     CalculatedExecutionDigestGraphQLField,
     CalculatedObservationWorkflowGraphQLField,
     CalibrationProgramReferenceGraphQLField,
+    CallForProposalsExchangePartnerGraphQLField,
     CallForProposalsGraphQLField,
     CallForProposalsPartnerGraphQLField,
     CallsForProposalsSelectResultGraphQLField,
@@ -179,6 +180,8 @@ from .custom_typing_fields import (
     GnirsExecutionConfigGraphQLField,
     GnirsExecutionSequenceGraphQLField,
     GnirsIfuGraphQLField,
+    GnirsImagingFilterGraphQLField,
+    GnirsImagingGraphQLField,
     GnirsSlitGraphQLField,
     GnirsSpectroscopyAcquisitionGraphQLField,
     GnirsSpectroscopyGraphQLField,
@@ -206,6 +209,7 @@ from .custom_typing_fields import (
     ImagingConfigOptionFlamingos2GraphQLField,
     ImagingConfigOptionGmosNorthGraphQLField,
     ImagingConfigOptionGmosSouthGraphQLField,
+    ImagingConfigOptionGnirsGraphQLField,
     ImagingConfigOptionGraphQLField,
     ImagingScienceRequirementsGraphQLField,
     ImagingVariantGraphQLField,
@@ -217,6 +221,8 @@ from .custom_typing_fields import (
     ItcGmosNorthImagingResultSetGraphQLField,
     ItcGmosSouthImagingGraphQLField,
     ItcGmosSouthImagingResultSetGraphQLField,
+    ItcGnirsImagingGraphQLField,
+    ItcGnirsImagingResultSetGraphQLField,
     ItcGraphQLField,
     ItcIgrins2SpectroscopyGraphQLField,
     ItcResultGraphQLField,
@@ -234,6 +240,7 @@ from .custom_typing_fields import (
     ObservationGraphQLField,
     ObservationReferenceGraphQLField,
     ObservationSelectResultGraphQLField,
+    ObservationTimeEstimateGraphQLField,
     ObservationValidationGraphQLField,
     ObservationWorkflowGraphQLField,
     ObservingModeGraphQLField,
@@ -1358,6 +1365,31 @@ class CallForProposalsFields(GraphQLField):
         return self
 
 
+class CallForProposalsExchangePartnerFields(GraphQLField):
+    exchange_partner: "CallForProposalsExchangePartnerGraphQLField" = (
+        CallForProposalsExchangePartnerGraphQLField("exchangePartner")
+    )
+    submission_deadline_override: "CallForProposalsExchangePartnerGraphQLField" = (
+        CallForProposalsExchangePartnerGraphQLField("submissionDeadlineOverride")
+    )
+    "Sets the submission deadline for this exchange partner, overriding the\n'submissionDeadlineDefault' for the Call for Proposals."
+    submission_deadline: "CallForProposalsExchangePartnerGraphQLField" = (
+        CallForProposalsExchangePartnerGraphQLField("submissionDeadline")
+    )
+    "The submission deadline for this exchange partner.  This will be the\n'submissionDeadlineOverride' if specified, but otherwise the\n'submissionDeadlineDefault' of the Call for Proposals itself."
+
+    def fields(
+        self, *subfields: CallForProposalsExchangePartnerGraphQLField
+    ) -> "CallForProposalsExchangePartnerFields":
+        """Subfields should come from the CallForProposalsExchangePartnerFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CallForProposalsExchangePartnerFields":
+        self._alias = alias
+        return self
+
+
 class CallForProposalsPartnerFields(GraphQLField):
     """Groups a partner with its submission deadline."""
 
@@ -2083,6 +2115,18 @@ class ConfigurationRequestFields(GraphQLField):
     justification: "ConfigurationRequestGraphQLField" = (
         ConfigurationRequestGraphQLField("justification")
     )
+    feedback: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
+        "feedback"
+    )
+    "Staff feedback on the request."
+    created_at: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
+        "createdAt"
+    )
+    "Time at which the request was created."
+    updated_at: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
+        "updatedAt"
+    )
+    "Time at which the request was last updated."
 
     @classmethod
     def configuration(cls) -> "ConfigurationFields":
@@ -3456,6 +3500,14 @@ class ExecutionFields(GraphQLField):
         return VisitSelectResultFields("visits", arguments=cleared_arguments)
 
     @classmethod
+    def original_estimate(cls) -> "ObservationTimeEstimateFields":
+        """The observation time estimate as it stood when the first 'observe' visit was
+        recorded, at which point the execution sequence was fixed and execution
+        began.  This is null until the first observe visit is recorded, and never
+        changes thereafter."""
+        return ObservationTimeEstimateFields("originalEstimate")
+
+    @classmethod
     def time_charge(cls) -> "CategorizedTimeFields":
         """Time accounting calculation for this observation."""
         return CategorizedTimeFields("timeCharge")
@@ -3478,6 +3530,7 @@ class ExecutionFields(GraphQLField):
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
+            "ObservationTimeEstimateFields",
             "VisitSelectResultFields",
         ],
     ) -> "ExecutionFields":
@@ -3558,6 +3611,11 @@ class ExecutionDigestFields(GraphQLField):
     """Summarizes the execution setup time and sequences."""
 
     @classmethod
+    def estimate(cls) -> "ObservationTimeEstimateFields":
+        """Time estimate for executing the observation."""
+        return ObservationTimeEstimateFields("estimate")
+
+    @classmethod
     def setup(cls) -> "SetupTimeFields":
         """Setup time calculations."""
         return SetupTimeFields("setup")
@@ -3587,6 +3645,7 @@ class ExecutionDigestFields(GraphQLField):
         *subfields: Union[
             ExecutionDigestGraphQLField,
             "CategorizedTimeFields",
+            "ObservationTimeEstimateFields",
             "SequenceDigestFields",
             "SetupTimeFields",
         ],
@@ -4426,15 +4485,19 @@ class GeminiCallPropertiesFields(GraphQLField):
         GeminiCallPropertiesGraphQLField("nonPartnerDeadline")
     )
     "The submission deadline for non-partner PIs, when allowed to participate."
-    exchange_partners: "GeminiCallPropertiesGraphQLField" = (
-        GeminiCallPropertiesGraphQLField("exchangePartners")
-    )
-    "Exchange partners that may apply for Gemini time on this call, if any.\nThese partners use the `submissionDeadlineDefault` from the shared CfP\nproperties."
+
+    @classmethod
+    def exchange_partners(cls) -> "CallForProposalsExchangePartnerFields":
+        """Exchange partners that may apply for Gemini time on this call, if any, each
+        with an optional submission deadline override."""
+        return CallForProposalsExchangePartnerFields("exchangePartners")
 
     def fields(
         self,
         *subfields: Union[
-            GeminiCallPropertiesGraphQLField, "SiteCoordinateLimitsFields"
+            GeminiCallPropertiesGraphQLField,
+            "CallForProposalsExchangePartnerFields",
+            "SiteCoordinateLimitsFields",
         ],
     ) -> "GeminiCallPropertiesFields":
         """Subfields should come from the GeminiCallPropertiesFields class"""
@@ -6451,6 +6514,83 @@ class GnirsIfuFields(GraphQLField):
         return self
 
 
+class GnirsImagingFields(GraphQLField):
+    """GNIRS Imaging mode.  Keyhole imaging fixes the FPU (acquisition keyhole), the
+    decker (acquisition) and the acquisition mirror (in), so none of them appears
+    here."""
+
+    @classmethod
+    def variant(cls) -> "ImagingVariantFields":
+        """Details specific to the type of imaging being performed."""
+        return ImagingVariantFields("variant")
+
+    @classmethod
+    def filters(cls) -> "GnirsImagingFilterFields":
+        """The filters (at least one is required) to be used for data collection."""
+        return GnirsImagingFilterFields("filters")
+
+    @classmethod
+    def initial_filters(cls) -> "GnirsImagingFilterFields":
+        """Filters as initially selected when creating the imaging mode."""
+        return GnirsImagingFilterFields("initialFilters")
+
+    camera: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("camera")
+    "The camera (determines the pixel scale)."
+    coadds: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("coadds")
+    "Coadds per exposure."
+    explicit_read_mode: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
+        "explicitReadMode"
+    )
+    "Optional explicitly specified read mode.  If not set, the read mode is\nderived from each filter's exposure time."
+    well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("wellDepth")
+    "The wellDepth field is either explicitly specified in explicitWellDepth or\nelse taken from defaultWellDepth."
+    explicit_well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
+        "explicitWellDepth"
+    )
+    "Optional explicitly specified well depth. If set it overrides the default."
+    default_well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
+        "defaultWellDepth"
+    )
+    "Default well depth (determined by the camera)."
+
+    def fields(
+        self,
+        *subfields: Union[
+            GnirsImagingGraphQLField, "GnirsImagingFilterFields", "ImagingVariantFields"
+        ],
+    ) -> "GnirsImagingFields":
+        """Subfields should come from the GnirsImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsImagingFields":
+        self._alias = alias
+        return self
+
+
+class GnirsImagingFilterFields(GraphQLField):
+    filter_: "GnirsImagingFilterGraphQLField" = GnirsImagingFilterGraphQLField("filter")
+    "The filter to use for this imaging configuration."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode for this filter.
+        If not specified, it is taken from the observation's requirements."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[GnirsImagingFilterGraphQLField, "ExposureTimeModeFields"],
+    ) -> "GnirsImagingFilterFields":
+        """Subfields should come from the GnirsImagingFilterFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsImagingFilterFields":
+        self._alias = alias
+        return self
+
+
 class GnirsSlitFields(GraphQLField):
     """GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
     taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
@@ -7378,6 +7518,11 @@ class ImagingConfigOptionFields(GraphQLField):
         instruments."""
         return ImagingConfigOptionFlamingos2Fields("flamingos2")
 
+    @classmethod
+    def gnirs(cls) -> "ImagingConfigOptionGnirsFields":
+        """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
+        return ImagingConfigOptionGnirsFields("gnirs")
+
     def fields(
         self,
         *subfields: Union[
@@ -7386,6 +7531,7 @@ class ImagingConfigOptionFields(GraphQLField):
             "ImagingConfigOptionFlamingos2Fields",
             "ImagingConfigOptionGmosNorthFields",
             "ImagingConfigOptionGmosSouthFields",
+            "ImagingConfigOptionGnirsFields",
         ],
     ) -> "ImagingConfigOptionFields":
         """Subfields should come from the ImagingConfigOptionFields class"""
@@ -7444,6 +7590,26 @@ class ImagingConfigOptionGmosSouthFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ImagingConfigOptionGmosSouthFields":
+        self._alias = alias
+        return self
+
+
+class ImagingConfigOptionGnirsFields(GraphQLField):
+    filter_: "ImagingConfigOptionGnirsGraphQLField" = (
+        ImagingConfigOptionGnirsGraphQLField("filter")
+    )
+    camera: "ImagingConfigOptionGnirsGraphQLField" = (
+        ImagingConfigOptionGnirsGraphQLField("camera")
+    )
+
+    def fields(
+        self, *subfields: ImagingConfigOptionGnirsGraphQLField
+    ) -> "ImagingConfigOptionGnirsFields":
+        """Subfields should come from the ImagingConfigOptionGnirsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ImagingConfigOptionGnirsFields":
         self._alias = alias
         return self
 
@@ -7768,6 +7934,56 @@ class ItcGmosSouthImagingResultSetFields(GraphQLField):
         return self
 
 
+class ItcGnirsImagingFields(GraphQLField):
+    """GNIRS imaging ITC results.  Here each filter is paired with its result set."""
+
+    itc_type: "ItcGnirsImagingGraphQLField" = ItcGnirsImagingGraphQLField("itcType")
+    "The type of the Itc results."
+
+    @classmethod
+    def gnirs_imaging_science(cls) -> "ItcGnirsImagingResultSetFields":
+        return ItcGnirsImagingResultSetFields("gnirsImagingScience")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ItcGnirsImagingGraphQLField, "ItcGnirsImagingResultSetFields"
+        ],
+    ) -> "ItcGnirsImagingFields":
+        """Subfields should come from the ItcGnirsImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGnirsImagingFields":
+        self._alias = alias
+        return self
+
+
+class ItcGnirsImagingResultSetFields(GraphQLField):
+    """Combines a GNIRS filter with an `ItcResultSet`. In other words, ITC results
+    for all targets but a single filter."""
+
+    filter_: "ItcGnirsImagingResultSetGraphQLField" = (
+        ItcGnirsImagingResultSetGraphQLField("filter")
+    )
+
+    @classmethod
+    def results(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("results")
+
+    def fields(
+        self,
+        *subfields: Union[ItcGnirsImagingResultSetGraphQLField, "ItcResultSetFields"],
+    ) -> "ItcGnirsImagingResultSetFields":
+        """Subfields should come from the ItcGnirsImagingResultSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcGnirsImagingResultSetFields":
+        self._alias = alias
+        return self
+
+
 class ItcIgrins2SpectroscopyFields(GraphQLField):
     """ITC results for IGRINS-2 spectroscopy observations (no acquisition)."""
 
@@ -7826,11 +8042,13 @@ class ItcResultFields(GraphQLField):
 class ItcResultSetFields(GraphQLField):
     """Contains the result of calling the ITC for all targets, but a single instrument
     configuration.  Since the observation may contain multiple targets, there may
-    be multiple results. The "result" field contains the selected, representative,
-    result for all targets.  If there are multiple successful results, this will
-    be the one that prescribes the longest observation. If there is a mix of
-    failures and successes, the overall "result" will be a failure. The "all" field
-    contains results for all targets regardless."""
+    be multiple results. The "selected" field contains the representative result
+    for all targets.  If a signal-to-noise target has been chosen for the
+    observation (see `TargetEnvironment.explicitSignalToNoiseTarget`), that target's result
+    is used.  Otherwise the brightest target (the one requiring the shortest
+    exposure time) is used.  If there is a mix of failures and successes, the
+    overall "selected" result will be a failure. The "all" field contains results
+    for all targets regardless."""
 
     @classmethod
     def selected(cls) -> "ItcResultFields":
@@ -7910,6 +8128,11 @@ class KeckCallPropertiesFields(GraphQLField):
 
 class KeckProposalTypeFields(GraphQLField):
     """Proposal properties for an exchange proposal requesting time at Keck."""
+
+    min_percent_time: "KeckProposalTypeGraphQLField" = KeckProposalTypeGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
@@ -8306,6 +8529,50 @@ class ObservationSelectResultFields(GraphQLField):
         return self
 
 
+class ObservationTimeEstimateFields(GraphQLField):
+    """Time estimate for executing an observation: the setup time(s) and the science
+    sequence time.  In the execution digest this estimate is continually updated
+    (and reduces) as the observation is executed; in `originalEstimate` it is
+    fixed at the start of execution so that the estimate may be compared with the
+    actual time required after the fact."""
+
+    @classmethod
+    def setup(cls) -> "SetupTimeFields":
+        """Setup time estimates."""
+        return SetupTimeFields("setup")
+
+    setup_count: "ObservationTimeEstimateGraphQLField" = (
+        ObservationTimeEstimateGraphQLField("setupCount")
+    )
+    "Expected number of setups."
+
+    @classmethod
+    def science(cls) -> "CategorizedTimeFields":
+        """Science sequence time estimate."""
+        return CategorizedTimeFields("science")
+
+    @classmethod
+    def total(cls) -> "CategorizedTimeFields":
+        """Total time estimate: science time plus full setup time for every setup."""
+        return CategorizedTimeFields("total")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ObservationTimeEstimateGraphQLField,
+            "CategorizedTimeFields",
+            "SetupTimeFields",
+        ],
+    ) -> "ObservationTimeEstimateFields":
+        """Subfields should come from the ObservationTimeEstimateFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ObservationTimeEstimateFields":
+        self._alias = alias
+        return self
+
+
 class ObservationValidationFields(GraphQLField):
     """An observation validation problem"""
 
@@ -8404,14 +8671,19 @@ class ObservingModeFields(GraphQLField):
         return GmosSouthLongSlitFields("gmosSouthLongSlit")
 
     @classmethod
-    def igrins_2_long_slit(cls) -> "Igrins2LongSlitFields":
-        """IGRINS-2 Long Slit mode"""
-        return Igrins2LongSlitFields("igrins2LongSlit")
+    def gnirs_imaging(cls) -> "GnirsImagingFields":
+        """GNIRS Imaging mode"""
+        return GnirsImagingFields("gnirsImaging")
 
     @classmethod
     def gnirs_spectroscopy(cls) -> "GnirsSpectroscopyFields":
         """GNIRS Long Slit mode"""
         return GnirsSpectroscopyFields("gnirsSpectroscopy")
+
+    @classmethod
+    def igrins_2_long_slit(cls) -> "Igrins2LongSlitFields":
+        """IGRINS-2 Long Slit mode"""
+        return Igrins2LongSlitFields("igrins2LongSlit")
 
     @classmethod
     def visitor(cls) -> "VisitorFields":
@@ -8429,6 +8701,7 @@ class ObservingModeFields(GraphQLField):
             "GmosNorthLongSlitFields",
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
+            "GnirsImagingFields",
             "GnirsSpectroscopyFields",
             "Igrins2LongSlitFields",
             "VisitorFields",
@@ -10978,6 +11251,10 @@ class SubaruProposalTypeFields(GraphQLField):
 
     type_: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField("type")
     "The Subaru call for proposals type (normal or intensive)."
+    min_percent_time: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
@@ -11132,6 +11409,17 @@ class TargetEnvironmentFields(GraphQLField):
             key: value for key, value in arguments.items() if value["value"] is not None
         }
         return TargetFields("firstScienceTarget", arguments=cleared_arguments)
+
+    @classmethod
+    def explicit_signal_to_noise_target(cls) -> "TargetFields":
+        """The asterism target explicitly selected to drive the signal-to-noise (ITC)
+        calculation, overriding the automatic choice. This is always one of the
+        observation's asterism targets. When null, no explicit selection has been
+        made and a representative target is chosen automatically; the target that will
+        actually be used in that case is available via the `itc` field's `selected`
+        result. It is set with `TargetEnvironmentInput.explicitSignalToNoiseTargetId`
+        and is cleared automatically if the target is removed from the asterism."""
+        return TargetFields("explicitSignalToNoiseTarget")
 
     @classmethod
     def base_position(cls) -> "BasePositionFields":

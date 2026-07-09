@@ -286,9 +286,6 @@ fragment Igrins2LongSlitDetails on Igrins2LongSlit {
   }
 }
 
-
-
-
 fragment ObservingModeDetails on ObservingMode {
   instrument
   mode
