@@ -104,50 +104,11 @@ class CallForProposalsDetails(CallForProposalsCore):
         alias="submissionDeadlineDefault"
     )
     existence: Existence
-    observatory: Observatory
-    gemini: Optional["CallForProposalsDetailsGemini"]
-    keck: Optional["CallForProposalsDetailsKeck"]
-    subaru: Optional["CallForProposalsDetailsSubaru"]
 
 
 class CallForProposalsDetailsActive(BaseModel):
     start: Any
     end: Any
-
-
-class CallForProposalsDetailsGemini(BaseModel):
-    type_: GeminiCallForProposalsType = Field(alias="type")
-    instruments: list[Instrument]
-
-
-class CallForProposalsDetailsKeck(BaseModel):
-    instruments: list[KeckInstrument]
-
-
-class CallForProposalsDetailsSubaru(BaseModel):
-    type_: SubaruCallForProposalsType = Field(alias="type")
-    instruments: list[SubaruInstrument]
-
-
-class CallForProposalsObservatory(BaseModel):
-    observatory: Observatory
-    gemini: Optional["CallForProposalsObservatoryGemini"]
-    keck: Optional["CallForProposalsObservatoryKeck"]
-    subaru: Optional["CallForProposalsObservatorySubaru"]
-
-
-class CallForProposalsObservatoryGemini(BaseModel):
-    type_: GeminiCallForProposalsType = Field(alias="type")
-    instruments: list[Instrument]
-
-
-class CallForProposalsObservatoryKeck(BaseModel):
-    instruments: list[KeckInstrument]
-
-
-class CallForProposalsObservatorySubaru(BaseModel):
-    type_: SubaruCallForProposalsType = Field(alias="type")
-    instruments: list[SubaruInstrument]
 
 
 class ConstraintSetDetails(BaseModel):
@@ -303,25 +264,6 @@ class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseM
 
 class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
     nanometers: Any
-
-
-class GeminiScienceSubtypeOnProposal(BaseModel):
-    gemini: Optional["GeminiScienceSubtypeOnProposalGemini"]
-
-
-class GeminiScienceSubtypeOnProposalGemini(BaseModel):
-    typename__: Literal[
-        "Classical",
-        "DemoScience",
-        "DirectorsTime",
-        "FastTurnaround",
-        "GeminiProposalType",
-        "LargeProgram",
-        "PoorWeather",
-        "Queue",
-        "SystemVerification",
-    ] = Field(alias="__typename")
-    science_subtype: ScienceSubtype = Field(alias="scienceSubtype")
 
 
 class GmosNorthImagingDetails(BaseModel):
@@ -726,6 +668,21 @@ class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetP(BaseModel):
 
 class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetQ(BaseModel):
     arcseconds: Any
+
+
+class GnirsDetails(BaseModel):
+    gnirs_spectroscopy: Optional["GnirsDetailsGnirsSpectroscopy"] = Field(
+        alias="gnirsSpectroscopy"
+    )
+    gnirs_imaging: Optional["GnirsDetailsGnirsImaging"] = Field(alias="gnirsImaging")
+
+
+class GnirsDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
+    pass
+
+
+class GnirsDetailsGnirsImaging(GnirsImagingDetails):
+    pass
 
 
 class Igrins2LongSlitDetails(BaseModel):
@@ -1421,13 +1378,31 @@ class SchedulerProposal(BaseModel):
 
 
 class SchedulerProposalCall(BaseModel):
-    active: "SchedulerProposalCallActive"
     semester: Any
+    active: "SchedulerProposalCallActive"
+    observatory: Observatory
+    gemini: Optional["SchedulerProposalCallGemini"]
+    keck: Optional["SchedulerProposalCallKeck"]
+    subaru: Optional["SchedulerProposalCallSubaru"]
 
 
 class SchedulerProposalCallActive(BaseModel):
     start: Any
     end: Any
+
+
+class SchedulerProposalCallGemini(BaseModel):
+    type_: GeminiCallForProposalsType = Field(alias="type")
+    instruments: list[Instrument]
+
+
+class SchedulerProposalCallKeck(BaseModel):
+    instruments: list[KeckInstrument]
+
+
+class SchedulerProposalCallSubaru(BaseModel):
+    type_: SubaruCallForProposalsType = Field(alias="type")
+    instruments: list[SubaruInstrument]
 
 
 class SchedulerProposalGemini(BaseModel):
@@ -1481,16 +1456,15 @@ class TargetProgramSummaryProgram(ProgramCore):
 AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
-CallForProposalsObservatory.model_rebuild()
 ConstraintSetDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
-GeminiScienceSubtypeOnProposal.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
 GnirsImagingDetails.model_rebuild()
 GnirsSpectroscopyDetails.model_rebuild()
+GnirsDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
 ObservationCore.model_rebuild()

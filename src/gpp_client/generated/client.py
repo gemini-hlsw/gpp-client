@@ -299,18 +299,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"properties": properties}
@@ -369,18 +357,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -443,18 +419,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -512,18 +476,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -577,18 +529,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -637,18 +577,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {"callForProposalsId": call_for_proposals_id}
@@ -710,18 +638,6 @@ class GraphQLClient(AsyncBaseClient):
               }
               submissionDeadlineDefault
               existence
-              observatory
-              gemini {
-                type
-                instruments
-              }
-              keck {
-                instruments
-              }
-              subaru {
-                type
-                instruments
-              }
             }
             """)
         variables: dict[str, object] = {
@@ -10298,11 +10214,23 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment SchedulerProposal on Proposal {
               call {
+                semester
                 active {
                   start
                   end
                 }
-                semester
+                observatory
+                gemini {
+                  type
+                  instruments
+                }
+                keck {
+                  instruments
+                }
+                subaru {
+                  type
+                  instruments
+                }
               }
               gemini {
                 __typename

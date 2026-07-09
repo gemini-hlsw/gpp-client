@@ -1,27 +1,199 @@
-
-
-fragment GeminiScienceSubtypeOnProposal on Proposal {
-  gemini {
-    # `gemini` is the GeminiProposalType interface; ariadne-codegen generates a
-    # discriminated model requiring __typename, but only auto-inserts __typename
-    # for interface fields in operation bodies, not inside fragment definitions.
-    # Request it explicitly so the injected selection fetches the discriminator.
-    __typename
-    scienceSubtype
-  }
+fragment GnirsImagingDetails on GnirsImaging {
+    camera
+    coadds
+    defaultWellDepth
+    explicitReadMode
+    explicitWellDepth
+    filters {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      filter
+    }
+    initialFilters {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      filter
+    }
+    wellDepth
 }
 
-fragment CallForProposalsObservatory on CallForProposals {
-  observatory
-  gemini {
-    type
-    instruments
+fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+    acquisition {
+      coadds
+      explicitAcquisitionType
+      explicitFilter
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      skyOffset {
+        p {
+          arcseconds
+        }
+        q {
+          arcseconds
+        }
+      }
+    }
+    camera
+    centralWavelength {
+      nanometers
+    }
+    coadds
+    decker
+    defaultDecker
+    defaultWellDepth
+    explicitDecker
+    explicitFocusMotorSteps
+    explicitGrating
+    explicitPrism
+    explicitReadMode
+    explicitWellDepth
+    filter
+    grating
+    ifu {
+      fpu
+      initialFpu
+      telescopeConfigs {
+        guiding
+        offset {
+          p {
+            arcseconds
+          }
+          q {
+            arcseconds
+          }
+        }
+      }
+    }
+    initialCamera
+    initialCentralWavelength {
+      nanometers
+    }
+    initialFilter
+    initialGrating
+    initialPrism
+    prism
+    telluricType {
+      starTypes
+      tag
+    }
+    wellDepth
+    slit {
+      fpu
+      initialFpu
+      defaultTelescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+      explicitTelescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+      telescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+    }
+}
+
+
+fragment GnirsDetails on ObservingMode {
+  gnirsSpectroscopy {
+    ...GnirsSpectroscopyDetails
   }
-  keck {
-    instruments
-  }
-  subaru {
-    type
-    instruments
+  gnirsImaging {
+    ...GnirsImagingDetails
   }
 }

@@ -1009,6 +1009,12 @@ class ExecutionDigestGraphQLField(GraphQLField):
         return self
 
 
+class ObservationTimeEstimateGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObservationTimeEstimateGraphQLField":
+        self._alias = alias
+        return self
+
+
 class CalculatedExecutionDigestGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CalculatedExecutionDigestGraphQLField":
         self._alias = alias

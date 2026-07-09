@@ -240,6 +240,7 @@ from .custom_typing_fields import (
     ObservationGraphQLField,
     ObservationReferenceGraphQLField,
     ObservationSelectResultGraphQLField,
+    ObservationTimeEstimateGraphQLField,
     ObservationValidationGraphQLField,
     ObservationWorkflowGraphQLField,
     ObservingModeGraphQLField,
@@ -3499,6 +3500,14 @@ class ExecutionFields(GraphQLField):
         return VisitSelectResultFields("visits", arguments=cleared_arguments)
 
     @classmethod
+    def original_estimate(cls) -> "ObservationTimeEstimateFields":
+        """The observation time estimate as it stood when the first 'observe' visit was
+        recorded, at which point the execution sequence was fixed and execution
+        began.  This is null until the first observe visit is recorded, and never
+        changes thereafter."""
+        return ObservationTimeEstimateFields("originalEstimate")
+
+    @classmethod
     def time_charge(cls) -> "CategorizedTimeFields":
         """Time accounting calculation for this observation."""
         return CategorizedTimeFields("timeCharge")
@@ -3521,6 +3530,7 @@ class ExecutionFields(GraphQLField):
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
+            "ObservationTimeEstimateFields",
             "VisitSelectResultFields",
         ],
     ) -> "ExecutionFields":
@@ -3601,6 +3611,11 @@ class ExecutionDigestFields(GraphQLField):
     """Summarizes the execution setup time and sequences."""
 
     @classmethod
+    def estimate(cls) -> "ObservationTimeEstimateFields":
+        """Time estimate for executing the observation."""
+        return ObservationTimeEstimateFields("estimate")
+
+    @classmethod
     def setup(cls) -> "SetupTimeFields":
         """Setup time calculations."""
         return SetupTimeFields("setup")
@@ -3630,6 +3645,7 @@ class ExecutionDigestFields(GraphQLField):
         *subfields: Union[
             ExecutionDigestGraphQLField,
             "CategorizedTimeFields",
+            "ObservationTimeEstimateFields",
             "SequenceDigestFields",
             "SetupTimeFields",
         ],
@@ -8113,6 +8129,11 @@ class KeckCallPropertiesFields(GraphQLField):
 class KeckProposalTypeFields(GraphQLField):
     """Proposal properties for an exchange proposal requesting time at Keck."""
 
+    min_percent_time: "KeckProposalTypeGraphQLField" = KeckProposalTypeGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
+
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
         """Describes how time for the program will be apportioned across partners."""
@@ -8504,6 +8525,50 @@ class ObservationSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ObservationSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class ObservationTimeEstimateFields(GraphQLField):
+    """Time estimate for executing an observation: the setup time(s) and the science
+    sequence time.  In the execution digest this estimate is continually updated
+    (and reduces) as the observation is executed; in `originalEstimate` it is
+    fixed at the start of execution so that the estimate may be compared with the
+    actual time required after the fact."""
+
+    @classmethod
+    def setup(cls) -> "SetupTimeFields":
+        """Setup time estimates."""
+        return SetupTimeFields("setup")
+
+    setup_count: "ObservationTimeEstimateGraphQLField" = (
+        ObservationTimeEstimateGraphQLField("setupCount")
+    )
+    "Expected number of setups."
+
+    @classmethod
+    def science(cls) -> "CategorizedTimeFields":
+        """Science sequence time estimate."""
+        return CategorizedTimeFields("science")
+
+    @classmethod
+    def total(cls) -> "CategorizedTimeFields":
+        """Total time estimate: science time plus full setup time for every setup."""
+        return CategorizedTimeFields("total")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ObservationTimeEstimateGraphQLField,
+            "CategorizedTimeFields",
+            "SetupTimeFields",
+        ],
+    ) -> "ObservationTimeEstimateFields":
+        """Subfields should come from the ObservationTimeEstimateFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ObservationTimeEstimateFields":
         self._alias = alias
         return self
 
@@ -11186,6 +11251,10 @@ class SubaruProposalTypeFields(GraphQLField):
 
     type_: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField("type")
     "The Subaru call for proposals type (normal or intensive)."
+    min_percent_time: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField(
+        "minPercentTime"
+    )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":

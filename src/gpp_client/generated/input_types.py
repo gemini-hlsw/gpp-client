@@ -1413,6 +1413,8 @@ class GeminiProposalTypeInput(BaseModel):
 class KeckProposalTypeInput(BaseModel):
     """Properties for an exchange proposal requesting time at Keck."""
 
+    min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
@@ -1424,6 +1426,8 @@ class SubaruProposalTypeInput(BaseModel):
 
     type_: Optional[SubaruCallForProposalsType] = Field(alias=str("type"), default=None)
     "The Subaru call for proposals type.  If not specified, NORMAL is assumed."
+    min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
+    "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
         alias=str("partnerSplits"), default=None
     )
