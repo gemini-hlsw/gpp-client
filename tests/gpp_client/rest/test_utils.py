@@ -7,7 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from gpp_client.exceptions import GPPResponseError, GPPValidationError
+from gpp_client.exceptions import (
+    GPPClientError,
+    GPPResponseError,
+    GPPValidationError,
+)
 from gpp_client.rest.utils import raise_for_status, resolve_content
 
 
@@ -66,6 +70,36 @@ def test_resolve_content_raises_for_directory(tmp_path: Path) -> None:
     """
     with pytest.raises(GPPValidationError):
         resolve_content(file_path=tmp_path, content=None)
+
+
+def test_resolve_content_validation_error_falls_back_to_type_name(mocker) -> None:
+    """
+    Ensure a message-less validation error still reports the exception type.
+    """
+    mocker.patch.object(Path, "expanduser", side_effect=ValueError())
+
+    with pytest.raises(GPPValidationError) as exc_info:
+        resolve_content(file_path="file.txt", content=None)
+
+    assert str(exc_info.value) == "ValueError"
+
+
+def test_resolve_content_client_error_falls_back_to_type_name(
+    mocker,
+    tmp_path: Path,
+) -> None:
+    """
+    Ensure a message-less OS error still reports the exception type.
+    """
+    file_path = tmp_path / "data.txt"
+    file_path.write_bytes(b"hello")
+
+    mocker.patch.object(Path, "read_bytes", side_effect=OSError())
+
+    with pytest.raises(GPPClientError) as exc_info:
+        resolve_content(file_path=file_path, content=None)
+
+    assert str(exc_info.value) == "Failed to read file: OSError"
 
 
 @pytest.mark.asyncio

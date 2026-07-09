@@ -61,13 +61,17 @@ def resolve_content(
             raise ValueError(f"Expected a file path, got: {path}")
 
     except (ValueError, FileNotFoundError, TypeError) as exc:
-        raise GPPValidationError from exc
+        # Fall back to the type name so an exception raised without a message
+        # does not end up as an empty error.
+        raise GPPValidationError(str(exc) or type(exc).__name__) from exc
 
     try:
         # Read the file bytes into memory.
         return path.read_bytes()
     except OSError as exc:
-        raise GPPClientError from exc
+        raise GPPClientError(
+            f"Failed to read file: {str(exc) or type(exc).__name__}"
+        ) from exc
 
 
 async def raise_for_status(
