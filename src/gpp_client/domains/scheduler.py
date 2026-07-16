@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, AsyncIterator
 
 from gpp_client.domains.base import BaseDomain
+from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
 from gpp_client.generated import SchedulerObservationsUpdates
 from gpp_client.generated.get_scheduler_all_programs_id import (
     GetSchedulerAllProgramsId,
@@ -287,6 +288,34 @@ class SchedulerDomain(BaseDomain):
         today = datetime.today().date().isoformat() if date is None else date
         response = await self.get_program_ids(today=today)
         return [(p.reference.label, p.id) for p in response.programs.matches]
+
+    async def get_visibility_changes(self, since: datetime) -> VisibilityChanges:
+        """
+        Get observations and targets with visibility changes since a time.
+
+        Queries the ODB ``/scheduler/visibility-changes`` REST endpoint, which
+        reports entities whose visibility-relevant inputs changed at or after
+        ``since``.
+
+        Parameters
+        ----------
+        since : datetime
+            Return entities changed at or after this time. Naive datetimes are
+            assumed to be UTC.
+
+        Returns
+        -------
+        VisibilityChanges
+            Changed observation and target GIDs plus the latest change
+            timestamp reported by the endpoint.
+
+        Raises
+        ------
+        aiohttp.ClientError
+            For HTTP errors, connection failures, or timeouts.
+        """
+        body = await self._rest._get_visibility_changes(since)
+        return parse_visibility_changes(body)
 
     async def subscribe_to_calculation_updates(
         self,

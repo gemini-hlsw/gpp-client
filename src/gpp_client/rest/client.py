@@ -8,6 +8,7 @@ import asyncio
 import gzip
 import logging
 import ssl
+from datetime import datetime, timezone
 
 import aiohttp
 import certifi
@@ -145,3 +146,37 @@ class RESTClient:
                     return await response.text()
             else:
                 return await response.text()
+
+    async def _get_visibility_changes(self, since: datetime) -> str:
+        """
+        Request observations and targets with visibility changes since a time.
+
+        Parameters
+        ----------
+        since : datetime
+            Return entities whose visibility-relevant inputs changed at or
+            after this time. Naive datetimes are assumed to be UTC.
+
+        Returns
+        -------
+        str
+            TSV data as string, one ``<gid>\\t<iso8601-timestamp>`` per line.
+
+        Raises
+        ------
+        aiohttp.ClientResponseError
+            For HTTP error responses.
+        aiohttp.ClientError
+            For connection or timeout failures.
+        """
+        if since.tzinfo is None:
+            since = since.replace(tzinfo=timezone.utc)
+
+        session = await self.get_session()
+
+        async with session.get(
+            "/scheduler/visibility-changes",
+            params={"since": since.astimezone(timezone.utc).isoformat()},
+        ) as response:
+            response.raise_for_status()
+            return await response.text()
