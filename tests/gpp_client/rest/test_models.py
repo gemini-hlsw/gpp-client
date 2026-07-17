@@ -38,12 +38,7 @@ def test_parse_skips_blank_lines_and_unknown_prefixes() -> None:
     """
     Ensure blank lines and unknown GID prefixes are skipped.
     """
-    body = (
-        "\n"
-        "x-999\t2026-07-15T10:00:00Z\n"
-        "o-123\t2026-07-15T10:00:00Z\n"
-        "   \n"
-    )
+    body = "\nx-999\t2026-07-15T10:00:00Z\no-123\t2026-07-15T10:00:00Z\n   \n"
 
     result = parse_visibility_changes(body)
 
