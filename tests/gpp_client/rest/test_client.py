@@ -2,11 +2,37 @@
 Tests for the REST client.
 """
 
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
 
 from gpp_client.rest.client import RESTClient
+
+
+class _FakeResponse:
+    """
+    Async-context-manager response stub for session.get/post.
+    """
+
+    def __init__(self, text: str = "", status: int = 200) -> None:
+        self._text = text
+        self.status = status
+        self.raise_for_status_called = False
+
+    def raise_for_status(self) -> None:
+        self.raise_for_status_called = True
+        if self.status >= 400:
+            raise RuntimeError(f"HTTP {self.status}")
+
+    async def text(self) -> str:
+        return self._text
+
+    async def __aenter__(self) -> "_FakeResponse":
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        return None
 
 
 @pytest.fixture()
@@ -155,3 +181,64 @@ async def test_async_context_manager_closes_on_exit(
         pass
 
     close_mock.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+async def test_get_visibility_changes_requests_endpoint(
+    rest_client: RESTClient,
+    mocker,
+) -> None:
+    """
+    Ensure the visibility-changes endpoint is queried with the since param.
+    """
+    response = _FakeResponse(text="o-123\t2026-07-15T10:00:00Z\n")
+    session = SimpleNamespace(get=mocker.Mock(return_value=response))
+    mocker.patch.object(rest_client, "get_session", return_value=session)
+
+    since = datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+    result = await rest_client.get_visibility_changes(since)
+
+    assert result == "o-123\t2026-07-15T10:00:00Z\n"
+    assert response.raise_for_status_called
+    session.get.assert_called_once_with(
+        "/scheduler/visibility-changes",
+        params={"since": "2026-07-15T09:00:00+00:00"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_get_visibility_changes_assumes_utc_for_naive_since(
+    rest_client: RESTClient,
+    mocker,
+) -> None:
+    """
+    Ensure a naive since datetime is treated as UTC.
+    """
+    response = _FakeResponse(text="")
+    session = SimpleNamespace(get=mocker.Mock(return_value=response))
+    mocker.patch.object(rest_client, "get_session", return_value=session)
+
+    await rest_client.get_visibility_changes(datetime(2026, 7, 15, 9, 0))
+
+    session.get.assert_called_once_with(
+        "/scheduler/visibility-changes",
+        params={"since": "2026-07-15T09:00:00+00:00"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_get_visibility_changes_raises_on_http_error(
+    rest_client: RESTClient,
+    mocker,
+) -> None:
+    """
+    Ensure HTTP errors propagate to the caller.
+    """
+    response = _FakeResponse(text="boom", status=500)
+    session = SimpleNamespace(get=mocker.Mock(return_value=response))
+    mocker.patch.object(rest_client, "get_session", return_value=session)
+
+    with pytest.raises(RuntimeError, match="HTTP 500"):
+        await rest_client.get_visibility_changes(
+            datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+        )
