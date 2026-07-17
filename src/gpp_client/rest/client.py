@@ -103,11 +103,32 @@ class RESTClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
-    async def _get_atom_digests(
+    async def get_atom_digests(
         self, observation_ids: list[str], accept_gzip: bool = True
     ) -> str:
         """
         Request atom digests for the given observation IDs.
+
+        Parameters
+        ----------
+        observation_ids : list[str]
+            (internal) IDs of the observation to request.
+
+        accept_gzip : bool
+            Endpoint allows to return a gzip-compressed representation of the
+            complete atoms digest in the case of being too big.
+
+        Returns
+        -------
+        str
+            TSV data as string, one row per line.
+
+        Raises
+        ------
+        aiohttp.ClientResponseError
+            For HTTP error responses.
+        aiohttp.ClientError
+            For connection or timeout failures.
         """
         headers = {}
         if accept_gzip:
@@ -147,7 +168,7 @@ class RESTClient:
             else:
                 return await response.text()
 
-    async def _get_visibility_changes(self, since: datetime) -> str:
+    async def get_visibility_changes(self, since: datetime) -> str:
         """
         Request observations and targets with visibility changes since a time.
 

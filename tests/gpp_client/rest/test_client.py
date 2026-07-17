@@ -196,7 +196,7 @@ async def test_get_visibility_changes_requests_endpoint(
     mocker.patch.object(rest_client, "get_session", return_value=session)
 
     since = datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
-    result = await rest_client._get_visibility_changes(since)
+    result = await rest_client.get_visibility_changes(since)
 
     assert result == "o-123\t2026-07-15T10:00:00Z\n"
     assert response.raise_for_status_called
@@ -218,7 +218,7 @@ async def test_get_visibility_changes_assumes_utc_for_naive_since(
     session = SimpleNamespace(get=mocker.Mock(return_value=response))
     mocker.patch.object(rest_client, "get_session", return_value=session)
 
-    await rest_client._get_visibility_changes(datetime(2026, 7, 15, 9, 0))
+    await rest_client.get_visibility_changes(datetime(2026, 7, 15, 9, 0))
 
     session.get.assert_called_once_with(
         "/scheduler/visibility-changes",
@@ -239,6 +239,6 @@ async def test_get_visibility_changes_raises_on_http_error(
     mocker.patch.object(rest_client, "get_session", return_value=session)
 
     with pytest.raises(RuntimeError, match="HTTP 500"):
-        await rest_client._get_visibility_changes(
+        await rest_client.get_visibility_changes(
             datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
         )

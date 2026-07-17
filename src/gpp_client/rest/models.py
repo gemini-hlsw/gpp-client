@@ -37,7 +37,7 @@ def parse_visibility_changes(body: str) -> VisibilityChanges:
     Parse the TSV body of ``/scheduler/visibility-changes``.
 
     Each line is ``<gid>\\t<iso8601-timestamp>`` where the GID prefix
-    disambiguates the entity: ``o-`` for observations, ``t-`` for targets.
+    disambiguate the entity: ``o-`` for observations, ``t-`` for targets.
     Malformed lines and unknown prefixes are skipped with a warning; a bad
     timestamp keeps the GID but does not contribute to ``max_timestamp``.
 
