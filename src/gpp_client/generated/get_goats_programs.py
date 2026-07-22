@@ -30,10 +30,12 @@ class GetGOATSProgramsProgramsMatchesReference(BaseModel):
         "CommissioningProgramReference",
         "EngineeringProgramReference",
         "ExampleProgramReference",
+        "KeckProgramReference",
         "LibraryProgramReference",
         "MonitoringProgramReference",
         "ProgramReference",
         "ScienceProgramReference",
+        "SubaruProgramReference",
         "SystemProgramReference",
     ] = Field(alias="__typename")
     label: Any
