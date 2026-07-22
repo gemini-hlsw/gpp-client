@@ -9,7 +9,10 @@ from typing import Any, AsyncIterator
 
 from gpp_client.domains.base import BaseDomain
 from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
-from gpp_client.generated import SchedulerObservationsUpdates
+from gpp_client.generated import (
+    SchedulerObservationsUpdates,
+    WhereOptionEqObservingModeType,
+)
 from gpp_client.generated.get_scheduler_all_programs_id import (
     GetSchedulerAllProgramsId,
 )
@@ -239,6 +242,9 @@ class SchedulerDomain(BaseDomain):
                         ObservationWorkflowState.ONGOING,
                     ]
                 )
+            ),
+            observing_mode_type=WhereOptionEqObservingModeType(
+                is_null=False,
             ),
         )
 

@@ -30,6 +30,17 @@ from .enums import (
     GmosSouthBuiltinFpu,
     GmosSouthFilter,
     GmosSouthGrating,
+    GnirsAcquisitionType,
+    GnirsCamera,
+    GnirsDecker,
+    GnirsFilter,
+    GnirsFpuIfu,
+    GnirsFpuSlit,
+    GnirsGrating,
+    GnirsPrism,
+    GnirsReadMode,
+    GnirsWellDepth,
+    GuideState,
     ImageQualityPreset,
     Instrument,
     KeckInstrument,
@@ -132,9 +143,6 @@ class ConstraintSetDetailsElevationRangeHourAngle(BaseModel):
 class Flamingos2LongSlitDetails(BaseModel):
     decker: Flamingos2Decker
     default_decker: Flamingos2Decker = Field(alias="defaultDecker")
-    default_offsets: list["Flamingos2LongSlitDetailsDefaultOffsets"] = Field(
-        alias="defaultOffsets"
-    )
     disperser: Flamingos2Disperser
     filter_: Flamingos2Filter = Field(alias="filter")
     fpu: Flamingos2Fpu
@@ -147,24 +155,10 @@ class Flamingos2LongSlitDetails(BaseModel):
     explicit_decker: Optional[Flamingos2Decker] = Field(alias="explicitDecker")
     readout_mode: Flamingos2ReadoutMode = Field(alias="readoutMode")
     default_readout_mode: Flamingos2ReadoutMode = Field(alias="defaultReadoutMode")
-    offsets: list["Flamingos2LongSlitDetailsOffsets"]
     acquisition: "Flamingos2LongSlitDetailsAcquisition"
     initial_disperser: Flamingos2Disperser = Field(alias="initialDisperser")
     initial_filter: Flamingos2Filter = Field(alias="initialFilter")
     initial_fpu: Flamingos2Fpu = Field(alias="initialFpu")
-
-
-class Flamingos2LongSlitDetailsDefaultOffsets(BaseModel):
-    q: "Flamingos2LongSlitDetailsDefaultOffsetsQ"
-    p: "Flamingos2LongSlitDetailsDefaultOffsetsP"
-
-
-class Flamingos2LongSlitDetailsDefaultOffsetsQ(BaseModel):
-    arcseconds: Any
-
-
-class Flamingos2LongSlitDetailsDefaultOffsetsP(BaseModel):
-    arcseconds: Any
 
 
 class Flamingos2LongSlitDetailsTelluricType(BaseModel):
@@ -202,19 +196,6 @@ class Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
 
 class Flamingos2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
     nanometers: Any
-
-
-class Flamingos2LongSlitDetailsOffsets(BaseModel):
-    q: "Flamingos2LongSlitDetailsOffsetsQ"
-    p: "Flamingos2LongSlitDetailsOffsetsP"
-
-
-class Flamingos2LongSlitDetailsOffsetsQ(BaseModel):
-    arcseconds: Any
-
-
-class Flamingos2LongSlitDetailsOffsetsP(BaseModel):
-    arcseconds: Any
 
 
 class Flamingos2LongSlitDetailsAcquisition(BaseModel):
@@ -313,23 +294,374 @@ class GmosSouthLongSlitDetailsOffsets(BaseModel):
     arcseconds: Any
 
 
+class GnirsImagingDetails(BaseModel):
+    camera: GnirsCamera
+    coadds: Any
+    default_well_depth: GnirsWellDepth = Field(alias="defaultWellDepth")
+    explicit_read_mode: Optional[GnirsReadMode] = Field(alias="explicitReadMode")
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(alias="explicitWellDepth")
+    filters: list["GnirsImagingDetailsFilters"]
+    initial_filters: list["GnirsImagingDetailsInitialFilters"] = Field(
+        alias="initialFilters"
+    )
+    well_depth: GnirsWellDepth = Field(alias="wellDepth")
+
+
+class GnirsImagingDetailsFilters(BaseModel):
+    exposure_time_mode: "GnirsImagingDetailsFiltersExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    filter_: GnirsFilter = Field(alias="filter")
+
+
+class GnirsImagingDetailsFiltersExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GnirsImagingDetailsFiltersExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GnirsImagingDetailsFiltersExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GnirsImagingDetailsFiltersExposureTimeModeSignalToNoise(BaseModel):
+    at: "GnirsImagingDetailsFiltersExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GnirsImagingDetailsFiltersExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsImagingDetailsFiltersExposureTimeModeTimeAndCount(BaseModel):
+    at: "GnirsImagingDetailsFiltersExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GnirsImagingDetailsFiltersExposureTimeModeTimeAndCountTime"
+
+
+class GnirsImagingDetailsFiltersExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsImagingDetailsFiltersExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GnirsImagingDetailsInitialFilters(BaseModel):
+    exposure_time_mode: "GnirsImagingDetailsInitialFiltersExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    filter_: GnirsFilter = Field(alias="filter")
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GnirsImagingDetailsInitialFiltersExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeModeSignalToNoise(BaseModel):
+    at: "GnirsImagingDetailsInitialFiltersExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCount(BaseModel):
+    at: "GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCountTime"
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GnirsSpectroscopyDetails(BaseModel):
+    acquisition: "GnirsSpectroscopyDetailsAcquisition"
+    camera: GnirsCamera
+    central_wavelength: "GnirsSpectroscopyDetailsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    coadds: Any
+    decker: GnirsDecker
+    default_decker: GnirsDecker = Field(alias="defaultDecker")
+    default_well_depth: GnirsWellDepth = Field(alias="defaultWellDepth")
+    explicit_decker: Optional[GnirsDecker] = Field(alias="explicitDecker")
+    explicit_focus_motor_steps: Optional[int] = Field(alias="explicitFocusMotorSteps")
+    explicit_grating: Optional[GnirsGrating] = Field(alias="explicitGrating")
+    explicit_prism: Optional[GnirsPrism] = Field(alias="explicitPrism")
+    explicit_read_mode: Optional[GnirsReadMode] = Field(alias="explicitReadMode")
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(alias="explicitWellDepth")
+    filter_: GnirsFilter = Field(alias="filter")
+    grating: GnirsGrating
+    ifu: Optional["GnirsSpectroscopyDetailsIfu"]
+    initial_camera: GnirsCamera = Field(alias="initialCamera")
+    initial_central_wavelength: "GnirsSpectroscopyDetailsInitialCentralWavelength" = (
+        Field(alias="initialCentralWavelength")
+    )
+    initial_filter: GnirsFilter = Field(alias="initialFilter")
+    initial_grating: GnirsGrating = Field(alias="initialGrating")
+    initial_prism: GnirsPrism = Field(alias="initialPrism")
+    prism: GnirsPrism
+    telluric_type: "GnirsSpectroscopyDetailsTelluricType" = Field(alias="telluricType")
+    well_depth: GnirsWellDepth = Field(alias="wellDepth")
+    slit: Optional["GnirsSpectroscopyDetailsSlit"]
+
+
+class GnirsSpectroscopyDetailsAcquisition(BaseModel):
+    coadds: Any
+    explicit_acquisition_type: Optional[GnirsAcquisitionType] = Field(
+        alias="explicitAcquisitionType"
+    )
+    explicit_filter: Optional[GnirsFilter] = Field(alias="explicitFilter")
+    exposure_time_mode: "GnirsSpectroscopyDetailsAcquisitionExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    sky_offset: Optional["GnirsSpectroscopyDetailsAcquisitionSkyOffset"] = Field(
+        alias="skyOffset"
+    )
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GnirsSpectroscopyDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    at: "GnirsSpectroscopyDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    at: "GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GnirsSpectroscopyDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GnirsSpectroscopyDetailsAcquisitionSkyOffset(BaseModel):
+    p: "GnirsSpectroscopyDetailsAcquisitionSkyOffsetP"
+    q: "GnirsSpectroscopyDetailsAcquisitionSkyOffsetQ"
+
+
+class GnirsSpectroscopyDetailsAcquisitionSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsAcquisitionSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GnirsSpectroscopyDetailsIfu(BaseModel):
+    fpu: GnirsFpuIfu
+    initial_fpu: GnirsFpuIfu = Field(alias="initialFpu")
+    telescope_configs: list["GnirsSpectroscopyDetailsIfuTelescopeConfigs"] = Field(
+        alias="telescopeConfigs"
+    )
+
+
+class GnirsSpectroscopyDetailsIfuTelescopeConfigs(BaseModel):
+    guiding: GuideState
+    offset: "GnirsSpectroscopyDetailsIfuTelescopeConfigsOffset"
+
+
+class GnirsSpectroscopyDetailsIfuTelescopeConfigsOffset(BaseModel):
+    p: "GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetP"
+    q: "GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetQ"
+
+
+class GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsInitialCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GnirsSpectroscopyDetailsTelluricType(BaseModel):
+    star_types: Optional[list[str]] = Field(alias="starTypes")
+    tag: TelluricTag
+
+
+class GnirsSpectroscopyDetailsSlit(BaseModel):
+    fpu: GnirsFpuSlit
+    initial_fpu: GnirsFpuSlit = Field(alias="initialFpu")
+    default_telescope_configs: "GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigs" = (
+        Field(alias="defaultTelescopeConfigs")
+    )
+    explicit_telescope_configs: Optional[
+        "GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
+    telescope_configs: "GnirsSpectroscopyDetailsSlitTelescopeConfigs" = Field(
+        alias="telescopeConfigs"
+    )
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigs(BaseModel):
+    along_slit: Optional[
+        list["GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsAlongSlit"]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list["GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSky"]
+    ] = Field(alias="toSky")
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsAlongSlitQ"
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSky(BaseModel):
+    guiding: GuideState
+    offset: "GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffset"
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffset(BaseModel):
+    p: "GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffsetP"
+    q: "GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffsetQ"
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitDefaultTelescopeConfigsToSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigs(BaseModel):
+    along_slit: Optional[
+        list["GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsAlongSlit"]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list["GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSky"]
+    ] = Field(alias="toSky")
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsAlongSlitQ"
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSky(BaseModel):
+    guiding: GuideState
+    offset: "GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffset"
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffset(BaseModel):
+    p: "GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffsetP"
+    q: "GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffsetQ"
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitExplicitTelescopeConfigsToSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigs(BaseModel):
+    along_slit: Optional[
+        list["GnirsSpectroscopyDetailsSlitTelescopeConfigsAlongSlit"]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[list["GnirsSpectroscopyDetailsSlitTelescopeConfigsToSky"]] = Field(
+        alias="toSky"
+    )
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "GnirsSpectroscopyDetailsSlitTelescopeConfigsAlongSlitQ"
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSky(BaseModel):
+    guiding: GuideState
+    offset: "GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffset"
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffset(BaseModel):
+    p: "GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetP"
+    q: "GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetQ"
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GnirsDetails(BaseModel):
+    gnirs_spectroscopy: Optional["GnirsDetailsGnirsSpectroscopy"] = Field(
+        alias="gnirsSpectroscopy"
+    )
+    gnirs_imaging: Optional["GnirsDetailsGnirsImaging"] = Field(alias="gnirsImaging")
+
+
+class GnirsDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
+    pass
+
+
+class GnirsDetailsGnirsImaging(GnirsImagingDetails):
+    pass
+
+
 class Igrins2LongSlitDetails(BaseModel):
     exposure_time_mode: "Igrins2LongSlitDetailsExposureTimeMode" = Field(
         alias="exposureTimeMode"
     )
-    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
-    default_offset_mode: SlitOffsetMode = Field(alias="defaultOffsetMode")
-    explicit_offset_mode: Optional[SlitOffsetMode] = Field(alias="explicitOffsetMode")
     save_svc_images: bool = Field(alias="saveSVCImages")
     default_save_svc_images: bool = Field(alias="defaultSaveSVCImages")
     explicit_save_svc_images: Optional[bool] = Field(alias="explicitSaveSVCImages")
-    offsets: list["Igrins2LongSlitDetailsOffsets"]
-    default_offsets: list["Igrins2LongSlitDetailsDefaultOffsets"] = Field(
-        alias="defaultOffsets"
-    )
-    explicit_offsets: Optional[list["Igrins2LongSlitDetailsExplicitOffsets"]] = Field(
-        alias="explicitOffsets"
-    )
     telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
 
 
@@ -363,45 +695,6 @@ class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
 
 class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
     nanometers: Any
-
-
-class Igrins2LongSlitDetailsOffsets(BaseModel):
-    q: "Igrins2LongSlitDetailsOffsetsQ"
-    p: "Igrins2LongSlitDetailsOffsetsP"
-
-
-class Igrins2LongSlitDetailsOffsetsQ(BaseModel):
-    arcseconds: Any
-
-
-class Igrins2LongSlitDetailsOffsetsP(BaseModel):
-    arcseconds: Any
-
-
-class Igrins2LongSlitDetailsDefaultOffsets(BaseModel):
-    q: "Igrins2LongSlitDetailsDefaultOffsetsQ"
-    p: "Igrins2LongSlitDetailsDefaultOffsetsP"
-
-
-class Igrins2LongSlitDetailsDefaultOffsetsQ(BaseModel):
-    arcseconds: Any
-
-
-class Igrins2LongSlitDetailsDefaultOffsetsP(BaseModel):
-    arcseconds: Any
-
-
-class Igrins2LongSlitDetailsExplicitOffsets(BaseModel):
-    q: "Igrins2LongSlitDetailsExplicitOffsetsQ"
-    p: "Igrins2LongSlitDetailsExplicitOffsetsP"
-
-
-class Igrins2LongSlitDetailsExplicitOffsetsQ(BaseModel):
-    arcseconds: Any
-
-
-class Igrins2LongSlitDetailsExplicitOffsetsP(BaseModel):
-    arcseconds: Any
 
 
 class Igrins2LongSlitDetailsTelluricType(BaseModel):
@@ -566,6 +859,12 @@ class ObservingModeDetails(BaseModel):
     )
     visitor: Optional["ObservingModeDetailsVisitor"]
     ghost_ifu: Optional["ObservingModeDetailsGhostIfu"] = Field(alias="ghostIfu")
+    gnirs_spectroscopy: Optional["ObservingModeDetailsGnirsSpectroscopy"] = Field(
+        alias="gnirsSpectroscopy"
+    )
+    gnirs_imaging: Optional["ObservingModeDetailsGnirsImaging"] = Field(
+        alias="gnirsImaging"
+    )
 
 
 class ObservingModeDetailsGmosNorthLongSlit(GmosNorthLongSlitDetails):
@@ -597,6 +896,14 @@ class ObservingModeDetailsVisitor(VisitorDetails):
 
 
 class ObservingModeDetailsGhostIfu(GhostIfuDetails):
+    pass
+
+
+class ObservingModeDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
+    pass
+
+
+class ObservingModeDetailsGnirsImaging(GnirsImagingDetails):
     pass
 
 
@@ -1076,6 +1383,9 @@ GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
+GnirsImagingDetails.model_rebuild()
+GnirsSpectroscopyDetails.model_rebuild()
+GnirsDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
 ObservationCore.model_rebuild()

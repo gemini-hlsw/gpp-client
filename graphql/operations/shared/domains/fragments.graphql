@@ -91,14 +91,6 @@ fragment GmosSouthImagingDetails on GmosSouthImaging {
 fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
   decker
   defaultDecker
-  defaultOffsets {
-    q {
-      arcseconds
-    }
-    p {
-      arcseconds
-    }
-  }
   disperser
   filter
   fpu
@@ -128,14 +120,6 @@ fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
   explicitDecker
   readoutMode
   defaultReadoutMode
-  offsets {
-    q {
-      arcseconds
-    }
-    p {
-      arcseconds
-    }
-  }
   acquisition {
     exposureTimeMode {
       signalToNoise {
@@ -250,36 +234,9 @@ fragment Igrins2LongSlitDetails on Igrins2LongSlit {
       }
     }
   }
-  offsetMode
-  defaultOffsetMode
-  explicitOffsetMode
   saveSVCImages
   defaultSaveSVCImages
   explicitSaveSVCImages
-  offsets {
-    q {
-      arcseconds
-    }
-    p {
-      arcseconds
-    }
-  }
-  defaultOffsets {
-    q {
-      arcseconds
-    }
-    p {
-      arcseconds
-    }
-  }
-  explicitOffsets {
-    q {
-      arcseconds
-    }
-    p {
-      arcseconds
-    }
-  }
   telluricType {
     tag
     starTypes

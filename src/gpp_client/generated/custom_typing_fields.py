@@ -109,6 +109,12 @@ class CallForProposalsPartnerGraphQLField(GraphQLField):
         return self
 
 
+class CallForProposalsExchangePartnerGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CallForProposalsExchangePartnerGraphQLField":
+        self._alias = alias
+        return self
+
+
 class CallsForProposalsSelectResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CallsForProposalsSelectResultGraphQLField":
         self._alias = alias
@@ -1003,6 +1009,12 @@ class ExecutionDigestGraphQLField(GraphQLField):
         return self
 
 
+class ObservationTimeEstimateGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObservationTimeEstimateGraphQLField":
+        self._alias = alias
+        return self
+
+
 class CalculatedExecutionDigestGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CalculatedExecutionDigestGraphQLField":
         self._alias = alias
@@ -1273,6 +1285,18 @@ class Igrins2LongSlitGraphQLField(GraphQLField):
         return self
 
 
+class GnirsImagingFilterGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsImagingFilterGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GnirsImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GnirsSpectroscopyAcquisitionGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GnirsSpectroscopyAcquisitionGraphQLField":
         self._alias = alias
@@ -1519,6 +1543,12 @@ class ImagingConfigOptionFlamingos2GraphQLField(GraphQLField):
         return self
 
 
+class ImagingConfigOptionGnirsGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ImagingConfigOptionGnirsGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ItcResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcResultGraphQLField":
         self._alias = alias
@@ -1549,6 +1579,12 @@ class ItcGmosSouthImagingResultSetGraphQLField(GraphQLField):
         return self
 
 
+class ItcGnirsImagingResultSetGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGnirsImagingResultSetGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ItcGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcGraphQLField":
         self._alias = alias
@@ -1575,6 +1611,12 @@ class ItcGmosNorthImagingGraphQLField(GraphQLField):
 
 class ItcGmosSouthImagingGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcGmosSouthImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ItcGnirsImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcGnirsImagingGraphQLField":
         self._alias = alias
         return self
 
@@ -1831,6 +1873,18 @@ class MonitoringProgramReferenceGraphQLField(GraphQLField):
 
 class ScienceProgramReferenceGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ScienceProgramReferenceGraphQLField":
+        self._alias = alias
+        return self
+
+
+class KeckProgramReferenceGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "KeckProgramReferenceGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SubaruProgramReferenceGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SubaruProgramReferenceGraphQLField":
         self._alias = alias
         return self
 
