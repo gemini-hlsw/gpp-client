@@ -2168,9 +2168,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -2780,9 +2777,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -3393,9 +3387,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -4008,9 +3999,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -4626,9 +4614,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -5244,9 +5229,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -5859,9 +5841,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -6474,9 +6453,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -7089,9 +7065,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -7705,9 +7678,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes
@@ -8328,9 +8298,6 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
-              saveSVCImages
-              defaultSaveSVCImages
-              explicitSaveSVCImages
               telluricType {
                 tag
                 starTypes

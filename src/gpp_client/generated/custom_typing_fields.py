@@ -1285,6 +1285,12 @@ class Igrins2LongSlitGraphQLField(GraphQLField):
         return self
 
 
+class Igrins2SvcConfigGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Igrins2SvcConfigGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GnirsImagingFilterGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GnirsImagingFilterGraphQLField":
         self._alias = alias

@@ -659,9 +659,6 @@ class Igrins2LongSlitDetails(BaseModel):
     exposure_time_mode: "Igrins2LongSlitDetailsExposureTimeMode" = Field(
         alias="exposureTimeMode"
     )
-    save_svc_images: bool = Field(alias="saveSVCImages")
-    default_save_svc_images: bool = Field(alias="defaultSaveSVCImages")
-    explicit_save_svc_images: Optional[bool] = Field(alias="explicitSaveSVCImages")
     telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
 
 

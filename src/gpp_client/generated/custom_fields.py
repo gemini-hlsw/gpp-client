@@ -206,6 +206,7 @@ from .custom_typing_fields import (
     Igrins2LongSlitGraphQLField,
     Igrins2StaticGraphQLField,
     Igrins2StepGraphQLField,
+    Igrins2SvcConfigGraphQLField,
     ImagingConfigOptionFlamingos2GraphQLField,
     ImagingConfigOptionGmosNorthGraphQLField,
     ImagingConfigOptionGmosSouthGraphQLField,
@@ -7343,18 +7344,13 @@ class Igrins2LongSlitFields(GraphQLField):
         """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
-    save_svc_images: "Igrins2LongSlitGraphQLField" = Igrins2LongSlitGraphQLField(
-        "saveSVCImages"
-    )
-    "Whether to save SVC images, either explicitly specified in\nexplicitSaveSVCImages or else taken from defaultSaveSVCImages"
-    default_save_svc_images: "Igrins2LongSlitGraphQLField" = (
-        Igrins2LongSlitGraphQLField("defaultSaveSVCImages")
-    )
-    "Default save SVC images setting"
-    explicit_save_svc_images: "Igrins2LongSlitGraphQLField" = (
-        Igrins2LongSlitGraphQLField("explicitSaveSVCImages")
-    )
-    "Optional explicitly specified save SVC images setting. If set it overrides\nthe default."
+    @classmethod
+    def svc(cls) -> "Igrins2SvcConfigFields":
+        """Slit-Viewing Camera (SVC) acquisition configuration. Null (the default) means
+        SVC images are not saved.
+        A non-null value means SVC images are saved using the
+        given exposure time and telescope offset positions."""
+        return Igrins2SvcConfigFields("svc")
 
     @classmethod
     def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
@@ -7383,6 +7379,7 @@ class Igrins2LongSlitFields(GraphQLField):
         *subfields: Union[
             Igrins2LongSlitGraphQLField,
             "ExposureTimeModeFields",
+            "Igrins2SvcConfigFields",
             "SlitTelescopeConfigsFields",
             "TelluricTypeFields",
         ],
@@ -7462,6 +7459,59 @@ class Igrins2StepFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "Igrins2StepFields":
+        self._alias = alias
+        return self
+
+
+class Igrins2SvcConfigFields(GraphQLField):
+    """IGRINS-2 Slit-Viewing Camera (SVC) acquisition configuration. A non-null value
+    means SVC images are saved using the given exposure duration and telescope dither
+    positions; null means SVC images are not saved."""
+
+    @classmethod
+    def exposure(cls) -> "TimeSpanFields":
+        """SVC exposure time, either explicitly specified in explicitExposure or else
+        taken from defaultExposure."""
+        return TimeSpanFields("exposure")
+
+    @classmethod
+    def default_exposure(cls) -> "TimeSpanFields":
+        """Default SVC exposure time (3.08 s)."""
+        return TimeSpanFields("defaultExposure")
+
+    @classmethod
+    def explicit_exposure(cls) -> "TimeSpanFields":
+        """Optional explicitly specified SVC exposure time. If set it overrides the default."""
+        return TimeSpanFields("explicitExposure")
+
+    @classmethod
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """Effective SVC telescope configs (explicit override coalesced with the default)."""
+        return TelescopeConfigFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default SVC telescope configs: the p-offset dither (0,0) and (5,0) arcsec,
+        both guided."""
+        return TelescopeConfigFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified SVC telescope configs. If set they override the
+        default."""
+        return TelescopeConfigFields("explicitTelescopeConfigs")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Igrins2SvcConfigGraphQLField, "TelescopeConfigFields", "TimeSpanFields"
+        ],
+    ) -> "Igrins2SvcConfigFields":
+        """Subfields should come from the Igrins2SvcConfigFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Igrins2SvcConfigFields":
         self._alias = alias
         return self
 
@@ -10799,6 +10849,7 @@ class SpectroscopyConfigOptionGmosNorthFields(GraphQLField):
     fpu: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("fpu")
     )
+    "The builtin FPU, present for single-slit configurations. Null for multislit\n(MOS) configurations, where the focal-plane unit is a custom mask."
     grating: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("grating")
     )
@@ -10822,6 +10873,7 @@ class SpectroscopyConfigOptionGmosSouthFields(GraphQLField):
     fpu: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("fpu")
     )
+    "The builtin FPU, present for single-slit configurations. Null for multislit\n(MOS) configurations, where the focal-plane unit is a custom mask."
     grating: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("grating")
     )
