@@ -122,10 +122,10 @@ class SchedulerDomain(BaseDomain):
         node: dict[str, Any],
         obs_map: dict[str, Any],
         obs_sequence: dict[str, list],
-    ) -> None:
+    ) -> bool:
         """
         Maps the information between the groups tree and the observations retrieved
-        from a different query.
+        from a different query, dropping the elements that carry no observation.
 
         Parameters
         ----------
@@ -135,33 +135,45 @@ class SchedulerDomain(BaseDomain):
             Mapping of observation ids with observation raw data.
         obs_sequence: dict[str, list]
             Mapping of the atoms sequence with the observation id.
+
+        Returns
+        -------
+        bool
+            ``True`` if the node was filled with observation data, ``False`` if it
+            is an observation missing from the ODB response or a group left empty
+            once its children were trimmed.
         """
         obs = node.get("observation")
         group = node.get("group")
         if obs is not None:
             obs_id = obs["id"]
             obs_data = obs_map.get(obs_id)
-            if obs_data is not None:
-                obs_data["sequence"] = obs_sequence.get(obs_id)
-                node["observation"] = obs_data
-            else:
+            if obs_data is None:
                 # No information on the ODB about the observation but the structure
                 # remains in the program.
                 # Put to None so observation doesn't get parse.
                 node["observation"] = None
+                return False
 
-        elif group is not None:
-            if group.get("elements"):
-                for child in group["elements"]:
-                    self._traverse_for_observation(child, obs_map, obs_sequence)
-            else:
-                # Empty groups like Calibration might add elements later.
-                group["elements"] = []
+            obs_data["sequence"] = obs_sequence.get(obs_id)
+            node["observation"] = obs_data
+            return True
 
-        else:
-            # is the root
-            for child in node["elements"]:
-                self._traverse_for_observation(child, obs_map, obs_sequence)
+        if group is not None:
+            group["elements"] = [
+                child
+                for child in group.get("elements") or []
+                if self._traverse_for_observation(child, obs_map, obs_sequence)
+            ]
+            return bool(group["elements"])
+
+        # is the root
+        node["elements"] = [
+            child
+            for child in node["elements"]
+            if self._traverse_for_observation(child, obs_map, obs_sequence)
+        ]
+        return bool(node["elements"])
 
     async def get_all(
         self,
