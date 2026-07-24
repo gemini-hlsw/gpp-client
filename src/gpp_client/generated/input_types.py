@@ -2727,10 +2727,8 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("exposureTimeMode"), default=None
     )
     "The exposureTimeMode field may be unset by assigning a null value, or ignored\nby skipping it altogether"
-    explicit_save_svc_images: Optional[bool] = Field(
-        alias=str("explicitSaveSVCImages"), default=None
-    )
-    "The save SVC images field may be unset by assigning a null value, or ignored\nby skipping it altogether"
+    svc: Optional["Igrins2SvcInput"] = None
+    "Slit-Viewing Camera (SVC) configuration."
     explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
         alias=str("explicitTelescopeConfigs"), default=None
     )
@@ -2739,6 +2737,22 @@ class Igrins2LongSlitInput(BaseModel):
         alias=str("telluricType"), default=None
     )
     "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+
+
+class Igrins2SvcInput(BaseModel):
+    """Edit or create IGRINS-2 Slit-Viewing Camera (SVC) configuration. A non-null
+    object enables SVC image saving (turning it on if necessary) and applies the
+    given sub-field overrides; a null value disables SVC image saving. Omitting the
+    field leaves SVC state unchanged."""
+
+    explicit_exposure: Optional["TimeSpanInput"] = Field(
+        alias=str("explicitExposure"), default=None
+    )
+    "The SVC exposure time may be unset by assigning a null value, or ignored by\nskipping it altogether."
+    explicit_telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    "Explicit SVC telescope configs. May be unset by assigning a null value, or\nignored by skipping."
 
 
 class GnirsImagingFilterInput(BaseModel):
@@ -5152,6 +5166,7 @@ Flamingos2ImagingInput.model_rebuild()
 GhostDetectorConfigInput.model_rebuild()
 GhostIfuInput.model_rebuild()
 Igrins2LongSlitInput.model_rebuild()
+Igrins2SvcInput.model_rebuild()
 GnirsImagingFilterInput.model_rebuild()
 GnirsImagingInput.model_rebuild()
 GnirsSpectroscopyAcquisitionInput.model_rebuild()

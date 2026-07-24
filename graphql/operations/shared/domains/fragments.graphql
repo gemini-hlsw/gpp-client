@@ -234,9 +234,6 @@ fragment Igrins2LongSlitDetails on Igrins2LongSlit {
       }
     }
   }
-  saveSVCImages
-  defaultSaveSVCImages
-  explicitSaveSVCImages
   telluricType {
     tag
     starTypes
