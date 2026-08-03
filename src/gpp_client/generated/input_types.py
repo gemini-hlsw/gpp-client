@@ -144,6 +144,8 @@ class AddDatasetEventInput(BaseModel):
     "Dataset id"
     dataset_stage: DatasetStage = Field(alias=str("datasetStage"))
     "Dataset execution stage."
+    client_time: Optional[Any] = Field(alias=str("clientTime"), default=None)
+    "Time the event occurred, if the client wishes to supply it.  When omitted, the\ntime the event is received by the ODB is used instead.  A supplied time that\nfalls outside the visit's expected timeframe is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -159,6 +161,8 @@ class AddSequenceEventInput(BaseModel):
 
     visit_id: Any = Field(alias=str("visitId"))
     command: SequenceCommand
+    client_time: Optional[Any] = Field(alias=str("clientTime"), default=None)
+    "Time the event occurred, if the client wishes to supply it.  When omitted, the\ntime the event is received by the ODB is used instead.  A supplied time that\nfalls outside the visit's expected timeframe is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -168,6 +172,8 @@ class AddSlewEventInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     slew_stage: SlewStage = Field(alias=str("slewStage"))
+    client_time: Optional[Any] = Field(alias=str("clientTime"), default=None)
+    "Time the event occurred, if the client wishes to supply it.  When omitted, the\ntime the event is received by the ODB is used instead.  A supplied time that\nfalls outside the visit's expected timeframe is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -178,8 +184,35 @@ class AddStepEventInput(BaseModel):
     step_id: Any = Field(alias=str("stepId"))
     visit_id: Any = Field(alias=str("visitId"))
     step_stage: StepStage = Field(alias=str("stepStage"))
+    client_time: Optional[Any] = Field(alias=str("clientTime"), default=None)
+    "Time the event occurred, if the client wishes to supply it.  When omitted, the\ntime the event is received by the ODB is used instead.  A supplied time that\nfalls outside the visit's expected timeframe is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
+
+
+class AddEventBatchEntryInput(BaseModel):
+    """A single event within an 'addEventBatch'.  Exactly one of the fields must be
+    set, identifying the event type.  Unlike the singular mutations, every event in
+    a batch must supply both a 'clientTime' and an 'idempotencyKey' (see
+    'addEventBatch')."""
+
+    dataset: Optional["AddDatasetEventInput"] = None
+    sequence: Optional["AddSequenceEventInput"] = None
+    slew: Optional["AddSlewEventInput"] = None
+    step: Optional["AddStepEventInput"] = None
+
+
+class AddEventBatchInput(BaseModel):
+    """Input to the 'addEventBatch' mutation, recording a batch of execution events in a
+    single request.
+
+    Because a batch shares one database transaction, its events would otherwise all
+    receive the same recorded time; every event must therefore supply its own
+    'clientTime' (the mutation fails otherwise).  Every event must also supply a
+    distinct 'idempotencyKey' so the batch can be retried safely.  All events must
+    belong to the same observation."""
+
+    events: list["AddEventBatchEntryInput"]
 
 
 class AddTimeChargeCorrectionInput(BaseModel):
@@ -698,10 +731,14 @@ class GmosCcdModeInput(BaseModel):
 
 
 class GmosCustomMaskInput(BaseModel):
-    """GMOS custom mask input parameters"""
+    """GMOS custom mask input parameters.
 
-    filename: str
-    "Custom mask file name"
+    Skipping `customMask` leaves the existing mask untouched while supplying it
+    replaces the mask outright, `slitWidth` must be resent even when only the
+    attachment changes."""
+
+    attachment_id: Optional[Any] = Field(alias=str("attachmentId"), default=None)
+    "The MOS mask attachment id, or null if the mask has not yet been defined.\nNull is the normal state before the mask is attached in Phase 2."
     slit_width: GmosCustomSlitWidth = Field(alias=str("slitWidth"))
     "Custom mask slit width"
 
@@ -982,6 +1019,100 @@ class GmosSouthLongSlitInput(BaseModel):
     "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosSouthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
+
+
+class GmosNorthMosInput(BaseModel):
+    """Edit or create GMOS North MOS advanced configuration"""
+
+    grating: Optional[GmosNorthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    filter_: Optional[GmosNorthFilter] = Field(alias=str("filter"), default=None)
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
+    custom_mask: Optional["GmosCustomMaskInput"] = Field(
+        alias=str("customMask"), default=None
+    )
+    "The custom mask through which the observation is taken.  Supply it complete or\nskip it altogether."
+    central_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("centralWavelength"), default=None
+    )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used."
+    explicit_x_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitXBin"), default=None
+    )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_y_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitYBin"), default=None
+    )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_wavelength_dithers: Optional[list["WavelengthDitherInput"]] = Field(
+        alias=str("explicitWavelengthDithers"), default=None
+    )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
+    )
+    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+
+
+class GmosSouthMosInput(BaseModel):
+    """Edit or create GMOS South MOS advanced configuration"""
+
+    grating: Optional[GmosSouthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    filter_: Optional[GmosSouthFilter] = Field(alias=str("filter"), default=None)
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
+    custom_mask: Optional["GmosCustomMaskInput"] = Field(
+        alias=str("customMask"), default=None
+    )
+    "The custom mask through which the observation is taken.  Supply it complete or\nskip it altogether."
+    central_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("centralWavelength"), default=None
+    )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used."
+    explicit_x_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitXBin"), default=None
+    )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_y_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitYBin"), default=None
+    )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_wavelength_dithers: Optional[list["WavelengthDitherInput"]] = Field(
+        alias=str("explicitWavelengthDithers"), default=None
+    )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
+        alias=str("explicitOffsets"), default=None
+    )
+    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
 
 
 class GmosSouthImagingFilterInput(BaseModel):
@@ -1610,6 +1741,8 @@ class RecordVisitInput(BaseModel):
     """Input parameters for creating a new visit."""
 
     observation_id: Any = Field(alias=str("observationId"))
+    client_time: Optional[Any] = Field(alias=str("clientTime"), default=None)
+    "Time the visit was created, if the client wishes to supply it.  When omitted,\nthe time the visit is recorded by the ODB is used instead.  A supplied time\noutside the acceptable range is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -1619,6 +1752,8 @@ class RecordGmosNorthVisitInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     gmos_north: "GmosNorthStaticInput" = Field(alias=str("gmosNorth"))
+    time: Optional[Any] = None
+    "Time the visit was created, if the client wishes to supply it.  When omitted,\nthe time the visit is recorded by the ODB is used instead.  A supplied time\noutside the acceptable range is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -1628,8 +1763,20 @@ class RecordGmosSouthVisitInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     gmos_south: "GmosSouthStaticInput" = Field(alias=str("gmosSouth"))
+    time: Optional[Any] = None
+    "Time the visit was created, if the client wishes to supply it.  When omitted,\nthe time the visit is recorded by the ODB is used instead.  A supplied time\noutside the acceptable range is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
+
+
+class RefreshArchiveDuplicationInput(BaseModel):
+    """Input parameters for re-running the Archive Duplication Search.  Select one of
+    `observationId` or `observationReference`."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
 
 
 class ResetAcquisitionInput(BaseModel):
@@ -1675,6 +1822,10 @@ class ObservingModeInput(BaseModel):
         alias=str("gmosNorthLongSlit"), default=None
     )
     "The gmosNorthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gmos_north_mos: Optional["GmosNorthMosInput"] = Field(
+        alias=str("gmosNorthMos"), default=None
+    )
+    "The gmosNorthMos field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gmos_south_imaging: Optional["GmosSouthImagingInput"] = Field(
         alias=str("gmosSouthImaging"), default=None
     )
@@ -1683,6 +1834,10 @@ class ObservingModeInput(BaseModel):
         alias=str("gmosSouthLongSlit"), default=None
     )
     "The gmosSouthLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gmos_south_mos: Optional["GmosSouthMosInput"] = Field(
+        alias=str("gmosSouthMos"), default=None
+    )
+    "The gmosSouthMos field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gnirs_imaging: Optional["GnirsImagingInput"] = Field(
         alias=str("gnirsImaging"), default=None
     )
@@ -2470,6 +2625,8 @@ class WhereDatasetChronicleEntry(BaseModel):
     "Limits the results based on timestamp of the change."
     dataset: Optional["WhereOrderDatasetId"] = None
     "Limits the results to specified datasets."
+    program: Optional["WhereProgram"] = None
+    "Limits the results to the program associated with the dataset."
     mod_dataset_id: Optional["WhereBoolean"] = Field(
         alias=str("modDatasetId"), default=None
     )
@@ -2522,6 +2679,8 @@ class RecordFlamingos2VisitInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     flamingos_2: "Flamingos2StaticInput" = Field(alias=str("flamingos2"))
+    time: Optional[Any] = None
+    "Time the visit was created, if the client wishes to supply it.  When omitted,\nthe time the visit is recorded by the ODB is used instead.  A supplied time\noutside the acceptable range is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -2540,6 +2699,8 @@ class RecordIgrins2VisitInput(BaseModel):
 
     observation_id: Any = Field(alias=str("observationId"))
     igrins_2: "Igrins2StaticInput" = Field(alias=str("igrins2"))
+    time: Optional[Any] = None
+    "Time the visit was created, if the client wishes to supply it.  When omitted,\nthe time the visit is recorded by the ODB is used instead.  A supplied time\noutside the acceptable range is rejected."
     idempotency_key: Optional[Any] = Field(alias=str("idempotencyKey"), default=None)
     "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
@@ -2572,8 +2733,8 @@ class Flamingos2FpuMaskInput(BaseModel):
 class Flamingos2CustomMaskInput(BaseModel):
     """Flamingos 2 custom mask input parameters"""
 
-    filename: str
-    "Custom mask file name"
+    attachment_id: Optional[Any] = Field(alias=str("attachmentId"), default=None)
+    "The MOS mask attachment id, or null if the mask has not yet been defined."
     slit_width: Flamingos2CustomSlitWidth = Field(alias=str("slitWidth"))
     "Custom mask slit width"
 
@@ -3232,6 +3393,8 @@ class WhereDataset(BaseModel):
     "Matches the dataset reference, if any."
     observation: Optional["WhereObservation"] = None
     "Matches all datasets associated with the observation."
+    program: Optional["WhereProgram"] = None
+    "Matches all datasets associated with the program."
     step_id: Optional["WhereEqStepId"] = Field(alias=str("stepId"), default=None)
     "Matches all datasets associated with the step."
     index: Optional["WhereOrderPosInt"] = None
@@ -3246,6 +3409,10 @@ class WhereDataset(BaseModel):
     "Matches the dataset comment."
     is_written: Optional["WhereBoolean"] = Field(alias=str("isWritten"), default=None)
     "If `true`, matches when the dataset has been written (or not). In particular, a dataset\nis considered written when a corresponding `END_WRITE` dataset event has been\nrecieved."
+    start: Optional["WhereOptionOrderTimestamp"] = None
+    "Matches the start of the dataset time interval, which is not defined until the\ndataset collection has started."
+    end: Optional["WhereOptionOrderTimestamp"] = None
+    "Matches the end of the dataset time interval, which is not defined until the\ndataset collection has finished."
 
 
 class WhereDatasetReference(BaseModel):
@@ -4061,6 +4228,31 @@ class WhereOrderTimestamp(BaseModel):
     "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
     "Matches if the property is ordered before or equal (<=) the supplied value."
+
+
+class WhereOptionOrderTimestamp(BaseModel):
+    """Filters on equality or order comparisons of an optional timestamp property.  All
+    supplied criteria must match, but usually only one is selected.  Note that a
+    property which is not defined matches nothing but `IS_NULL: true`."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the timestamp is not defined.  When `false` matches if\nthe timestamp is defined."
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the timestamp is exactly the supplied value."
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the timestamp is not the supplied value."
+    in_: Optional[list[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the timestamp is any of the supplied options."
+    nin: Optional[list[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the timestamp is none of the supplied values."
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the timestamp is ordered after (>) the supplied value."
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the timestamp is ordered before (<) the supplied value."
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the timestamp is ordered after or equal (>=) the supplied value."
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the timestamp is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderInt(BaseModel):
@@ -4963,6 +5155,39 @@ class GnirsAtomInput(BaseModel):
     steps: list["GnirsStepInput"]
 
 
+class GhostDetectorInput(BaseModel):
+    """GHOST detector configuration input for a single step."""
+
+    exposure_time: "TimeSpanInput" = Field(alias=str("exposureTime"))
+    exposure_count: Any = Field(alias=str("exposureCount"))
+    binning: GhostBinning
+    read_mode: GhostReadMode = Field(alias=str("readMode"))
+
+
+class GhostDynamicInput(BaseModel):
+    """GHOST dynamic step configuration input."""
+
+    red: "GhostDetectorInput"
+    blue: "GhostDetectorInput"
+    ifu_1_fiber_agitator: GhostIfu1FiberAgitator = Field(alias=str("ifu1FiberAgitator"))
+    ifu_2_fiber_agitator: GhostIfu2FiberAgitator = Field(alias=str("ifu2FiberAgitator"))
+
+
+class GhostStepInput(BaseModel):
+    instrument_config: "GhostDynamicInput" = Field(alias=str("instrumentConfig"))
+    breakpoint: Optional[Breakpoint] = None
+    step_config: "StepConfigInput" = Field(alias=str("stepConfig"))
+    telescope_config: Optional["TelescopeConfigInput"] = Field(
+        alias=str("telescopeConfig"), default=None
+    )
+    observe_class: ObserveClass = Field(alias=str("observeClass"))
+
+
+class GhostAtomInput(BaseModel):
+    description: Optional[Any] = None
+    steps: list["GhostStepInput"]
+
+
 class ReplaceFlamingos2SequenceInput(BaseModel):
     """Replace Flamingos 2 sequence input.  Select the observation using one of the
     observation ID or the observation reference.  If both are provided, they must
@@ -5038,7 +5263,24 @@ class ReplaceGnirsSequenceInput(BaseModel):
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
 
 
+class ReplaceGhostSequenceInput(BaseModel):
+    """Replace GHOST sequence input.  Select the observation using one of the
+    observation ID or the observation reference.  If both are provided, they must
+    refer to the same observation."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    sequence_type: SequenceType = Field(alias=str("sequenceType"))
+    "Specifies which sequence should be replaced."
+    sequence: Optional[list["GhostAtomInput"]] = None
+    "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+
+
 AddProgramUserInput.model_rebuild()
+AddEventBatchEntryInput.model_rebuild()
+AddEventBatchInput.model_rebuild()
 AddTimeChargeCorrectionInput.model_rebuild()
 AllocationInput.model_rebuild()
 BandNormalizedIntegratedInput.model_rebuild()
@@ -5085,6 +5327,8 @@ GmosSouthFpuInput.model_rebuild()
 GmosSouthGratingConfigInput.model_rebuild()
 GmosSouthLongSlitAcquisitionInput.model_rebuild()
 GmosSouthLongSlitInput.model_rebuild()
+GmosNorthMosInput.model_rebuild()
+GmosSouthMosInput.model_rebuild()
 GmosSouthImagingFilterInput.model_rebuild()
 GmosSouthImagingInput.model_rebuild()
 GmosSouthStaticInput.model_rebuild()
@@ -5225,8 +5469,13 @@ GnirsAcquisitionMirrorOutInput.model_rebuild()
 GnirsDynamicInput.model_rebuild()
 GnirsStepInput.model_rebuild()
 GnirsAtomInput.model_rebuild()
+GhostDetectorInput.model_rebuild()
+GhostDynamicInput.model_rebuild()
+GhostStepInput.model_rebuild()
+GhostAtomInput.model_rebuild()
 ReplaceFlamingos2SequenceInput.model_rebuild()
 ReplaceGmosNorthSequenceInput.model_rebuild()
 ReplaceGmosSouthSequenceInput.model_rebuild()
 ReplaceIgrins2SequenceInput.model_rebuild()
 ReplaceGnirsSequenceInput.model_rebuild()
+ReplaceGhostSequenceInput.model_rebuild()

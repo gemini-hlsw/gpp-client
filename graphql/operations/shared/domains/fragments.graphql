@@ -240,6 +240,55 @@ fragment Igrins2LongSlitDetails on Igrins2LongSlit {
   }
 }
 
+fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+  filters {
+    filter
+    exposureTimeMode {
+      signalToNoise {
+        at {
+          nanometers
+        }
+        value
+      }
+      timeAndCount {
+        time {
+          seconds
+        }
+        count
+      }
+    }
+  }
+  initialFilters {
+    filter
+    exposureTimeMode {
+      signalToNoise {
+        at {
+          nanometers
+        }
+        value
+      }
+      timeAndCount {
+        at {
+          nanometers
+        }
+        count
+        time {
+          seconds
+        }
+      }
+    }
+  }
+  defaultReadMode
+  explicitReadMode
+  defaultReads
+  explicitReads
+  defaultDecker
+  explicitDecker
+  readoutMode
+  defaultReadoutMode
+  explicitReadoutMode
+}
+
 fragment ObservingModeDetails on ObservingMode {
   instrument
   mode
@@ -258,6 +307,10 @@ fragment ObservingModeDetails on ObservingMode {
   flamingos2LongSlit {
     ...Flamingos2LongSlitDetails
   }
+  flamingos2Imaging {
+    ...Flamingos2ImagingDetails
+  }
+
   igrins2LongSlit {
     ...Igrins2LongSlitDetails
   }
@@ -267,6 +320,7 @@ fragment ObservingModeDetails on ObservingMode {
   ghostIfu {
     ...ghostIfuDetails
   }
+
 }
 
 

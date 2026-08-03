@@ -140,6 +140,97 @@ class ConstraintSetDetailsElevationRangeHourAngle(BaseModel):
     max_hours: Any = Field(alias="maxHours")
 
 
+class Flamingos2ImagingDetails(BaseModel):
+    filters: list["Flamingos2ImagingDetailsFilters"]
+    initial_filters: list["Flamingos2ImagingDetailsInitialFilters"] = Field(
+        alias="initialFilters"
+    )
+    default_read_mode: Flamingos2ReadMode = Field(alias="defaultReadMode")
+    explicit_read_mode: Optional[Flamingos2ReadMode] = Field(alias="explicitReadMode")
+    default_reads: Flamingos2Reads = Field(alias="defaultReads")
+    explicit_reads: Optional[Flamingos2Reads] = Field(alias="explicitReads")
+    default_decker: Flamingos2Decker = Field(alias="defaultDecker")
+    explicit_decker: Optional[Flamingos2Decker] = Field(alias="explicitDecker")
+    readout_mode: Flamingos2ReadoutMode = Field(alias="readoutMode")
+    default_readout_mode: Flamingos2ReadoutMode = Field(alias="defaultReadoutMode")
+    explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
+        alias="explicitReadoutMode"
+    )
+
+
+class Flamingos2ImagingDetailsFilters(BaseModel):
+    filter_: Flamingos2Filter = Field(alias="filter")
+    exposure_time_mode: "Flamingos2ImagingDetailsFiltersExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class Flamingos2ImagingDetailsFiltersExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "Flamingos2ImagingDetailsFiltersExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "Flamingos2ImagingDetailsFiltersExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class Flamingos2ImagingDetailsFiltersExposureTimeModeSignalToNoise(BaseModel):
+    at: "Flamingos2ImagingDetailsFiltersExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class Flamingos2ImagingDetailsFiltersExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2ImagingDetailsFiltersExposureTimeModeTimeAndCount(BaseModel):
+    time: "Flamingos2ImagingDetailsFiltersExposureTimeModeTimeAndCountTime"
+    count: Any
+
+
+class Flamingos2ImagingDetailsFiltersExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Flamingos2ImagingDetailsInitialFilters(BaseModel):
+    filter_: Flamingos2Filter = Field(alias="filter")
+    exposure_time_mode: "Flamingos2ImagingDetailsInitialFiltersExposureTimeMode" = (
+        Field(alias="exposureTimeMode")
+    )
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "Flamingos2ImagingDetailsInitialFiltersExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeModeSignalToNoise(BaseModel):
+    at: "Flamingos2ImagingDetailsInitialFiltersExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCount(BaseModel):
+    at: "Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCountTime"
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2ImagingDetailsInitialFiltersExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
 class Flamingos2LongSlitDetails(BaseModel):
     decker: Flamingos2Decker
     default_decker: Flamingos2Decker = Field(alias="defaultDecker")
@@ -851,6 +942,9 @@ class ObservingModeDetails(BaseModel):
     flamingos_2_long_slit: Optional["ObservingModeDetailsFlamingos2LongSlit"] = Field(
         alias="flamingos2LongSlit"
     )
+    flamingos_2_imaging: Optional["ObservingModeDetailsFlamingos2Imaging"] = Field(
+        alias="flamingos2Imaging"
+    )
     igrins_2_long_slit: Optional["ObservingModeDetailsIgrins2LongSlit"] = Field(
         alias="igrins2LongSlit"
     )
@@ -881,6 +975,10 @@ class ObservingModeDetailsGmosSouthImaging(GmosSouthImagingDetails):
 
 
 class ObservingModeDetailsFlamingos2LongSlit(Flamingos2LongSlitDetails):
+    pass
+
+
+class ObservingModeDetailsFlamingos2Imaging(Flamingos2ImagingDetails):
     pass
 
 
@@ -1375,6 +1473,7 @@ AttachmentDetails.model_rebuild()
 CallForProposalsCore.model_rebuild()
 CallForProposalsDetails.model_rebuild()
 ConstraintSetDetails.model_rebuild()
+Flamingos2ImagingDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()

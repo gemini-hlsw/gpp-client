@@ -1862,6 +1862,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -2263,6 +2312,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -2471,6 +2523,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -2872,6 +2973,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -3081,6 +3185,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -3482,6 +3635,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -3693,6 +3849,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -4094,6 +4299,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -4308,6 +4516,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -4709,6 +4966,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -4923,6 +5183,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -5324,6 +5633,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -5535,6 +5847,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -5936,6 +6297,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -6147,6 +6511,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -6548,6 +6961,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -6759,6 +7175,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -7160,6 +7625,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -7372,6 +7840,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -7773,6 +8290,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails
@@ -7992,6 +8512,55 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
             fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
               decker
               defaultDecker
@@ -8393,6 +8962,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               flamingos2LongSlit {
                 ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
               }
               igrins2LongSlit {
                 ...Igrins2LongSlitDetails

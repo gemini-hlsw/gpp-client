@@ -3,6 +3,7 @@ from typing import Any, Optional
 from .custom_fields import (
     AddConditionsEntryResultFields,
     AddDatasetEventResultFields,
+    AddEventBatchResultFields,
     AddProgramUserResultFields,
     AddSequenceEventResultFields,
     AddSlewEventResultFields,
@@ -34,7 +35,9 @@ from .custom_fields import (
     RecordIgrins2VisitResultFields,
     RecordVisitResultFields,
     RedeemUserInvitationResultFields,
+    RefreshArchiveDuplicationResultFields,
     ReplaceFlamingos2SequenceResultFields,
+    ReplaceGhostSequenceResultFields,
     ReplaceGmosNorthSequenceResultFields,
     ReplaceGmosSouthSequenceResultFields,
     ReplaceGnirsSequenceResultFields,
@@ -62,6 +65,7 @@ from .custom_fields import (
 )
 from .input_types import (
     AddDatasetEventInput,
+    AddEventBatchInput,
     AddProgramUserInput,
     AddSequenceEventInput,
     AddSlewEventInput,
@@ -93,7 +97,9 @@ from .input_types import (
     RecordIgrins2VisitInput,
     RecordVisitInput,
     RedeemUserInvitationInput,
+    RefreshArchiveDuplicationInput,
     ReplaceFlamingos2SequenceInput,
+    ReplaceGhostSequenceInput,
     ReplaceGmosNorthSequenceInput,
     ReplaceGmosSouthSequenceInput,
     ReplaceGnirsSequenceInput,
@@ -216,6 +222,23 @@ class Mutation:
         }
         return AddStepEventResultFields(
             field_name="addStepEvent", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def add_event_batch(cls, input: AddEventBatchInput) -> AddEventBatchResultFields:
+        """Records a batch of execution events (of any type) for a single observation in
+        one request, reducing the per-event round trips that recording a sequence would
+        otherwise incur.  Every event must supply its own 'clientTime' and a distinct
+        'idempotencyKey'; the events are recorded in the order given.  The batch is
+        atomic -- if any event is rejected, none are recorded."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "AddEventBatchInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return AddEventBatchResultFields(
+            field_name="addEventBatch", arguments=cleared_arguments
         )
 
     @classmethod
@@ -630,6 +653,41 @@ class Mutation:
         }
         return ReplaceGnirsSequenceResultFields(
             field_name="replaceGnirsSequence", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def replace_ghost_sequence(
+        cls, input: ReplaceGhostSequenceInput
+    ) -> ReplaceGhostSequenceResultFields:
+        """Replaces the remaining steps in an execution sequence with the provided
+        sequence.  Previously executed (or even partially executed) steps are not
+        deleted.  Any ongoing steps are abandoned."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "ReplaceGhostSequenceInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return ReplaceGhostSequenceResultFields(
+            field_name="replaceGhostSequence", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def refresh_archive_duplication(
+        cls, input: RefreshArchiveDuplicationInput
+    ) -> RefreshArchiveDuplicationResultFields:
+        """Re-runs the Archive Duplication Search for an observation, replacing its
+        stored result with what the Gemini Observatory Archive holds now.
+
+        Rejected once the observation's proposal has been submitted."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RefreshArchiveDuplicationInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RefreshArchiveDuplicationResultFields(
+            field_name="refreshArchiveDuplication", arguments=cleared_arguments
         )
 
     @classmethod
