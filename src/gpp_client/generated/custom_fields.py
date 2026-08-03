@@ -4,6 +4,7 @@ from .base_operation import GraphQLField
 from .custom_typing_fields import (
     AddConditionsEntryResultGraphQLField,
     AddDatasetEventResultGraphQLField,
+    AddEventBatchResultGraphQLField,
     AddProgramUserResultGraphQLField,
     AddSequenceEventResultGraphQLField,
     AddSlewEventResultGraphQLField,
@@ -14,6 +15,8 @@ from .custom_typing_fields import (
     AllDetectorEstimatesGraphQLField,
     AllocationGraphQLField,
     AngleGraphQLField,
+    ArchiveDuplicationGraphQLField,
+    ArchiveMatchGraphQLField,
     AsterismGroupGraphQLField,
     AsterismGroupSelectResultGraphQLField,
     AtomEventGraphQLField,
@@ -56,8 +59,10 @@ from .custom_typing_fields import (
     ConfigurationFlamingos2LongSlitGraphQLField,
     ConfigurationGmosNorthImagingGraphQLField,
     ConfigurationGmosNorthLongSlitGraphQLField,
+    ConfigurationGmosNorthMosGraphQLField,
     ConfigurationGmosSouthImagingGraphQLField,
     ConfigurationGmosSouthLongSlitGraphQLField,
+    ConfigurationGmosSouthMosGraphQLField,
     ConfigurationGnirsIfuGraphQLField,
     ConfigurationGnirsLongSlitGraphQLField,
     ConfigurationGraphQLField,
@@ -160,6 +165,7 @@ from .custom_typing_fields import (
     GmosNorthImagingGraphQLField,
     GmosNorthLongSlitAcquisitionGraphQLField,
     GmosNorthLongSlitGraphQLField,
+    GmosNorthMosGraphQLField,
     GmosNorthStaticGraphQLField,
     GmosNorthStepGraphQLField,
     GmosSouthAtomGraphQLField,
@@ -172,6 +178,7 @@ from .custom_typing_fields import (
     GmosSouthImagingGraphQLField,
     GmosSouthLongSlitAcquisitionGraphQLField,
     GmosSouthLongSlitGraphQLField,
+    GmosSouthMosGraphQLField,
     GmosSouthStaticGraphQLField,
     GmosSouthStepGraphQLField,
     GnirsAcquisitionMirrorOutGraphQLField,
@@ -280,8 +287,10 @@ from .custom_typing_fields import (
     RecordIgrins2VisitResultGraphQLField,
     RecordVisitResultGraphQLField,
     RedeemUserInvitationResultGraphQLField,
+    RefreshArchiveDuplicationResultGraphQLField,
     RegionGraphQLField,
     ReplaceFlamingos2SequenceResultGraphQLField,
+    ReplaceGhostSequenceResultGraphQLField,
     ReplaceGmosNorthSequenceResultGraphQLField,
     ReplaceGmosSouthSequenceResultGraphQLField,
     ReplaceGnirsSequenceResultGraphQLField,
@@ -416,6 +425,32 @@ class AddDatasetEventResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "AddDatasetEventResultFields":
+        self._alias = alias
+        return self
+
+
+class AddEventBatchResultFields(GraphQLField):
+    """The result of adding a batch of events."""
+
+    @classmethod
+    def events(cls) -> "ExecutionEventInterface":
+        """The new events that were added, in the order they were recorded."""
+        return ExecutionEventInterface("events")
+
+    has_more: "AddEventBatchResultGraphQLField" = AddEventBatchResultGraphQLField(
+        "hasMore"
+    )
+    "`true` when the batch contained more events than were returned (the default\nmaximum is 1000).  All submitted events are recorded regardless; only the\nreturned list is truncated."
+
+    def fields(
+        self,
+        *subfields: Union[AddEventBatchResultGraphQLField, "ExecutionEventInterface"],
+    ) -> "AddEventBatchResultFields":
+        """Subfields should come from the AddEventBatchResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "AddEventBatchResultFields":
         self._alias = alias
         return self
 
@@ -682,6 +717,187 @@ class AngleFields(GraphQLField):
         return self
 
 
+class ArchiveDuplicationFields(GraphQLField):
+    """Archive Duplication Search result for an observation, as of the last time the
+    search was run.
+
+    When `state` is ERROR only `error` describes the failed attempt.  A failure
+    leaves the previously found results in place rather than discarding them, so
+    `matchCount`, `matches`, `lastCheckedAt` and the search area still
+    describe the last search that succeeded, and `lastCheckedAt` says when that was."""
+
+    state: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("state")
+    match_count: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
+        "matchCount"
+    )
+    "Number of matching archive files.  Counted per file rather than per archived\nobservation, to stay consistent with the PIT.  A floor rather than an exact\nfigure when `saturated`, and the count from the last successful search rather\nthan from the most recent attempt when `state` is ERROR."
+    saturated: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
+        "saturated"
+    )
+    'Whether a constituent query came back filled to the archive\'s hard cap of 500\nrecords.  When true `matchCount` is a floor and should be rendered as "500+".'
+    last_checked_at: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
+        "lastCheckedAt"
+    )
+    "When the reported matches were gathered.  Null exactly when `state` is\nNOT_CHECKED, since every other state follows an attempt."
+    error: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("error")
+    "Why the most recent attempt failed.  Set when `state` is ERROR."
+
+    @classmethod
+    def search_coordinates(cls) -> "CoordinatesFields":
+        """Coordinates searched around, for a sidereal pointing."""
+        return CoordinatesFields("searchCoordinates")
+
+    search_target_name: "ArchiveDuplicationGraphQLField" = (
+        ArchiveDuplicationGraphQLField("searchTargetName")
+    )
+    "Target name searched for, for a non-sidereal pointing."
+
+    @classmethod
+    def search_radius(cls) -> "AngleFields":
+        """Radius searched around the search center, half the observation's field of view."""
+        return AngleFields("searchRadius")
+
+    query_urls: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
+        "queryUrls"
+    )
+    "The GOA query URLs the snapshot was gathered from, one per fan-out query the\nsearch ran. Empty when the search could not be run or has never been run."
+
+    @classmethod
+    def matches(cls) -> "ArchiveMatchFields":
+        """The matched archive files, ordered by file name."""
+        return ArchiveMatchFields("matches")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ArchiveDuplicationGraphQLField,
+            "AngleFields",
+            "ArchiveMatchFields",
+            "CoordinatesFields",
+        ],
+    ) -> "ArchiveDuplicationFields":
+        """Subfields should come from the ArchiveDuplicationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ArchiveDuplicationFields":
+        self._alias = alias
+        return self
+
+
+class ArchiveMatchFields(GraphQLField):
+    """One archived file matched by an Archive Duplication Search.
+
+    The fields are the archive's own record of the file, assembled from its FITS
+    headers, so which of them are populated varies by instrument and by era.
+    Every nullable field here is null when the archive does not report a value for that
+    file; where absence means something more specific than that, the field says so.
+    fields are typed where possible."""
+
+    name: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("name")
+    "Archive file name, e.g. S20240101S0001.fits.  Always present, and unique."
+    data_label: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("dataLabel")
+    "Dataset label the file was recorded under, e.g. GN-2019A-Q-101-11-001."
+
+    @classmethod
+    def coordinates(cls) -> "CoordinatesFields":
+        """Coordinates the file was taken at.  Null when the archive records no pointing
+        for the file."""
+        return CoordinatesFields("coordinates")
+
+    instrument_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "instrumentString"
+    )
+    "Archive instrument name, e.g. GMOS-N.  Always present, and always one of the\ninstruments the search queried."
+    instrument: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("instrument")
+    "`instrumentString` as an `Instrument`, or null where the archive names an\ninstrument GPP has no case for."
+    observation_type: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "observationType"
+    )
+    "Observation type as the archive reports it.  Always present, and in practice\nalways OBJECT"
+    observe_class_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "observeClassString"
+    )
+    "Observation class as the archive reports it, e.g. science.  This is the\nlegacy GOA class."
+    observe_class: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("observeClass")
+    "`observeClassString` as an `ObserveClass`, or null where the archive's class\nhas no faithful GPP equivalent."
+    qa_state_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "qaStateString"
+    )
+    "Quality assessment the file was given, e.g. Pass or Usable."
+    qa_state: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("qaState")
+    "`qaStateString` as a `DatasetQaState`, or null where the archive settled on\nno assessment (`Undefined`, or the retired transient `CHECK`).  PASS and\nUSABLE are what the search expects to see. FAIL may appear though GOA queries\nshould not return FAIL."
+    ut_date_time: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("utDateTime")
+    "UT date and time the file was taken."
+    release_date: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("releaseDate")
+    "Date the file's proprietary period ends and it becomes publicly available.\nMay be in the future."
+    program_reference: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "programReference"
+    )
+    "Program reference as the archive reports it.  The archive holds both OCS- and\nGPP-era data, so this may be a GPP program reference or an OCS one."
+    observation_reference: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
+        "observationReference"
+    )
+    "Observation reference as the archive reports it.  A GPP observation reference\nor an OCS one, e.g. GN-2019A-Q-101-11, for the same reason as\n`programReference`."
+    object_name: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("objectName")
+    "Target name recorded for the file.  Free text as the observer entered it."
+
+    @classmethod
+    def exposure(cls) -> "TimeSpanFields":
+        """Exposure time of the file."""
+        return TimeSpanFields("exposure")
+
+    disperser: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("disperser")
+    "Name of the dispersing element in the beam, e.g. B600.  Null for an imaging\nframe, which has none."
+    filter_: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("filter")
+    "Name of the filter in the beam, e.g. g_G0301.  Null when there was none."
+
+    @classmethod
+    def wavelength(cls) -> "WavelengthFields":
+        """Central wavelength the file was taken at.  Null for a frame with no
+        dispersing element."""
+        return WavelengthFields("wavelength")
+
+    airmass: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("airmass")
+    "Airmass the file was taken at, a dimensionless ratio starting at 1 at zenith."
+
+    @classmethod
+    def azimuth(cls) -> "AngleFields":
+        """Telescope azimuth the file was taken at."""
+        return AngleFields("azimuth")
+
+    @classmethod
+    def elevation(cls) -> "AngleFields":
+        """Telescope elevation above the horizon the file was taken at."""
+        return AngleFields("elevation")
+
+    @classmethod
+    def distance(cls) -> "AngleFields":
+        """Angular separation between this file's pointing and the search center,
+        telling a match on the target apart from one merely nearby in the field.
+        Null when the search ran by target name rather than coordinates, or when the
+        file itself has no pointing."""
+        return AngleFields("distance")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ArchiveMatchGraphQLField,
+            "AngleFields",
+            "CoordinatesFields",
+            "TimeSpanFields",
+            "WavelengthFields",
+        ],
+    ) -> "ArchiveMatchFields":
+        """Subfields should come from the ArchiveMatchFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ArchiveMatchFields":
+        self._alias = alias
+        return self
+
+
 class AsterismGroupFields(GraphQLField):
     @classmethod
     def program(cls) -> "ProgramFields":
@@ -773,8 +989,14 @@ class AtomEventFields(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "AtomEventGraphQLField" = AtomEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "AtomEventGraphQLField" = AtomEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "AtomEventGraphQLField" = AtomEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "AtomEventGraphQLField" = AtomEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "AtomEventGraphQLField" = AtomEventGraphQLField("eventType")
     "Event type."
 
@@ -1945,6 +2167,23 @@ class ConfigurationGmosNorthLongSlitFields(GraphQLField):
         return self
 
 
+class ConfigurationGmosNorthMosFields(GraphQLField):
+    grating: "ConfigurationGmosNorthMosGraphQLField" = (
+        ConfigurationGmosNorthMosGraphQLField("grating")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosNorthMosGraphQLField
+    ) -> "ConfigurationGmosNorthMosFields":
+        """Subfields should come from the ConfigurationGmosNorthMosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosNorthMosFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGmosSouthImagingFields(GraphQLField):
     filters: "ConfigurationGmosSouthImagingGraphQLField" = (
         ConfigurationGmosSouthImagingGraphQLField("filters")
@@ -1975,6 +2214,23 @@ class ConfigurationGmosSouthLongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationGmosSouthLongSlitFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthMosFields(GraphQLField):
+    grating: "ConfigurationGmosSouthMosGraphQLField" = (
+        ConfigurationGmosSouthMosGraphQLField("grating")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosSouthMosGraphQLField
+    ) -> "ConfigurationGmosSouthMosFields":
+        """Subfields should come from the ConfigurationGmosSouthMosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosSouthMosFields":
         self._alias = alias
         return self
 
@@ -2054,6 +2310,14 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationGmosSouthLongSlitFields("gmosSouthLongSlit")
 
     @classmethod
+    def gmos_north_mos(cls) -> "ConfigurationGmosNorthMosFields":
+        return ConfigurationGmosNorthMosFields("gmosNorthMos")
+
+    @classmethod
+    def gmos_south_mos(cls) -> "ConfigurationGmosSouthMosFields":
+        return ConfigurationGmosSouthMosFields("gmosSouthMos")
+
+    @classmethod
     def gmos_north_imaging(cls) -> "ConfigurationGmosNorthImagingFields":
         return ConfigurationGmosNorthImagingFields("gmosNorthImaging")
 
@@ -2088,8 +2352,10 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationFlamingos2LongSlitFields",
             "ConfigurationGmosNorthImagingFields",
             "ConfigurationGmosNorthLongSlitFields",
+            "ConfigurationGmosNorthMosFields",
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
+            "ConfigurationGmosSouthMosFields",
             "ConfigurationGnirsIfuFields",
             "ConfigurationGnirsLongSlitFields",
             "ConfigurationIgrins2LongSlitFields",
@@ -2847,8 +3113,16 @@ class DatasetEventFields(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "DatasetEventGraphQLField" = DatasetEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField(
+        "effectiveTime"
+    )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "DatasetEventGraphQLField" = DatasetEventGraphQLField("eventType")
     "Event type."
 
@@ -3678,8 +3952,18 @@ class ExecutionEventInterface(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
+        "recordedTime"
+    )
+    "Time at which this event was recorded in the database."
     received: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
+        "effectiveTime"
+    )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("eventType")
     "Event type."
     idempotency_key: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
@@ -3837,10 +4121,10 @@ class Flamingos2AtomFields(GraphQLField):
 class Flamingos2CustomMaskFields(GraphQLField):
     """Flamingos 2 Custom Mask"""
 
-    filename: "Flamingos2CustomMaskGraphQLField" = Flamingos2CustomMaskGraphQLField(
-        "filename"
+    attachment_id: "Flamingos2CustomMaskGraphQLField" = (
+        Flamingos2CustomMaskGraphQLField("attachmentId")
     )
-    "Custom Mask Filename"
+    "The MOS mask attachment id, or null if the mask has not yet been defined."
     slit_width: "Flamingos2CustomMaskGraphQLField" = Flamingos2CustomMaskGraphQLField(
         "slitWidth"
     )
@@ -5030,8 +5314,10 @@ class GmosCcdModeFields(GraphQLField):
 class GmosCustomMaskFields(GraphQLField):
     """GMOS Custom Mask"""
 
-    filename: "GmosCustomMaskGraphQLField" = GmosCustomMaskGraphQLField("filename")
-    "Custom Mask Filename"
+    attachment_id: "GmosCustomMaskGraphQLField" = GmosCustomMaskGraphQLField(
+        "attachmentId"
+    )
+    "The MOS mask attachment id, or null if the mask has not yet been defined."
     slit_width: "GmosCustomMaskGraphQLField" = GmosCustomMaskGraphQLField("slitWidth")
     "Custom Slit Width"
 
@@ -5602,6 +5888,146 @@ class GmosNorthLongSlitAcquisitionFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosNorthLongSlitAcquisitionFields":
+        self._alias = alias
+        return self
+
+
+class GmosNorthMosFields(GraphQLField):
+    """GMOS North MOS mode"""
+
+    grating: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("grating")
+    "GMOS North Grating"
+    filter_: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("filter")
+    "GMOS North Filter"
+
+    @classmethod
+    def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask through which the observation is taken.  Its `attachmentId`
+        is null until the mask has been designed, which normally happens in Phase 2."""
+        return GmosCustomMaskFields("customMask")
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
+    default_x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultXBin")
+    "Default GMOS X-Binning, calculated from the custom mask's slit width, the\ntarget source profile and the image quality."
+    explicit_x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "explicitXBin"
+    )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
+    y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
+    default_y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning, capped at TWO to keep adequate spatial sampling for\nobject identification along the mask."
+    explicit_y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "explicitYBin"
+    )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
+    amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
+    default_amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "defaultAmpReadMode"
+    )
+    "Default GmosAmpReadMode (SLOW)."
+    explicit_amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "explicitAmpReadMode"
+    )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
+    amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
+    default_amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "defaultAmpGain"
+    )
+    "Default GMOS amp gain (LOW)."
+    explicit_amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "explicitAmpGain"
+    )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
+    roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
+    default_roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
+    explicit_roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
+
+    @classmethod
+    def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
+        return WavelengthDitherFields("wavelengthDithers")
+
+    @classmethod
+    def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
+        return WavelengthDitherFields("defaultWavelengthDithers")
+
+    @classmethod
+    def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
+        return WavelengthDitherFields("explicitWavelengthDithers")
+
+    @classmethod
+    def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets or else taken from
+        defaultOffsets."""
+        return OffsetQFields("offsets")
+
+    @classmethod
+    def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
+        return OffsetQFields("defaultOffsets")
+
+    @classmethod
+    def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the default."""
+        return OffsetQFields("explicitOffsets")
+
+    initial_grating: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "initialGrating"
+    )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
+    initial_filter: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "initialFilter"
+    )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
+    initial_slit_width: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
+        "initialSlitWidth"
+    )
+    "The custom mask slit width as it was initially selected.  See\n`customMask.slitWidth` for the width that will be used in the observation.\nThe mask attachment has no initial counterpart; it is expected to arrive\nafter the mode is created."
+
+    @classmethod
+    def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
+        return WavelengthFields("initialCentralWavelength")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosNorthMosGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosCustomMaskFields",
+            "OffsetQFields",
+            "WavelengthDitherFields",
+            "WavelengthFields",
+        ],
+    ) -> "GmosNorthMosFields":
+        """Subfields should come from the GmosNorthMosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosNorthMosFields":
         self._alias = alias
         return self
 
@@ -6211,6 +6637,146 @@ class GmosSouthLongSlitAcquisitionFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosSouthLongSlitAcquisitionFields":
+        self._alias = alias
+        return self
+
+
+class GmosSouthMosFields(GraphQLField):
+    """GMOS South MOS mode"""
+
+    grating: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("grating")
+    "GMOS South Grating"
+    filter_: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("filter")
+    "GMOS South Filter"
+
+    @classmethod
+    def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask through which the observation is taken.  Its `attachmentId`
+        is null until the mask has been designed, which normally happens in Phase 2."""
+        return GmosCustomMaskFields("customMask")
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
+    default_x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultXBin")
+    "Default GMOS X-Binning, calculated from the custom mask's slit width, the\ntarget source profile and the image quality."
+    explicit_x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "explicitXBin"
+    )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
+    y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
+    default_y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning, capped at TWO to keep adequate spatial sampling for\nobject identification along the mask."
+    explicit_y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "explicitYBin"
+    )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
+    amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
+    default_amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "defaultAmpReadMode"
+    )
+    "Default GmosAmpReadMode (SLOW)."
+    explicit_amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "explicitAmpReadMode"
+    )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
+    amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
+    default_amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "defaultAmpGain"
+    )
+    "Default GMOS amp gain (LOW)."
+    explicit_amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "explicitAmpGain"
+    )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
+    roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
+    default_roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
+    explicit_roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
+
+    @classmethod
+    def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
+        return WavelengthDitherFields("wavelengthDithers")
+
+    @classmethod
+    def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
+        return WavelengthDitherFields("defaultWavelengthDithers")
+
+    @classmethod
+    def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
+        return WavelengthDitherFields("explicitWavelengthDithers")
+
+    @classmethod
+    def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets or else taken from
+        defaultOffsets."""
+        return OffsetQFields("offsets")
+
+    @classmethod
+    def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
+        return OffsetQFields("defaultOffsets")
+
+    @classmethod
+    def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the default."""
+        return OffsetQFields("explicitOffsets")
+
+    initial_grating: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "initialGrating"
+    )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
+    initial_filter: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "initialFilter"
+    )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
+    initial_slit_width: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
+        "initialSlitWidth"
+    )
+    "The custom mask slit width as it was initially selected.  See\n`customMask.slitWidth` for the width that will be used in the observation.\nThe mask attachment has no initial counterpart; it is expected to arrive\nafter the mode is created."
+
+    @classmethod
+    def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
+        return WavelengthFields("initialCentralWavelength")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosSouthMosGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosCustomMaskFields",
+            "OffsetQFields",
+            "WavelengthDitherFields",
+            "WavelengthFields",
+        ],
+    ) -> "GmosSouthMosFields":
+        """Subfields should come from the GmosSouthMosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosSouthMosFields":
         self._alias = alias
         return self
 
@@ -7284,6 +7850,12 @@ class Igrins2ExecutionConfigFields(GraphQLField):
         return Igrins2StaticFields("static")
 
     @classmethod
+    def acquisition(cls) -> "Igrins2ExecutionSequenceFields":
+        """IGRINS-2 SVC (Slit-Viewing Camera) acquisition execution sequence. Null unless the
+        observation has an SVC configuration."""
+        return Igrins2ExecutionSequenceFields("acquisition")
+
+    @classmethod
     def science(cls) -> "Igrins2ExecutionSequenceFields":
         """IGRINS-2 science execution"""
         return Igrins2ExecutionSequenceFields("science")
@@ -8023,7 +8595,8 @@ class ItcGnirsImagingResultSetFields(GraphQLField):
 
 
 class ItcIgrins2SpectroscopyFields(GraphQLField):
-    """ITC results for IGRINS-2 spectroscopy observations (no acquisition)."""
+    """ITC results for IGRINS-2 spectroscopy observations. IGRINS-2 has no acquisition estimate.
+    SVC  acquisition sequence, when present, uses the SVC exposure time configuration."""
 
     itc_type: "ItcIgrins2SpectroscopyGraphQLField" = ItcIgrins2SpectroscopyGraphQLField(
         "itcType"
@@ -8502,10 +9075,17 @@ class ObservationFields(GraphQLField):
         whether a pending update is expected."""
         return CalculatedObservationWorkflowFields("workflow")
 
+    @classmethod
+    def archive_duplication(cls) -> "ArchiveDuplicationFields":
+        """Result of the Archive Duplication Search: what the Gemini Observatory Archive
+        held around this observation's pointing."""
+        return ArchiveDuplicationFields("archiveDuplication")
+
     def fields(
         self,
         *subfields: Union[
             ObservationGraphQLField,
+            "ArchiveDuplicationFields",
             "AttachmentFields",
             "CalculatedObservationWorkflowFields",
             "ConfigurationFields",
@@ -8725,6 +9305,11 @@ class ObservingModeFields(GraphQLField):
         return GmosNorthLongSlitFields("gmosNorthLongSlit")
 
     @classmethod
+    def gmos_north_mos(cls) -> "GmosNorthMosFields":
+        """GMOS North MOS mode"""
+        return GmosNorthMosFields("gmosNorthMos")
+
+    @classmethod
     def gmos_south_imaging(cls) -> "GmosSouthImagingFields":
         """GMOS South Imaging mode"""
         return GmosSouthImagingFields("gmosSouthImaging")
@@ -8733,6 +9318,11 @@ class ObservingModeFields(GraphQLField):
     def gmos_south_long_slit(cls) -> "GmosSouthLongSlitFields":
         """GMOS South Long Slit mode"""
         return GmosSouthLongSlitFields("gmosSouthLongSlit")
+
+    @classmethod
+    def gmos_south_mos(cls) -> "GmosSouthMosFields":
+        """GMOS South MOS mode"""
+        return GmosSouthMosFields("gmosSouthMos")
 
     @classmethod
     def gnirs_imaging(cls) -> "GnirsImagingFields":
@@ -8763,8 +9353,10 @@ class ObservingModeFields(GraphQLField):
             "GhostIfuFields",
             "GmosNorthImagingFields",
             "GmosNorthLongSlitFields",
+            "GmosNorthMosFields",
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
+            "GmosSouthMosFields",
             "GnirsImagingFields",
             "GnirsSpectroscopyFields",
             "Igrins2LongSlitFields",
@@ -9836,6 +10428,36 @@ class RedeemUserInvitationResultFields(GraphQLField):
         return self
 
 
+class RefreshArchiveDuplicationResultFields(GraphQLField):
+    """The result of re-running the Archive Duplication Search."""
+
+    @classmethod
+    def archive_duplication(cls) -> "ArchiveDuplicationFields":
+        """The search result as it now stands."""
+        return ArchiveDuplicationFields("archiveDuplication")
+
+    @classmethod
+    def observation(cls) -> "ObservationFields":
+        """The observation that was searched."""
+        return ObservationFields("observation")
+
+    def fields(
+        self,
+        *subfields: Union[
+            RefreshArchiveDuplicationResultGraphQLField,
+            "ArchiveDuplicationFields",
+            "ObservationFields",
+        ],
+    ) -> "RefreshArchiveDuplicationResultFields":
+        """Subfields should come from the RefreshArchiveDuplicationResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RefreshArchiveDuplicationResultFields":
+        self._alias = alias
+        return self
+
+
 class RegionFields(GraphQLField):
     @classmethod
     def right_ascension_arc(cls) -> "RightAscensionArcFields":
@@ -9879,6 +10501,27 @@ class ReplaceFlamingos2SequenceResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ReplaceFlamingos2SequenceResultFields":
+        self._alias = alias
+        return self
+
+
+class ReplaceGhostSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
+    @classmethod
+    def sequence(cls) -> "GhostAtomFields":
+        return GhostAtomFields("sequence")
+
+    def fields(
+        self,
+        *subfields: Union[ReplaceGhostSequenceResultGraphQLField, "GhostAtomFields"],
+    ) -> "ReplaceGhostSequenceResultFields":
+        """Subfields should come from the ReplaceGhostSequenceResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ReplaceGhostSequenceResultFields":
         self._alias = alias
         return self
 
@@ -10223,8 +10866,18 @@ class SequenceEventFields(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
+        "recordedTime"
+    )
+    "Time at which this event was recorded in the database."
     received: "SequenceEventGraphQLField" = SequenceEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
+        "effectiveTime"
+    )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "SequenceEventGraphQLField" = SequenceEventGraphQLField("eventType")
     "Event type."
     command: "SequenceEventGraphQLField" = SequenceEventGraphQLField("command")
@@ -10523,8 +11176,14 @@ class SlewEventFields(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "SlewEventGraphQLField" = SlewEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "SlewEventGraphQLField" = SlewEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "SlewEventGraphQLField" = SlewEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "SlewEventGraphQLField" = SlewEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "SlewEventGraphQLField" = SlewEventGraphQLField("eventType")
     "Event type."
     slew_stage: "SlewEventGraphQLField" = SlewEventGraphQLField("slewStage")
@@ -11078,8 +11737,14 @@ class StepEventFields(GraphQLField):
         """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
+    recorded_time: "StepEventGraphQLField" = StepEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "StepEventGraphQLField" = StepEventGraphQLField("received")
-    "Time at which this event was received."
+    "Deprecated alias for `recordedTime`."
+    client_time: "StepEventGraphQLField" = StepEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
+    effective_time: "StepEventGraphQLField" = StepEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "StepEventGraphQLField" = StepEventGraphQLField("eventType")
     "Event type."
 
@@ -12762,8 +13427,14 @@ class VisitFields(GraphQLField):
         """Observation associated with this visit."""
         return ObservationFields("observation")
 
+    recorded_time: "VisitGraphQLField" = VisitGraphQLField("recordedTime")
+    "Time at which this visit was recorded in the database."
     created: "VisitGraphQLField" = VisitGraphQLField("created")
-    "Created by Observe at time."
+    "Deprecated alias for `recordedTime`."
+    client_time: "VisitGraphQLField" = VisitGraphQLField("clientTime")
+    "The client-suplied creation time, if one was supplied."
+    effective_time: "VisitGraphQLField" = VisitGraphQLField("effectiveTime")
+    "Time we associate with this visit.  This is the client-supplied creation time\nwhen one was provided (by the slew or recordVisit that opened the visit),\notherwise the time it was recorded in the database (see `recordedTime`)."
     site: "VisitGraphQLField" = VisitGraphQLField("site")
     "Site of the visit."
 

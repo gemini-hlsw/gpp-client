@@ -1,24 +1,6 @@
 from enum import Enum
 
 
-class ConditionsMeasurementSource(str, Enum):
-    OBSERVER = "OBSERVER"
-
-
-class SeeingTrend(str, Enum):
-    GETTING_BETTER = "GETTING_BETTER"
-    GETTING_WORSE = "GETTING_WORSE"
-    STAYING_THE_SAME = "STAYING_THE_SAME"
-    VARIABLE = "VARIABLE"
-
-
-class ConditionsExpectationType(str, Enum):
-    CLEAR_SKIES = "CLEAR_SKIES"
-    FOG = "FOG"
-    THICK_CLOUDS = "THICK_CLOUDS"
-    THIN_CLOUDS = "THIN_CLOUDS"
-
-
 class AtomExecutionState(str, Enum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -80,6 +62,24 @@ class GeminiCallForProposalsType(str, Enum):
     POOR_WEATHER = "POOR_WEATHER"
     REGULAR_SEMESTER = "REGULAR_SEMESTER"
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
+
+
+class ConditionsMeasurementSource(str, Enum):
+    OBSERVER = "OBSERVER"
+
+
+class SeeingTrend(str, Enum):
+    GETTING_BETTER = "GETTING_BETTER"
+    GETTING_WORSE = "GETTING_WORSE"
+    STAYING_THE_SAME = "STAYING_THE_SAME"
+    VARIABLE = "VARIABLE"
+
+
+class ConditionsExpectationType(str, Enum):
+    CLEAR_SKIES = "CLEAR_SKIES"
+    FOG = "FOG"
+    THICK_CLOUDS = "THICK_CLOUDS"
+    THIN_CLOUDS = "THIN_CLOUDS"
 
 
 class EditType(str, Enum):
@@ -436,8 +436,10 @@ class ObservingModeType(str, Enum):
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_NORTH_LONG_SLIT = "GMOS_NORTH_LONG_SLIT"
+    GMOS_NORTH_MOS = "GMOS_NORTH_MOS"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
     GMOS_SOUTH_LONG_SLIT = "GMOS_SOUTH_LONG_SLIT"
+    GMOS_SOUTH_MOS = "GMOS_SOUTH_MOS"
     GNIRS_IMAGING = "GNIRS_IMAGING"
     GNIRS_LONG_SLIT = "GNIRS_LONG_SLIT"
     GNIRS_IFU = "GNIRS_IFU"
@@ -1008,6 +1010,13 @@ class ObsStatus(str, Enum):
 class TimingWindowInclusion(str, Enum):
     INCLUDE = "INCLUDE"
     EXCLUDE = "EXCLUDE"
+
+
+class ArchiveDuplicationState(str, Enum):
+    NOT_CHECKED = "NOT_CHECKED"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+    CHECKED = "CHECKED"
+    ERROR = "ERROR"
 
 
 class ExecutionState(str, Enum):

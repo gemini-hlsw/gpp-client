@@ -31,6 +31,12 @@ class AddStepEventResultGraphQLField(GraphQLField):
         return self
 
 
+class AddEventBatchResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "AddEventBatchResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class AddTimeChargeCorrectionResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "AddTimeChargeCorrectionResultGraphQLField":
         self._alias = alias
@@ -627,6 +633,12 @@ class RecordGmosNorthVisitResultGraphQLField(GraphQLField):
 
 class RecordGmosSouthVisitResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "RecordGmosSouthVisitResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RefreshArchiveDuplicationResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RefreshArchiveDuplicationResultGraphQLField":
         self._alias = alias
         return self
 
@@ -1429,6 +1441,18 @@ class GmosSouthLongSlitGraphQLField(GraphQLField):
         return self
 
 
+class GmosNorthMosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthMosGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosSouthMosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthMosGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosSouthImagingGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosSouthImagingGraphQLField":
         self._alias = alias
@@ -1703,6 +1727,18 @@ class ObservationGraphQLField(GraphQLField):
         return self
 
 
+class ArchiveMatchGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ArchiveMatchGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ArchiveDuplicationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ArchiveDuplicationGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ConfigurationTargetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationTargetGraphQLField":
         self._alias = alias
@@ -1741,6 +1777,18 @@ class ConfigurationGmosNorthLongSlitGraphQLField(GraphQLField):
 
 class ConfigurationGmosSouthLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGmosSouthLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosNorthMosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosNorthMosGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthMosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosSouthMosGraphQLField":
         self._alias = alias
         return self
 
@@ -2317,5 +2365,11 @@ class ReplaceIgrins2SequenceResultGraphQLField(GraphQLField):
 
 class ReplaceGnirsSequenceResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ReplaceGnirsSequenceResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ReplaceGhostSequenceResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ReplaceGhostSequenceResultGraphQLField":
         self._alias = alias
         return self
