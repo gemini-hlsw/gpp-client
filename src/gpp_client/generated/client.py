@@ -2090,10 +2090,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -2121,9 +2122,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -2751,10 +2749,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -2782,9 +2781,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -3413,10 +3409,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -3444,9 +3441,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -4077,10 +4071,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -4108,9 +4103,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -4744,10 +4736,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -4775,9 +4768,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -5411,10 +5401,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -5442,9 +5433,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -6075,10 +6063,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -6106,9 +6095,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -6739,10 +6725,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -6770,9 +6757,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -7403,10 +7387,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -7434,9 +7419,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -8068,10 +8050,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -8099,9 +8082,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism
@@ -8740,10 +8720,11 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               camera
-              centralWavelength {
-                nanometers
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
               }
-              coadds
               decker
               defaultDecker
               defaultWellDepth
@@ -8771,9 +8752,6 @@ class GraphQLClient(AsyncBaseClient):
                 }
               }
               initialCamera
-              initialCentralWavelength {
-                nanometers
-              }
               initialFilter
               initialGrating
               initialPrism

@@ -479,10 +479,9 @@ class GnirsImagingDetailsInitialFiltersExposureTimeModeTimeAndCountTime(BaseMode
 class GnirsSpectroscopyDetails(BaseModel):
     acquisition: "GnirsSpectroscopyDetailsAcquisition"
     camera: GnirsCamera
-    central_wavelength: "GnirsSpectroscopyDetailsCentralWavelength" = Field(
-        alias="centralWavelength"
+    central_wavelengths: list["GnirsSpectroscopyDetailsCentralWavelengths"] = Field(
+        alias="centralWavelengths"
     )
-    coadds: Any
     decker: GnirsDecker
     default_decker: GnirsDecker = Field(alias="defaultDecker")
     default_well_depth: GnirsWellDepth = Field(alias="defaultWellDepth")
@@ -496,9 +495,6 @@ class GnirsSpectroscopyDetails(BaseModel):
     grating: GnirsGrating
     ifu: Optional["GnirsSpectroscopyDetailsIfu"]
     initial_camera: GnirsCamera = Field(alias="initialCamera")
-    initial_central_wavelength: "GnirsSpectroscopyDetailsInitialCentralWavelength" = (
-        Field(alias="initialCentralWavelength")
-    )
     initial_filter: GnirsFilter = Field(alias="initialFilter")
     initial_grating: GnirsGrating = Field(alias="initialGrating")
     initial_prism: GnirsPrism = Field(alias="initialPrism")
@@ -567,7 +563,13 @@ class GnirsSpectroscopyDetailsAcquisitionSkyOffsetQ(BaseModel):
     arcseconds: Any
 
 
-class GnirsSpectroscopyDetailsCentralWavelength(BaseModel):
+class GnirsSpectroscopyDetailsCentralWavelengths(BaseModel):
+    central_wavelength: "GnirsSpectroscopyDetailsCentralWavelengthsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+
+
+class GnirsSpectroscopyDetailsCentralWavelengthsCentralWavelength(BaseModel):
     nanometers: Any
 
 
@@ -595,10 +597,6 @@ class GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetP(BaseModel):
 
 class GnirsSpectroscopyDetailsIfuTelescopeConfigsOffsetQ(BaseModel):
     arcseconds: Any
-
-
-class GnirsSpectroscopyDetailsInitialCentralWavelength(BaseModel):
-    nanometers: Any
 
 
 class GnirsSpectroscopyDetailsTelluricType(BaseModel):
