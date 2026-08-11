@@ -181,6 +181,11 @@ class GmosCustomSlitWidth(str, Enum):
     CUSTOM_WIDTH_5_00 = "CUSTOM_WIDTH_5_00"
 
 
+class GmosMosAcquisitionType(str, Enum):
+    MASK_IN = "MASK_IN"
+    MASK_OUT = "MASK_OUT"
+
+
 class GmosDtax(str, Enum):
     MINUS_SIX = "MINUS_SIX"
     MINUS_FIVE = "MINUS_FIVE"
@@ -244,6 +249,12 @@ class UserInvitationStatus(str, Enum):
 class MosPreImaging(str, Enum):
     IS_MOS_PRE_IMAGING = "IS_MOS_PRE_IMAGING"
     IS_NOT_MOS_PRE_IMAGING = "IS_NOT_MOS_PRE_IMAGING"
+
+
+class ExecutionRequirement(str, Enum):
+    UNCONSTRAINED = "UNCONSTRAINED"
+    NO_SPLITTING = "NO_SPLITTING"
+    UNINTERRUPTIBLE = "UNINTERRUPTIBLE"
 
 
 class TelescopeConfigGeneratorType(str, Enum):
@@ -1035,6 +1046,12 @@ class ConfigurationRequestStatus(str, Enum):
     WITHDRAWN = "WITHDRAWN"
 
 
+class TooTriggerStatus(str, Enum):
+    REQUESTED = "REQUESTED"
+    DECLINED = "DECLINED"
+    WITHDRAWN = "WITHDRAWN"
+
+
 class ObservationValidationCode(str, Enum):
     CONFIGURATION_ERROR = "CONFIGURATION_ERROR"
     CFP_ERROR = "CFP_ERROR"
@@ -1043,6 +1060,7 @@ class ObservationValidationCode(str, Enum):
     CONFIG_REQUEST_NOT_REQUESTED = "CONFIG_REQUEST_NOT_REQUESTED"
     CONFIG_REQUEST_DENIED = "CONFIG_REQUEST_DENIED"
     CONFIG_REQUEST_PENDING = "CONFIG_REQUEST_PENDING"
+    TOO_ACTIVATION_UNAPPROVED = "TOO_ACTIVATION_UNAPPROVED"
 
 
 class ObserveClass(str, Enum):
@@ -1397,10 +1415,11 @@ class ConsiderForBand3(str, Enum):
     DO_NOT_CONSIDER = "DO_NOT_CONSIDER"
 
 
-class ToOActivation(str, Enum):
+class TooActivation(str, Enum):
     NONE = "NONE"
     STANDARD = "STANDARD"
     RAPID = "RAPID"
+    INTERRUPTING = "INTERRUPTING"
 
 
 class UserType(str, Enum):

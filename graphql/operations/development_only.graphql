@@ -79,10 +79,11 @@ fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
       }
     }
     camera
-    centralWavelength {
-      nanometers
+    centralWavelengths {
+      centralWavelength {
+        nanometers
+      }
     }
-    coadds
     decker
     defaultDecker
     defaultWellDepth
@@ -110,9 +111,6 @@ fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
       }
     }
     initialCamera
-    initialCentralWavelength {
-      nanometers
-    }
     initialFilter
     initialGrating
     initialPrism
