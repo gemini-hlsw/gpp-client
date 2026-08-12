@@ -2011,7 +2011,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -2060,7 +2059,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -2670,7 +2668,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -2719,7 +2716,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -3330,7 +3326,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -3379,7 +3374,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -3992,7 +3986,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -4041,7 +4034,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -4657,7 +4649,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -4706,7 +4697,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -5322,7 +5312,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -5371,7 +5360,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -5984,7 +5972,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -6033,7 +6020,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -6646,7 +6632,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -6695,7 +6680,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -7308,7 +7292,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -7357,7 +7340,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -7971,7 +7953,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -8020,7 +8001,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {
@@ -8641,7 +8621,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsImagingDetails on GnirsImaging {
               camera
-              coadds
               defaultWellDepth
               explicitReadMode
               explicitWellDepth
@@ -8690,7 +8669,6 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
               acquisition {
-                coadds
                 explicitAcquisitionType
                 explicitFilter
                 exposureTimeMode {

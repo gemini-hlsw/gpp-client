@@ -2043,6 +2043,7 @@ class GnirsImagingFilterInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
+    coadds: Optional[Any] = None
 
 
 class GnirsImagingAcquisitionInput(BaseModel):
@@ -2063,7 +2064,6 @@ class GnirsImagingInput(BaseModel):
     variant: Optional["ImagingVariantInput"] = None
     filters: Optional[list["GnirsImagingFilterInput"]] = None
     camera: Optional[GnirsCamera] = None
-    coadds: Optional[Any] = None
     explicit_read_mode: Optional[GnirsReadMode] = Field(
         alias=str("explicitReadMode"), default=None
     )
@@ -2696,6 +2696,17 @@ class WhereConfigurationRequest(BaseModel):
     updated_at: Optional["WhereOrderTimestamp"] = Field(
         alias=str("updatedAt"), default=None
     )
+    observing_mode_type: Optional["WhereOptionEqObservingModeType"] = Field(
+        alias=str("observingModeType"), default=None
+    )
+    target_coordinates: Optional["WhereCone"] = Field(
+        alias=str("targetCoordinates"), default=None
+    )
+
+
+class WhereCone(BaseModel):
+    center: "CoordinatesInput"
+    distance: "AngleInput"
 
 
 class WhereObservationReference(BaseModel):
@@ -3164,6 +3175,7 @@ class WhereProgram(BaseModel):
         alias=str("activeStart"), default=None
     )
     active_end: Optional["WhereOrderDate"] = Field(alias=str("activeEnd"), default=None)
+    is_active: Optional[bool] = Field(alias=str("isActive"), default=None)
 
 
 class WhereProgramReference(BaseModel):
@@ -3726,6 +3738,7 @@ WhereDatasetReference.model_rebuild()
 WhereExecutionEvent.model_rebuild()
 WhereObservation.model_rebuild()
 WhereConfigurationRequest.model_rebuild()
+WhereCone.model_rebuild()
 WhereObservationReference.model_rebuild()
 WhereGroup.model_rebuild()
 WhereProposalReference.model_rebuild()

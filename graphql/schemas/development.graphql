@@ -3623,11 +3623,13 @@ input Igrins2SvcInput {
 type GnirsImagingFilter {
   filter: GnirsFilter!
   exposureTimeMode: ExposureTimeMode!
+  coadds: PosInt!
 }
 
 input GnirsImagingFilterInput {
   filter: GnirsFilter!
   exposureTimeMode: ExposureTimeModeInput
+  coadds: PosInt
 }
 
 type GnirsImagingAcquisition {
@@ -3643,7 +3645,6 @@ type GnirsImaging {
   filters: [GnirsImagingFilter!]!
   initialFilters: [GnirsImagingFilter!]!
   camera: GnirsCamera!
-  coadds: PosInt!
   explicitReadMode: GnirsReadMode
   wellDepth: GnirsWellDepth!
   explicitWellDepth: GnirsWellDepth
@@ -3663,7 +3664,6 @@ input GnirsImagingInput {
   variant: ImagingVariantInput
   filters: [GnirsImagingFilterInput!]
   camera: GnirsCamera
-  coadds: PosInt
   explicitReadMode: GnirsReadMode
   explicitWellDepth: GnirsWellDepth
   acquisition: GnirsImagingAcquisitionInput
@@ -5207,6 +5207,7 @@ type Program {
   reference: ProgramReference
   proposal: Proposal
   active: DateInterval!
+  isActive: Boolean!
   proposalStatus: ProposalStatus!
   pi: ProgramUser
   users: [ProgramUser!]!
@@ -6496,6 +6497,13 @@ input WhereConfigurationRequest {
   feedback: WhereOptionString
   createdAt: WhereOrderTimestamp
   updatedAt: WhereOrderTimestamp
+  observingModeType: WhereOptionEqObservingModeType
+  targetCoordinates: WhereCone
+}
+
+input WhereCone {
+  center: CoordinatesInput!
+  distance: AngleInput!
 }
 
 input WhereObservationReference {
@@ -6946,6 +6954,7 @@ input WhereProgram {
   calibrationRole: WhereOptionEqCalibrationRole
   activeStart: WhereOrderDate
   activeEnd: WhereOrderDate
+  isActive: Boolean
 }
 
 input WhereProgramReference {
