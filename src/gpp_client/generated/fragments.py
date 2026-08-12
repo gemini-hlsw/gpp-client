@@ -387,7 +387,6 @@ class GmosSouthLongSlitDetailsOffsets(BaseModel):
 
 class GnirsImagingDetails(BaseModel):
     camera: GnirsCamera
-    coadds: Any
     default_well_depth: GnirsWellDepth = Field(alias="defaultWellDepth")
     explicit_read_mode: Optional[GnirsReadMode] = Field(alias="explicitReadMode")
     explicit_well_depth: Optional[GnirsWellDepth] = Field(alias="explicitWellDepth")
@@ -505,7 +504,6 @@ class GnirsSpectroscopyDetails(BaseModel):
 
 
 class GnirsSpectroscopyDetailsAcquisition(BaseModel):
-    coadds: Any
     explicit_acquisition_type: Optional[GnirsAcquisitionType] = Field(
         alias="explicitAcquisitionType"
     )

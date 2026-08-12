@@ -1,6 +1,5 @@
 fragment GnirsImagingDetails on GnirsImaging {
     camera
-    coadds
     defaultWellDepth
     explicitReadMode
     explicitWellDepth
@@ -49,7 +48,6 @@ fragment GnirsImagingDetails on GnirsImaging {
 
 fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
     acquisition {
-      coadds
       explicitAcquisitionType
       explicitFilter
       exposureTimeMode {

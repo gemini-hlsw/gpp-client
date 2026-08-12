@@ -6176,7 +6176,6 @@ class GnirsImagingFields(GraphQLField):
         return GnirsImagingFilterFields("initialFilters")
 
     camera: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("camera")
-    coadds: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("coadds")
     explicit_read_mode: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
         "explicitReadMode"
     )
@@ -6252,6 +6251,8 @@ class GnirsImagingFilterFields(GraphQLField):
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
         return ExposureTimeModeFields("exposureTimeMode")
+
+    coadds: "GnirsImagingFilterGraphQLField" = GnirsImagingFilterGraphQLField("coadds")
 
     def fields(
         self,
@@ -8469,6 +8470,7 @@ class ProgramFields(GraphQLField):
     def active(cls) -> "DateIntervalFields":
         return DateIntervalFields("active")
 
+    is_active: "ProgramGraphQLField" = ProgramGraphQLField("isActive")
     proposal_status: "ProgramGraphQLField" = ProgramGraphQLField("proposalStatus")
 
     @classmethod
