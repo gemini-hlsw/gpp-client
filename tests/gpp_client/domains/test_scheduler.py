@@ -10,16 +10,6 @@ from gpp_client.domains.scheduler import SchedulerDomain
 
 
 @pytest.fixture()
-def rest(mocker):
-    """
-    Return a mocked REST client usable as an async context manager.
-    """
-    client = mocker.MagicMock()
-    client.__aenter__.return_value = client
-    return client
-
-
-@pytest.fixture()
 def scheduler_domain(domain_kwargs) -> SchedulerDomain:
     """
     Return a scheduler domain instance.
@@ -64,3 +54,66 @@ async def test_get_visibility_changes_propagates_rest_errors(
         await scheduler_domain.get_visibility_changes(
             datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
         )
+
+
+@pytest.mark.asyncio
+async def test_get_visibility_changes_leaves_shared_rest_client_open(
+    scheduler_domain: SchedulerDomain,
+    rest,
+    mocker,
+) -> None:
+    """
+    Ensure the domain does not close the REST client it was handed.
+
+    The client (and its aiohttp session) is shared with every other caller, so
+    closing it here aborts their in-flight requests with
+    ``ClientConnectionError("Connector is closed.")``.
+    """
+    rest.get_visibility_changes = mocker.AsyncMock(return_value="")
+
+    await scheduler_domain.get_visibility_changes(
+        datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+    )
+
+    rest.close.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_get_all_leaves_shared_rest_client_open(
+    scheduler_domain: SchedulerDomain,
+    rest,
+    graphql,
+    mocker,
+) -> None:
+    """
+    Ensure the atom-digest fetch in get_all does not close the shared REST client.
+    """
+    program = {
+        "all_group_elements": [
+            {"parent_group_id": None, "observation": {"id": "o-1"}},
+        ],
+    }
+    mocker.patch.object(
+        scheduler_domain,
+        "get_programs",
+        mocker.AsyncMock(
+            return_value=mocker.Mock(
+                model_dump=mocker.Mock(
+                    return_value={"programs": {"matches": [program]}}
+                )
+            )
+        ),
+    )
+    graphql.get_observations = mocker.AsyncMock(
+        return_value=mocker.Mock(
+            observations=mocker.Mock(
+                model_dump=mocker.Mock(return_value={"matches": [{"id": "o-1"}]})
+            )
+        )
+    )
+    rest.get_atom_digests = mocker.AsyncMock(return_value="")
+
+    await scheduler_domain.get_all(programs_list=["p-1"])
+
+    rest.get_atom_digests.assert_awaited_once_with(["o-1"])
+    rest.close.assert_not_called()

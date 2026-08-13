@@ -21,6 +21,13 @@ class RESTClient:
     REST API client to non-GraphQL requests that help with the function of managers and
     coordinators.
 
+    The ``aiohttp`` session is created on first use and shared by every caller that
+    goes through :meth:`get_session`, so closing it is the job of whoever built the
+    client -- normally ``GPPClient.close()``. Code that was handed a client (the
+    domain classes, for instance) must use :meth:`get_session` and leave the session
+    open: closing it mid-flight aborts other callers' in-progress requests with
+    ``ClientConnectionError("Connector is closed.")``.
+
     Parameters
     ----------
     base_url : str
@@ -93,9 +100,15 @@ class RESTClient:
     async def close(self) -> None:
         """
         Close the session if it exists and is not already closed.
+
+        Call this only on a client you own; see the class docstring. The lock is
+        held so a concurrent :meth:`get_session` cannot hand out the session being
+        closed, and the reference is dropped so the next call builds a fresh one.
         """
-        if self._session and not self._session.closed:
-            await self._session.close()
+        async with self._lock:
+            if self._session and not self._session.closed:
+                await self._session.close()
+            self._session = None
 
     async def __aenter__(self):
         return self
