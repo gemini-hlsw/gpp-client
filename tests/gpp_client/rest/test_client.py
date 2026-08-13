@@ -135,6 +135,7 @@ async def test_close_closes_open_session(rest_client: RESTClient, mocker) -> Non
     await rest_client.close()
 
     session.close.assert_called_once_with()
+    assert rest_client._session is None
 
 
 @pytest.mark.asyncio

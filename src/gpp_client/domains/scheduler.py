@@ -269,10 +269,9 @@ class SchedulerDomain(BaseDomain):
 
         # Get sequence
         if observations:
-            async with self._rest as client:
-                atom_digest_response = (
-                    await client.get_atom_digests(observations)
-                ).split("\n")
+            atom_digest_response = (
+                await self._rest.get_atom_digests(observations)
+            ).split("\n")
             obs_atoms_mapping = self._parse_atom_digest(atom_digest_response)
         else:
             obs_atoms_mapping = {}
@@ -332,9 +331,8 @@ class SchedulerDomain(BaseDomain):
         aiohttp.ClientError
             For HTTP errors, connection failures, or timeouts.
         """
-        async with self._rest as client:
-            body = await client.get_visibility_changes(since)
-            return parse_visibility_changes(body)
+        body = await self._rest.get_visibility_changes(since)
+        return parse_visibility_changes(body)
 
     async def subscribe_to_calculation_updates(
         self,
