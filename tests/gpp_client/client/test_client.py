@@ -2,9 +2,10 @@
 
 from types import SimpleNamespace
 
+import httpx
 import pytest
 
-from gpp_client.client import GPPClient
+from gpp_client.client import _HTTP_TIMEOUT, GPPClient
 from gpp_client.environment import GPPEnvironment
 
 
@@ -127,10 +128,18 @@ def test_build_graphql_client_uses_expected_settings(
     graphql_cls.assert_called_once_with(
         url="https://graphql.example.test",
         headers={"Authorization": "Bearer resolved-token"},
+        http_client=mocker.ANY,
         ws_url="wss://ws.example.test",
         ws_headers={"Authorization": "Bearer resolved-token"},
         ws_connection_init_payload={"Authorization": "Bearer resolved-token"},
     )
+
+    # The custom http client must carry the auth headers and a timeout longer
+    # than the 5 second httpx default.
+    http_client = graphql_cls.call_args.kwargs["http_client"]
+    assert isinstance(http_client, httpx.AsyncClient)
+    assert http_client.headers["Authorization"] == "Bearer resolved-token"
+    assert http_client.timeout == _HTTP_TIMEOUT
 
 
 def test_build_rest_client_uses_expected_settings(

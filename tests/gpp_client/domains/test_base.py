@@ -131,3 +131,33 @@ def test_resolve_content_raises_client_error_on_os_error(
 
     with pytest.raises(GPPClientError):
         dummy_domain.resolve_content(file_path=file_path, content=None)
+
+
+def test_resolve_content_validation_error_falls_back_to_type_name(
+    dummy_domain,
+    mocker,
+) -> None:
+    """Ensure a message-less validation error still reports the exception type."""
+    mocker.patch.object(Path, "expanduser", side_effect=ValueError())
+
+    with pytest.raises(GPPValidationError) as exc_info:
+        dummy_domain.resolve_content(file_path="file.txt", content=None)
+
+    assert str(exc_info.value) == "DummyDomain: ValueError"
+
+
+def test_resolve_content_client_error_falls_back_to_type_name(
+    dummy_domain,
+    mocker,
+    tmp_path: Path,
+) -> None:
+    """Ensure a message-less OS error still reports the exception type."""
+    file_path = tmp_path / "data.txt"
+    file_path.write_bytes(b"hello")
+
+    mocker.patch.object(Path, "read_bytes", side_effect=OSError())
+
+    with pytest.raises(GPPClientError) as exc_info:
+        dummy_domain.resolve_content(file_path=file_path, content=None)
+
+    assert str(exc_info.value) == "DummyDomain: OSError"

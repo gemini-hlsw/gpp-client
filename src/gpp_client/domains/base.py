@@ -67,7 +67,9 @@ class BaseDomain:
             The raised exception of the specified type.
         """
         class_name = self.__class__.__name__
-        message = f"{class_name}: {exc}"
+        # Fall back to the type name so an exception raised without a message
+        # does not end up as an empty error.
+        message = f"{class_name}: {str(exc) or type(exc).__name__}"
         logger.error(message, exc_info=include_traceback)
 
         if include_traceback:

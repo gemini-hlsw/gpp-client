@@ -7,6 +7,7 @@ __all__ = ["GPPClient"]
 import logging
 from typing import Any, Optional
 
+import httpx
 from typing_extensions import Self
 
 from gpp_client.domains import (
@@ -28,6 +29,10 @@ from gpp_client.settings import GPPSettings, _get_packaged_environment
 from gpp_client.urls import get_graphql_url, get_ws_url
 
 logger = logging.getLogger(__name__)
+
+# httpx defaults to 5 seconds, which is too aggressive for slow GPP operations
+# such as cloning observations.
+_HTTP_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 
 class GPPClient:
@@ -141,6 +146,9 @@ class GPPClient:
         return GraphQLClient(
             url=graphql_url,
             headers=headers,
+            # The generated client only applies `headers` when it builds its own
+            # http client, so they must be set on the custom one as well.
+            http_client=httpx.AsyncClient(headers=headers, timeout=_HTTP_TIMEOUT),
             ws_url=ws_url,
             ws_headers=headers,
             ws_connection_init_payload=headers,
