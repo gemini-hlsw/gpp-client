@@ -10303,7 +10303,9 @@ class GraphQLClient(AsyncBaseClient):
     ) -> AsyncIterator[SchedulerObservationsUpdates]:
         query = gql("""
             subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
-              obscalcUpdate(input: {executableOnly: $executableOnly}) {
+              obscalcUpdate(
+                input: {executableOnly: $executableOnly, newCalculationState: {EQ: READY}}
+              ) {
                 oldCalculationState
                 newCalculationState
                 editType

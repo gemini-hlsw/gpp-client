@@ -60,6 +60,10 @@ class Query:
         where: Optional[WhereObservation] = None,
         limit: Optional[Any] = None,
     ) -> AsterismGroupSelectResultFields:
+        """Observations grouped by commonly held science asterisms. Identify the program
+        by specifying only one of programId, programReference, or proposalReference.
+        If more than one is provided, all must match.  If none are set, nothing will
+        match."""
         arguments: dict[str, dict[str, Any]] = {
             "programId": {"type": "ProgramId", "value": program_id},
             "proposalReference": {
@@ -83,6 +87,7 @@ class Query:
 
     @classmethod
     def call_for_proposals(cls, call_for_proposals_id: Any) -> CallForProposalsFields:
+        """Select a single Call for Proposals by id."""
         arguments: dict[str, dict[str, Any]] = {
             "callForProposalsId": {
                 "type": "CallForProposalsId!",
@@ -105,6 +110,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> CallsForProposalsSelectResultFields:
+        """Select all Calls for Proposals."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereCallForProposals", "value": where},
             "OFFSET": {"type": "CallForProposalsId", "value": offset},
@@ -129,6 +135,10 @@ class Query:
         where: Optional[WhereObservation] = None,
         limit: Optional[Any] = None,
     ) -> ConstraintSetGroupSelectResultFields:
+        """Observations grouped by commonly held constraints. Identify the program by
+        specifying only one of programId, programReference, or proposalReference.  If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
         arguments: dict[str, dict[str, Any]] = {
             "programId": {"type": "ProgramId", "value": program_id},
             "proposalReference": {
@@ -157,6 +167,9 @@ class Query:
         dataset_id: Optional[Any] = None,
         dataset_reference: Optional[Any] = None,
     ) -> DatasetFields:
+        """Returns the dataset with the given id or reference, if any.  Identify the
+        dataset by specifying only one of datasetId or datasetReference. If more than
+        one is provided, all must match.  If neither are set, nothing will match."""
         arguments: dict[str, dict[str, Any]] = {
             "datasetId": {"type": "DatasetId", "value": dataset_id},
             "datasetReference": {
@@ -177,6 +190,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> DatasetSelectResultFields:
+        """Select all datasets associated with a step or observation"""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereDataset", "value": where},
             "OFFSET": {"type": "DatasetId", "value": offset},
@@ -197,6 +211,8 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> DatasetChronicleEntrySelectResultFields:
+        """Select all dataset chronicle entries.  This will contain detailed information
+        about dataset creation and updates."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereDatasetChronicleEntry", "value": where},
             "OFFSET": {"type": "ChronicleId", "value": offset},
@@ -217,6 +233,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ExecutionEventSelectResultFields:
+        """Selects the first `LIMIT` matching execution events based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereExecutionEvent", "value": where},
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
@@ -237,6 +254,9 @@ class Query:
         observation_reference: Optional[Any] = None,
         future_limit: Optional[Any] = None,
     ) -> ExecutionConfigFields:
+        """Full execution config, including static values and acquisition and science
+        sequences.  If a sequence cannot be generated for this observation, `null`
+        is returned along with warning messages."""
         arguments: dict[str, dict[str, Any]] = {
             "observationId": {"type": "ObservationId", "value": observation_id},
             "observationReference": {
@@ -254,6 +274,11 @@ class Query:
 
     @classmethod
     def goa_data_download_access(cls, orcid_id: str) -> GraphQLField:
+        """Obtains a list of program references for which the user with ORCiD `orcidId`
+        has GOA data-download access privileges.  These will be those for which the
+        user is a ProgramUser of any role with the `hasDataAccess` flag set.
+
+        This query is for use by staff and the GOA and will fail for other users."""
         arguments: dict[str, dict[str, Any]] = {
             "orcidId": {"type": "String!", "value": orcid_id}
         }
@@ -266,6 +291,7 @@ class Query:
 
     @classmethod
     def group(cls, group_id: Any) -> GroupFields:
+        """Returns the group indicated by the given groupId, if found."""
         arguments: dict[str, dict[str, Any]] = {
             "groupId": {"type": "GroupId!", "value": group_id}
         }
@@ -281,6 +307,10 @@ class Query:
         observation_id: Optional[Any] = None,
         observation_reference: Optional[Any] = None,
     ) -> ObservationFields:
+        """Returns the observation with the given id or reference, if any.  Identify the
+        observation by specifying only one of observationId or observationReference.
+        If more than one is provided, all must match.  If neither are set, nothing
+        will match."""
         arguments: dict[str, dict[str, Any]] = {
             "observationId": {"type": "ObservationId", "value": observation_id},
             "observationReference": {
@@ -302,6 +332,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ObservationSelectResultFields:
+        """Selects the first `LIMIT` matching observations based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereObservation", "value": where},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -323,6 +354,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ConfigurationRequestSelectResultFields:
+        """Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereConfigurationRequest", "value": where},
             "OFFSET": {"type": "ConfigurationRequestId", "value": offset},
@@ -346,6 +378,10 @@ class Query:
         where: Optional[WhereObservation] = None,
         limit: Optional[Any] = None,
     ) -> ObservingModeGroupSelectResultFields:
+        """Observations grouped by commonly held observing modes. Identify the program by
+        specifying only one of programId, programReference, or proposalReference.  If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
         arguments: dict[str, dict[str, Any]] = {
             "programId": {"type": "ProgramId", "value": program_id},
             "proposalReference": {
@@ -375,6 +411,10 @@ class Query:
         proposal_reference: Optional[Any] = None,
         program_reference: Optional[Any] = None,
     ) -> ProgramFields:
+        """Returns the program with the given id or reference, if any. Identify the
+        program by specifying only one of programId, programReference, or
+        proposalReference. If more than one is provided, all must match.  If none are
+        set, nothing will match."""
         arguments: dict[str, dict[str, Any]] = {
             "programId": {"type": "ProgramId", "value": program_id},
             "proposalReference": {
@@ -400,6 +440,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramSelectResultFields:
+        """Selects the first `LIMIT` matching programs based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgram", "value": where},
             "OFFSET": {"type": "ProgramId", "value": offset},
@@ -415,6 +456,7 @@ class Query:
 
     @classmethod
     def program_note(cls, program_note_id: Any) -> ProgramNoteFields:
+        """Selects the program note with the given id, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "programNoteId": {"type": "ProgramNoteId!", "value": program_note_id}
         }
@@ -432,6 +474,8 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramNoteSelectResultFields:
+        """Selects the first `LIMIT` matching program notes based on the provided `WHERE`
+        parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgramNote", "value": where},
             "OFFSET": {"type": "ProgramNoteId", "value": offset},
@@ -447,6 +491,7 @@ class Query:
 
     @classmethod
     def too_trigger(cls, too_trigger_id: Any) -> TooTriggerFields:
+        """Selects the Target-of-Opportunity trigger with the given id, if found and readable."""
         arguments: dict[str, dict[str, Any]] = {
             "tooTriggerId": {"type": "TooTriggerId!", "value": too_trigger_id}
         }
@@ -463,6 +508,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TooTriggerSelectResultFields:
+        """Selects all Target-of-Opportunity triggers matching the optional WHERE, readable by the caller."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTooTrigger", "value": where},
             "OFFSET": {"type": "TooTriggerId", "value": offset},
@@ -483,6 +529,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TooTriggerChronicleEntrySelectResultFields:
+        """Selects Target-of-Opportunity trigger chronicle (audit) entries, readable by the caller."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTooTriggerChronicleEntry", "value": where},
             "OFFSET": {"type": "ChronicleId", "value": offset},
@@ -504,6 +551,8 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramUserSelectResultFields:
+        """Selects the first `LIMIT` matching program users based on the provided `WHERE`
+        parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgramUser", "value": where},
             "OFFSET": {"type": "UserId", "value": offset},
@@ -521,6 +570,7 @@ class Query:
     def spectroscopy_config_options(
         cls, *, where: Optional[WhereSpectroscopyConfigOption] = None
     ) -> SpectroscopyConfigOptionFields:
+        """Spectroscopy configuration options matching the WHERE parameter."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereSpectroscopyConfigOption", "value": where}
         }
@@ -535,6 +585,7 @@ class Query:
     def imaging_config_options(
         cls, *, where: Optional[WhereImagingConfigOption] = None
     ) -> ImagingConfigOptionFields:
+        """Imaging configuration options matching the WHERE parameter."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereImagingConfigOption", "value": where}
         }
@@ -547,6 +598,7 @@ class Query:
 
     @classmethod
     def target(cls, target_id: Any) -> TargetFields:
+        """Retrieves the target with the given id, if it exists"""
         arguments: dict[str, dict[str, Any]] = {
             "targetId": {"type": "TargetId!", "value": target_id}
         }
@@ -566,6 +618,10 @@ class Query:
         where: Optional[WhereObservation] = None,
         limit: Optional[Any] = None,
     ) -> TargetGroupSelectResultFields:
+        """Observations grouped by commonly held targets. Identify the program by
+        specifying only one of programId, programReference, or proposalReference. If
+        more than one is provided, all must match.  If none are set, nothing will
+        match."""
         arguments: dict[str, dict[str, Any]] = {
             "programId": {"type": "ProgramId", "value": program_id},
             "proposalReference": {
@@ -596,6 +652,7 @@ class Query:
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TargetSelectResultFields:
+        """Selects the first `LIMIT` matching targets based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTarget", "value": where},
             "OFFSET": {"type": "TargetId", "value": offset},
