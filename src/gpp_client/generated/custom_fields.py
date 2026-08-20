@@ -57,6 +57,7 @@ from .custom_typing_fields import (
     ConfigChangeEstimateGraphQLField,
     ConfigurationConditionsGraphQLField,
     ConfigurationFlamingos2LongSlitGraphQLField,
+    ConfigurationFlamingos2MosGraphQLField,
     ConfigurationGmosNorthImagingGraphQLField,
     ConfigurationGmosNorthLongSlitGraphQLField,
     ConfigurationGmosNorthMosGraphQLField,
@@ -130,6 +131,8 @@ from .custom_typing_fields import (
     Flamingos2ImagingGraphQLField,
     Flamingos2LongSlitAcquisitionGraphQLField,
     Flamingos2LongSlitGraphQLField,
+    Flamingos2MosAcquisitionGraphQLField,
+    Flamingos2MosGraphQLField,
     Flamingos2StaticGraphQLField,
     Flamingos2StepGraphQLField,
     FluxDensityContinuumIntegratedGraphQLField,
@@ -239,9 +242,10 @@ from .custom_typing_fields import (
     ItcGnirsSpectroscopyGraphQLField,
     ItcGnirsSpectroscopyResultSetGraphQLField,
     ItcGraphQLField,
-    ItcIgrins2SpectroscopyGraphQLField,
+    ItcPeakPixelGraphQLField,
     ItcResultGraphQLField,
     ItcResultSetGraphQLField,
+    ItcScienceOnlySpectroscopyGraphQLField,
     ItcSpectroscopyGraphQLField,
     KeckCallPropertiesGraphQLField,
     KeckProgramReferenceGraphQLField,
@@ -350,6 +354,7 @@ from .custom_typing_fields import (
     TargetGraphQLField,
     TargetGroupGraphQLField,
     TargetGroupSelectResultGraphQLField,
+    TargetResolutionGraphQLField,
     TargetSelectResultGraphQLField,
     TelescopeConfigAlongSlitGraphQLField,
     TelescopeConfigGeneratorGraphQLField,
@@ -421,8 +426,11 @@ class AddConditionsEntryResultFields(GraphQLField):
 
 
 class AddDatasetEventResultFields(GraphQLField):
+    """The result of adding a dataset event."""
+
     @classmethod
     def event(cls) -> "DatasetEventFields":
+        """The new dataset event that was added."""
         return DatasetEventFields("event")
 
     def fields(
@@ -438,13 +446,17 @@ class AddDatasetEventResultFields(GraphQLField):
 
 
 class AddEventBatchResultFields(GraphQLField):
+    """The result of adding a batch of events."""
+
     @classmethod
     def events(cls) -> "ExecutionEventInterface":
+        """The new events that were added, in the order they were recorded."""
         return ExecutionEventInterface("events")
 
     has_more: "AddEventBatchResultGraphQLField" = AddEventBatchResultGraphQLField(
         "hasMore"
     )
+    "`true` when the batch contained more events than were returned (the default\nmaximum is 1000).  All submitted events are recorded regardless; only the\nreturned list is truncated."
 
     def fields(
         self,
@@ -477,8 +489,11 @@ class AddProgramUserResultFields(GraphQLField):
 
 
 class AddSequenceEventResultFields(GraphQLField):
+    """The result of adding a sequence event."""
+
     @classmethod
     def event(cls) -> "SequenceEventFields":
+        """The new sequence event that was added."""
         return SequenceEventFields("event")
 
     def fields(
@@ -495,8 +510,11 @@ class AddSequenceEventResultFields(GraphQLField):
 
 
 class AddSlewEventResultFields(GraphQLField):
+    """The result of adding a slew event."""
+
     @classmethod
     def event(cls) -> "SlewEventFields":
+        """The new slew event that was added."""
         return SlewEventFields("event")
 
     def fields(
@@ -512,8 +530,11 @@ class AddSlewEventResultFields(GraphQLField):
 
 
 class AddStepEventResultFields(GraphQLField):
+    """The result of adding a step event."""
+
     @classmethod
     def event(cls) -> "StepEventFields":
+        """The new step event that was added."""
         return StepEventFields("event")
 
     def fields(
@@ -529,6 +550,9 @@ class AddStepEventResultFields(GraphQLField):
 
 
 class AddTimeChargeCorrectionResultFields(GraphQLField):
+    """The result of the 'addTimeChargeCorrection' mutation.  It contains the
+    visit's updated TimeChargeInvoice after applying the correction."""
+
     @classmethod
     def time_charge_invoice(cls) -> "TimeChargeInvoiceFields":
         return TimeChargeInvoiceFields("timeChargeInvoice")
@@ -550,7 +574,9 @@ class AddTimeChargeCorrectionResultFields(GraphQLField):
 
 class AirMassRangeFields(GraphQLField):
     min: "AirMassRangeGraphQLField" = AirMassRangeGraphQLField("min")
+    "Minimum AirMass (unitless)"
     max: "AirMassRangeGraphQLField" = AirMassRangeGraphQLField("max")
+    "Maximum AirMass (unitless)"
 
     def fields(self, *subfields: AirMassRangeGraphQLField) -> "AirMassRangeFields":
         """Subfields should come from the AirMassRangeFields class"""
@@ -563,20 +589,30 @@ class AirMassRangeFields(GraphQLField):
 
 
 class AllConfigChangeEstimatesFields(GraphQLField):
+    """Time taken to update the configuration before a step is executed."""
+
     @classmethod
     def selected(cls) -> "ConfigChangeEstimateFields":
+        """The selected ConfigChangeEstimate is a maximum of all the config change
+        estimates.  In other words, one that takes the longest."""
         return ConfigChangeEstimateFields("selected")
 
     index: "AllConfigChangeEstimatesGraphQLField" = (
         AllConfigChangeEstimatesGraphQLField("index")
     )
+    "Index of the selected config change estimate amongst all the estimates in\n`all`."
 
     @classmethod
     def all(cls) -> "ConfigChangeEstimateFields":
+        """Complete collection of items that changed.  The selected estimate will be
+        one of the longest (there may be multiple estimates tied for the longest)."""
         return ConfigChangeEstimateFields("all")
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Time required for the collection of estimates in `all`.  This should
+        be the max of the individual entries because the execution happens in
+        parallel."""
         return TimeSpanFields("estimate")
 
     def fields(
@@ -597,20 +633,31 @@ class AllConfigChangeEstimatesFields(GraphQLField):
 
 
 class AllDetectorEstimatesFields(GraphQLField):
+    """The collection of detector estimates involved in an individual step."""
+
     @classmethod
     def selected(cls) -> "DetectorEstimateFields":
+        """The selected DetectorEstimate is a maximum of all the detector estimates.
+        In other words, one that takes the longest."""
         return DetectorEstimateFields("selected")
 
     index: "AllDetectorEstimatesGraphQLField" = AllDetectorEstimatesGraphQLField(
         "index"
     )
+    "Index of the selected detector estimate amongst all the estimates in\n`all`."
 
     @classmethod
     def all(cls) -> "DetectorEstimateFields":
+        """Complete collection of detectors involved in a step.  The selected estimate
+        will be one of the longest (there may be multiple estimates tied for the
+        longest)."""
         return DetectorEstimateFields("all")
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Time required for the collection of estimates in `all`.  This should
+        be the max of the individual entries because the execution happens in
+        parallel."""
         return TimeSpanFields("estimate")
 
     def fields(
@@ -629,6 +676,8 @@ class AllDetectorEstimatesFields(GraphQLField):
 
 
 class AllocationFields(GraphQLField):
+    """An individual time allocation."""
+
     category: "AllocationGraphQLField" = AllocationGraphQLField("category")
     science_band: "AllocationGraphQLField" = AllocationGraphQLField("scienceBand")
 
@@ -650,17 +699,29 @@ class AllocationFields(GraphQLField):
 
 class AngleFields(GraphQLField):
     microarcseconds: "AngleGraphQLField" = AngleGraphQLField("microarcseconds")
+    "Angle in µas"
     microseconds: "AngleGraphQLField" = AngleGraphQLField("microseconds")
+    "Angle in µs"
     milliarcseconds: "AngleGraphQLField" = AngleGraphQLField("milliarcseconds")
+    "Angle in mas"
     milliseconds: "AngleGraphQLField" = AngleGraphQLField("milliseconds")
+    "Angle in ms"
     arcseconds: "AngleGraphQLField" = AngleGraphQLField("arcseconds")
+    "Angle in asec"
     seconds: "AngleGraphQLField" = AngleGraphQLField("seconds")
+    "Angle in sec"
     arcminutes: "AngleGraphQLField" = AngleGraphQLField("arcminutes")
+    "Angle in amin"
     minutes: "AngleGraphQLField" = AngleGraphQLField("minutes")
+    "Angle in min"
     degrees: "AngleGraphQLField" = AngleGraphQLField("degrees")
+    "Angle in deg"
     hours: "AngleGraphQLField" = AngleGraphQLField("hours")
+    "Angle in hrs"
     hms: "AngleGraphQLField" = AngleGraphQLField("hms")
+    "Angle in HH:MM:SS"
     dms: "AngleGraphQLField" = AngleGraphQLField("dms")
+    "Angle in DD:MM:SS"
 
     def fields(self, *subfields: AngleGraphQLField) -> "AngleFields":
         """Subfields should come from the AngleFields class"""
@@ -673,36 +734,53 @@ class AngleFields(GraphQLField):
 
 
 class ArchiveDuplicationFields(GraphQLField):
+    """Archive Duplication Search result for an observation, as of the last time the
+    search was run.
+
+    When `state` is ERROR only `error` describes the failed attempt.  A failure
+    leaves the previously found results in place rather than discarding them, so
+    `matchCount`, `matches`, `lastCheckedAt` and the search area still
+    describe the last search that succeeded, and `lastCheckedAt` says when that was."""
+
     state: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("state")
     match_count: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "matchCount"
     )
+    "Number of matching archive files.  Counted per file rather than per archived\nobservation, to stay consistent with the PIT.  A floor rather than an exact\nfigure when `saturated`, and the count from the last successful search rather\nthan from the most recent attempt when `state` is ERROR."
     saturated: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "saturated"
     )
+    'Whether a constituent query came back filled to the archive\'s hard cap of 500\nrecords.  When true `matchCount` is a floor and should be rendered as "500+".'
     last_checked_at: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "lastCheckedAt"
     )
+    "When the reported matches were gathered.  Null exactly when `state` is\nNOT_CHECKED, since every other state follows an attempt."
     error: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("error")
+    "Why the most recent attempt failed.  Set when `state` is ERROR."
 
     @classmethod
     def search_coordinates(cls) -> "CoordinatesFields":
+        """Coordinates searched around, for a sidereal pointing."""
         return CoordinatesFields("searchCoordinates")
 
     search_target_name: "ArchiveDuplicationGraphQLField" = (
         ArchiveDuplicationGraphQLField("searchTargetName")
     )
+    "Target name searched for, for a non-sidereal pointing."
 
     @classmethod
     def search_radius(cls) -> "AngleFields":
+        """Radius searched around the search center, half the observation's field of view."""
         return AngleFields("searchRadius")
 
     query_urls: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "queryUrls"
     )
+    "The GOA query URLs the snapshot was gathered from, one per fan-out query the\nsearch ran. Empty when the search could not be run or has never been run."
 
     @classmethod
     def matches(cls) -> "ArchiveMatchFields":
+        """The matched archive files, ordered by file name."""
         return ArchiveMatchFields("matches")
 
     def fields(
@@ -724,61 +802,93 @@ class ArchiveDuplicationFields(GraphQLField):
 
 
 class ArchiveMatchFields(GraphQLField):
+    """One archived file matched by an Archive Duplication Search.
+
+    The fields are the archive's own record of the file, assembled from its FITS
+    headers, so which of them are populated varies by instrument and by era.
+    Every nullable field here is null when the archive does not report a value for that
+    file; where absence means something more specific than that, the field says so.
+    fields are typed where possible."""
+
     name: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("name")
+    "Archive file name, e.g. S20240101S0001.fits.  Always present, and unique."
     data_label: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("dataLabel")
+    "Dataset label the file was recorded under, e.g. GN-2019A-Q-101-11-001."
 
     @classmethod
     def coordinates(cls) -> "CoordinatesFields":
+        """Coordinates the file was taken at.  Null when the archive records no pointing
+        for the file."""
         return CoordinatesFields("coordinates")
 
     instrument_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
         "instrumentString"
     )
+    "Archive instrument name, e.g. GMOS-N.  Always present, and always one of the\ninstruments the search queried."
     instrument: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("instrument")
-    observation_type: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
-        "observationType"
-    )
+    "`instrumentString` as an `Instrument`, or null where the archive names an\ninstrument GPP has no case for."
     observe_class_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
         "observeClassString"
     )
+    "Observation class as the archive reports it, e.g. science.  This is the\nlegacy GOA class."
     observe_class: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("observeClass")
+    "`observeClassString` as an `ObserveClass`, or null where the archive's class\nhas no faithful GPP equivalent."
     qa_state_string: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
         "qaStateString"
     )
+    "Quality assessment the file was given, e.g. Pass or Usable."
     qa_state: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("qaState")
+    "`qaStateString` as a `DatasetQaState`, or null where the archive settled on\nno assessment (`Undefined`, or the retired transient `CHECK`).  PASS and\nUSABLE are what the search expects to see. FAIL may appear though GOA queries\nshould not return FAIL."
     ut_date_time: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("utDateTime")
+    "UT date and time the file was taken."
     release_date: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("releaseDate")
+    "Date the file's proprietary period ends and it becomes publicly available.\nMay be in the future."
     program_reference: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
         "programReference"
     )
+    "Program reference as the archive reports it.  The archive holds both OCS- and\nGPP-era data, so this may be a GPP program reference or an OCS one."
     observation_reference: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField(
         "observationReference"
     )
+    "Observation reference as the archive reports it.  A GPP observation reference\nor an OCS one, e.g. GN-2019A-Q-101-11, for the same reason as\n`programReference`."
     object_name: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("objectName")
+    "Target name recorded for the file.  Free text as the observer entered it."
 
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """Exposure time of the file."""
         return TimeSpanFields("exposure")
 
     disperser: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("disperser")
+    "Name of the dispersing element in the beam, e.g. B600.  Null for an imaging\nframe, which has none."
     filter_: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("filter")
+    "Name of the filter in the beam, e.g. g_G0301.  Null when there was none."
 
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Central wavelength the file was taken at.  Null for a frame with no
+        dispersing element."""
         return WavelengthFields("wavelength")
 
     airmass: "ArchiveMatchGraphQLField" = ArchiveMatchGraphQLField("airmass")
+    "Airmass the file was taken at, a dimensionless ratio starting at 1 at zenith."
 
     @classmethod
     def azimuth(cls) -> "AngleFields":
+        """Telescope azimuth the file was taken at."""
         return AngleFields("azimuth")
 
     @classmethod
     def elevation(cls) -> "AngleFields":
+        """Telescope elevation above the horizon the file was taken at."""
         return AngleFields("elevation")
 
     @classmethod
     def distance(cls) -> "AngleFields":
+        """Angular separation between this file's pointing and the search center,
+        telling a match on the target apart from one merely nearby in the field.
+        Null when the search ran by target name rather than coordinates, or when the
+        file itself has no pointing."""
         return AngleFields("distance")
 
     def fields(
@@ -813,6 +923,7 @@ class AsterismGroupFields(GraphQLField):
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
+        """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -827,6 +938,7 @@ class AsterismGroupFields(GraphQLField):
 
     @classmethod
     def asterism(cls) -> "TargetFields":
+        """Commonly held value across the observations"""
         return TargetFields("asterism")
 
     def fields(
@@ -848,13 +960,17 @@ class AsterismGroupFields(GraphQLField):
 
 
 class AsterismGroupSelectResultFields(GraphQLField):
+    """The matching asterismGroup results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "AsterismGroupFields":
+        """Matching asterismGroups up to the return size limit of 1000"""
         return AsterismGroupFields("matches")
 
     has_more: "AsterismGroupSelectResultGraphQLField" = (
         AsterismGroupSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -870,28 +986,42 @@ class AsterismGroupSelectResultFields(GraphQLField):
 
 
 class AtomEventFields(GraphQLField):
+    """Atom-level events.  The execution of a single atom will generate multiple events."""
+
     id: "AtomEventGraphQLField" = AtomEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "AtomEventGraphQLField" = AtomEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "AtomEventGraphQLField" = AtomEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "AtomEventGraphQLField" = AtomEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "AtomEventGraphQLField" = AtomEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "AtomEventGraphQLField" = AtomEventGraphQLField("eventType")
+    "Event type."
 
     @classmethod
     def atom(cls) -> "AtomRecordFields":
+        """Atom record associated with this event, if any.  Atom records only materialize
+        when the steps they contain execute."""
         return AtomRecordFields("atom")
 
     atom_stage: "AtomEventGraphQLField" = AtomEventGraphQLField("atomStage")
+    "Atom execution stage."
     idempotency_key: "AtomEventGraphQLField" = AtomEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -912,32 +1042,44 @@ class AtomEventFields(GraphQLField):
 
 
 class AtomRecordFields(GraphQLField):
+    """The portion of an atom that executed in a particular visit."""
+
     id: "AtomRecordGraphQLField" = AtomRecordGraphQLField("id")
+    "Atom ID."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit in which this atom executed."""
         return VisitFields("visit")
 
     index: "AtomRecordGraphQLField" = AtomRecordGraphQLField("index")
+    "Atom execution order -- the index of its first executed step."
     description: "AtomRecordGraphQLField" = AtomRecordGraphQLField("description")
+    "Description, if any."
     instrument: "AtomRecordGraphQLField" = AtomRecordGraphQLField("instrument")
+    "The instrument associated with this atom."
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation containing this atom."""
         return ObservationFields("observation")
 
     execution_state: "AtomRecordGraphQLField" = AtomRecordGraphQLField("executionState")
+    "The execution state of this atom, according to events received (if any) from\nObserve."
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """Time interval during which this atom executed."""
         return TimestampIntervalFields("interval")
 
     sequence_type: "AtomRecordGraphQLField" = AtomRecordGraphQLField("sequenceType")
+    "Sequence type."
 
     @classmethod
     def steps(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "StepRecordSelectResultFields":
+        """Recorded steps associated with this atom, ordered by execution order."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -967,13 +1109,17 @@ class AtomRecordFields(GraphQLField):
 
 
 class AtomRecordSelectResultFields(GraphQLField):
+    """AtomRecord query results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "AtomRecordFields":
+        """Matching atom records up to the return size limit of 1000."""
         return AtomRecordFields("matches")
 
     has_more: "AtomRecordSelectResultGraphQLField" = AtomRecordSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[AtomRecordSelectResultGraphQLField, "AtomRecordFields"]
@@ -988,10 +1134,13 @@ class AtomRecordSelectResultFields(GraphQLField):
 
 
 class AttachmentFields(GraphQLField):
+    """Attachment"""
+
     id: "AttachmentGraphQLField" = AttachmentGraphQLField("id")
     attachment_type: "AttachmentGraphQLField" = AttachmentGraphQLField("attachmentType")
     file_name: "AttachmentGraphQLField" = AttachmentGraphQLField("fileName")
     mask_name: "AttachmentGraphQLField" = AttachmentGraphQLField("maskName")
+    "The identifier of the physical mask plate this attachment describes.  It is\nderived from the file name by dropping the `_ODF.fits` suffix.\nThe file name must follow the standard ODF naming convention, either\n`G(N|S)YYYY(A|B)<type>PPP-XX_ODF.fits` or\n`GYYYY(A|B)PPPP<type>-XX_ODF.fits`.\nNot settable.  Null when the attachment is not a MOS_MASK, always present when it is."
     description: "AttachmentGraphQLField" = AttachmentGraphQLField("description")
     checked: "AttachmentGraphQLField" = AttachmentGraphQLField("checked")
     file_size: "AttachmentGraphQLField" = AttachmentGraphQLField("fileSize")
@@ -1017,6 +1166,7 @@ class BandBrightnessIntegratedFields(GraphQLField):
     band: "BandBrightnessIntegratedGraphQLField" = BandBrightnessIntegratedGraphQLField(
         "band"
     )
+    "Magnitude band"
     value: "BandBrightnessIntegratedGraphQLField" = (
         BandBrightnessIntegratedGraphQLField("value")
     )
@@ -1026,6 +1176,7 @@ class BandBrightnessIntegratedFields(GraphQLField):
     error: "BandBrightnessIntegratedGraphQLField" = (
         BandBrightnessIntegratedGraphQLField("error")
     )
+    "Error, if any"
 
     def fields(
         self, *subfields: BandBrightnessIntegratedGraphQLField
@@ -1043,6 +1194,7 @@ class BandBrightnessSurfaceFields(GraphQLField):
     band: "BandBrightnessSurfaceGraphQLField" = BandBrightnessSurfaceGraphQLField(
         "band"
     )
+    "Magnitude band"
     value: "BandBrightnessSurfaceGraphQLField" = BandBrightnessSurfaceGraphQLField(
         "value"
     )
@@ -1052,6 +1204,7 @@ class BandBrightnessSurfaceFields(GraphQLField):
     error: "BandBrightnessSurfaceGraphQLField" = BandBrightnessSurfaceGraphQLField(
         "error"
     )
+    "Error, if any"
 
     def fields(
         self, *subfields: BandBrightnessSurfaceGraphQLField
@@ -1066,8 +1219,11 @@ class BandBrightnessSurfaceFields(GraphQLField):
 
 
 class BandNormalizedInterface(GraphQLField):
+    """Band normalized common interface"""
+
     @classmethod
     def sed(cls) -> "UnnormalizedSedFields":
+        """Un-normalized spectral energy distribution"""
         return UnnormalizedSedFields("sed")
 
     def fields(
@@ -1093,6 +1249,7 @@ class BandNormalizedIntegratedFields(GraphQLField):
 
     @classmethod
     def sed(cls) -> "UnnormalizedSedFields":
+        """Un-normalized spectral energy distribution"""
         return UnnormalizedSedFields("sed")
 
     def fields(
@@ -1119,6 +1276,7 @@ class BandNormalizedSurfaceFields(GraphQLField):
 
     @classmethod
     def sed(cls) -> "UnnormalizedSedFields":
+        """Un-normalized spectral energy distribution"""
         return UnnormalizedSedFields("sed")
 
     def fields(
@@ -1139,10 +1297,16 @@ class BandNormalizedSurfaceFields(GraphQLField):
 
 
 class BandedTimeFields(GraphQLField):
+    """CategorizedTime grouped with a ScienceBand.  A program may contain multiple
+    observations in distinct bands.  Time accounting at the program level must
+    distinguish time spent in observations of each of these bands."""
+
     band: "BandedTimeGraphQLField" = BandedTimeGraphQLField("band")
+    "ScienceBand associated with the time, if any."
 
     @classmethod
     def time(cls) -> "CategorizedTimeFields":
+        """Time distributed across the program and non-charged categories."""
         return CategorizedTimeFields("time")
 
     def fields(
@@ -1158,19 +1322,32 @@ class BandedTimeFields(GraphQLField):
 
 
 class BasePositionFields(GraphQLField):
+    """The base position used by navigate to slew and track the target.
+    The display name can be the original name or a composite.
+    `type` indicates which of the tracking types are returned.
+    At most one of `sidereal` / `nonsidereal` / `coordinates` is non-null."""
+
     type_: "BasePositionGraphQLField" = BasePositionGraphQLField("type")
+    "Source of this base position: a single science target, the center\nposition of a multi-target asterism, or an explicit base override."
     name: "BasePositionGraphQLField" = BasePositionGraphQLField("name")
+    "For single-target bases this is the target's name. For\nmulti-target asterisms this is a truncated comma-separated list of target names."
 
     @classmethod
     def sidereal(cls) -> "SiderealFields":
+        """Sidereal tracking record.
+        Populated only when the base is a single sidereal target with no explicit base override."""
         return SiderealFields("sidereal")
 
     @classmethod
     def nonsidereal(cls) -> "NonsiderealFields":
+        """Nonsidereal tracking record.
+        Populated only when the base is a single nonsidereal target with no explicit base override."""
         return NonsiderealFields("nonsidereal")
 
     @classmethod
     def coordinates(cls) -> "CoordinatesFields":
+        """Fixed base coordinates at observation time. Populated for multi-target
+        asterisms and for explicit base overrides."""
         return CoordinatesFields("coordinates")
 
     def fields(
@@ -1192,7 +1369,10 @@ class BasePositionFields(GraphQLField):
 
 
 class BiasFields(GraphQLField):
+    """Bias calibration step"""
+
     step_type: "BiasGraphQLField" = BiasGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: BiasGraphQLField) -> "BiasFields":
         """Subfields should come from the BiasFields class"""
@@ -1205,12 +1385,16 @@ class BiasFields(GraphQLField):
 
 
 class CalculatedBandedTimeFields(GraphQLField):
+    """A BandedTime that is automatically updated by a background process."""
+
     calculation_state: "CalculatedBandedTimeGraphQLField" = (
         CalculatedBandedTimeGraphQLField("calculationState")
     )
+    "The current state of the background calculation."
     state: "CalculatedBandedTimeGraphQLField" = CalculatedBandedTimeGraphQLField(
         "state"
     )
+    "The current state of the background calculation."
 
     @classmethod
     def value(cls) -> "BandedTimeFields":
@@ -1229,12 +1413,16 @@ class CalculatedBandedTimeFields(GraphQLField):
 
 
 class CalculatedCategorizedTimeRangeFields(GraphQLField):
+    """A CategorizedTimeRange that is automatically updated by a background process."""
+
     calculation_state: "CalculatedCategorizedTimeRangeGraphQLField" = (
         CalculatedCategorizedTimeRangeGraphQLField("calculationState")
     )
+    "The current state of the background calculation."
     state: "CalculatedCategorizedTimeRangeGraphQLField" = (
         CalculatedCategorizedTimeRangeGraphQLField("state")
     )
+    "The current state of the background calculation."
 
     @classmethod
     def value(cls) -> "CategorizedTimeRangeFields":
@@ -1256,15 +1444,20 @@ class CalculatedCategorizedTimeRangeFields(GraphQLField):
 
 
 class CalculatedExecutionDigestFields(GraphQLField):
+    """Wraps an ExecutionDigest with the background calculation state."""
+
     calculation_state: "CalculatedExecutionDigestGraphQLField" = (
         CalculatedExecutionDigestGraphQLField("calculationState")
     )
+    "Background calculation state."
     state: "CalculatedExecutionDigestGraphQLField" = (
         CalculatedExecutionDigestGraphQLField("state")
     )
+    "Background calculation state."
 
     @classmethod
     def value(cls) -> "ExecutionDigestFields":
+        """The current execution digest itself."""
         return ExecutionDigestFields("value")
 
     def fields(
@@ -1286,9 +1479,11 @@ class CalculatedObservationWorkflowFields(GraphQLField):
     calculation_state: "CalculatedObservationWorkflowGraphQLField" = (
         CalculatedObservationWorkflowGraphQLField("calculationState")
     )
+    "The current state of the background calculation."
     state: "CalculatedObservationWorkflowGraphQLField" = (
         CalculatedObservationWorkflowGraphQLField("state")
     )
+    "The current state of the background calculation."
 
     @classmethod
     def value(cls) -> "ObservationWorkflowFields":
@@ -1339,38 +1534,54 @@ class CalibrationProgramReferenceFields(GraphQLField):
 
 
 class CallForProposalsFields(GraphQLField):
+    """A single Call for Proposals definition."""
+
     id: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("id")
+    "The unique Call for Proposals id associated with this Call."
     title: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("title")
+    "The title of this Call for Proposals."
     semester: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField("semester")
+    "The semester associated with the Call.  Some types may have multiple Calls\nper semester."
 
     @classmethod
     def active(cls) -> "DateIntervalFields":
+        """The active period during which accepted observations for this call may be
+        observed."""
         return DateIntervalFields("active")
 
     @classmethod
     def partners(cls) -> "CallForProposalsPartnerFields":
+        """Partners that may participate in this Call."""
         return CallForProposalsPartnerFields("partners")
 
     submission_deadline_default: "CallForProposalsGraphQLField" = (
         CallForProposalsGraphQLField("submissionDeadlineDefault")
     )
+    "The submission deadline to use for any partners without an explicit partner\ndeadline."
     existence: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
         "existence"
     )
+    "Whether this Call is PRESENT or has been DELETED."
     observatory: "CallForProposalsGraphQLField" = CallForProposalsGraphQLField(
         "observatory"
     )
+    "The observatory for which proposals are being solicited.  Eactly one of\n`gemini`, `keck` or `subaru` will be non-null, corresponding to this value."
 
     @classmethod
     def gemini(cls) -> "GeminiCallPropertiesFields":
+        """Gemini-observatory-specific properties.  Non-null iff the `observatory` is
+        GEMINI."""
         return GeminiCallPropertiesFields("gemini")
 
     @classmethod
     def keck(cls) -> "KeckCallPropertiesFields":
+        """Keck-observatory-specific properties.  Non-null iff the `observatory` is KECK."""
         return KeckCallPropertiesFields("keck")
 
     @classmethod
     def subaru(cls) -> "SubaruCallPropertiesFields":
+        """Subaru-observatory-specific properties.  Non-null iff the `observatory` is
+        SUBARU."""
         return SubaruCallPropertiesFields("subaru")
 
     def fields(
@@ -1400,9 +1611,11 @@ class CallForProposalsExchangePartnerFields(GraphQLField):
     submission_deadline_override: "CallForProposalsExchangePartnerGraphQLField" = (
         CallForProposalsExchangePartnerGraphQLField("submissionDeadlineOverride")
     )
+    "Sets the submission deadline for this exchange partner, overriding the\n'submissionDeadlineDefault' for the Call for Proposals."
     submission_deadline: "CallForProposalsExchangePartnerGraphQLField" = (
         CallForProposalsExchangePartnerGraphQLField("submissionDeadline")
     )
+    "The submission deadline for this exchange partner.  This will be the\n'submissionDeadlineOverride' if specified, but otherwise the\n'submissionDeadlineDefault' of the Call for Proposals itself."
 
     def fields(
         self, *subfields: CallForProposalsExchangePartnerGraphQLField
@@ -1417,15 +1630,19 @@ class CallForProposalsExchangePartnerFields(GraphQLField):
 
 
 class CallForProposalsPartnerFields(GraphQLField):
+    """Groups a partner with its submission deadline."""
+
     gemini_partner: "CallForProposalsPartnerGraphQLField" = (
         CallForProposalsPartnerGraphQLField("geminiPartner")
     )
     submission_deadline_override: "CallForProposalsPartnerGraphQLField" = (
         CallForProposalsPartnerGraphQLField("submissionDeadlineOverride")
     )
+    "Sets the submission deadline for this partner, overriding the\n'submissionDeadlineDefault' for the Call for Proposals."
     submission_deadline: "CallForProposalsPartnerGraphQLField" = (
         CallForProposalsPartnerGraphQLField("submissionDeadline")
     )
+    "The submission deadline for this partner.  This will be the\n'submissionDeadlineOverride' if specified, but otherwise the\n'submissionDeadlineDefault' of the Call for Proposals itself."
 
     def fields(
         self, *subfields: CallForProposalsPartnerGraphQLField
@@ -1465,8 +1682,11 @@ class CallsForProposalsSelectResultFields(GraphQLField):
 
 class CatalogInfoFields(GraphQLField):
     name: "CatalogInfoGraphQLField" = CatalogInfoGraphQLField("name")
+    "Catalog name option"
     id: "CatalogInfoGraphQLField" = CatalogInfoGraphQLField("id")
+    "Catalog id string"
     object_type: "CatalogInfoGraphQLField" = CatalogInfoGraphQLField("objectType")
+    "Catalog description of object morphology"
 
     def fields(self, *subfields: CatalogInfoGraphQLField) -> "CatalogInfoFields":
         """Subfields should come from the CatalogInfoFields class"""
@@ -1479,16 +1699,21 @@ class CatalogInfoFields(GraphQLField):
 
 
 class CategorizedTimeFields(GraphQLField):
+    """A time amount broken into charge class categories."""
+
     @classmethod
     def program(cls) -> "TimeSpanFields":
+        """Time charged to the program / PI."""
         return TimeSpanFields("program")
 
     @classmethod
     def non_charged(cls) -> "TimeSpanFields":
+        """Execution time that is not charged."""
         return TimeSpanFields("nonCharged")
 
     @classmethod
     def total(cls) -> "TimeSpanFields":
+        """Total of program and uncharged times."""
         return TimeSpanFields("total")
 
     def fields(
@@ -1504,12 +1729,18 @@ class CategorizedTimeFields(GraphQLField):
 
 
 class CategorizedTimeRangeFields(GraphQLField):
+    """A minimum to maximum categorized time estimate.  The actual execution time
+    should vary between the two extremes, depending upon which observations and
+    groups are ultimately completed."""
+
     @classmethod
     def minimum(cls) -> "CategorizedTimeFields":
+        """Minimum remaining time estimate."""
         return CategorizedTimeFields("minimum")
 
     @classmethod
     def maximum(cls) -> "CategorizedTimeFields":
+        """Maximum remaining time estimate."""
         return CategorizedTimeFields("maximum")
 
     def fields(
@@ -1526,6 +1757,8 @@ class CategorizedTimeRangeFields(GraphQLField):
 
 
 class ChangePrincipalInvestigatorResultFields(GraphQLField):
+    """Result of changePrincipalInvestigator, which is the program user who is now the PI."""
+
     @classmethod
     def program_user(cls) -> "ProgramUserFields":
         return ProgramUserFields("programUser")
@@ -1546,6 +1779,8 @@ class ChangePrincipalInvestigatorResultFields(GraphQLField):
 
 
 class ChangeProgramUserRoleResultFields(GraphQLField):
+    """Result of the program user role update, which is the updated program user itself."""
+
     @classmethod
     def program_user(cls) -> "ProgramUserFields":
         return ProgramUserFields("programUser")
@@ -1564,19 +1799,28 @@ class ChangeProgramUserRoleResultFields(GraphQLField):
 
 
 class ClassicalFields(GraphQLField):
+    """Proposal properties for Regular Semester (Classical) CallForProposals."""
+
     science_subtype: "ClassicalGraphQLField" = ClassicalGraphQLField("scienceSubtype")
+    "The science type of this Call for Proposals."
     min_percent_time: "ClassicalGraphQLField" = ClassicalGraphQLField("minPercentTime")
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
     exchange_partner: "ClassicalGraphQLField" = ClassicalGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     aeon_multi_facility: "ClassicalGraphQLField" = ClassicalGraphQLField(
         "aeonMultiFacility"
     )
+    "Whether this proposal is part of the AEON/Multi-facility program."
     jwst_synergy: "ClassicalGraphQLField" = ClassicalGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
     us_long_term: "ClassicalGraphQLField" = ClassicalGraphQLField("usLongTerm")
+    "Whether this is a US Long Term proposal."
 
     def fields(
         self, *subfields: Union[ClassicalGraphQLField, "PartnerSplitFields"]
@@ -1608,8 +1852,11 @@ class CloneGroupResultFields(GraphQLField):
 
 
 class CloneObservationResultFields(GraphQLField):
+    """The result of cloning an observation, containing the new observation."""
+
     @classmethod
     def new_observation(cls) -> "ObservationFields":
+        """The new cloned (but possibly modified) observation."""
         return ObservationFields("newObservation")
 
     def fields(
@@ -1625,8 +1872,11 @@ class CloneObservationResultFields(GraphQLField):
 
 
 class CloneTargetResultFields(GraphQLField):
+    """The result of cloning a target, containing the original and new targets."""
+
     @classmethod
     def new_target(cls) -> "TargetFields":
+        """The new cloned (but possibly modified) target"""
         return TargetFields("newTarget")
 
     def fields(
@@ -1794,13 +2044,21 @@ class ConditionsMeasurementFields(GraphQLField):
 
 
 class ConfigChangeEstimateFields(GraphQLField):
+    """An individual configuration change before a step is executed.  Multiple
+    items may change simultaneously (e.g., the science fold may move while the
+    Gcal filter is updated).  ConfigChangeEstimate identifies a single item that will
+    be updated."""
+
     name: "ConfigChangeEstimateGraphQLField" = ConfigChangeEstimateGraphQLField("name")
+    "Name of the item that changed."
     description: "ConfigChangeEstimateGraphQLField" = ConfigChangeEstimateGraphQLField(
         "description"
     )
+    "A possibly longer description of what was updated."
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Estimated time required to effectuate the change."""
         return TimeSpanFields("estimate")
 
     def fields(
@@ -1885,6 +2143,23 @@ class ConfigurationFlamingos2LongSlitFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationFlamingos2MosFields(GraphQLField):
+    disperser: "ConfigurationFlamingos2MosGraphQLField" = (
+        ConfigurationFlamingos2MosGraphQLField("disperser")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationFlamingos2MosGraphQLField
+    ) -> "ConfigurationFlamingos2MosFields":
+        """Subfields should come from the ConfigurationFlamingos2MosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationFlamingos2MosFields":
         self._alias = alias
         return self
 
@@ -2086,6 +2361,10 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationFlamingos2LongSlitFields("flamingos2LongSlit")
 
     @classmethod
+    def flamingos_2_mos(cls) -> "ConfigurationFlamingos2MosFields":
+        return ConfigurationFlamingos2MosFields("flamingos2Mos")
+
+    @classmethod
     def gnirs_long_slit(cls) -> "ConfigurationGnirsLongSlitFields":
         return ConfigurationGnirsLongSlitFields("gnirsLongSlit")
 
@@ -2106,6 +2385,7 @@ class ConfigurationObservingModeFields(GraphQLField):
         *subfields: Union[
             ConfigurationObservingModeGraphQLField,
             "ConfigurationFlamingos2LongSlitFields",
+            "ConfigurationFlamingos2MosFields",
             "ConfigurationGmosNorthImagingFields",
             "ConfigurationGmosNorthLongSlitFields",
             "ConfigurationGmosNorthMosFields",
@@ -2143,12 +2423,15 @@ class ConfigurationRequestFields(GraphQLField):
     feedback: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
         "feedback"
     )
+    "Staff feedback on the request."
     created_at: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
         "createdAt"
     )
+    "Time at which the request was created."
     updated_at: "ConfigurationRequestGraphQLField" = ConfigurationRequestGraphQLField(
         "updatedAt"
     )
+    "Time at which the request was last updated."
 
     @classmethod
     def configuration(cls) -> "ConfigurationFields":
@@ -2174,13 +2457,17 @@ class ConfigurationRequestFields(GraphQLField):
 
 
 class ConfigurationRequestSelectResultFields(GraphQLField):
+    """The matching configuration requests, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ConfigurationRequestFields":
+        """Matching configuration requests up to the return size limit of 1000"""
         return ConfigurationRequestFields("matches")
 
     has_more: "ConfigurationRequestSelectResultGraphQLField" = (
         ConfigurationRequestSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -2198,6 +2485,8 @@ class ConfigurationRequestSelectResultFields(GraphQLField):
 
 
 class ConfigurationTargetFields(GraphQLField):
+    """A configuration target will define either coordinates or a region."""
+
     @classmethod
     def coordinates(cls) -> "CoordinatesFields":
         return CoordinatesFields("coordinates")
@@ -2244,16 +2533,21 @@ class ConstraintSetFields(GraphQLField):
     image_quality: "ConstraintSetGraphQLField" = ConstraintSetGraphQLField(
         "imageQuality"
     )
+    "Image quality"
     cloud_extinction: "ConstraintSetGraphQLField" = ConstraintSetGraphQLField(
         "cloudExtinction"
     )
+    "Cloud extinction"
     sky_background: "ConstraintSetGraphQLField" = ConstraintSetGraphQLField(
         "skyBackground"
     )
+    "Sky background"
     water_vapor: "ConstraintSetGraphQLField" = ConstraintSetGraphQLField("waterVapor")
+    "Water vapor"
 
     @classmethod
     def elevation_range(cls) -> "ElevationRangeFields":
+        """Either air mass range or elevation range"""
         return ElevationRangeFields("elevationRange")
 
     def fields(
@@ -2277,6 +2571,7 @@ class ConstraintSetGroupFields(GraphQLField):
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
+        """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -2291,10 +2586,12 @@ class ConstraintSetGroupFields(GraphQLField):
 
     @classmethod
     def constraint_set(cls) -> "ConstraintSetFields":
+        """Commonly held value across the observations"""
         return ConstraintSetFields("constraintSet")
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """Link back to program."""
         return ProgramFields("program")
 
     def fields(
@@ -2316,13 +2613,17 @@ class ConstraintSetGroupFields(GraphQLField):
 
 
 class ConstraintSetGroupSelectResultFields(GraphQLField):
+    """The matching constraintSetGroup results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ConstraintSetGroupFields":
+        """Matching constraintSetGroups up to the return size limit of 1000"""
         return ConstraintSetGroupFields("matches")
 
     has_more: "ConstraintSetGroupSelectResultGraphQLField" = (
         ConstraintSetGroupSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -2340,20 +2641,30 @@ class ConstraintSetGroupSelectResultFields(GraphQLField):
 
 
 class CoordinateLimitsFields(GraphQLField):
+    """RA/Dec limits."""
+
     @classmethod
     def ra_start(cls) -> "RightAscensionFields":
+        """The start limit defines the beginning (inclusive) of an RA range in which
+        observations will be accepted."""
         return RightAscensionFields("raStart")
 
     @classmethod
     def ra_end(cls) -> "RightAscensionFields":
+        """The end limit defines the end (inclusive) of an RA range in which observations
+        will be accepted."""
         return RightAscensionFields("raEnd")
 
     @classmethod
     def dec_start(cls) -> "DeclinationFields":
+        """The start limit defines the beginning (inclusive) of a declination range in
+        which observations will be accepted."""
         return DeclinationFields("decStart")
 
     @classmethod
     def dec_end(cls) -> "DeclinationFields":
+        """The end limit defines the end (inclusive) of a declination range in which
+        observations will be accepted."""
         return DeclinationFields("decEnd")
 
     def fields(
@@ -2374,10 +2685,12 @@ class CoordinateLimitsFields(GraphQLField):
 class CoordinatesFields(GraphQLField):
     @classmethod
     def ra(cls) -> "RightAscensionFields":
+        """Right Ascension"""
         return RightAscensionFields("ra")
 
     @classmethod
     def dec(cls) -> "DeclinationFields":
+        """Declination"""
         return DeclinationFields("dec")
 
     def fields(
@@ -2416,8 +2729,11 @@ class CreateCallForProposalsResultFields(GraphQLField):
 
 
 class CreateGroupResultFields(GraphQLField):
+    """The result of creating a new group."""
+
     @classmethod
     def group(cls) -> "GroupFields":
+        """The newly created group."""
         return GroupFields("group")
 
     def fields(
@@ -2433,8 +2749,11 @@ class CreateGroupResultFields(GraphQLField):
 
 
 class CreateObservationResultFields(GraphQLField):
+    """The result of creating a new observation."""
+
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The newly created observation."""
         return ObservationFields("observation")
 
     def fields(
@@ -2453,6 +2772,7 @@ class CreateObservationResultFields(GraphQLField):
 class CreateProgramNoteResultFields(GraphQLField):
     @classmethod
     def program_note(cls) -> "ProgramNoteFields":
+        """The newly create program note."""
         return ProgramNoteFields("programNote")
 
     def fields(
@@ -2469,8 +2789,11 @@ class CreateProgramNoteResultFields(GraphQLField):
 
 
 class CreateProgramResultFields(GraphQLField):
+    """The result of creating a new program."""
+
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The newly created program."""
         return ProgramFields("program")
 
     def fields(
@@ -2486,8 +2809,11 @@ class CreateProgramResultFields(GraphQLField):
 
 
 class CreateProposalResultFields(GraphQLField):
+    """The result of creating new proposal"""
+
     @classmethod
     def proposal(cls) -> "ProposalFields":
+        """The newly created proposal."""
         return ProposalFields("proposal")
 
     def fields(
@@ -2503,8 +2829,11 @@ class CreateProposalResultFields(GraphQLField):
 
 
 class CreateTargetResultFields(GraphQLField):
+    """The result of creating a new target."""
+
     @classmethod
     def target(cls) -> "TargetFields":
+        """The newly created target."""
         return TargetFields("target")
 
     def fields(
@@ -2522,11 +2851,13 @@ class CreateTargetResultFields(GraphQLField):
 class CreateUserInvitationResultFields(GraphQLField):
     @classmethod
     def invitation(cls) -> "UserInvitationFields":
+        """The created invitation."""
         return UserInvitationFields("invitation")
 
     key: "CreateUserInvitationResultGraphQLField" = (
         CreateUserInvitationResultGraphQLField("key")
     )
+    "Give this key to the person you wish to invite. They can later redeem the invitation."
 
     def fields(
         self,
@@ -2544,7 +2875,10 @@ class CreateUserInvitationResultFields(GraphQLField):
 
 
 class DarkFields(GraphQLField):
+    """Dark calibration step"""
+
     step_type: "DarkGraphQLField" = DarkGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: DarkGraphQLField) -> "DarkFields":
         """Subfields should come from the DarkFields class"""
@@ -2558,29 +2892,36 @@ class DarkFields(GraphQLField):
 
 class DatasetFields(GraphQLField):
     id: "DatasetGraphQLField" = DatasetGraphQLField("id")
+    "Dataset id."
 
     @classmethod
     def step(cls) -> "StepRecordFields":
+        """The corresponding step."""
         return StepRecordFields("step")
 
     index: "DatasetGraphQLField" = DatasetGraphQLField("index")
+    "Exposure index within the step."
 
     @classmethod
     def reference(cls) -> "DatasetReferenceFields":
+        """Dataset reference, assuming the observation has an observation reference."""
         return DatasetReferenceFields("reference")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation associated with this dataset."""
         return ObservationFields("observation")
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with this dataset."""
         return VisitFields("visit")
 
     @classmethod
     def events(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "ExecutionEventSelectResultFields":
+        """Events associated with the dataset."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -2591,15 +2932,21 @@ class DatasetFields(GraphQLField):
         return ExecutionEventSelectResultFields("events", arguments=cleared_arguments)
 
     filename: "DatasetGraphQLField" = DatasetGraphQLField("filename")
+    "Dataset filename."
     qa_state: "DatasetGraphQLField" = DatasetGraphQLField("qaState")
+    "Dataset QA state, if any has been set."
     comment: "DatasetGraphQLField" = DatasetGraphQLField("comment")
+    "Dataset comment, if any has been set."
     idempotency_key: "DatasetGraphQLField" = DatasetGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe dataset is created and is used to enable problem-free retry in the case of\nfailure."
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """Dataset time interval, if the dataset collection has started."""
         return TimestampIntervalFields("interval")
 
     is_written: "DatasetGraphQLField" = DatasetGraphQLField("isWritten")
+    "Has the dataset been written to disk?  Note, we assume the dataset has been\nwritten when an `END_WRITE` event is received from Observe."
 
     def fields(
         self,
@@ -2623,6 +2970,8 @@ class DatasetFields(GraphQLField):
 
 
 class DatasetChronicleEntryFields(GraphQLField):
+    """The Chronicle entry for dataset updates."""
+
     id: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField("id")
     transaction_id: "DatasetChronicleEntryGraphQLField" = (
         DatasetChronicleEntryGraphQLField("transactionId")
@@ -2630,17 +2979,21 @@ class DatasetChronicleEntryFields(GraphQLField):
 
     @classmethod
     def user(cls) -> "UserFields":
+        """The user who performed the insertion or update."""
         return UserFields("user")
 
     timestamp: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField(
         "timestamp"
     )
+    "When the update happened."
     operation: "DatasetChronicleEntryGraphQLField" = DatasetChronicleEntryGraphQLField(
         "operation"
     )
+    "The database operation that was performed."
 
     @classmethod
     def dataset(cls) -> "DatasetFields":
+        """The dataset that was inserted or updated."""
         return DatasetFields("dataset")
 
     mod_dataset_id: "DatasetChronicleEntryGraphQLField" = (
@@ -2721,11 +3074,13 @@ class DatasetChronicleEntryFields(GraphQLField):
 class DatasetChronicleEntrySelectResultFields(GraphQLField):
     @classmethod
     def matches(cls) -> "DatasetChronicleEntryFields":
+        """Matching entries up to the return size limit of 1000"""
         return DatasetChronicleEntryFields("matches")
 
     has_more: "DatasetChronicleEntrySelectResultGraphQLField" = (
         DatasetChronicleEntrySelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -2743,20 +3098,26 @@ class DatasetChronicleEntrySelectResultFields(GraphQLField):
 
 
 class DatasetEstimateFields(GraphQLField):
+    """Time estimate for taking an individual dataset."""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """The exposure time itself"""
         return TimeSpanFields("exposure")
 
     @classmethod
     def readout(cls) -> "TimeSpanFields":
+        """Time required to readout the detector"""
         return TimeSpanFields("readout")
 
     @classmethod
     def write(cls) -> "TimeSpanFields":
+        """Time required to write the data to the storage system"""
         return TimeSpanFields("write")
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Total estimate for the dataset, summing exposure, readout and write"""
         return TimeSpanFields("estimate")
 
     def fields(
@@ -2772,41 +3133,57 @@ class DatasetEstimateFields(GraphQLField):
 
 
 class DatasetEventFields(GraphQLField):
+    """Dataset-level events.  A single dataset will be associated with multiple events
+    as it makes its way through observe, readout and write stages."""
+
     id: "DatasetEventGraphQLField" = DatasetEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "DatasetEventGraphQLField" = DatasetEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "DatasetEventGraphQLField" = DatasetEventGraphQLField(
         "effectiveTime"
     )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "DatasetEventGraphQLField" = DatasetEventGraphQLField("eventType")
+    "Event type."
 
     @classmethod
     def atom(cls) -> "AtomRecordFields":
+        """Atom associated with this event."""
         return AtomRecordFields("atom")
 
     @classmethod
     def step(cls) -> "StepRecordFields":
+        """The associated step."""
         return StepRecordFields("step")
 
     dataset_stage: "DatasetEventGraphQLField" = DatasetEventGraphQLField("datasetStage")
+    "Dataset execution stage."
 
     @classmethod
     def dataset(cls) -> "DatasetFields":
+        """The associated dataset."""
         return DatasetFields("dataset")
 
     idempotency_key: "DatasetEventGraphQLField" = DatasetEventGraphQLField(
         "idempotencyKey"
     )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -2829,18 +3206,25 @@ class DatasetEventFields(GraphQLField):
 
 
 class DatasetReferenceFields(GraphQLField):
+    """Dataset reference type, broken into its constituient parts and including
+    a formatted label."""
+
     label: "DatasetReferenceGraphQLField" = DatasetReferenceGraphQLField("label")
+    "Formatted dataset reference label."
 
     @classmethod
     def observation(cls) -> "ObservationReferenceFields":
+        """The observation reference."""
         return ObservationReferenceFields("observation")
 
     step_index: "DatasetReferenceGraphQLField" = DatasetReferenceGraphQLField(
         "stepIndex"
     )
+    "The step index relative to its observation."
     exposure_index: "DatasetReferenceGraphQLField" = DatasetReferenceGraphQLField(
         "exposureIndex"
     )
+    "The exposure index relative to its step."
 
     def fields(
         self,
@@ -2856,13 +3240,17 @@ class DatasetReferenceFields(GraphQLField):
 
 
 class DatasetSelectResultFields(GraphQLField):
+    """The matching dataset results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "DatasetFields":
+        """Matching datasets up to the return size limit of 1000"""
         return DatasetFields("matches")
 
     has_more: "DatasetSelectResultGraphQLField" = DatasetSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[DatasetSelectResultGraphQLField, "DatasetFields"]
@@ -2877,8 +3265,13 @@ class DatasetSelectResultFields(GraphQLField):
 
 
 class DateIntervalFields(GraphQLField):
+    """Date interval marked by a start 'Date' (inclusive) and an end 'Date' (exclusive).
+    Dates are interpreted as local dates."""
+
     start: "DateIntervalGraphQLField" = DateIntervalGraphQLField("start")
+    "Start date, local to the observation site, of the interval (inclusive)."
     end: "DateIntervalGraphQLField" = DateIntervalGraphQLField("end")
+    "End date, local to the observation site, of the interval (exclusive)."
 
     def fields(self, *subfields: DateIntervalGraphQLField) -> "DateIntervalFields":
         """Subfields should come from the DateIntervalFields class"""
@@ -2892,10 +3285,13 @@ class DateIntervalFields(GraphQLField):
 
 class DeclinationFields(GraphQLField):
     dms: "DeclinationGraphQLField" = DeclinationGraphQLField("dms")
+    "Declination in DD:MM:SS.SS format"
     degrees: "DeclinationGraphQLField" = DeclinationGraphQLField("degrees")
+    "Declination in signed degrees"
     microarcseconds: "DeclinationGraphQLField" = DeclinationGraphQLField(
         "microarcseconds"
     )
+    "Declination in signed µas"
 
     def fields(self, *subfields: DeclinationGraphQLField) -> "DeclinationFields":
         """Subfields should come from the DeclinationFields class"""
@@ -2933,6 +3329,7 @@ class DeclinationArcFields(GraphQLField):
 class DeclineTooTriggerResultFields(GraphQLField):
     @classmethod
     def too_trigger(cls) -> "TooTriggerFields":
+        """The declined trigger."""
         return TooTriggerFields("tooTrigger")
 
     def fields(
@@ -2948,9 +3345,12 @@ class DeclineTooTriggerResultFields(GraphQLField):
 
 
 class DeleteProgramUserResultFields(GraphQLField):
+    """The result of deleting a program user."""
+
     result: "DeleteProgramUserResultGraphQLField" = DeleteProgramUserResultGraphQLField(
         "result"
     )
+    "`true` if a program user was deleted, `false` otherwise."
 
     def fields(
         self, *subfields: DeleteProgramUserResultGraphQLField
@@ -2965,9 +3365,12 @@ class DeleteProgramUserResultFields(GraphQLField):
 
 
 class DeleteProposalResultFields(GraphQLField):
+    """The result of deleting a proposal."""
+
     result: "DeleteProposalResultGraphQLField" = DeleteProposalResultGraphQLField(
         "result"
     )
+    "`true` if a proposal was deleted, `false` otherwise."
 
     def fields(
         self, *subfields: DeleteProposalResultGraphQLField
@@ -2982,8 +3385,11 @@ class DeleteProposalResultFields(GraphQLField):
 
 
 class DeleteSequenceResultFields(GraphQLField):
+    """The result of deleting a materialized sequence."""
+
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The observation whose sequence was deleted."""
         return ObservationFields("observation")
 
     def fields(
@@ -2999,21 +3405,28 @@ class DeleteSequenceResultFields(GraphQLField):
 
 
 class DemoScienceFields(GraphQLField):
+    """Proposal properties for Demo Science CallForProposals."""
+
     science_subtype: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
         "tooActivationCeiling"
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
         "defaultTooActivationCeiling"
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "DemoScienceGraphQLField" = (
         DemoScienceGraphQLField("explicitTooActivationCeiling")
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     def fields(self, *subfields: DemoScienceGraphQLField) -> "DemoScienceFields":
         """Subfields should come from the DemoScienceFields class"""
@@ -3026,19 +3439,28 @@ class DemoScienceFields(GraphQLField):
 
 
 class DetectorEstimateFields(GraphQLField):
+    """Time estimate for a single detector.  Some instruments will employ multiple
+    detectors per step."""
+
     name: "DetectorEstimateGraphQLField" = DetectorEstimateGraphQLField("name")
+    "Indicates which detector is estimated here"
     description: "DetectorEstimateGraphQLField" = DetectorEstimateGraphQLField(
         "description"
     )
+    "Detector description"
 
     @classmethod
     def dataset(cls) -> "DatasetEstimateFields":
+        """Time estimate for a single dataset produced by this detector"""
         return DatasetEstimateFields("dataset")
 
     count: "DetectorEstimateGraphQLField" = DetectorEstimateGraphQLField("count")
+    "Count of datasets to be produced by the detector"
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Total time estimate for the detector, which is the sum of the individual
+        dataset estimate multiplied by the count."""
         return TimeSpanFields("estimate")
 
     def fields(
@@ -3057,21 +3479,28 @@ class DetectorEstimateFields(GraphQLField):
 
 
 class DirectorsTimeFields(GraphQLField):
+    """Proposal properties for Director's Time CallForProposals."""
+
     science_subtype: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
         "tooActivationCeiling"
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "DirectorsTimeGraphQLField" = (
         DirectorsTimeGraphQLField("defaultTooActivationCeiling")
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "DirectorsTimeGraphQLField" = (
         DirectorsTimeGraphQLField("explicitTooActivationCeiling")
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     def fields(self, *subfields: DirectorsTimeGraphQLField) -> "DirectorsTimeFields":
         """Subfields should come from the DirectorsTimeFields class"""
@@ -3084,12 +3513,16 @@ class DirectorsTimeFields(GraphQLField):
 
 
 class ElevationRangeFields(GraphQLField):
+    """Either air mass range or elevation range"""
+
     @classmethod
     def air_mass(cls) -> "AirMassRangeFields":
+        """AirMass range if elevation range is an Airmass range"""
         return AirMassRangeFields("airMass")
 
     @classmethod
     def hour_angle(cls) -> "HourAngleRangeFields":
+        """Hour angle range if elevation range is an Hour angle range"""
         return HourAngleRangeFields("hourAngle")
 
     def fields(
@@ -3109,13 +3542,21 @@ class ElevationRangeFields(GraphQLField):
 
 class EmailFields(GraphQLField):
     sender_email: "EmailGraphQLField" = EmailGraphQLField("senderEmail")
+    "Sender email address"
     recipient_email: "EmailGraphQLField" = EmailGraphQLField("recipientEmail")
+    "Recipient email address"
     subject: "EmailGraphQLField" = EmailGraphQLField("subject")
+    "Email subject"
     text_message: "EmailGraphQLField" = EmailGraphQLField("textMessage")
+    "Text format message"
     html_message: "EmailGraphQLField" = EmailGraphQLField("htmlMessage")
+    "Html format message"
     original_time: "EmailGraphQLField" = EmailGraphQLField("originalTime")
+    "Original time of the email sending attempt"
     status: "EmailGraphQLField" = EmailGraphQLField("status")
+    "The status of the email"
     status_time: "EmailGraphQLField" = EmailGraphQLField("statusTime")
+    "The time of the last status update"
 
     def fields(self, *subfields: EmailGraphQLField) -> "EmailFields":
         """Subfields should come from the EmailFields class"""
@@ -3135,6 +3576,7 @@ class EmissionLineIntegratedFields(GraphQLField):
     line_width: "EmissionLineIntegratedGraphQLField" = (
         EmissionLineIntegratedGraphQLField("lineWidth")
     )
+    "km/s"
 
     @classmethod
     def line_flux(cls) -> "LineFluxIntegratedFields":
@@ -3165,6 +3607,7 @@ class EmissionLineSurfaceFields(GraphQLField):
     line_width: "EmissionLineSurfaceGraphQLField" = EmissionLineSurfaceGraphQLField(
         "lineWidth"
     )
+    "km/s"
 
     @classmethod
     def line_flux(cls) -> "LineFluxSurfaceFields":
@@ -3267,6 +3710,8 @@ class EngineeringProgramReferenceFields(GraphQLField):
 
 
 class EnumeratedTelescopeConfigGeneratorFields(GraphQLField):
+    """In the `ENUMERATED` option offsets are explicitly specified instead of calculated."""
+
     @classmethod
     def values(cls) -> "TelescopeConfigFields":
         return TelescopeConfigFields("values")
@@ -3312,10 +3757,13 @@ class ExampleProgramReferenceFields(GraphQLField):
 class ExchangeFields(GraphQLField):
     mode: "ExchangeGraphQLField" = ExchangeGraphQLField("mode")
     keck_instrument: "ExchangeGraphQLField" = ExchangeGraphQLField("keckInstrument")
+    "Keck instrument, present when mode is EXCHANGE_KECK."
     subaru_instrument: "ExchangeGraphQLField" = ExchangeGraphQLField("subaruInstrument")
+    "Subaru instrument, present when mode is EXCHANGE_SUBARU."
 
     @classmethod
     def total_request_time(cls) -> "TimeSpanFields":
+        """Total requested observing time."""
         return TimeSpanFields("totalRequestTime")
 
     def fields(
@@ -3333,14 +3781,20 @@ class ExchangeFields(GraphQLField):
 class ExecutionFields(GraphQLField):
     @classmethod
     def digest(cls) -> "CalculatedExecutionDigestFields":
+        """Calculations dependent on the sequence, such as planned time and offsets.
+        If a sequence cannot be generated for this observation, `null` is returned
+        along with warning messages."""
         return CalculatedExecutionDigestFields("digest")
 
     execution_state: "ExecutionGraphQLField" = ExecutionGraphQLField("executionState")
+    "Determines the execution state as a whole of this observation."
 
     @classmethod
     def atom_records(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "AtomRecordSelectResultFields":
+        """Executed (or at least partially executed) atom records, across all visits,
+        ordered by execution order of the first contained step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -3354,6 +3808,7 @@ class ExecutionFields(GraphQLField):
     def datasets(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "DatasetSelectResultFields":
+        """Datasets associated with the observation, across all visits."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -3367,6 +3822,7 @@ class ExecutionFields(GraphQLField):
     def events(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "ExecutionEventSelectResultFields":
+        """Events associated with the observation, across all visits."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -3380,6 +3836,7 @@ class ExecutionFields(GraphQLField):
     def visits(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "VisitSelectResultFields":
+        """Visits associated with the observation."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "VisitId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -3391,18 +3848,25 @@ class ExecutionFields(GraphQLField):
 
     @classmethod
     def original_estimate(cls) -> "ObservationTimeEstimateFields":
+        """The observation time estimate as it stood when the first 'observe' visit was
+        recorded, at which point the execution sequence was fixed and execution
+        began.  This is null until the first observe visit is recorded, and never
+        changes thereafter."""
         return ObservationTimeEstimateFields("originalEstimate")
 
     @classmethod
     def time_charge(cls) -> "CategorizedTimeFields":
+        """Time accounting calculation for this observation."""
         return CategorizedTimeFields("timeCharge")
 
     science_sequence_is_materialized: "ExecutionGraphQLField" = ExecutionGraphQLField(
         "scienceSequenceIsMaterialized"
     )
+    "Whether the science sequence has been materialized.\nThis will happen when the sequence is executed or if it is manually edited."
     acquisition_sequence_is_materialized: "ExecutionGraphQLField" = (
         ExecutionGraphQLField("acquisitionSequenceIsMaterialized")
     )
+    "Whether the acquisition sequence has been materialized.\nThis will happen when the sequence is executed or if it is manually edited."
 
     def fields(
         self,
@@ -3427,32 +3891,46 @@ class ExecutionFields(GraphQLField):
 
 
 class ExecutionConfigFields(GraphQLField):
+    """Execution configuration.  All but one of the instruments will be `null`."""
+
     instrument: "ExecutionConfigGraphQLField" = ExecutionConfigGraphQLField(
         "instrument"
     )
+    "Instrument type.  This will indicate which of the instrument-specific fields\nis defined.  Null for exchange observations, which have no Gemini instrument."
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2ExecutionConfigFields":
+        """Flamingos 2 execution config.  This will be null unless the `instrument` is
+        `FLAMINGOS2`."""
         return Flamingos2ExecutionConfigFields("flamingos2")
 
     @classmethod
     def ghost(cls) -> "GhostExecutionConfigFields":
+        """GHOST execution config.  This will be null unless the `instrument` is `GHOST`."""
         return GhostExecutionConfigFields("ghost")
 
     @classmethod
     def gmos_north(cls) -> "GmosNorthExecutionConfigFields":
+        """GMOS North execution config.  This will be null unless the `instrument` is
+        `GMOS_NORTH`."""
         return GmosNorthExecutionConfigFields("gmosNorth")
 
     @classmethod
     def gmos_south(cls) -> "GmosSouthExecutionConfigFields":
+        """GMOS South execution config.  This will be null unless the `instrument` is
+        `GMOS_SOUTH`."""
         return GmosSouthExecutionConfigFields("gmosSouth")
 
     @classmethod
     def gnirs(cls) -> "GnirsExecutionConfigFields":
+        """GNIRS execution config.  This will be null unless the `instrument` is
+        `GNIRS`."""
         return GnirsExecutionConfigFields("gnirs")
 
     @classmethod
     def igrins_2(cls) -> "Igrins2ExecutionConfigFields":
+        """IGRINS-2 execution config.  This will be null unless the `instrument` is
+        `IGRINS2`."""
         return Igrins2ExecutionConfigFields("igrins2")
 
     def fields(
@@ -3477,28 +3955,36 @@ class ExecutionConfigFields(GraphQLField):
 
 
 class ExecutionDigestFields(GraphQLField):
+    """Summarizes the execution setup time and sequences."""
+
     @classmethod
     def estimate(cls) -> "ObservationTimeEstimateFields":
+        """Time estimate for executing the observation."""
         return ObservationTimeEstimateFields("estimate")
 
     @classmethod
     def setup(cls) -> "SetupTimeFields":
+        """Setup time calculations."""
         return SetupTimeFields("setup")
 
     setup_count: "ExecutionDigestGraphQLField" = ExecutionDigestGraphQLField(
         "setupCount"
     )
+    "Estimated number of setups required to complete this observation."
 
     @classmethod
     def acquisition(cls) -> "SequenceDigestFields":
+        """Acquisition sequence summary."""
         return SequenceDigestFields("acquisition")
 
     @classmethod
     def science(cls) -> "SequenceDigestFields":
+        """Science sequence summary."""
         return SequenceDigestFields("science")
 
     @classmethod
     def full_time_estimate(cls) -> "CategorizedTimeFields":
+        """Full time estimate: science time plus full setup time for every setup."""
         return CategorizedTimeFields("fullTimeEstimate")
 
     def fields(
@@ -3521,28 +4007,39 @@ class ExecutionDigestFields(GraphQLField):
 
 
 class ExecutionEventInterface(GraphQLField):
+    """Execution event (sequence, step, or dataset events)"""
+
     id: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
         "recordedTime"
     )
+    "Time at which this event was recorded in the database."
     received: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
         "effectiveTime"
     )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField("eventType")
+    "Event type."
     idempotency_key: "ExecutionEventGraphQLField" = ExecutionEventGraphQLField(
         "idempotencyKey"
     )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -3564,13 +4061,17 @@ class ExecutionEventInterface(GraphQLField):
 
 
 class ExecutionEventSelectResultFields(GraphQLField):
+    """The matching ExecutionEvent results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ExecutionEventInterface":
+        """Matching ExecutionEvents up to the return size limit of 1000"""
         return ExecutionEventInterface("matches")
 
     has_more: "ExecutionEventSelectResultGraphQLField" = (
         ExecutionEventSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -3588,12 +4089,16 @@ class ExecutionEventSelectResultFields(GraphQLField):
 
 
 class ExposureTimeModeFields(GraphQLField):
+    """Exposure time mode, either signal to noise or fixed"""
+
     @classmethod
     def signal_to_noise(cls) -> "SignalToNoiseExposureTimeModeFields":
+        """Signal to noise exposure time mode data, if applicable."""
         return SignalToNoiseExposureTimeModeFields("signalToNoise")
 
     @classmethod
     def time_and_count(cls) -> "TimeAndCountExposureTimeModeFields":
+        """Time and Count mode data, if applicable."""
         return TimeAndCountExposureTimeModeFields("timeAndCount")
 
     def fields(
@@ -3614,28 +4119,38 @@ class ExposureTimeModeFields(GraphQLField):
 
 
 class FastTurnaroundFields(GraphQLField):
+    """Proposal properties for Fast Turnaround CallForProposals."""
+
     science_subtype: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
         "tooActivationCeiling"
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "FastTurnaroundGraphQLField" = (
         FastTurnaroundGraphQLField("defaultTooActivationCeiling")
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "FastTurnaroundGraphQLField" = (
         FastTurnaroundGraphQLField("explicitTooActivationCeiling")
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def reviewer(cls) -> "ProgramUserFields":
+        """Program User that will be selected as a reviewer for this program"""
         return ProgramUserFields("reviewer")
 
     @classmethod
     def mentor(cls) -> "ProgramUserFields":
+        """Program User that will be selected as a mentor for this program.
+        Required when the reviewer does not have PhD educational status."""
         return ProgramUserFields("mentor")
 
     def fields(
@@ -3651,16 +4166,22 @@ class FastTurnaroundFields(GraphQLField):
 
 
 class Flamingos2AtomFields(GraphQLField):
+    """Flamingos 2 atom, a collection of steps that should be executed in their entirety"""
+
     id: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField("id")
+    "Atom id"
     description: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField(
         "description"
     )
+    "Optional description of the atom."
     observe_class: "Flamingos2AtomGraphQLField" = Flamingos2AtomGraphQLField(
         "observeClass"
     )
+    "Observe class for this atom as a whole (combined observe class for each of\nits steps)."
 
     @classmethod
     def steps(cls) -> "Flamingos2StepFields":
+        """Individual steps that comprise the atom"""
         return Flamingos2StepFields("steps")
 
     def fields(
@@ -3676,12 +4197,16 @@ class Flamingos2AtomFields(GraphQLField):
 
 
 class Flamingos2CustomMaskFields(GraphQLField):
+    """Flamingos 2 Custom Mask"""
+
     attachment_id: "Flamingos2CustomMaskGraphQLField" = (
         Flamingos2CustomMaskGraphQLField("attachmentId")
     )
+    "The MOS mask attachment id, or null if the mask has not yet been defined."
     slit_width: "Flamingos2CustomMaskGraphQLField" = Flamingos2CustomMaskGraphQLField(
         "slitWidth"
     )
+    "Custom Slit Width"
 
     def fields(
         self, *subfields: Flamingos2CustomMaskGraphQLField
@@ -3696,33 +4221,45 @@ class Flamingos2CustomMaskFields(GraphQLField):
 
 
 class Flamingos2DynamicFields(GraphQLField):
+    """Flamingos 2 dynamic step configuration"""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """Flamingos 2 exposure time"""
         return TimeSpanFields("exposure")
 
     disperser: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
         "disperser"
     )
+    "Flamingos 2 disperser, if any."
     filter_: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("filter")
+    "Flamingos 2 filter."
     read_mode: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
         "readMode"
     )
+    "Flamingos 2 read mode."
     lyot_wheel: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
         "lyotWheel"
     )
+    "Flamingos 2 Lyot Wheel."
 
     @classmethod
     def fpu(cls) -> "Flamingos2FpuMaskFields":
+        """Flamingos 2 FPU, if any."""
         return Flamingos2FpuMaskFields("fpu")
 
     decker: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("decker")
+    "Flamingos 2 decker."
     readout_mode: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
         "readoutMode"
     )
+    "Flamingos 2 readout mode."
     reads: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("reads")
+    "Flamingos 2 reads."
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is taken from the filter wavelength."""
         return WavelengthFields("centralWavelength")
 
     def fields(
@@ -3744,16 +4281,21 @@ class Flamingos2DynamicFields(GraphQLField):
 
 
 class Flamingos2ExecutionConfigFields(GraphQLField):
+    """Flamingos 2 Execution Config"""
+
     @classmethod
     def static(cls) -> "Flamingos2StaticFields":
+        """Flamingos 2 static configuration"""
         return Flamingos2StaticFields("static")
 
     @classmethod
     def acquisition(cls) -> "Flamingos2ExecutionSequenceFields":
+        """Flamingos 2 acquisition execution sequence"""
         return Flamingos2ExecutionSequenceFields("acquisition")
 
     @classmethod
     def science(cls) -> "Flamingos2ExecutionSequenceFields":
+        """Flamingos 2 science execution"""
         return Flamingos2ExecutionSequenceFields("science")
 
     def fields(
@@ -3774,17 +4316,22 @@ class Flamingos2ExecutionConfigFields(GraphQLField):
 
 
 class Flamingos2ExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
     @classmethod
     def next_atom(cls) -> "Flamingos2AtomFields":
+        """Next atom to execute."""
         return Flamingos2AtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "Flamingos2AtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return Flamingos2AtomFields("possibleFuture")
 
     has_more: "Flamingos2ExecutionSequenceGraphQLField" = (
         Flamingos2ExecutionSequenceGraphQLField("hasMore")
     )
+    "Whether there are more anticipated atoms than those that appear in\n'possibleFuture'."
 
     def fields(
         self,
@@ -3802,11 +4349,15 @@ class Flamingos2ExecutionSequenceFields(GraphQLField):
 
 
 class Flamingos2FpuMaskFields(GraphQLField):
+    """Flamingos 2 mask option, either builtin or custom mask"""
+
     @classmethod
     def custom_mask(cls) -> "Flamingos2CustomMaskFields":
+        """The custom mask, if in use"""
         return Flamingos2CustomMaskFields("customMask")
 
     builtin: "Flamingos2FpuMaskGraphQLField" = Flamingos2FpuMaskGraphQLField("builtin")
+    "Flamingos 2 builtin FPU, if in use"
 
     def fields(
         self,
@@ -3822,46 +4373,61 @@ class Flamingos2FpuMaskFields(GraphQLField):
 
 
 class Flamingos2ImagingFields(GraphQLField):
+    """Flamingos2 Imaging mode"""
+
     @classmethod
     def variant(cls) -> "ImagingVariantFields":
+        """Details specific to the type of imaging being performed."""
         return ImagingVariantFields("variant")
 
     @classmethod
     def filters(cls) -> "Flamingos2ImagingFilterFields":
+        """The filters (at least one is required) to be used for data collection."""
         return Flamingos2ImagingFilterFields("filters")
 
     @classmethod
     def initial_filters(cls) -> "Flamingos2ImagingFilterFields":
+        """Filters as initially selected when creating the imaging mode."""
         return Flamingos2ImagingFilterFields("initialFilters")
 
     default_read_mode: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "defaultReadMode"
     )
+    "Default read mode."
     explicit_read_mode: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "explicitReadMode"
     )
+    "Optional explicitly specified F2 ReadMode. If set it overrides the default."
     default_reads: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "defaultReads"
     )
+    "Default reads."
     explicit_reads: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "explicitReads"
     )
+    "Optional explicitly specified F2 Reads. If set it overrides the default."
     decker: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField("decker")
+    "The decker field is either explicitly specified in explicitDecker or else taken\nfrom defaultDecker."
     default_decker: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "defaultDecker"
     )
+    "Default decker."
     explicit_decker: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "explicitDecker"
     )
+    "Optional explicitly specified F2 Decker. If set it overrides the default."
     readout_mode: "Flamingos2ImagingGraphQLField" = Flamingos2ImagingGraphQLField(
         "readoutMode"
     )
+    "The readoutMode field is either explicitly specified in explicitReadoutMode or\nelse taken from defaultReadoutMode."
     default_readout_mode: "Flamingos2ImagingGraphQLField" = (
         Flamingos2ImagingGraphQLField("defaultReadoutMode")
     )
+    "Default readout mode."
     explicit_readout_mode: "Flamingos2ImagingGraphQLField" = (
         Flamingos2ImagingGraphQLField("explicitReadoutMode")
     )
+    "Optional explicitly specified F2 Readout mode. If set it overrides the default."
 
     def fields(
         self,
@@ -3881,12 +4447,17 @@ class Flamingos2ImagingFields(GraphQLField):
 
 
 class Flamingos2ImagingFilterFields(GraphQLField):
+    """Imaging filters combine an actual filter with an exposure time mode."""
+
     filter_: "Flamingos2ImagingFilterGraphQLField" = (
         Flamingos2ImagingFilterGraphQLField("filter")
     )
+    "The filter to use for this imaging configuration."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode for this filter.
+        If not specified, it is taken from the observation's requirements."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -3905,68 +4476,91 @@ class Flamingos2ImagingFilterFields(GraphQLField):
 
 
 class Flamingos2LongSlitFields(GraphQLField):
+    """Flamingos2 Long Slit mode"""
+
     disperser: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "disperser"
     )
+    "Flamingos2 Disperser"
     filter_: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("filter")
+    "Flamingos2 Filter"
     fpu: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("fpu")
+    "Flamingos2 FPU"
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     explicit_read_mode: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("explicitReadMode")
     )
+    "Optional explicitly specified F2 ReadMode. If set it overrides the\ndefault."
     explicit_reads: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "explicitReads"
     )
+    "Optional explicitly specified F2 Reads. If set it overrides the\ndefault."
     decker: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField("decker")
+    "The decker field is either explicitly specified in explicitDecker or else taken\nfrom defaultDecker"
     default_decker: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "defaultDecker"
     )
+    "Default decker, calculated based on the exposure time"
     explicit_decker: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "explicitDecker"
     )
+    "Optional explicitly specified F2 Decker. If set it overrides the\ndefault."
     readout_mode: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "readoutMode"
     )
+    "The readoutMode field is either explicitly specified in explicitReadoutMode or else taken\nfrom defaultReadoutMode"
     default_readout_mode: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("defaultReadoutMode")
     )
+    "Default readout mode, science"
     explicit_readout_mode: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("explicitReadoutMode")
     )
+    "Optional explicitly specified F2 Readout mode. If set it overrides the\ndefault."
 
     @classmethod
     def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
         return SlitTelescopeConfigsFields("telescopeConfigs")
 
     @classmethod
     def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs."""
         return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
     def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configs. If set they override the
+        preset default."""
         return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
 
     @classmethod
     def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
         return TelluricTypeFields("telluricType")
 
     @classmethod
     def acquisition(cls) -> "Flamingos2LongSlitAcquisitionFields":
+        """Acquisition properties."""
         return Flamingos2LongSlitAcquisitionFields("acquisition")
 
     initial_disperser: "Flamingos2LongSlitGraphQLField" = (
         Flamingos2LongSlitGraphQLField("initialDisperser")
     )
+    "The disperser as it was initially selected.  See the `disperser` field for the\ndisperser that will be used in the observation."
     initial_filter: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "initialFilter"
     )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
     initial_fpu: "Flamingos2LongSlitGraphQLField" = Flamingos2LongSlitGraphQLField(
         "initialFpu"
     )
+    "The FPU as it was initially selected.  See the `fpu` field for the FPU that\nwill be used in the observation."
 
     def fields(
         self,
@@ -3988,18 +4582,24 @@ class Flamingos2LongSlitFields(GraphQLField):
 
 
 class Flamingos2LongSlitAcquisitionFields(GraphQLField):
+    """Flamingos2 Long Slit acquisition settings."""
+
     filter_: "Flamingos2LongSlitAcquisitionGraphQLField" = (
         Flamingos2LongSlitAcquisitionGraphQLField("filter")
     )
+    "The filter that will be used in the acquisition sequence.  This will be the\n`explicitFilter` if specified, but otherwise the `defaultFilter`."
     default_filter: "Flamingos2LongSlitAcquisitionGraphQLField" = (
         Flamingos2LongSlitAcquisitionGraphQLField("defaultFilter")
     )
+    "The filter that will be used by default, if an explicit acquisition filter was\nnot specified.  The default is calculated as the acquisition filter closest in\nwavelength to the observation's science filter."
     explicit_filter: "Flamingos2LongSlitAcquisitionGraphQLField" = (
         Flamingos2LongSlitAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified filter to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -4017,13 +4617,164 @@ class Flamingos2LongSlitAcquisitionFields(GraphQLField):
         return self
 
 
+class Flamingos2MosFields(GraphQLField):
+    """Flamingos 2 MOS mode.
+
+    This is Flamingos 2 long slit with the builtin FPU replaced by a custom mask.
+    The acquisition images the field with the mask out of the beam before confirming
+    the alignment through it."""
+
+    disperser: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField("disperser")
+    "Flamingos2 Disperser"
+    filter_: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField("filter")
+    "Flamingos2 Filter"
+
+    @classmethod
+    def custom_mask(cls) -> "Flamingos2CustomMaskFields":
+        """The custom mask through which the observation is taken.  Its `attachmentId` is
+        null until the mask has been designed."""
+        return Flamingos2CustomMaskFields("customMask")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    explicit_read_mode: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "explicitReadMode"
+    )
+    "Optional explicitly specified F2 ReadMode. If set it overrides the\ndefault."
+    explicit_reads: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "explicitReads"
+    )
+    "Optional explicitly specified F2 Reads. If set it overrides the\ndefault."
+    decker: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField("decker")
+    "The decker field is either explicitly specified in explicitDecker or else taken\nfrom defaultDecker"
+    default_decker: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "defaultDecker"
+    )
+    "Default decker, which for a custom mask is MOS."
+    explicit_decker: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "explicitDecker"
+    )
+    "Optional explicitly specified F2 Decker. If set it overrides the\ndefault."
+    readout_mode: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField("readoutMode")
+    "The readoutMode field is either explicitly specified in explicitReadoutMode or else taken\nfrom defaultReadoutMode"
+    default_readout_mode: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "defaultReadoutMode"
+    )
+    "Default readout mode, science"
+    explicit_readout_mode: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "explicitReadoutMode"
+    )
+    "Optional explicitly specified F2 Readout mode. If set it overrides the\ndefault."
+
+    @classmethod
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs for the selected offset preset."""
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configs. If set they override the
+        preset default."""
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
+
+    @classmethod
+    def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
+        return TelluricTypeFields("telluricType")
+
+    @classmethod
+    def acquisition(cls) -> "Flamingos2MosAcquisitionFields":
+        """Acquisition settings for the acquisition sequence."""
+        return Flamingos2MosAcquisitionFields("acquisition")
+
+    initial_disperser: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "initialDisperser"
+    )
+    "The disperser as it was initially selected.  See the `disperser` field for the\ndisperser that will be used in the observation."
+    initial_filter: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "initialFilter"
+    )
+    "The filter as it was initially selected.  See the `filter` field for the filter\nthat will be used in the observation."
+    initial_slit_width: "Flamingos2MosGraphQLField" = Flamingos2MosGraphQLField(
+        "initialSlitWidth"
+    )
+    "The custom slit width as it was initially selected.  See the `customMask` field\nfor the mask that will be used in the observation."
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2MosGraphQLField,
+            "ExposureTimeModeFields",
+            "Flamingos2CustomMaskFields",
+            "Flamingos2MosAcquisitionFields",
+            "SlitTelescopeConfigsFields",
+            "TelluricTypeFields",
+        ],
+    ) -> "Flamingos2MosFields":
+        """Subfields should come from the Flamingos2MosFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2MosFields":
+        self._alias = alias
+        return self
+
+
+class Flamingos2MosAcquisitionFields(GraphQLField):
+    """Flamingos2 MOS acquisition settings."""
+
+    filter_: "Flamingos2MosAcquisitionGraphQLField" = (
+        Flamingos2MosAcquisitionGraphQLField("filter")
+    )
+    "The filter that will be used in the acquisition sequence.  This will be the\n`explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "Flamingos2MosAcquisitionGraphQLField" = (
+        Flamingos2MosAcquisitionGraphQLField("defaultFilter")
+    )
+    "The filter that will be used by default, if an explicit acquisition filter was\nnot specified.  The default is calculated as the acquisition filter closest in\nwavelength to the observation's science filter."
+    explicit_filter: "Flamingos2MosAcquisitionGraphQLField" = (
+        Flamingos2MosAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified filter to use in acquisition (if any)."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            Flamingos2MosAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ],
+    ) -> "Flamingos2MosAcquisitionFields":
+        """Subfields should come from the Flamingos2MosAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "Flamingos2MosAcquisitionFields":
+        self._alias = alias
+        return self
+
+
 class Flamingos2StaticFields(GraphQLField):
+    """Unchanging (over the course of the sequence) configuration values"""
+
     mos_pre_imaging: "Flamingos2StaticGraphQLField" = Flamingos2StaticGraphQLField(
         "mosPreImaging"
     )
+    "Is MOS Pre-Imaging Observation"
     use_electronic_offsetting: "Flamingos2StaticGraphQLField" = (
         Flamingos2StaticGraphQLField("useElectronicOffsetting")
     )
+    "Whether to use electronic offsetting"
 
     def fields(
         self, *subfields: Flamingos2StaticGraphQLField
@@ -4038,28 +4789,37 @@ class Flamingos2StaticFields(GraphQLField):
 
 
 class Flamingos2StepFields(GraphQLField):
+    """Flmaingos 2 step with potential breakpoint"""
+
     @classmethod
     def instrument_config(cls) -> "Flamingos2DynamicFields":
+        """Instrument configuration for this step"""
         return Flamingos2DynamicFields("instrumentConfig")
 
     id: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField("id")
+    "Step id"
     breakpoint: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "Flamingos2StepGraphQLField" = Flamingos2StepGraphQLField(
         "observeClass"
     )
+    "Observe class for this step"
 
     def fields(
         self,
@@ -4146,16 +4906,21 @@ class FluxDensityEntryFields(GraphQLField):
 
 
 class GaussianSourceFields(GraphQLField):
+    """Gaussian source, one of bandNormalized and emissionLines will be defined."""
+
     @classmethod
     def fwhm(cls) -> "AngleFields":
+        """full width at half maximum"""
         return AngleFields("fwhm")
 
     @classmethod
     def band_normalized(cls) -> "BandNormalizedIntegratedFields":
+        """Band normalized spectral definition"""
         return BandNormalizedIntegratedFields("bandNormalized")
 
     @classmethod
     def emission_lines(cls) -> "EmissionLinesIntegratedFields":
+        """Emission lines spectral definition"""
         return EmissionLinesIntegratedFields("emissionLines")
 
     def fields(
@@ -4177,12 +4942,20 @@ class GaussianSourceFields(GraphQLField):
 
 
 class GcalFields(GraphQLField):
+    """GCAL calibration step (flat / arc)"""
+
     continuum: "GcalGraphQLField" = GcalGraphQLField("continuum")
+    "GCAL continuum, present if no arcs are used"
     arcs: "GcalGraphQLField" = GcalGraphQLField("arcs")
+    "GCAL arcs, one or more present if no continuum is used"
     filter_: "GcalGraphQLField" = GcalGraphQLField("filter")
+    "GCAL filter"
     diffuser: "GcalGraphQLField" = GcalGraphQLField("diffuser")
+    "GCAL diffuser"
     shutter: "GcalGraphQLField" = GcalGraphQLField("shutter")
+    "GCAL shutter"
     step_type: "GcalGraphQLField" = GcalGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: GcalGraphQLField) -> "GcalFields":
         """Subfields should come from the GcalFields class"""
@@ -4195,27 +4968,39 @@ class GcalFields(GraphQLField):
 
 
 class GeminiCallPropertiesFields(GraphQLField):
+    """Gemini-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
     type_: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField("type")
+    "Describes which type of Gemini proposals are being accepted."
 
     @classmethod
     def coordinate_limits(cls) -> "SiteCoordinateLimitsFields":
+        """Coordinate limits, associated with each site, for targets that may be
+        observed in this Call for Proposals."""
         return SiteCoordinateLimitsFields("coordinateLimits")
 
     instruments: "GeminiCallPropertiesGraphQLField" = GeminiCallPropertiesGraphQLField(
         "instruments"
     )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
     proprietary_months: "GeminiCallPropertiesGraphQLField" = (
         GeminiCallPropertiesGraphQLField("proprietaryMonths")
     )
+    "Default proprietary period to use for propograms linked to this Call."
     allows_non_partner_pi: "GeminiCallPropertiesGraphQLField" = (
         GeminiCallPropertiesGraphQLField("allowsNonPartnerPi")
     )
+    "Whether this Call allows PIs without a partner to participate."
     non_partner_deadline: "GeminiCallPropertiesGraphQLField" = (
         GeminiCallPropertiesGraphQLField("nonPartnerDeadline")
     )
+    "The submission deadline for non-partner PIs, when allowed to participate."
 
     @classmethod
     def exchange_partners(cls) -> "CallForProposalsExchangePartnerFields":
+        """Exchange partners that may apply for Gemini time on this call, if any, each
+        with an optional submission deadline override."""
         return CallForProposalsExchangePartnerFields("exchangePartners")
 
     def fields(
@@ -4236,9 +5021,13 @@ class GeminiCallPropertiesFields(GraphQLField):
 
 
 class GeminiProposalTypeInterface(GraphQLField):
+    """Proposal properties that depend on the particular call for proposals associated
+    with this proposal."""
+
     science_subtype: "GeminiProposalTypeGraphQLField" = GeminiProposalTypeGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
 
     def fields(
         self, *subfields: GeminiProposalTypeGraphQLField
@@ -4259,12 +5048,18 @@ class GeminiProposalTypeInterface(GraphQLField):
 
 
 class GhostAtomFields(GraphQLField):
+    """GHOST atom, a collection of steps that should be executed in their entirety"""
+
     id: "GhostAtomGraphQLField" = GhostAtomGraphQLField("id")
+    "Atom id"
     description: "GhostAtomGraphQLField" = GhostAtomGraphQLField("description")
+    "Optional description of the atom."
     observe_class: "GhostAtomGraphQLField" = GhostAtomGraphQLField("observeClass")
+    "Observe class for this atom as a whole (combined observe class for each of\nits steps)."
 
     @classmethod
     def steps(cls) -> "GhostStepFields":
+        """Individual steps that comprise the atom"""
         return GhostStepFields("steps")
 
     def fields(
@@ -4280,6 +5075,8 @@ class GhostAtomFields(GraphQLField):
 
 
 class GhostDetectorFields(GraphQLField):
+    """GHOST detector configuration for a single step."""
+
     @classmethod
     def exposure_time(cls) -> "TimeSpanFields":
         return TimeSpanFields("exposureTime")
@@ -4305,26 +5102,33 @@ class GhostDetectorFields(GraphQLField):
 class GhostDetectorConfigFields(GraphQLField):
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode for the detector."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     binning: "GhostDetectorConfigGraphQLField" = GhostDetectorConfigGraphQLField(
         "binning"
     )
+    "Binning that will be used, either explicitly specified or default."
     default_binning: "GhostDetectorConfigGraphQLField" = (
         GhostDetectorConfigGraphQLField("defaultBinning")
     )
+    "Default binning that will be used for the detector, if not explicitly\nspecified."
     explicit_binning: "GhostDetectorConfigGraphQLField" = (
         GhostDetectorConfigGraphQLField("explicitBinning")
     )
+    "Explicit binning to use for the detector, if specified."
     read_mode: "GhostDetectorConfigGraphQLField" = GhostDetectorConfigGraphQLField(
         "readMode"
     )
+    "Read mode for the detector, either explicitly specified or default."
     default_read_mode: "GhostDetectorConfigGraphQLField" = (
         GhostDetectorConfigGraphQLField("defaultReadMode")
     )
+    "Default read mode that will be used for the detector, if not explicitly\nspecified."
     explicit_read_mode: "GhostDetectorConfigGraphQLField" = (
         GhostDetectorConfigGraphQLField("explicitReadMode")
     )
+    "Explicit read mode for the detector, if specified."
 
     def fields(
         self,
@@ -4340,6 +5144,8 @@ class GhostDetectorConfigFields(GraphQLField):
 
 
 class GhostDualTargetFields(GraphQLField):
+    """In the GhostDualTarget mapping, IFU1 is assigned target1 and IFU2 target2."""
+
     ifu_1: "GhostDualTargetGraphQLField" = GhostDualTargetGraphQLField("ifu1")
     ifu_2: "GhostDualTargetGraphQLField" = GhostDualTargetGraphQLField("ifu2")
 
@@ -4356,6 +5162,8 @@ class GhostDualTargetFields(GraphQLField):
 
 
 class GhostDynamicFields(GraphQLField):
+    """GHOST instrument configuration for a single step."""
+
     @classmethod
     def red(cls) -> "GhostDetectorFields":
         return GhostDetectorFields("red")
@@ -4373,6 +5181,7 @@ class GhostDynamicFields(GraphQLField):
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is fixed at 655 nm."""
         return WavelengthFields("centralWavelength")
 
     def fields(
@@ -4391,12 +5200,16 @@ class GhostDynamicFields(GraphQLField):
 
 
 class GhostExecutionConfigFields(GraphQLField):
+    """GHOST Execution Config"""
+
     @classmethod
     def static(cls) -> "GhostStaticFields":
+        """GHOST static configuration"""
         return GhostStaticFields("static")
 
     @classmethod
     def science(cls) -> "GhostExecutionSequenceFields":
+        """GHOST science execution"""
         return GhostExecutionSequenceFields("science")
 
     def fields(
@@ -4417,17 +5230,22 @@ class GhostExecutionConfigFields(GraphQLField):
 
 
 class GhostExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
     @classmethod
     def next_atom(cls) -> "GhostAtomFields":
+        """Next atom to execute."""
         return GhostAtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "GhostAtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return GhostAtomFields("possibleFuture")
 
     has_more: "GhostExecutionSequenceGraphQLField" = GhostExecutionSequenceGraphQLField(
         "hasMore"
     )
+    "Whether there are more anticipated atoms than those that appear in\n'possibleFuture'."
 
     def fields(
         self, *subfields: Union[GhostExecutionSequenceGraphQLField, "GhostAtomFields"]
@@ -4442,39 +5260,53 @@ class GhostExecutionSequenceFields(GraphQLField):
 
 
 class GhostIfuFields(GraphQLField):
+    """GHOST IFU observing mode."""
+
     step_count: "GhostIfuGraphQLField" = GhostIfuGraphQLField("stepCount")
+    "Number of steps requested."
     resolution_mode: "GhostIfuGraphQLField" = GhostIfuGraphQLField("resolutionMode")
+    "Resolution mode."
 
     @classmethod
     def red(cls) -> "GhostDetectorConfigFields":
+        """Red detector config."""
         return GhostDetectorConfigFields("red")
 
     @classmethod
     def blue(cls) -> "GhostDetectorConfigFields":
+        """Blue detector config."""
         return GhostDetectorConfigFields("blue")
 
     @classmethod
     def sky_position(cls) -> "CoordinatesFields":
+        """Sky position, if any."""
         return CoordinatesFields("skyPosition")
 
     @classmethod
     def slit_viewing_camera_exposure_time(cls) -> "TimeSpanFields":
+        """Slit viewing camera exposure time (if specified)."""
         return TimeSpanFields("slitViewingCameraExposureTime")
 
     ifu_1_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField("ifu1Agitator")
+    "IFU 1 fiber agitator setting, either explicitly specified or else default."
     default_ifu_1_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField(
         "defaultIfu1Agitator"
     )
+    "Default IFU 1 fiber agitator setting, used if not explicitly specified."
     explicit_ifu_1_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField(
         "explicitIfu1Agitator"
     )
+    "IFU 1 fiber agitator setting, if explicitly specified."
     ifu_2_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField("ifu2Agitator")
+    "IFU 2 fiber agitator setting, either explicitly specified or else default."
     default_ifu_2_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField(
         "defaultIfu2Agitator"
     )
+    "Default IFU 2 fiber agitator setting, used if not explicitly specified."
     explicit_ifu_2_agitator: "GhostIfuGraphQLField" = GhostIfuGraphQLField(
         "explicitIfu2Agitator"
     )
+    "IFU 2 fiber agitator setting, if explicitly specified."
 
     def fields(
         self,
@@ -4495,6 +5327,11 @@ class GhostIfuFields(GraphQLField):
 
 
 class GhostIfuMappingFields(GraphQLField):
+    """Describes how the target(s) and sky position (if any) are mapped to the GHOST
+    IFUs.  If the `mappingType` is `NONSIDEREAL` then all other fields will be
+    `null`.  Otherwise, there will be a single non-null field that corresponds to
+    the `mappingType`."""
+
     mapping_type: "GhostIfuMappingGraphQLField" = GhostIfuMappingGraphQLField(
         "mappingType"
     )
@@ -4535,6 +5372,8 @@ class GhostIfuMappingFields(GraphQLField):
 
 
 class GhostSingleTargetFields(GraphQLField):
+    """In the GhostSingleTarget mapping, IFU1 is assigned the target."""
+
     ifu_1: "GhostSingleTargetGraphQLField" = GhostSingleTargetGraphQLField("ifu1")
 
     def fields(
@@ -4550,6 +5389,9 @@ class GhostSingleTargetFields(GraphQLField):
 
 
 class GhostSkyPlusTargetFields(GraphQLField):
+    """In the GhostSkyPlusTarget mapping, IFU1 is assigned the sky position and IFU2
+    the target."""
+
     @classmethod
     def ifu_1(cls) -> "CoordinatesFields":
         return CoordinatesFields("ifu1")
@@ -4569,6 +5411,8 @@ class GhostSkyPlusTargetFields(GraphQLField):
 
 
 class GhostStaticFields(GraphQLField):
+    """GHOST configuration that applies across all steps."""
+
     resolution_mode: "GhostStaticGraphQLField" = GhostStaticGraphQLField(
         "resolutionMode"
     )
@@ -4597,26 +5441,35 @@ class GhostStaticFields(GraphQLField):
 
 
 class GhostStepFields(GraphQLField):
+    """GHOST step with potential breakpoint."""
+
     @classmethod
     def instrument_config(cls) -> "GhostDynamicFields":
+        """Instrument configuration for this step"""
         return GhostDynamicFields("instrumentConfig")
 
     id: "GhostStepGraphQLField" = GhostStepGraphQLField("id")
+    "Step id"
     breakpoint: "GhostStepGraphQLField" = GhostStepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "GhostStepGraphQLField" = GhostStepGraphQLField("observeClass")
+    "Observe class for this step"
 
     def fields(
         self,
@@ -4638,6 +5491,9 @@ class GhostStepFields(GraphQLField):
 
 
 class GhostTargetPlusSkyFields(GraphQLField):
+    """In the GhostTargetPlusSky mapping, IFU1 is assigned the target and IFU2 the sky
+    position."""
+
     ifu_1: "GhostTargetPlusSkyGraphQLField" = GhostTargetPlusSkyGraphQLField("ifu1")
 
     @classmethod
@@ -4657,11 +5513,18 @@ class GhostTargetPlusSkyFields(GraphQLField):
 
 
 class GmosCcdModeFields(GraphQLField):
+    """CCD Readout Configuration"""
+
     x_bin: "GmosCcdModeGraphQLField" = GmosCcdModeGraphQLField("xBin")
+    "GMOS X-binning"
     y_bin: "GmosCcdModeGraphQLField" = GmosCcdModeGraphQLField("yBin")
+    "GMOS Y-binning"
     amp_count: "GmosCcdModeGraphQLField" = GmosCcdModeGraphQLField("ampCount")
+    "GMOS Amp Count"
     amp_gain: "GmosCcdModeGraphQLField" = GmosCcdModeGraphQLField("ampGain")
+    "GMOS Amp Gain"
     amp_read_mode: "GmosCcdModeGraphQLField" = GmosCcdModeGraphQLField("ampReadMode")
+    "GMOS Amp Read Mode"
 
     def fields(self, *subfields: GmosCcdModeGraphQLField) -> "GmosCcdModeFields":
         """Subfields should come from the GmosCcdModeFields class"""
@@ -4674,10 +5537,14 @@ class GmosCcdModeFields(GraphQLField):
 
 
 class GmosCustomMaskFields(GraphQLField):
+    """GMOS Custom Mask"""
+
     attachment_id: "GmosCustomMaskGraphQLField" = GmosCustomMaskGraphQLField(
         "attachmentId"
     )
+    "The MOS mask attachment id, or null if the mask has not yet been defined."
     slit_width: "GmosCustomMaskGraphQLField" = GmosCustomMaskGraphQLField("slitWidth")
+    "Custom Slit Width"
 
     def fields(self, *subfields: GmosCustomMaskGraphQLField) -> "GmosCustomMaskFields":
         """Subfields should come from the GmosCustomMaskFields class"""
@@ -4692,19 +5559,24 @@ class GmosCustomMaskFields(GraphQLField):
 class GmosNodAndShuffleFields(GraphQLField):
     @classmethod
     def pos_a(cls) -> "OffsetFields":
+        """Offset position A"""
         return OffsetFields("posA")
 
     @classmethod
     def pos_b(cls) -> "OffsetFields":
+        """Offset position B"""
         return OffsetFields("posB")
 
     e_offset: "GmosNodAndShuffleGraphQLField" = GmosNodAndShuffleGraphQLField("eOffset")
+    "Whether to use electronic offsetting"
     shuffle_offset: "GmosNodAndShuffleGraphQLField" = GmosNodAndShuffleGraphQLField(
         "shuffleOffset"
     )
+    "Shuffle offset"
     shuffle_cycles: "GmosNodAndShuffleGraphQLField" = GmosNodAndShuffleGraphQLField(
         "shuffleCycles"
     )
+    "Shuffle cycles"
 
     def fields(
         self, *subfields: Union[GmosNodAndShuffleGraphQLField, "OffsetFields"]
@@ -4719,14 +5591,20 @@ class GmosNodAndShuffleFields(GraphQLField):
 
 
 class GmosNorthAtomFields(GraphQLField):
+    """GmosNorth atom, a collection of steps that should be executed in their entirety"""
+
     id: "GmosNorthAtomGraphQLField" = GmosNorthAtomGraphQLField("id")
+    "Atom id"
     description: "GmosNorthAtomGraphQLField" = GmosNorthAtomGraphQLField("description")
+    "Optional description of the atom."
     observe_class: "GmosNorthAtomGraphQLField" = GmosNorthAtomGraphQLField(
         "observeClass"
     )
+    "Observe class for this atom as a whole (combined observe class for each of\nits steps)."
 
     @classmethod
     def steps(cls) -> "GmosNorthStepFields":
+        """Individual steps that comprise the atom"""
         return GmosNorthStepFields("steps")
 
     def fields(
@@ -4742,29 +5620,40 @@ class GmosNorthAtomFields(GraphQLField):
 
 
 class GmosNorthDynamicFields(GraphQLField):
+    """GMOS North dynamic step configuration"""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """GMOS exposure time"""
         return TimeSpanFields("exposure")
 
     @classmethod
     def readout(cls) -> "GmosCcdModeFields":
+        """GMOS CCD Readout"""
         return GmosCcdModeFields("readout")
 
     dtax: "GmosNorthDynamicGraphQLField" = GmosNorthDynamicGraphQLField("dtax")
+    "GMOS detector x offset"
     roi: "GmosNorthDynamicGraphQLField" = GmosNorthDynamicGraphQLField("roi")
+    "GMOS region of interest"
 
     @classmethod
     def grating_config(cls) -> "GmosNorthGratingConfigFields":
+        """GMOS North grating"""
         return GmosNorthGratingConfigFields("gratingConfig")
 
     filter_: "GmosNorthDynamicGraphQLField" = GmosNorthDynamicGraphQLField("filter")
+    "GMOS North filter"
 
     @classmethod
     def fpu(cls) -> "GmosNorthFpuFields":
+        """GMOS North FPU"""
         return GmosNorthFpuFields("fpu")
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is taken from the grating (if defined) or else
+        from the filter (if defined)."""
         return WavelengthFields("centralWavelength")
 
     def fields(
@@ -4788,16 +5677,21 @@ class GmosNorthDynamicFields(GraphQLField):
 
 
 class GmosNorthExecutionConfigFields(GraphQLField):
+    """GMOS North Execution Config"""
+
     @classmethod
     def static(cls) -> "GmosNorthStaticFields":
+        """GMOS North static configuration"""
         return GmosNorthStaticFields("static")
 
     @classmethod
     def acquisition(cls) -> "GmosNorthExecutionSequenceFields":
+        """GMOS North acquisition execution sequence"""
         return GmosNorthExecutionSequenceFields("acquisition")
 
     @classmethod
     def science(cls) -> "GmosNorthExecutionSequenceFields":
+        """GMOS North science execution"""
         return GmosNorthExecutionSequenceFields("science")
 
     def fields(
@@ -4818,17 +5712,22 @@ class GmosNorthExecutionConfigFields(GraphQLField):
 
 
 class GmosNorthExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
     @classmethod
     def next_atom(cls) -> "GmosNorthAtomFields":
+        """Next atom to execute."""
         return GmosNorthAtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "GmosNorthAtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return GmosNorthAtomFields("possibleFuture")
 
     has_more: "GmosNorthExecutionSequenceGraphQLField" = (
         GmosNorthExecutionSequenceGraphQLField("hasMore")
     )
+    "Whether there are more anticipated atoms than those that appear in\n'possibleFuture'."
 
     def fields(
         self,
@@ -4846,11 +5745,15 @@ class GmosNorthExecutionSequenceFields(GraphQLField):
 
 
 class GmosNorthFpuFields(GraphQLField):
+    """GMOS North FPU option, either builtin or custom mask"""
+
     @classmethod
     def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask, if in use"""
         return GmosCustomMaskFields("customMask")
 
     builtin: "GmosNorthFpuGraphQLField" = GmosNorthFpuGraphQLField("builtin")
+    "GMOS North builtin FPU, if in use"
 
     def fields(
         self, *subfields: Union[GmosNorthFpuGraphQLField, "GmosCustomMaskFields"]
@@ -4865,15 +5768,20 @@ class GmosNorthFpuFields(GraphQLField):
 
 
 class GmosNorthGratingConfigFields(GraphQLField):
+    """GMOS North Grating Configuration"""
+
     grating: "GmosNorthGratingConfigGraphQLField" = GmosNorthGratingConfigGraphQLField(
         "grating"
     )
+    "GMOS North Grating"
     order: "GmosNorthGratingConfigGraphQLField" = GmosNorthGratingConfigGraphQLField(
         "order"
     )
+    "GMOS grating order"
 
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Grating wavelength"""
         return WavelengthFields("wavelength")
 
     def fields(
@@ -4889,48 +5797,66 @@ class GmosNorthGratingConfigFields(GraphQLField):
 
 
 class GmosNorthImagingFields(GraphQLField):
+    """GMOS North Imaging mode"""
+
     @classmethod
     def variant(cls) -> "ImagingVariantFields":
+        """Details specific to the type of imaging being performed."""
         return ImagingVariantFields("variant")
 
     @classmethod
     def filters(cls) -> "GmosNorthImagingFilterFields":
+        """The filters (at least one is required) to be used for data collection. How
+        they are used depends on the imaging variant configuration."""
         return GmosNorthImagingFilterFields("filters")
 
     @classmethod
     def initial_filters(cls) -> "GmosNorthImagingFilterFields":
+        """Initial GMOS North Filters that were used when creating the imaging mode."""
         return GmosNorthImagingFilterFields("initialFilters")
 
     bin: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField("bin")
+    "GMOS Binning, either explicitly specified in explicitBin or else taken\nfrom the defaultBin. XBinning == YBinning = Binning"
     default_bin: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "defaultBin"
     )
+    "Default GMOS Binning (TWO)."
     explicit_bin: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "explicitBin"
     )
+    "Optional explicitly specified GMOS Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "ampReadMode"
     )
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosNorthImagingGraphQLField" = (
         GmosNorthImagingGraphQLField("defaultAmpReadMode")
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosNorthImagingGraphQLField" = (
         GmosNorthImagingGraphQLField("explicitAmpReadMode")
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it override the default."
     roi: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "defaultRoi"
     )
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosNorthImagingGraphQLField" = GmosNorthImagingGraphQLField(
         "explicitRoi"
     )
+    "Optional explicitly specified GMOS ROI.  If set it overrides the default."
 
     def fields(
         self,
@@ -4950,6 +5876,8 @@ class GmosNorthImagingFields(GraphQLField):
 
 
 class GmosNorthImagingFilterFields(GraphQLField):
+    """Imaging filters combine an actual filter with an exposure time mode."""
+
     filter_: "GmosNorthImagingFilterGraphQLField" = GmosNorthImagingFilterGraphQLField(
         "filter"
     )
@@ -4972,108 +5900,153 @@ class GmosNorthImagingFilterFields(GraphQLField):
 
 
 class GmosNorthLongSlitFields(GraphQLField):
+    """GMOS North Long Slit mode"""
+
     grating: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("grating")
+    "GMOS North Grating"
     filter_: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("filter")
+    "GMOS North Filter"
     fpu: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("fpu")
+    "GMOS North FPU"
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength, either explicitly specified in `explicitCentralWavelength`
+        or else taken from the `defaultCentralWavelength`."""
         return WavelengthFields("centralWavelength")
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
     default_x_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "defaultXBin"
     )
+    "Default GMOS X-Binning, calculated from the effective slit size which in\nturn is based on the selected FPU, target source profile and image quality."
     explicit_x_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "explicitXBin"
     )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
     y_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
     default_y_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "defaultYBin"
     )
+    "Default GMOS Y-Binning (TWO)."
     explicit_y_bin: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "explicitYBin"
     )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "ampReadMode"
     )
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosNorthLongSlitGraphQLField" = (
         GmosNorthLongSlitGraphQLField("defaultAmpReadMode")
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosNorthLongSlitGraphQLField" = (
         GmosNorthLongSlitGraphQLField("explicitAmpReadMode")
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it override the default."
     roi: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "defaultRoi"
     )
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "explicitRoi"
     )
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
 
     @classmethod
     def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
         return WavelengthDitherFields("wavelengthDithers")
 
     @classmethod
     def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
         return WavelengthDitherFields("defaultWavelengthDithers")
 
     @classmethod
     def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
     def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets
+        or else taken from defaultOffsets"""
         return OffsetQFields("offsets")
 
     @classmethod
     def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
         return OffsetQFields("defaultOffsets")
 
     @classmethod
     def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the
+        the default."""
         return OffsetQFields("explicitOffsets")
 
     @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
+        """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
+        or else taken from defaultSpatialOffsets"""
         return OffsetQFields("spatialOffsets")
 
     @classmethod
     def default_spatial_offsets(cls) -> "OffsetQFields":
+        """Default spatial offsets."""
         return OffsetQFields("defaultSpatialOffsets")
 
     @classmethod
     def explicit_spatial_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified spatial q offsets. If set it overrides the
+        the default."""
         return OffsetQFields("explicitSpatialOffsets")
 
     @classmethod
     def acquisition(cls) -> "GmosNorthLongSlitAcquisitionFields":
+        """Settings that apply to the acquisition sequence."""
         return GmosNorthLongSlitAcquisitionFields("acquisition")
 
     initial_grating: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "initialGrating"
     )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
     initial_filter: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "initialFilter"
     )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
     initial_fpu: "GmosNorthLongSlitGraphQLField" = GmosNorthLongSlitGraphQLField(
         "initialFpu"
     )
+    "The FPU as it was initially selected.  See the `fpu` field for the FPU that\nwill be used in the observation."
 
     @classmethod
     def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
         return WavelengthFields("initialCentralWavelength")
 
     def fields(
@@ -5097,27 +6070,36 @@ class GmosNorthLongSlitFields(GraphQLField):
 
 
 class GmosNorthLongSlitAcquisitionFields(GraphQLField):
+    """Acquisition settings for GMOS North long slit acquisition."""
+
     filter_: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("filter")
     )
+    "The GMOS North filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
     default_filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("defaultFilter")
     )
+    "The GMOS Nouth filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
     explicit_filter: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified GMOS North filter to use in acquisition (if any)."
     roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("roi")
     )
+    "The ROI(s) that will be used for the acquisition sequence.  In the case of a\ncompound ROI such as `CCD2_STAMP`, the first will be used for the imaging step\nand the second for the remainder of the steps."
     default_roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("defaultRoi")
     )
+    "The acquisition ROI(s) that will be used by default, if an explicit ROI was\nnot specified."
     explicit_roi: "GmosNorthLongSlitAcquisitionGraphQLField" = (
         GmosNorthLongSlitAcquisitionGraphQLField("explicitRoi")
     )
+    "An explicitly specified ROI to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -5136,93 +6118,133 @@ class GmosNorthLongSlitAcquisitionFields(GraphQLField):
 
 
 class GmosNorthMosFields(GraphQLField):
+    """GMOS North MOS mode"""
+
     grating: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("grating")
+    "GMOS North Grating"
     filter_: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("filter")
+    "GMOS North Filter"
 
     @classmethod
     def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask through which the observation is taken.  Its `attachmentId`
+        is null until the mask has been designed, which normally happens in Phase 2."""
         return GmosCustomMaskFields("customMask")
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
         return WavelengthFields("centralWavelength")
 
     acquisition_type: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "acquisitionType"
     )
+    "Whether the acquisition image is taken with the mask in or out the light path."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
     default_x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultXBin")
+    "Default GMOS X-Binning, calculated from the custom mask's slit width, the\ntarget source profile and the image quality."
     explicit_x_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "explicitXBin"
     )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
     y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
     default_y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning, capped at TWO to keep adequate spatial sampling for\nobject identification along the mask."
     explicit_y_bin: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "explicitYBin"
     )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "defaultAmpReadMode"
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "explicitAmpReadMode"
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
     roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
 
     @classmethod
     def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
         return WavelengthDitherFields("wavelengthDithers")
 
     @classmethod
     def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
         return WavelengthDitherFields("defaultWavelengthDithers")
 
     @classmethod
     def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
     def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets or else taken from
+        defaultOffsets."""
         return OffsetQFields("offsets")
 
     @classmethod
     def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
         return OffsetQFields("defaultOffsets")
 
     @classmethod
     def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the default."""
         return OffsetQFields("explicitOffsets")
 
     initial_grating: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "initialGrating"
     )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
     initial_filter: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "initialFilter"
     )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
     initial_slit_width: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "initialSlitWidth"
     )
+    "The custom mask slit width as it was initially selected.  See\n`customMask.slitWidth` for the width that will be used in the observation.\nThe mask attachment has no initial counterpart; it is expected to arrive\nafter the mode is created."
 
     @classmethod
     def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
         return WavelengthFields("initialCentralWavelength")
 
     @classmethod
     def acquisition(cls) -> "GmosNorthMosAcquisitionFields":
+        """Parameters that override acquisition defaults."""
         return GmosNorthMosAcquisitionFields("acquisition")
 
     def fields(
@@ -5247,18 +6269,25 @@ class GmosNorthMosFields(GraphQLField):
 
 
 class GmosNorthMosAcquisitionFields(GraphQLField):
+    """GMOS North MOS acquisition parameters.  MOS acquisition is always Full Frame"""
+
     filter_: "GmosNorthMosAcquisitionGraphQLField" = (
         GmosNorthMosAcquisitionGraphQLField("filter")
     )
+    "The GMOS North filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
     default_filter: "GmosNorthMosAcquisitionGraphQLField" = (
         GmosNorthMosAcquisitionGraphQLField("defaultFilter")
     )
+    "The GMOS North filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
     explicit_filter: "GmosNorthMosAcquisitionGraphQLField" = (
         GmosNorthMosAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified GMOS North filter to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode for the acquisition sequence.  MOS acquisition must be
+        Time & Count."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -5277,14 +6306,21 @@ class GmosNorthMosAcquisitionFields(GraphQLField):
 
 
 class GmosNorthStaticFields(GraphQLField):
+    """Unchanging (over the course of the sequence) configuration values"""
+
     stage_mode: "GmosNorthStaticGraphQLField" = GmosNorthStaticGraphQLField("stageMode")
+    "Stage mode"
     detector: "GmosNorthStaticGraphQLField" = GmosNorthStaticGraphQLField("detector")
+    "Detector in use (always HAMAMATSU for recent and new observations)"
     mos_pre_imaging: "GmosNorthStaticGraphQLField" = GmosNorthStaticGraphQLField(
         "mosPreImaging"
     )
+    "Is MOS Pre-Imaging Observation"
 
     @classmethod
     def nod_and_shuffle(cls) -> "GmosNodAndShuffleFields":
+        """Nod-and-shuffle configuration.  This is currently not used and will always
+        return null."""
         return GmosNodAndShuffleFields("nodAndShuffle")
 
     def fields(
@@ -5300,28 +6336,37 @@ class GmosNorthStaticFields(GraphQLField):
 
 
 class GmosNorthStepFields(GraphQLField):
+    """GmosNorth step with potential breakpoint"""
+
     @classmethod
     def instrument_config(cls) -> "GmosNorthDynamicFields":
+        """Instrument configuration for this step"""
         return GmosNorthDynamicFields("instrumentConfig")
 
     id: "GmosNorthStepGraphQLField" = GmosNorthStepGraphQLField("id")
+    "Step id"
     breakpoint: "GmosNorthStepGraphQLField" = GmosNorthStepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "GmosNorthStepGraphQLField" = GmosNorthStepGraphQLField(
         "observeClass"
     )
+    "Observe class for this step"
 
     def fields(
         self,
@@ -5343,14 +6388,20 @@ class GmosNorthStepFields(GraphQLField):
 
 
 class GmosSouthAtomFields(GraphQLField):
+    """GmosSouth atom, a collection of steps that should be executed in their entirety"""
+
     id: "GmosSouthAtomGraphQLField" = GmosSouthAtomGraphQLField("id")
+    "Atom id"
     description: "GmosSouthAtomGraphQLField" = GmosSouthAtomGraphQLField("description")
+    "Optional description of the atom."
     observe_class: "GmosSouthAtomGraphQLField" = GmosSouthAtomGraphQLField(
         "observeClass"
     )
+    "Observe class for this atom as a whole (combined observe class for each of\nits steps)."
 
     @classmethod
     def steps(cls) -> "GmosSouthStepFields":
+        """Individual steps that comprise the atom"""
         return GmosSouthStepFields("steps")
 
     def fields(
@@ -5366,29 +6417,40 @@ class GmosSouthAtomFields(GraphQLField):
 
 
 class GmosSouthDynamicFields(GraphQLField):
+    """GMOS South dynamic step configuration"""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """GMOS exposure time"""
         return TimeSpanFields("exposure")
 
     @classmethod
     def readout(cls) -> "GmosCcdModeFields":
+        """GMOS CCD Readout"""
         return GmosCcdModeFields("readout")
 
     dtax: "GmosSouthDynamicGraphQLField" = GmosSouthDynamicGraphQLField("dtax")
+    "GMOS detector x offset"
     roi: "GmosSouthDynamicGraphQLField" = GmosSouthDynamicGraphQLField("roi")
+    "GMOS region of interest"
 
     @classmethod
     def grating_config(cls) -> "GmosSouthGratingConfigFields":
+        """GMOS South grating"""
         return GmosSouthGratingConfigFields("gratingConfig")
 
     filter_: "GmosSouthDynamicGraphQLField" = GmosSouthDynamicGraphQLField("filter")
+    "GMOS South filter"
 
     @classmethod
     def fpu(cls) -> "GmosSouthFpuFields":
+        """GMOS South FPU"""
         return GmosSouthFpuFields("fpu")
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is taken from the grating (if defined) or else
+        from the filter (if defined)."""
         return WavelengthFields("centralWavelength")
 
     def fields(
@@ -5412,16 +6474,21 @@ class GmosSouthDynamicFields(GraphQLField):
 
 
 class GmosSouthExecutionConfigFields(GraphQLField):
+    """GMOS South Execution Config"""
+
     @classmethod
     def static(cls) -> "GmosSouthStaticFields":
+        """GMOS South static configuration"""
         return GmosSouthStaticFields("static")
 
     @classmethod
     def acquisition(cls) -> "GmosSouthExecutionSequenceFields":
+        """GMOS South acquisition execution sequence."""
         return GmosSouthExecutionSequenceFields("acquisition")
 
     @classmethod
     def science(cls) -> "GmosSouthExecutionSequenceFields":
+        """GMOS South science execution"""
         return GmosSouthExecutionSequenceFields("science")
 
     def fields(
@@ -5442,17 +6509,22 @@ class GmosSouthExecutionConfigFields(GraphQLField):
 
 
 class GmosSouthExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
     @classmethod
     def next_atom(cls) -> "GmosSouthAtomFields":
+        """Next atom to execute."""
         return GmosSouthAtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "GmosSouthAtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return GmosSouthAtomFields("possibleFuture")
 
     has_more: "GmosSouthExecutionSequenceGraphQLField" = (
         GmosSouthExecutionSequenceGraphQLField("hasMore")
     )
+    "Whether there are more anticipated atoms than those that appear in\n'possibleFuture'."
 
     def fields(
         self,
@@ -5470,11 +6542,15 @@ class GmosSouthExecutionSequenceFields(GraphQLField):
 
 
 class GmosSouthFpuFields(GraphQLField):
+    """GMOS South FPU option, either builtin or custom mask"""
+
     @classmethod
     def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask, if in use"""
         return GmosCustomMaskFields("customMask")
 
     builtin: "GmosSouthFpuGraphQLField" = GmosSouthFpuGraphQLField("builtin")
+    "GMOS South builtin FPU, if in use"
 
     def fields(
         self, *subfields: Union[GmosSouthFpuGraphQLField, "GmosCustomMaskFields"]
@@ -5489,15 +6565,20 @@ class GmosSouthFpuFields(GraphQLField):
 
 
 class GmosSouthGratingConfigFields(GraphQLField):
+    """GMOS South Grating Configuration"""
+
     grating: "GmosSouthGratingConfigGraphQLField" = GmosSouthGratingConfigGraphQLField(
         "grating"
     )
+    "GMOS South Grating"
     order: "GmosSouthGratingConfigGraphQLField" = GmosSouthGratingConfigGraphQLField(
         "order"
     )
+    "GMOS grating order"
 
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Grating wavelength"""
         return WavelengthFields("wavelength")
 
     def fields(
@@ -5513,48 +6594,66 @@ class GmosSouthGratingConfigFields(GraphQLField):
 
 
 class GmosSouthImagingFields(GraphQLField):
+    """GMOS South Imaging mode"""
+
     @classmethod
     def variant(cls) -> "ImagingVariantFields":
+        """Details specific to the type of imaging being performed."""
         return ImagingVariantFields("variant")
 
     @classmethod
     def filters(cls) -> "GmosSouthImagingFilterFields":
+        """The filters (at least one is required) to be used for data collection. How
+        they are used depends on the imaging variant configuration."""
         return GmosSouthImagingFilterFields("filters")
 
     @classmethod
     def initial_filters(cls) -> "GmosSouthImagingFilterFields":
+        """Initial GMOS North Filters that were used when creating the imaging mode."""
         return GmosSouthImagingFilterFields("initialFilters")
 
     bin: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("bin")
+    "GMOS Binning, either explicitly specified in explicitBin or else taken\nfrom the defaultBin. XBinning == YBinning = Binning"
     default_bin: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "defaultBin"
     )
+    "Default GMOS Binning (TWO)."
     explicit_bin: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "explicitBin"
     )
+    "Optional explicitly specified GMOS Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "ampReadMode"
     )
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosSouthImagingGraphQLField" = (
         GmosSouthImagingGraphQLField("defaultAmpReadMode")
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosSouthImagingGraphQLField" = (
         GmosSouthImagingGraphQLField("explicitAmpReadMode")
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it override the default."
     roi: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "defaultRoi"
     )
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosSouthImagingGraphQLField" = GmosSouthImagingGraphQLField(
         "explicitRoi"
     )
+    "Optional explicitly specified GMOS ROI.  If set it overrides the default."
 
     def fields(
         self,
@@ -5574,6 +6673,8 @@ class GmosSouthImagingFields(GraphQLField):
 
 
 class GmosSouthImagingFilterFields(GraphQLField):
+    """Imaging filters combine an actual filter with an exposure time mode."""
+
     filter_: "GmosSouthImagingFilterGraphQLField" = GmosSouthImagingFilterGraphQLField(
         "filter"
     )
@@ -5596,108 +6697,153 @@ class GmosSouthImagingFilterFields(GraphQLField):
 
 
 class GmosSouthLongSlitFields(GraphQLField):
+    """GMOS South Long Slit mode"""
+
     grating: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("grating")
+    "GMOS South Grating"
     filter_: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("filter")
+    "GMOS South Filter"
     fpu: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("fpu")
+    "GMOS South FPU"
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength, either explicitly specified in `explicitCentralWavelength`
+        or else taken from the `defaultCentralWavelength`."""
         return WavelengthFields("centralWavelength")
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
     default_x_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "defaultXBin"
     )
+    "Default GMOS X-Binning, calculated from the effective slit size which in\nturn is based on the selected FPU, target source profile and image quality."
     explicit_x_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "explicitXBin"
     )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
     y_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
     default_y_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "defaultYBin"
     )
+    "Default GMOS Y-Binning (TWO)."
     explicit_y_bin: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "explicitYBin"
     )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "ampReadMode"
     )
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosSouthLongSlitGraphQLField" = (
         GmosSouthLongSlitGraphQLField("defaultAmpReadMode")
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosSouthLongSlitGraphQLField" = (
         GmosSouthLongSlitGraphQLField("explicitAmpReadMode")
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it override the default."
     roi: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "defaultRoi"
     )
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "explicitRoi"
     )
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
 
     @classmethod
     def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
         return WavelengthDitherFields("wavelengthDithers")
 
     @classmethod
     def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
         return WavelengthDitherFields("defaultWavelengthDithers")
 
     @classmethod
     def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
     def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets
+        or else taken from defaultOffsets"""
         return OffsetQFields("offsets")
 
     @classmethod
     def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
         return OffsetQFields("defaultOffsets")
 
     @classmethod
     def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the
+        the default."""
         return OffsetQFields("explicitOffsets")
 
     @classmethod
     def spatial_offsets(cls) -> "OffsetQFields":
+        """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
+        or else taken from defaultSpatialOffsets"""
         return OffsetQFields("spatialOffsets")
 
     @classmethod
     def default_spatial_offsets(cls) -> "OffsetQFields":
+        """Default spatial offsets."""
         return OffsetQFields("defaultSpatialOffsets")
 
     @classmethod
     def explicit_spatial_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified spatial q offsets. If set it overrides the
+        the default."""
         return OffsetQFields("explicitSpatialOffsets")
 
     @classmethod
     def acquisition(cls) -> "GmosSouthLongSlitAcquisitionFields":
+        """Settings that apply to the acquisition sequence."""
         return GmosSouthLongSlitAcquisitionFields("acquisition")
 
     initial_grating: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "initialGrating"
     )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
     initial_filter: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "initialFilter"
     )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
     initial_fpu: "GmosSouthLongSlitGraphQLField" = GmosSouthLongSlitGraphQLField(
         "initialFpu"
     )
+    "The FPU as it was initially selected.  See the `fpu` field for the FPU that\nwill be used in the observation."
 
     @classmethod
     def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
         return WavelengthFields("initialCentralWavelength")
 
     def fields(
@@ -5721,27 +6867,36 @@ class GmosSouthLongSlitFields(GraphQLField):
 
 
 class GmosSouthLongSlitAcquisitionFields(GraphQLField):
+    """Acquisition settings for GMOS South long slit acquisition."""
+
     filter_: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("filter")
     )
+    "The GMOS South filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
     default_filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("defaultFilter")
     )
+    "The GMOS South filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
     explicit_filter: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified GMOS South filter to use in acquisition (if any)."
     roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("roi")
     )
+    "The ROI(s) that will be used for the acquisition sequence.  In the case of a\ncompound ROI such as `CCD2_STAMP`, the first will be used for the imaging step\nand the second for the remainder of the steps."
     default_roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("defaultRoi")
     )
+    "The acquisition ROI(s) that will be used by default, if an explicit ROI was\nnot specified."
     explicit_roi: "GmosSouthLongSlitAcquisitionGraphQLField" = (
         GmosSouthLongSlitAcquisitionGraphQLField("explicitRoi")
     )
+    "An explicitly specified ROI to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -5760,93 +6915,133 @@ class GmosSouthLongSlitAcquisitionFields(GraphQLField):
 
 
 class GmosSouthMosFields(GraphQLField):
+    """GMOS South MOS mode"""
+
     grating: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("grating")
+    "GMOS South Grating"
     filter_: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("filter")
+    "GMOS South Filter"
 
     @classmethod
     def custom_mask(cls) -> "GmosCustomMaskFields":
+        """The custom mask through which the observation is taken.  Its `attachmentId`
+        is null until the mask has been designed, which normally happens in Phase 2."""
         return GmosCustomMaskFields("customMask")
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
         return WavelengthFields("centralWavelength")
 
     acquisition_type: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "acquisitionType"
     )
+    "Whether the acquisition image is taken with the mask in or out the light path."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
     default_x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultXBin")
+    "Default GMOS X-Binning, calculated from the custom mask's slit width, the\ntarget source profile and the image quality."
     explicit_x_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "explicitXBin"
     )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
     y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
     default_y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning, capped at TWO to keep adequate spatial sampling for\nobject identification along the mask."
     explicit_y_bin: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "explicitYBin"
     )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
     amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
     default_amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "defaultAmpReadMode"
     )
+    "Default GmosAmpReadMode (SLOW)."
     explicit_amp_read_mode: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "explicitAmpReadMode"
     )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
     amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
     default_amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "defaultAmpGain"
     )
+    "Default GMOS amp gain (LOW)."
     explicit_amp_gain: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "explicitAmpGain"
     )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
     roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
     default_roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
     explicit_roi: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
 
     @classmethod
     def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
         return WavelengthDitherFields("wavelengthDithers")
 
     @classmethod
     def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
         return WavelengthDitherFields("defaultWavelengthDithers")
 
     @classmethod
     def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
     def offsets(cls) -> "OffsetQFields":
+        """Q offsets, either explicitly specified in explicitOffsets or else taken from
+        defaultOffsets."""
         return OffsetQFields("offsets")
 
     @classmethod
     def default_offsets(cls) -> "OffsetQFields":
+        """Default offsets."""
         return OffsetQFields("defaultOffsets")
 
     @classmethod
     def explicit_offsets(cls) -> "OffsetQFields":
+        """Optional explicitly specified q offsets. If set it overrides the default."""
         return OffsetQFields("explicitOffsets")
 
     initial_grating: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "initialGrating"
     )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
     initial_filter: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "initialFilter"
     )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
     initial_slit_width: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "initialSlitWidth"
     )
+    "The custom mask slit width as it was initially selected.  See\n`customMask.slitWidth` for the width that will be used in the observation.\nThe mask attachment has no initial counterpart; it is expected to arrive\nafter the mode is created."
 
     @classmethod
     def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
         return WavelengthFields("initialCentralWavelength")
 
     @classmethod
     def acquisition(cls) -> "GmosSouthMosAcquisitionFields":
+        """Parameters that override acquisition defaults."""
         return GmosSouthMosAcquisitionFields("acquisition")
 
     def fields(
@@ -5871,18 +7066,26 @@ class GmosSouthMosFields(GraphQLField):
 
 
 class GmosSouthMosAcquisitionFields(GraphQLField):
+    """GMOS South MOS acquisition parameters.  MOS acquisition is always Full Frame,
+    so there is no ROI to configure (unlike long slit)."""
+
     filter_: "GmosSouthMosAcquisitionGraphQLField" = (
         GmosSouthMosAcquisitionGraphQLField("filter")
     )
+    "The GMOS South filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
     default_filter: "GmosSouthMosAcquisitionGraphQLField" = (
         GmosSouthMosAcquisitionGraphQLField("defaultFilter")
     )
+    "The GMOS South filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
     explicit_filter: "GmosSouthMosAcquisitionGraphQLField" = (
         GmosSouthMosAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified GMOS South filter to use in acquisition (if any)."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode for the acquisition sequence.  MOS acquisition must be
+        Time & Count; there is no acquisition ITC pass to solve a signal-to-noise one."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -5901,14 +7104,22 @@ class GmosSouthMosAcquisitionFields(GraphQLField):
 
 
 class GmosSouthStaticFields(GraphQLField):
+    """Unchanging (over the course of the sequence) configuration values"""
+
     stage_mode: "GmosSouthStaticGraphQLField" = GmosSouthStaticGraphQLField("stageMode")
+    "Stage mode"
     detector: "GmosSouthStaticGraphQLField" = GmosSouthStaticGraphQLField("detector")
+    "Detector in use (always HAMAMATSU for recent and new observations)"
     mos_pre_imaging: "GmosSouthStaticGraphQLField" = GmosSouthStaticGraphQLField(
         "mosPreImaging"
     )
+    "Is MOS Pre-Imaging Observation"
 
     @classmethod
     def nod_and_shuffle(cls) -> "GmosNodAndShuffleFields":
+        """#Nod-and-shuffle configuration
+        Nod-and-shuffle configuration.  This is currently not used and will always
+        return null."""
         return GmosNodAndShuffleFields("nodAndShuffle")
 
     def fields(
@@ -5924,28 +7135,37 @@ class GmosSouthStaticFields(GraphQLField):
 
 
 class GmosSouthStepFields(GraphQLField):
+    """GmosSouth step with potential breakpoint"""
+
     @classmethod
     def instrument_config(cls) -> "GmosSouthDynamicFields":
+        """Instrument configuration for this step"""
         return GmosSouthDynamicFields("instrumentConfig")
 
     id: "GmosSouthStepGraphQLField" = GmosSouthStepGraphQLField("id")
+    "Step id"
     breakpoint: "GmosSouthStepGraphQLField" = GmosSouthStepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "GmosSouthStepGraphQLField" = GmosSouthStepGraphQLField(
         "observeClass"
     )
+    "Observe class for this step"
 
     def fields(
         self,
@@ -5967,15 +7187,21 @@ class GmosSouthStepFields(GraphQLField):
 
 
 class GnirsAcquisitionMirrorOutFields(GraphQLField):
+    """Spectroscopy configuration that travels with a GNIRS step when the acquisition
+    mirror is out of the beam."""
+
     prism: "GnirsAcquisitionMirrorOutGraphQLField" = (
         GnirsAcquisitionMirrorOutGraphQLField("prism")
     )
+    "Prism in use."
     grating: "GnirsAcquisitionMirrorOutGraphQLField" = (
         GnirsAcquisitionMirrorOutGraphQLField("grating")
     )
+    "Grating in use."
 
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Effective grating wavelength."""
         return WavelengthFields("wavelength")
 
     def fields(
@@ -5992,12 +7218,18 @@ class GnirsAcquisitionMirrorOutFields(GraphQLField):
 
 
 class GnirsAtomFields(GraphQLField):
+    """GNIRS atom, a collection of steps that should be executed in their entirety."""
+
     id: "GnirsAtomGraphQLField" = GnirsAtomGraphQLField("id")
+    "Atom id"
     description: "GnirsAtomGraphQLField" = GnirsAtomGraphQLField("description")
+    "Atom description, if any"
     observe_class: "GnirsAtomGraphQLField" = GnirsAtomGraphQLField("observeClass")
+    "Observe class for this atom"
 
     @classmethod
     def steps(cls) -> "GnirsStepFields":
+        """Individual steps that comprise the atom"""
         return GnirsStepFields("steps")
 
     def fields(
@@ -6013,12 +7245,17 @@ class GnirsAtomFields(GraphQLField):
 
 
 class GnirsCentralWavelengthConfigFields(GraphQLField):
+    """A GNIRS spectroscopy science configuration: a central wavelength together with
+    the exposure time mode and coadds that apply at that wavelength."""
+
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
         return WavelengthFields("centralWavelength")
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode for this central wavelength.
+        If not specified, it is taken from the observation's requirements."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     coadds: "GnirsCentralWavelengthConfigGraphQLField" = (
@@ -6043,31 +7280,55 @@ class GnirsCentralWavelengthConfigFields(GraphQLField):
 
 
 class GnirsDynamicFields(GraphQLField):
+    """GNIRS dynamic step configuration.
+
+    Exposes every field needed to reconstruct a
+    `lucuma.core.model.sequence.gnirs.GnirsDynamicConfig` on the client side.
+
+    Exactly one of `fpuSlit` / `fpuOther` is non-null per step. The
+    `acquisitionMirrorOut` field is non-null when the acquisition mirror is "out"
+    (spectroscopy mode) — its absence indicates the mirror is "in" (imaging /
+    acquisition mode). The `focusMotorSteps` field is null when focus is "Best" (instrument-
+    chosen); otherwise it carries the motor-step value."""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """Exposure time for this step."""
         return TimeSpanFields("exposure")
 
     coadds: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("coadds")
+    "Coadds per step."
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength for this step."""
         return WavelengthFields("centralWavelength")
 
     filter_: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("filter")
+    "Filter."
     decker: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("decker")
+    "Decker."
     fpu_slit: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("fpuSlit")
+    "FPU slit value, when the FPU is a long-slit FPU."
     fpu_other: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("fpuOther")
+    "Non-slit FPU value (acquisition mirror, pupil viewer, pinholes), when not\na long-slit FPU."
     fpu_ifu: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("fpuIfu")
+    "IFU FPU value, when the FPU is an integral field unit."
 
     @classmethod
     def acquisition_mirror_out(cls) -> "GnirsAcquisitionMirrorOutFields":
+        """Spectroscopy configuration carried when the acquisition mirror is "out" of
+        the beam. `null` means the mirror is "in"."""
         return GnirsAcquisitionMirrorOutFields("acquisitionMirrorOut")
 
     camera: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("camera")
+    "Camera."
     focus_motor_steps: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField(
         "focusMotorSteps"
     )
+    'Focus motor steps. `null` indicates "Best" (instrument-chosen) focus.'
     read_mode: "GnirsDynamicGraphQLField" = GnirsDynamicGraphQLField("readMode")
+    "Read mode for this step."
 
     def fields(
         self,
@@ -6088,16 +7349,21 @@ class GnirsDynamicFields(GraphQLField):
 
 
 class GnirsExecutionConfigFields(GraphQLField):
+    """GNIRS Execution Config"""
+
     @classmethod
     def static(cls) -> "GnirsStaticFields":
+        """GNIRS static configuration"""
         return GnirsStaticFields("static")
 
     @classmethod
     def acquisition(cls) -> "GnirsExecutionSequenceFields":
+        """GNIRS acquisition execution (not yet implemented; always null)"""
         return GnirsExecutionSequenceFields("acquisition")
 
     @classmethod
     def science(cls) -> "GnirsExecutionSequenceFields":
+        """GNIRS science execution"""
         return GnirsExecutionSequenceFields("science")
 
     def fields(
@@ -6118,17 +7384,22 @@ class GnirsExecutionConfigFields(GraphQLField):
 
 
 class GnirsExecutionSequenceFields(GraphQLField):
+    """GNIRS execution sequence: next atom and (a prefix of) future atoms."""
+
     @classmethod
     def next_atom(cls) -> "GnirsAtomFields":
+        """Next atom to execute."""
         return GnirsAtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "GnirsAtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return GnirsAtomFields("possibleFuture")
 
     has_more: "GnirsExecutionSequenceGraphQLField" = GnirsExecutionSequenceGraphQLField(
         "hasMore"
     )
+    "Whether there are additional atoms beyond those listed in possibleFuture."
 
     def fields(
         self, *subfields: Union[GnirsExecutionSequenceGraphQLField, "GnirsAtomFields"]
@@ -6143,11 +7414,17 @@ class GnirsExecutionSequenceFields(GraphQLField):
 
 
 class GnirsIfuFields(GraphQLField):
+    """GNIRS IFU-specific configuration: the IFU FPU plus the telescope configs as full
+    p/q offsets. Present on `GnirsSpectroscopy.ifu` iff the observation is an IFU; null
+    for long slit."""
+
     fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("fpu")
     initial_fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialFpu")
 
     @classmethod
     def telescope_configs(cls) -> "TelescopeConfigFields":
+        """Telescope configs (full p/q offsets). Unlike the long slit these have no derived
+        default: they are seeded from the FPU at creation and then edited in place."""
         return TelescopeConfigFields("telescopeConfigs")
 
     def fields(
@@ -6163,32 +7440,45 @@ class GnirsIfuFields(GraphQLField):
 
 
 class GnirsImagingFields(GraphQLField):
+    """GNIRS Imaging mode.  Keyhole imaging fixes the FPU (acquisition keyhole), the
+    decker (acquisition) and the acquisition mirror (in), so none of them appears
+    here."""
+
     @classmethod
     def variant(cls) -> "ImagingVariantFields":
+        """Details specific to the type of imaging being performed."""
         return ImagingVariantFields("variant")
 
     @classmethod
     def filters(cls) -> "GnirsImagingFilterFields":
+        """The filters (at least one is required) to be used for data collection."""
         return GnirsImagingFilterFields("filters")
 
     @classmethod
     def initial_filters(cls) -> "GnirsImagingFilterFields":
+        """Filters as initially selected when creating the imaging mode."""
         return GnirsImagingFilterFields("initialFilters")
 
     camera: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("camera")
+    "The camera (determines the pixel scale)."
     explicit_read_mode: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
         "explicitReadMode"
     )
+    "Optional explicitly specified read mode.  If not set, the read mode is\nderived from each filter's exposure time."
     well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField("wellDepth")
+    "The wellDepth field is either explicitly specified in explicitWellDepth or\nelse taken from defaultWellDepth."
     explicit_well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
         "explicitWellDepth"
     )
+    "Optional explicitly specified well depth. If set it overrides the default."
     default_well_depth: "GnirsImagingGraphQLField" = GnirsImagingGraphQLField(
         "defaultWellDepth"
     )
+    "Default well depth (determined by the camera)."
 
     @classmethod
     def acquisition(cls) -> "GnirsImagingAcquisitionFields":
+        """Acquisition customization."""
         return GnirsImagingAcquisitionFields("acquisition")
 
     def fields(
@@ -6210,6 +7500,9 @@ class GnirsImagingFields(GraphQLField):
 
 
 class GnirsImagingAcquisitionFields(GraphQLField):
+    """GNIRS Imaging acquisition customization.  Every field overrides an otherwise
+    automatic choice."""
+
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
         return ExposureTimeModeFields("exposureTimeMode")
@@ -6220,12 +7513,15 @@ class GnirsImagingAcquisitionFields(GraphQLField):
     explicit_acquisition_type: "GnirsImagingAcquisitionGraphQLField" = (
         GnirsImagingAcquisitionGraphQLField("explicitAcquisitionType")
     )
+    "An explicitly specified acquisition type.  When null, the type is determined by the ITC brightness classification at sequence-generation time."
     explicit_filter: "GnirsImagingAcquisitionGraphQLField" = (
         GnirsImagingAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified acquisition filter. When null, the filter is determined automatically from the acquisition mode and the first science filter at sequence-generation time."
 
     @classmethod
     def sky_offset(cls) -> "OffsetFields":
+        """The sky offset of the field image, which doubles as the sky frame.  Set only when the acquisition type is FAINT."""
         return OffsetFields("skyOffset")
 
     def fields(
@@ -6247,12 +7543,16 @@ class GnirsImagingAcquisitionFields(GraphQLField):
 
 class GnirsImagingFilterFields(GraphQLField):
     filter_: "GnirsImagingFilterGraphQLField" = GnirsImagingFilterGraphQLField("filter")
+    "The filter to use for this imaging configuration."
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode for this filter.
+        If not specified, it is taken from the observation's requirements."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     coadds: "GnirsImagingFilterGraphQLField" = GnirsImagingFilterGraphQLField("coadds")
+    "Coadds per exposure for this filter.  Always 1 when the exposure time mode is\nsignal-to-noise, which does not support coadds."
 
     def fields(
         self,
@@ -6268,11 +7568,16 @@ class GnirsImagingFilterFields(GraphQLField):
 
 
 class GnirsSlitFields(GraphQLField):
+    """GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
+    taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
+    long slit; null for IFU."""
+
     fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("fpu")
     initial_fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("initialFpu")
 
     @classmethod
     def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
         return SlitTelescopeConfigsFields("telescopeConfigs")
 
     @classmethod
@@ -6296,6 +7601,8 @@ class GnirsSlitFields(GraphQLField):
 
 
 class GnirsSpectroscopyFields(GraphQLField):
+    """GNIRS Spectroscopy mode (long slit or IFU, distinguished by the FPU)."""
+
     grating: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("grating")
     explicit_grating: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
         "explicitGrating"
@@ -6313,10 +7620,15 @@ class GnirsSpectroscopyFields(GraphQLField):
 
     @classmethod
     def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths at which spectra are taken, in increasing wavelength
+        order.  Each one is a separate configuration with its own exposure time mode,
+        coadds, ITC calculation and calibrations."""
         return GnirsCentralWavelengthConfigFields("centralWavelengths")
 
     @classmethod
     def initial_central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths as they were configured when the observing mode was
+        created."""
         return GnirsCentralWavelengthConfigFields("initialCentralWavelengths")
 
     camera: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("camera")
@@ -6326,10 +7638,14 @@ class GnirsSpectroscopyFields(GraphQLField):
 
     @classmethod
     def slit(cls) -> "GnirsSlitFields":
+        """Long-slit configuration (FPU + along-slit telescope configs), when this is a
+        long-slit observation. Exactly one of `slit` / `ifu` is present."""
         return GnirsSlitFields("slit")
 
     @classmethod
     def ifu(cls) -> "GnirsIfuFields":
+        """IFU configuration (FPU + p/q telescope configs), when this is an integral field
+        unit observation. Exactly one of `slit` / `ifu` is present."""
         return GnirsIfuFields("ifu")
 
     filter_: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("filter")
@@ -6365,6 +7681,7 @@ class GnirsSpectroscopyFields(GraphQLField):
 
     @classmethod
     def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
         return TelluricTypeFields("telluricType")
 
     def fields(
@@ -6401,6 +7718,7 @@ class GnirsSpectroscopyAcquisitionFields(GraphQLField):
     explicit_filter: "GnirsSpectroscopyAcquisitionGraphQLField" = (
         GnirsSpectroscopyAcquisitionGraphQLField("explicitFilter")
     )
+    "An explicitly specified acquisition filter. When null, the filter is determined automatically from the acquisition mode at sequence-generation time."
 
     @classmethod
     def sky_offset(cls) -> "OffsetFields":
@@ -6424,7 +7742,11 @@ class GnirsSpectroscopyAcquisitionFields(GraphQLField):
 
 
 class GnirsStaticFields(GraphQLField):
+    """GNIRS static configuration: per-observation values that do not change
+    between steps."""
+
     well_depth: "GnirsStaticGraphQLField" = GnirsStaticGraphQLField("wellDepth")
+    "Well depth (low / deep)."
 
     def fields(self, *subfields: GnirsStaticGraphQLField) -> "GnirsStaticFields":
         """Subfields should come from the GnirsStaticFields class"""
@@ -6437,26 +7759,35 @@ class GnirsStaticFields(GraphQLField):
 
 
 class GnirsStepFields(GraphQLField):
+    """GNIRS step with potential breakpoint."""
+
     @classmethod
     def instrument_config(cls) -> "GnirsDynamicFields":
+        """Instrument configuration for this step"""
         return GnirsDynamicFields("instrumentConfig")
 
     id: "GnirsStepGraphQLField" = GnirsStepGraphQLField("id")
+    "Step id"
     breakpoint: "GnirsStepGraphQLField" = GnirsStepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "GnirsStepGraphQLField" = GnirsStepGraphQLField("observeClass")
+    "Observe class for this step"
 
     def fields(
         self,
@@ -6478,15 +7809,20 @@ class GnirsStepFields(GraphQLField):
 
 
 class GoaPropertiesFields(GraphQLField):
+    """Gemini Observatory Archive properties for a particular program."""
+
     proprietary_months: "GoaPropertiesGraphQLField" = GoaPropertiesGraphQLField(
         "proprietaryMonths"
     )
+    "How many months to withhold public access to the data.  This property is\napplicable to science programs, defaults to the proprietary period associated\nwith the Call for Proposals if any; 0 months otherwise."
     should_notify: "GoaPropertiesGraphQLField" = GoaPropertiesGraphQLField(
         "shouldNotify"
     )
+    "Whether the PI wishes to be notified when new data are received. This property\nis applicable to science programs and defaults to true."
     private_header: "GoaPropertiesGraphQLField" = GoaPropertiesGraphQLField(
         "privateHeader"
     )
+    "Whether the header (as well as the data itself) should remain private.  This\nproperty is applicable to science programs and defaults to false."
 
     def fields(self, *subfields: GoaPropertiesGraphQLField) -> "GoaPropertiesFields":
         """Subfields should come from the GoaPropertiesFields class"""
@@ -6499,21 +7835,31 @@ class GoaPropertiesFields(GraphQLField):
 
 
 class GroupFields(GraphQLField):
+    """A group of observations and other groups."""
+
     id: "GroupGraphQLField" = GroupGraphQLField("id")
     parent_id: "GroupGraphQLField" = GroupGraphQLField("parentId")
+    "Id of this group's parent, or null if this group is at the top level."
     parent_index: "GroupGraphQLField" = GroupGraphQLField("parentIndex")
+    "Position of this group in its parent group (or at the top level)."
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The program in which this group is found."""
         return ProgramFields("program")
 
     name: "GroupGraphQLField" = GroupGraphQLField("name")
+    "Optionally, a name"
     description: "GroupGraphQLField" = GroupGraphQLField("description")
+    "Optionally, a description."
     minimum_required: "GroupGraphQLField" = GroupGraphQLField("minimumRequired")
+    "How many do we need to complete? If this is null then it means we have to complete them all"
     ordered: "GroupGraphQLField" = GroupGraphQLField("ordered")
+    "Do they need to be completed in order?"
 
     @classmethod
     def minimum_interval(cls) -> "TimeSpanFields":
+        """Is there a minimum required and/or maximum allowed timespan between observations?"""
         return TimeSpanFields("minimumInterval")
 
     @classmethod
@@ -6521,9 +7867,11 @@ class GroupFields(GraphQLField):
         return TimeSpanFields("maximumInterval")
 
     same_night: "GroupGraphQLField" = GroupGraphQLField("sameNight")
+    "If true, all observations in this group must be scheduled on the same night.\nMutually exclusive with `maximumInterval`.\nOnly valid for AND groups."
 
     @classmethod
     def elements(cls, include_deleted: bool) -> "GroupElementFields":
+        """Contained elements"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -6534,15 +7882,26 @@ class GroupFields(GraphQLField):
 
     @classmethod
     def time_estimate_range(cls) -> "CalculatedCategorizedTimeRangeFields":
+        """Remaining execution time estimate range, assuming it can be calculated.  In
+        order for an observation to have an estimate, it must be fully defined such
+        that a sequence can be generated for it.  If a group has observations that
+        are required and which are not fully defined, the remaining time estimate
+        cannot be calculated."""
         return CalculatedCategorizedTimeRangeFields("timeEstimateRange")
 
     @classmethod
     def time_estimate_banded(cls) -> "CalculatedBandedTimeFields":
+        """Prepared time by band ignoring `minimumRequired`, for observations that can be
+        calculated.  In order for an observation to have an estimate, it must be
+        fully defined such that a sequence can be generated for it.  All defined
+        observations in every band present in the group are included."""
         return CalculatedBandedTimeFields("timeEstimateBanded")
 
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
+    "This group is managed by the system and not user-editable"
     calibration_roles: "GroupGraphQLField" = GroupGraphQLField("calibrationRoles")
+    "Calibration roles supported by this group (system groups only).\nThis field is system-managed and not user-editable."
 
     def fields(
         self,
@@ -6565,6 +7924,8 @@ class GroupFields(GraphQLField):
 
 
 class GroupElementFields(GraphQLField):
+    """Groups contain observations and other groups. Exactly one will be defined."""
+
     parent_group_id: "GroupElementGraphQLField" = GroupElementGraphQLField(
         "parentGroupId"
     )
@@ -6594,20 +7955,29 @@ class GroupElementFields(GraphQLField):
 
 
 class GroupedImagingVariantFields(GraphQLField):
+    """When doing "grouped" filter imaging, datasets associated with a particular
+    filter are collected consecutively before moving on to other filters (if any).
+    Sky datasets may be collected before and after each group of object datasets."""
+
     order: "GroupedImagingVariantGraphQLField" = GroupedImagingVariantGraphQLField(
         "order"
     )
+    "Whether the filters should appear in the sequence in increasing or decreasing\norder by their wavelength."
 
     @classmethod
     def offsets(cls) -> "TelescopeConfigGeneratorFields":
+        """Offset generator for the science object datasets. The same offset sequence is
+        created for each filter using the specified generator."""
         return TelescopeConfigGeneratorFields("offsets")
 
     sky_count: "GroupedImagingVariantGraphQLField" = GroupedImagingVariantGraphQLField(
         "skyCount"
     )
+    "Number of sky positions to collect before and after object datasets. For\nexample, if set to 2 there will be two sky positions before a group of object\nexposures and two more after using the same filter as the object datasets."
 
     @classmethod
     def sky_offsets(cls) -> "TelescopeConfigGeneratorFields":
+        """Offset generator to use for the sky datasets."""
         return TelescopeConfigGeneratorFields("skyOffsets")
 
     def fields(
@@ -6626,15 +7996,21 @@ class GroupedImagingVariantFields(GraphQLField):
 
 
 class GuideAvailabilityPeriodFields(GraphQLField):
+    """A period of time showing which position angles have guide stars available during the period.
+    The position angles are tested every 10 degrees."""
+
     start: "GuideAvailabilityPeriodGraphQLField" = GuideAvailabilityPeriodGraphQLField(
         "start"
     )
+    "The start time of the availability period."
     end: "GuideAvailabilityPeriodGraphQLField" = GuideAvailabilityPeriodGraphQLField(
         "end"
     )
+    "Then end time of the availability period."
 
     @classmethod
     def pos_angles(cls) -> "AngleFields":
+        """The position angles available during this period."""
         return AngleFields("posAngles")
 
     def fields(
@@ -6650,12 +8026,16 @@ class GuideAvailabilityPeriodFields(GraphQLField):
 
 
 class GuideEnvironmentFields(GraphQLField):
+    """The guide star(s) and related information"""
+
     @classmethod
     def pos_angle(cls) -> "AngleFields":
+        """The position angle"""
         return AngleFields("posAngle")
 
     @classmethod
     def guide_targets(cls) -> "GuideTargetFields":
+        """A list of GuideProbeTargets, which essentially provides a mapping from guide probes to targets."""
         return GuideTargetFields("guideTargets")
 
     def fields(
@@ -6674,19 +8054,26 @@ class GuideEnvironmentFields(GraphQLField):
 
 
 class GuideTargetFields(GraphQLField):
+    """Type that contains a guide probe and guide target information for use in the GuideEnvironment"""
+
     probe: "GuideTargetGraphQLField" = GuideTargetGraphQLField("probe")
+    "The guide probe"
     name: "GuideTargetGraphQLField" = GuideTargetGraphQLField("name")
+    "Target name."
 
     @classmethod
     def source_profile(cls) -> "SourceProfileFields":
+        """source profile"""
         return SourceProfileFields("sourceProfile")
 
     @classmethod
     def sidereal(cls) -> "SiderealFields":
+        """Sidereal tracking information, if this is a sidereal target"""
         return SiderealFields("sidereal")
 
     @classmethod
     def nonsidereal(cls) -> "NonsiderealFields":
+        """Nonsidereal tracking information, if this is a nonsidereal target"""
         return NonsiderealFields("nonsidereal")
 
     def fields(
@@ -6708,12 +8095,17 @@ class GuideTargetFields(GraphQLField):
 
 
 class HasExchangePartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific
+    `ExchangePartner`."""
+
     link_type: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
         "linkType"
     )
+    "Partner link discriminator."
     exchange_partner: "HasExchangePartnerGraphQLField" = HasExchangePartnerGraphQLField(
         "exchangePartner"
     )
+    "The associated partner."
 
     def fields(
         self, *subfields: HasExchangePartnerGraphQLField
@@ -6728,10 +8120,14 @@ class HasExchangePartnerFields(GraphQLField):
 
 
 class HasGeminiPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is associated with a specific `Partner`."""
+
     link_type: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField("linkType")
+    "Partner link discriminator."
     gemini_partner: "HasGeminiPartnerGraphQLField" = HasGeminiPartnerGraphQLField(
         "geminiPartner"
     )
+    "The associated partner."
 
     def fields(
         self, *subfields: HasGeminiPartnerGraphQLField
@@ -6746,7 +8142,10 @@ class HasGeminiPartnerFields(GraphQLField):
 
 
 class HasNonPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user is explicitly associated with no `Partner`."""
+
     link_type: "HasNonPartnerGraphQLField" = HasNonPartnerGraphQLField("linkType")
+    "Partner link discriminator."
 
     def fields(self, *subfields: HasNonPartnerGraphQLField) -> "HasNonPartnerFields":
         """Subfields should come from the HasNonPartnerFields class"""
@@ -6759,9 +8158,12 @@ class HasNonPartnerFields(GraphQLField):
 
 
 class HasUnspecifiedPartnerFields(GraphQLField):
+    """A `PartnerLink` employed when a user's `PartnerLink` has not (yet) been made."""
+
     link_type: "HasUnspecifiedPartnerGraphQLField" = HasUnspecifiedPartnerGraphQLField(
         "linkType"
     )
+    "Partner link discriminator."
 
     def fields(
         self, *subfields: HasUnspecifiedPartnerGraphQLField
@@ -6777,7 +8179,9 @@ class HasUnspecifiedPartnerFields(GraphQLField):
 
 class HourAngleRangeFields(GraphQLField):
     min_hours: "HourAngleRangeGraphQLField" = HourAngleRangeGraphQLField("minHours")
+    "Minimum Hour Angle (hours)"
     max_hours: "HourAngleRangeGraphQLField" = HourAngleRangeGraphQLField("maxHours")
+    "Maximum Hour Angle (hours)"
 
     def fields(self, *subfields: HourAngleRangeGraphQLField) -> "HourAngleRangeFields":
         """Subfields should come from the HourAngleRangeFields class"""
@@ -6790,12 +8194,18 @@ class HourAngleRangeFields(GraphQLField):
 
 
 class Igrins2AtomFields(GraphQLField):
+    """IGRINS-2 atom, a collection of steps that should be executed in their entirety"""
+
     id: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("id")
+    "Atom id"
     description: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("description")
+    "Atom description, if any"
     observe_class: "Igrins2AtomGraphQLField" = Igrins2AtomGraphQLField("observeClass")
+    "Observe class for this atom"
 
     @classmethod
     def steps(cls) -> "Igrins2StepFields":
+        """Individual steps that comprise the atom"""
         return Igrins2StepFields("steps")
 
     def fields(
@@ -6811,12 +8221,16 @@ class Igrins2AtomFields(GraphQLField):
 
 
 class Igrins2DynamicFields(GraphQLField):
+    """IGRINS-2 dynamic step configuration"""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """IGRINS-2 exposure time"""
         return TimeSpanFields("exposure")
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
+        """Central wavelength, which is fixed at 2.1 microns."""
         return WavelengthFields("centralWavelength")
 
     def fields(
@@ -6835,16 +8249,22 @@ class Igrins2DynamicFields(GraphQLField):
 
 
 class Igrins2ExecutionConfigFields(GraphQLField):
+    """IGRINS-2 Execution Config"""
+
     @classmethod
     def static(cls) -> "Igrins2StaticFields":
+        """IGRINS-2 static configuration"""
         return Igrins2StaticFields("static")
 
     @classmethod
     def acquisition(cls) -> "Igrins2ExecutionSequenceFields":
+        """IGRINS-2 SVC (Slit-Viewing Camera) acquisition execution sequence. Null unless the
+        observation has an SVC configuration."""
         return Igrins2ExecutionSequenceFields("acquisition")
 
     @classmethod
     def science(cls) -> "Igrins2ExecutionSequenceFields":
+        """IGRINS-2 science execution"""
         return Igrins2ExecutionSequenceFields("science")
 
     def fields(
@@ -6865,17 +8285,22 @@ class Igrins2ExecutionConfigFields(GraphQLField):
 
 
 class Igrins2ExecutionSequenceFields(GraphQLField):
+    """Next atom to execute and potential future atoms."""
+
     @classmethod
     def next_atom(cls) -> "Igrins2AtomFields":
+        """Next atom to execute."""
         return Igrins2AtomFields("nextAtom")
 
     @classmethod
     def possible_future(cls) -> "Igrins2AtomFields":
+        """(Prefix of the) remaining atoms to execute, if any."""
         return Igrins2AtomFields("possibleFuture")
 
     has_more: "Igrins2ExecutionSequenceGraphQLField" = (
         Igrins2ExecutionSequenceGraphQLField("hasMore")
     )
+    "Whether there are additional atoms beyond those listed in possibleFuture."
 
     def fields(
         self,
@@ -6891,28 +8316,41 @@ class Igrins2ExecutionSequenceFields(GraphQLField):
 
 
 class Igrins2LongSlitFields(GraphQLField):
+    """IGRINS-2 Long Slit mode"""
+
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     @classmethod
     def svc(cls) -> "Igrins2SvcConfigFields":
+        """Slit-Viewing Camera (SVC) acquisition configuration. Null (the default) means
+        SVC images are not saved.
+        A non-null value means SVC images are saved using the
+        given exposure time and telescope offset positions."""
         return Igrins2SvcConfigFields("svc")
 
     @classmethod
     def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
         return SlitTelescopeConfigsFields("telescopeConfigs")
 
     @classmethod
     def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs: the nod-along-slit ABBA pattern,
+        q = -1.25, +1.25, +1.25, -1.25 arcsec, all guided."""
         return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
     def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configs. If set they override the
+        default."""
         return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
 
     @classmethod
     def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
         return TelluricTypeFields("telluricType")
 
     def fields(
@@ -6935,10 +8373,14 @@ class Igrins2LongSlitFields(GraphQLField):
 
 
 class Igrins2StaticFields(GraphQLField):
+    """IGRINS-2 static configuration"""
+
     save_svc_images: "Igrins2StaticGraphQLField" = Igrins2StaticGraphQLField(
         "saveSVCImages"
     )
+    "Whether to save SVC images."
     offset_mode: "Igrins2StaticGraphQLField" = Igrins2StaticGraphQLField("offsetMode")
+    "Offset mode."
 
     def fields(self, *subfields: Igrins2StaticGraphQLField) -> "Igrins2StaticFields":
         """Subfields should come from the Igrins2StaticFields class"""
@@ -6951,26 +8393,35 @@ class Igrins2StaticFields(GraphQLField):
 
 
 class Igrins2StepFields(GraphQLField):
+    """IGRINS-2 step with potential breakpoint"""
+
     @classmethod
     def instrument_config(cls) -> "Igrins2DynamicFields":
+        """Instrument configuration for this step"""
         return Igrins2DynamicFields("instrumentConfig")
 
     id: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("id")
+    "Step id"
     breakpoint: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("breakpoint")
+    "Whether to pause before the execution of this step"
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The sequence step itself"""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     @classmethod
     def estimate(cls) -> "StepEstimateFields":
+        """Time estimate for this step's execution"""
         return StepEstimateFields("estimate")
 
     observe_class: "Igrins2StepGraphQLField" = Igrins2StepGraphQLField("observeClass")
+    "Observe class for this step"
 
     def fields(
         self,
@@ -6992,28 +8443,41 @@ class Igrins2StepFields(GraphQLField):
 
 
 class Igrins2SvcConfigFields(GraphQLField):
+    """IGRINS-2 Slit-Viewing Camera (SVC) acquisition configuration. A non-null value
+    means SVC images are saved using the given exposure duration and telescope dither
+    positions; null means SVC images are not saved."""
+
     @classmethod
     def exposure(cls) -> "TimeSpanFields":
+        """SVC exposure time, either explicitly specified in explicitExposure or else
+        taken from defaultExposure."""
         return TimeSpanFields("exposure")
 
     @classmethod
     def default_exposure(cls) -> "TimeSpanFields":
+        """Default SVC exposure time (3.08 s)."""
         return TimeSpanFields("defaultExposure")
 
     @classmethod
     def explicit_exposure(cls) -> "TimeSpanFields":
+        """Optional explicitly specified SVC exposure time. If set it overrides the default."""
         return TimeSpanFields("explicitExposure")
 
     @classmethod
     def telescope_configs(cls) -> "TelescopeConfigFields":
+        """Effective SVC telescope configs (explicit override coalesced with the default)."""
         return TelescopeConfigFields("telescopeConfigs")
 
     @classmethod
     def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default SVC telescope configs: the p-offset dither (0,0) and (5,0) arcsec,
+        both guided."""
         return TelescopeConfigFields("defaultTelescopeConfigs")
 
     @classmethod
     def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified SVC telescope configs. If set they override the
+        default."""
         return TelescopeConfigFields("explicitTelescopeConfigs")
 
     def fields(
@@ -7032,6 +8496,8 @@ class Igrins2SvcConfigFields(GraphQLField):
 
 
 class ImagingConfigOptionFields(GraphQLField):
+    """Describes an instrument configuration option for imaging."""
+
     instrument: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField(
         "instrument"
     )
@@ -7044,6 +8510,7 @@ class ImagingConfigOptionFields(GraphQLField):
     capability: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField(
         "capability"
     )
+    "A special capability (if any) that the configuration may have."
     site: "ImagingConfigOptionGraphQLField" = ImagingConfigOptionGraphQLField("site")
 
     @classmethod
@@ -7052,18 +8519,25 @@ class ImagingConfigOptionFields(GraphQLField):
 
     @classmethod
     def gmos_north(cls) -> "ImagingConfigOptionGmosNorthFields":
+        """For GMOS North options, the GMOS North configuration.  Null for other
+        instruments."""
         return ImagingConfigOptionGmosNorthFields("gmosNorth")
 
     @classmethod
     def gmos_south(cls) -> "ImagingConfigOptionGmosSouthFields":
+        """For GMOS South options, the GMOS South configuration.  Null for other
+        instruments."""
         return ImagingConfigOptionGmosSouthFields("gmosSouth")
 
     @classmethod
     def flamingos_2(cls) -> "ImagingConfigOptionFlamingos2Fields":
+        """For Flamingos2 options, the Flamingos2 configuration.  Null for other
+        instruments."""
         return ImagingConfigOptionFlamingos2Fields("flamingos2")
 
     @classmethod
     def gnirs(cls) -> "ImagingConfigOptionGnirsFields":
+        """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
         return ImagingConfigOptionGnirsFields("gnirs")
 
     def fields(
@@ -7160,17 +8634,22 @@ class ImagingConfigOptionGnirsFields(GraphQLField):
 class ImagingScienceRequirementsFields(GraphQLField):
     @classmethod
     def minimum_fov(cls) -> "AngleFields":
+        """minimumFov, which may be unset by assigning a null value, or ignored by
+        skipping it altogether."""
         return AngleFields("minimumFov")
 
     narrow_filters: "ImagingScienceRequirementsGraphQLField" = (
         ImagingScienceRequirementsGraphQLField("narrowFilters")
     )
+    "narrowFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     broad_filters: "ImagingScienceRequirementsGraphQLField" = (
         ImagingScienceRequirementsGraphQLField("broadFilters")
     )
+    "broadFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
     combined_filters: "ImagingScienceRequirementsGraphQLField" = (
         ImagingScienceRequirementsGraphQLField("combinedFilters")
     )
+    "combinedFilters, which may be unset by assigning a null value, or ignored by\nskipping it altogether."
 
     def fields(
         self, *subfields: Union[ImagingScienceRequirementsGraphQLField, "AngleFields"]
@@ -7185,20 +8664,26 @@ class ImagingScienceRequirementsFields(GraphQLField):
 
 
 class ImagingVariantFields(GraphQLField):
+    """The specific imaging sub-type, one of which will be defined and the remaining
+    options null."""
+
     variant_type: "ImagingVariantGraphQLField" = ImagingVariantGraphQLField(
         "variantType"
     )
 
     @classmethod
     def grouped(cls) -> "GroupedImagingVariantFields":
+        """Grouped mode collects all datasets for each filter before changing filters."""
         return GroupedImagingVariantFields("grouped")
 
     @classmethod
     def interleaved(cls) -> "InterleavedImagingVariantFields":
+        """Interleaved mode cycles through all filters repeatedly."""
         return InterleavedImagingVariantFields("interleaved")
 
     @classmethod
     def pre_imaging(cls) -> "PreImagingVariantFields":
+        """PreImaging mode is used for MOS mask creation."""
         return PreImagingVariantFields("preImaging")
 
     def fields(
@@ -7220,16 +8705,23 @@ class ImagingVariantFields(GraphQLField):
 
 
 class InterleavedImagingVariantFields(GraphQLField):
+    """When doing "interleaved" filter imaging, the sequence repeatedly alternates
+    through the set of filters in use."""
+
     @classmethod
     def offsets(cls) -> "TelescopeConfigGeneratorFields":
+        """Offset generator for the science object datasets. The offset pattern is
+        applied to the sequence of science datasets as a whole."""
         return TelescopeConfigGeneratorFields("offsets")
 
     sky_count: "InterleavedImagingVariantGraphQLField" = (
         InterleavedImagingVariantGraphQLField("skyCount")
     )
+    "Number of sky positions to collect, per filter, before and after a series of\nobject datasets.  For example, if set to 2 and 2 filters are in use, there\nwould be 4 sky positions before (2 per filter) and 4 after (2 per filter)."
 
     @classmethod
     def sky_offsets(cls) -> "TelescopeConfigGeneratorFields":
+        """Offset generator to use for the sky datasets."""
         return TelescopeConfigGeneratorFields("skyOffsets")
 
     def fields(
@@ -7248,7 +8740,11 @@ class InterleavedImagingVariantFields(GraphQLField):
 
 
 class ItcInterface(GraphQLField):
+    """ITC results for a particular observation, including relevant instrument
+    configurations and targets.  There are specific instances for each `ItcType`."""
+
     itc_type: "ItcGraphQLField" = ItcGraphQLField("itcType")
+    "The type of the Itc results."
 
     def fields(self, *subfields: ItcGraphQLField) -> "ItcInterface":
         """Subfields should come from the ItcInterface class"""
@@ -7265,9 +8761,13 @@ class ItcInterface(GraphQLField):
 
 
 class ItcFlamingos2ImagingFields(GraphQLField):
+    """Flamingos 2 imaging ITC results.  Here each filter is paired with its result
+    set."""
+
     itc_type: "ItcFlamingos2ImagingGraphQLField" = ItcFlamingos2ImagingGraphQLField(
         "itcType"
     )
+    "The type of the Itc results."
 
     @classmethod
     def flamingos_2_imaging_science(cls) -> "ItcFlamingos2ImagingResultSetFields":
@@ -7289,6 +8789,9 @@ class ItcFlamingos2ImagingFields(GraphQLField):
 
 
 class ItcFlamingos2ImagingResultSetFields(GraphQLField):
+    """Combines a Flamingos 2 filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
     filter_: "ItcFlamingos2ImagingResultSetGraphQLField" = (
         ItcFlamingos2ImagingResultSetGraphQLField("filter")
     )
@@ -7313,7 +8816,10 @@ class ItcFlamingos2ImagingResultSetFields(GraphQLField):
 
 
 class ItcGhostIfuFields(GraphQLField):
+    """GHOST IFU ITC results.  Each channel is paired with its result set."""
+
     itc_type: "ItcGhostIfuGraphQLField" = ItcGhostIfuGraphQLField("itcType")
+    "The type of the Itc results."
 
     @classmethod
     def red(cls) -> "ItcResultSetFields":
@@ -7336,9 +8842,13 @@ class ItcGhostIfuFields(GraphQLField):
 
 
 class ItcGmosNorthImagingFields(GraphQLField):
+    """GMOS North imaging ITC results.  Here each filter is paired with its result
+    set."""
+
     itc_type: "ItcGmosNorthImagingGraphQLField" = ItcGmosNorthImagingGraphQLField(
         "itcType"
     )
+    "The type of the Itc results."
 
     @classmethod
     def gmos_north_imaging_science(cls) -> "ItcGmosNorthImagingResultSetFields":
@@ -7360,6 +8870,9 @@ class ItcGmosNorthImagingFields(GraphQLField):
 
 
 class ItcGmosNorthImagingResultSetFields(GraphQLField):
+    """Combines a GMOS North filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
     filter_: "ItcGmosNorthImagingResultSetGraphQLField" = (
         ItcGmosNorthImagingResultSetGraphQLField("filter")
     )
@@ -7384,9 +8897,13 @@ class ItcGmosNorthImagingResultSetFields(GraphQLField):
 
 
 class ItcGmosSouthImagingFields(GraphQLField):
+    """GMOS South imaging ITC results.  Here each filter is paired with its result
+    set."""
+
     itc_type: "ItcGmosSouthImagingGraphQLField" = ItcGmosSouthImagingGraphQLField(
         "itcType"
     )
+    "The type of the Itc results."
 
     @classmethod
     def gmos_south_imaging_science(cls) -> "ItcGmosSouthImagingResultSetFields":
@@ -7408,6 +8925,9 @@ class ItcGmosSouthImagingFields(GraphQLField):
 
 
 class ItcGmosSouthImagingResultSetFields(GraphQLField):
+    """Combines a GMOS South filter with an `ItcResultSet`. In other words, ITC
+    results for all targets but a single filter."""
+
     filter_: "ItcGmosSouthImagingResultSetGraphQLField" = (
         ItcGmosSouthImagingResultSetGraphQLField("filter")
     )
@@ -7432,7 +8952,10 @@ class ItcGmosSouthImagingResultSetFields(GraphQLField):
 
 
 class ItcGnirsImagingFields(GraphQLField):
+    """GNIRS imaging ITC results.  Here each filter is paired with its result set."""
+
     itc_type: "ItcGnirsImagingGraphQLField" = ItcGnirsImagingGraphQLField("itcType")
+    "The type of the Itc results."
 
     @classmethod
     def gnirs_imaging_science(cls) -> "ItcGnirsImagingResultSetFields":
@@ -7454,6 +8977,9 @@ class ItcGnirsImagingFields(GraphQLField):
 
 
 class ItcGnirsImagingResultSetFields(GraphQLField):
+    """Combines a GNIRS filter with an `ItcResultSet`. In other words, ITC results
+    for all targets but a single filter."""
+
     filter_: "ItcGnirsImagingResultSetGraphQLField" = (
         ItcGnirsImagingResultSetGraphQLField("filter")
     )
@@ -7476,9 +9002,13 @@ class ItcGnirsImagingResultSetFields(GraphQLField):
 
 
 class ItcGnirsSpectroscopyFields(GraphQLField):
+    """GNIRS spectroscopy ITC results.  Each central wavelength is a separate
+    configuration and is paired with its own result set."""
+
     itc_type: "ItcGnirsSpectroscopyGraphQLField" = ItcGnirsSpectroscopyGraphQLField(
         "itcType"
     )
+    "The type of the Itc results."
 
     @classmethod
     def acquisition(cls) -> "ItcResultSetFields":
@@ -7506,6 +9036,9 @@ class ItcGnirsSpectroscopyFields(GraphQLField):
 
 
 class ItcGnirsSpectroscopyResultSetFields(GraphQLField):
+    """Combines a GNIRS spectroscopy central wavelength with an `ItcResultSet`. In
+    other words, ITC results for all targets but a single central wavelength."""
+
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
         return WavelengthFields("centralWavelength")
@@ -7531,29 +9064,27 @@ class ItcGnirsSpectroscopyResultSetFields(GraphQLField):
         return self
 
 
-class ItcIgrins2SpectroscopyFields(GraphQLField):
-    itc_type: "ItcIgrins2SpectroscopyGraphQLField" = ItcIgrins2SpectroscopyGraphQLField(
-        "itcType"
-    )
+class ItcPeakPixelFields(GraphQLField):
+    """The brightest pixel found by the ITC, taken across the CCDs it reported."""
 
-    @classmethod
-    def spectroscopy_science(cls) -> "ItcResultSetFields":
-        return ItcResultSetFields("spectroscopyScience")
+    flux: "ItcPeakPixelGraphQLField" = ItcPeakPixelGraphQLField("flux")
+    "The maximum, across the CCDs, of each CCD's peak pixel flux: the highest\nelectron count in any single pixel."
+    adu: "ItcPeakPixelGraphQLField" = ItcPeakPixelGraphQLField("adu")
+    "The maximum, across the CCDs, of each CCD's peak pixel flux converted to ADU\nusing that CCD's own amplifier gain."
 
-    def fields(
-        self,
-        *subfields: Union[ItcIgrins2SpectroscopyGraphQLField, "ItcResultSetFields"],
-    ) -> "ItcIgrins2SpectroscopyFields":
-        """Subfields should come from the ItcIgrins2SpectroscopyFields class"""
+    def fields(self, *subfields: ItcPeakPixelGraphQLField) -> "ItcPeakPixelFields":
+        """Subfields should come from the ItcPeakPixelFields class"""
         self._subfields.extend(subfields)
         return self
 
-    def alias(self, alias: str) -> "ItcIgrins2SpectroscopyFields":
+    def alias(self, alias: str) -> "ItcPeakPixelFields":
         self._alias = alias
         return self
 
 
 class ItcResultFields(GraphQLField):
+    """An ITC result for a single target."""
+
     target_id: "ItcResultGraphQLField" = ItcResultGraphQLField("targetId")
 
     @classmethod
@@ -7566,10 +9097,22 @@ class ItcResultFields(GraphQLField):
     def signal_to_noise_at(cls) -> "SignalToNoiseAtFields":
         return SignalToNoiseAtFields("signalToNoiseAt")
 
+    @classmethod
+    def peak_pixel(cls) -> "ItcPeakPixelFields":
+        """The brightest pixel the ITC found, as computed for a single exposure.  Null
+        when the ITC reported no CCD data or a frozen row.
+        For an acquisition whose exposure time was clamped to the instrument's acquisition
+        limits, this is what the ITC computed for the unclamped time, so it may disagree
+        with the exposure time reported alongside it."""
+        return ItcPeakPixelFields("peakPixel")
+
     def fields(
         self,
         *subfields: Union[
-            ItcResultGraphQLField, "SignalToNoiseAtFields", "TimeSpanFields"
+            ItcResultGraphQLField,
+            "ItcPeakPixelFields",
+            "SignalToNoiseAtFields",
+            "TimeSpanFields",
         ],
     ) -> "ItcResultFields":
         """Subfields should come from the ItcResultFields class"""
@@ -7582,6 +9125,16 @@ class ItcResultFields(GraphQLField):
 
 
 class ItcResultSetFields(GraphQLField):
+    """Contains the result of calling the ITC for all targets, but a single instrument
+    configuration.  Since the observation may contain multiple targets, there may
+    be multiple results. The "selected" field contains the representative result
+    for all targets.  If a signal-to-noise target has been chosen for the
+    observation (see `TargetEnvironment.explicitSignalToNoiseTarget`), that target's result
+    is used.  Otherwise the brightest target (the one requiring the shortest
+    exposure time) is used.  If there is a mix of failures and successes, the
+    overall "selected" result will be a failure. The "all" field contains results
+    for all targets regardless."""
+
     @classmethod
     def selected(cls) -> "ItcResultFields":
         return ItcResultFields("selected")
@@ -7604,8 +9157,38 @@ class ItcResultSetFields(GraphQLField):
         return self
 
 
+class ItcScienceOnlySpectroscopyFields(GraphQLField):
+    """ITC results for spectroscopy observations that have no acquisition estimate:
+    IGRINS-2, GMOS MOS and Flamingos 2 MOS.  For IGRINS-2 the SVC acquisition
+    sequence, when present, uses the SVC exposure time configuration."""
+
+    itc_type: "ItcScienceOnlySpectroscopyGraphQLField" = (
+        ItcScienceOnlySpectroscopyGraphQLField("itcType")
+    )
+    "The type of the Itc results."
+
+    @classmethod
+    def spectroscopy_science(cls) -> "ItcResultSetFields":
+        return ItcResultSetFields("spectroscopyScience")
+
+    def fields(
+        self,
+        *subfields: Union[ItcScienceOnlySpectroscopyGraphQLField, "ItcResultSetFields"],
+    ) -> "ItcScienceOnlySpectroscopyFields":
+        """Subfields should come from the ItcScienceOnlySpectroscopyFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ItcScienceOnlySpectroscopyFields":
+        self._alias = alias
+        return self
+
+
 class ItcSpectroscopyFields(GraphQLField):
+    """ITC results for spectroscopy observations."""
+
     itc_type: "ItcSpectroscopyGraphQLField" = ItcSpectroscopyGraphQLField("itcType")
+    "The type of the Itc results."
 
     @classmethod
     def acquisition(cls) -> "ItcResultSetFields":
@@ -7628,12 +9211,18 @@ class ItcSpectroscopyFields(GraphQLField):
 
 
 class KeckCallPropertiesFields(GraphQLField):
+    """Keck-specific call for proposals properties.  Note, properties shared across all
+    observatories are found in the `CallForProposals` type."""
+
     instruments: "KeckCallPropertiesGraphQLField" = KeckCallPropertiesGraphQLField(
         "instruments"
     )
+    "When specified, the observations executed in this Call will only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
 
     @classmethod
     def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Keck, for targets that may be observed in
+        this Call for Proposals."""
         return CoordinateLimitsFields("coordinateLimits")
 
     def fields(
@@ -7650,6 +9239,8 @@ class KeckCallPropertiesFields(GraphQLField):
 
 
 class KeckProgramReferenceFields(GraphQLField):
+    """Reference for a Keck time-exchange program."""
+
     label: "KeckProgramReferenceGraphQLField" = KeckProgramReferenceGraphQLField(
         "label"
     )
@@ -7674,12 +9265,16 @@ class KeckProgramReferenceFields(GraphQLField):
 
 
 class KeckProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Keck."""
+
     min_percent_time: "KeckProposalTypeGraphQLField" = KeckProposalTypeGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
     def fields(
@@ -7695,33 +9290,44 @@ class KeckProposalTypeFields(GraphQLField):
 
 
 class LargeProgramFields(GraphQLField):
+    """Proposal properties for Large Program CallForProposals."""
+
     science_subtype: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "tooActivationCeiling"
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "LargeProgramGraphQLField" = (
         LargeProgramGraphQLField("defaultTooActivationCeiling")
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "LargeProgramGraphQLField" = (
         LargeProgramGraphQLField("explicitTooActivationCeiling")
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time (first semester) required to consider this\nproposal successful."
     min_percent_total_time: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "minPercentTotalTime"
     )
+    "Minimum percentage of the total observing time (over all semesters) required\nto consider this proposal successful."
 
     @classmethod
     def total_time(cls) -> "TimeSpanFields":
+        """Total time requested (over multiple all semesters) for this proposal."""
         return TimeSpanFields("totalTime")
 
     aeon_multi_facility: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "aeonMultiFacility"
     )
+    "Whether this proposal is part of the AEON/Multi-facility program."
     jwst_synergy: "LargeProgramGraphQLField" = LargeProgramGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
 
     def fields(
         self, *subfields: Union[LargeProgramGraphQLField, "TimeSpanFields"]
@@ -7841,8 +9447,11 @@ class MonitoringProgramReferenceFields(GraphQLField):
 
 class NonsiderealFields(GraphQLField):
     des: "NonsiderealGraphQLField" = NonsiderealGraphQLField("des")
+    "Human readable designation that discriminates among ephemeris keys of the same type."
     key_type: "NonsiderealGraphQLField" = NonsiderealGraphQLField("keyType")
+    "Nonsidereal target lookup type."
     key: "NonsiderealGraphQLField" = NonsiderealGraphQLField("key")
+    "Synthesis of `keyType` and `des`"
 
     def fields(self, *subfields: NonsiderealGraphQLField) -> "NonsiderealFields":
         """Subfields should come from the NonsiderealFields class"""
@@ -7856,91 +9465,129 @@ class NonsiderealFields(GraphQLField):
 
 class ObservationFields(GraphQLField):
     id: "ObservationGraphQLField" = ObservationGraphQLField("id")
+    "Observation ID"
     existence: "ObservationGraphQLField" = ObservationGraphQLField("existence")
+    "DELETED or PRESENT"
 
     @classmethod
     def reference(cls) -> "ObservationReferenceFields":
+        """Observation reference, if any (requires the existence of a reference for the
+        program itself)."""
         return ObservationReferenceFields("reference")
 
     index: "ObservationGraphQLField" = ObservationGraphQLField("index")
+    "Observation index, relative to other observations in the same program."
     title: "ObservationGraphQLField" = ObservationGraphQLField("title")
+    "Observation title generated from id and targets"
     subtitle: "ObservationGraphQLField" = ObservationGraphQLField("subtitle")
+    "User-supplied observation-identifying detail information"
     science_band: "ObservationGraphQLField" = ObservationGraphQLField("scienceBand")
+    "Observations are associated with a science band once time has been allocated\nto a program."
     observation_time: "ObservationGraphQLField" = ObservationGraphQLField(
         "observationTime"
     )
+    "Reference time used for execution and visualization and time-dependent calculations\n(e.g., average parallactic angle and guide star selection)"
 
     @classmethod
     def observation_duration(cls) -> "TimeSpanFields":
+        """Used in conjunction with observationTime for time-dependentent calulations. If not
+        set, the remaining observation execution time will be used."""
         return TimeSpanFields("observationDuration")
 
     @classmethod
     def pos_angle_constraint(cls) -> "PosAngleConstraintFields":
+        """Position angle constraint, if any."""
         return PosAngleConstraintFields("posAngleConstraint")
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The program that contains this observation"""
         return ProgramFields("program")
 
     @classmethod
     def target_environment(cls) -> "TargetEnvironmentFields":
+        """The observation's target(s)"""
         return TargetEnvironmentFields("targetEnvironment")
 
     @classmethod
     def constraint_set(cls) -> "ConstraintSetFields":
+        """The constraint set for the observation"""
         return ConstraintSetFields("constraintSet")
 
     @classmethod
     def timing_windows(cls) -> "TimingWindowFields":
+        """Deprecated (using `schedulingConstraints` instead).  Observation timing
+        windows."""
         return TimingWindowFields("timingWindows")
 
     @classmethod
     def scheduling_constraints(cls) -> "SchedulingConstraintsFields":
+        """Observation scheduling constraints."""
         return SchedulingConstraintsFields("schedulingConstraints")
 
     @classmethod
     def attachments(cls) -> "AttachmentFields":
+        """attachments"""
         return AttachmentFields("attachments")
 
     @classmethod
     def science_requirements(cls) -> "ScienceRequirementsFields":
+        """The top level science requirements"""
         return ScienceRequirementsFields("scienceRequirements")
 
     @classmethod
     def observing_mode(cls) -> "ObservingModeFields":
+        """The science configuration"""
         return ObservingModeFields("observingMode")
 
     instrument: "ObservationGraphQLField" = ObservationGraphQLField("instrument")
+    "The instrument in use for this observation, if the observing mode is set."
 
     @classmethod
     def execution(cls) -> "ExecutionFields":
+        """Execution sequence and runtime artifacts"""
         return ExecutionFields("execution")
 
     @classmethod
     def itc(cls) -> "ItcInterface":
+        """The ITC result for this observation, assuming it has associated target(s)
+        and a selected observing mode."""
         return ItcInterface("itc")
 
     group_id: "ObservationGraphQLField" = ObservationGraphQLField("groupId")
+    "Enclosing group, if any."
     group_index: "ObservationGraphQLField" = ObservationGraphQLField("groupIndex")
+    "Index in enclosing group or at the top level if ungrouped. If left unspecified on creation, observation will be added last in its enclosing group or at the top level. Cannot be set to null."
     calibration_role: "ObservationGraphQLField" = ObservationGraphQLField(
         "calibrationRole"
     )
+    "The Calibration role of this observation"
     observer_notes: "ObservationGraphQLField" = ObservationGraphQLField("observerNotes")
+    "Notes for the observer"
 
     @classmethod
     def configuration(cls) -> "ConfigurationFields":
+        """Parameters relevant to approved configurations."""
         return ConfigurationFields("configuration")
 
     @classmethod
     def configuration_requests(cls) -> "ConfigurationRequestFields":
+        """Program configuration requests applicable to this observation."""
         return ConfigurationRequestFields("configurationRequests")
 
     @classmethod
     def workflow(cls) -> "CalculatedObservationWorkflowFields":
+        """Obtains the current observation workflow state and valid transitions (and any
+        validation errors). Because this calculation is expensive, it is performed in
+        the background when something relevant changes and may be in a state of flux
+        when queried.  The calculation state in the result can be used to determine
+        whether a pending update is expected."""
         return CalculatedObservationWorkflowFields("workflow")
 
     @classmethod
     def archive_duplication(cls) -> "ArchiveDuplicationFields":
+        """Result of the Archive Duplication Search: what the Gemini Observatory Archive
+        held around this observation's pointing."""
         return ArchiveDuplicationFields("archiveDuplication")
 
     def fields(
@@ -7976,17 +9623,23 @@ class ObservationFields(GraphQLField):
 
 
 class ObservationReferenceFields(GraphQLField):
+    """Observation reference type, broken into its constituient parts and including
+    a formatted label."""
+
     label: "ObservationReferenceGraphQLField" = ObservationReferenceGraphQLField(
         "label"
     )
+    "Formatted observation reference label."
 
     @classmethod
     def program(cls) -> "ProgramReferenceInterface":
+        """The program reference."""
         return ProgramReferenceInterface("program")
 
     index: "ObservationReferenceGraphQLField" = ObservationReferenceGraphQLField(
         "index"
     )
+    "The observation index relative to its program."
 
     def fields(
         self,
@@ -8004,13 +9657,17 @@ class ObservationReferenceFields(GraphQLField):
 
 
 class ObservationSelectResultFields(GraphQLField):
+    """The matching observation results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ObservationFields":
+        """Matching observations up to the return size limit of 1000"""
         return ObservationFields("matches")
 
     has_more: "ObservationSelectResultGraphQLField" = (
         ObservationSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -8026,20 +9683,30 @@ class ObservationSelectResultFields(GraphQLField):
 
 
 class ObservationTimeEstimateFields(GraphQLField):
+    """Time estimate for executing an observation: the setup time(s) and the science
+    sequence time.  In the execution digest this estimate is continually updated
+    (and reduces) as the observation is executed; in `originalEstimate` it is
+    fixed at the start of execution so that the estimate may be compared with the
+    actual time required after the fact."""
+
     @classmethod
     def setup(cls) -> "SetupTimeFields":
+        """Setup time estimates."""
         return SetupTimeFields("setup")
 
     setup_count: "ObservationTimeEstimateGraphQLField" = (
         ObservationTimeEstimateGraphQLField("setupCount")
     )
+    "Expected number of setups."
 
     @classmethod
     def science(cls) -> "CategorizedTimeFields":
+        """Science sequence time estimate."""
         return CategorizedTimeFields("science")
 
     @classmethod
     def total(cls) -> "CategorizedTimeFields":
+        """Total time estimate: science time plus full setup time for every setup."""
         return CategorizedTimeFields("total")
 
     def fields(
@@ -8060,12 +9727,16 @@ class ObservationTimeEstimateFields(GraphQLField):
 
 
 class ObservationValidationFields(GraphQLField):
+    """An observation validation problem"""
+
     code: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
         "code"
     )
+    "The type of validation problem"
     messages: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
         "messages"
     )
+    "Particular errors for this validation type"
 
     def fields(
         self, *subfields: ObservationValidationGraphQLField
@@ -8105,59 +9776,81 @@ class ObservationWorkflowFields(GraphQLField):
 
 
 class ObservingModeFields(GraphQLField):
+    """Base science mode"""
+
     instrument: "ObservingModeGraphQLField" = ObservingModeGraphQLField("instrument")
+    "Instrument, or null for exchange observations (which have no Gemini instrument)."
     mode: "ObservingModeGraphQLField" = ObservingModeGraphQLField("mode")
+    "Mode type"
 
     @classmethod
     def exchange(cls) -> "ExchangeFields":
+        """Observations executed at Keck or Subaru."""
         return ExchangeFields("exchange")
 
     @classmethod
     def flamingos_2_imaging(cls) -> "Flamingos2ImagingFields":
+        """Flamingos 2 Imaging mode"""
         return Flamingos2ImagingFields("flamingos2Imaging")
 
     @classmethod
     def flamingos_2_long_slit(cls) -> "Flamingos2LongSlitFields":
+        """Flamingos 2 Long Slit mode"""
         return Flamingos2LongSlitFields("flamingos2LongSlit")
 
     @classmethod
+    def flamingos_2_mos(cls) -> "Flamingos2MosFields":
+        """Flamingos 2 MOS mode"""
+        return Flamingos2MosFields("flamingos2Mos")
+
+    @classmethod
     def ghost_ifu(cls) -> "GhostIfuFields":
+        """GHOST IFU mode"""
         return GhostIfuFields("ghostIfu")
 
     @classmethod
     def gmos_north_imaging(cls) -> "GmosNorthImagingFields":
+        """GMOS North Imaging mode"""
         return GmosNorthImagingFields("gmosNorthImaging")
 
     @classmethod
     def gmos_north_long_slit(cls) -> "GmosNorthLongSlitFields":
+        """GMOS North Long Slit mode"""
         return GmosNorthLongSlitFields("gmosNorthLongSlit")
 
     @classmethod
     def gmos_north_mos(cls) -> "GmosNorthMosFields":
+        """GMOS North MOS mode"""
         return GmosNorthMosFields("gmosNorthMos")
 
     @classmethod
     def gmos_south_imaging(cls) -> "GmosSouthImagingFields":
+        """GMOS South Imaging mode"""
         return GmosSouthImagingFields("gmosSouthImaging")
 
     @classmethod
     def gmos_south_long_slit(cls) -> "GmosSouthLongSlitFields":
+        """GMOS South Long Slit mode"""
         return GmosSouthLongSlitFields("gmosSouthLongSlit")
 
     @classmethod
     def gmos_south_mos(cls) -> "GmosSouthMosFields":
+        """GMOS South MOS mode"""
         return GmosSouthMosFields("gmosSouthMos")
 
     @classmethod
     def gnirs_imaging(cls) -> "GnirsImagingFields":
+        """GNIRS Imaging mode"""
         return GnirsImagingFields("gnirsImaging")
 
     @classmethod
     def gnirs_spectroscopy(cls) -> "GnirsSpectroscopyFields":
+        """GNIRS Long Slit mode"""
         return GnirsSpectroscopyFields("gnirsSpectroscopy")
 
     @classmethod
     def igrins_2_long_slit(cls) -> "Igrins2LongSlitFields":
+        """IGRINS-2 Long Slit mode"""
         return Igrins2LongSlitFields("igrins2LongSlit")
 
     @classmethod
@@ -8171,6 +9864,7 @@ class ObservingModeFields(GraphQLField):
             "ExchangeFields",
             "Flamingos2ImagingFields",
             "Flamingos2LongSlitFields",
+            "Flamingos2MosFields",
             "GhostIfuFields",
             "GmosNorthImagingFields",
             "GmosNorthLongSlitFields",
@@ -8202,6 +9896,7 @@ class ObservingModeGroupFields(GraphQLField):
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
+        """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -8216,10 +9911,12 @@ class ObservingModeGroupFields(GraphQLField):
 
     @classmethod
     def observing_mode(cls) -> "ObservingModeFields":
+        """Commonly held value across the observations"""
         return ObservingModeFields("observingMode")
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """Link back to program."""
         return ProgramFields("program")
 
     def fields(
@@ -8241,13 +9938,17 @@ class ObservingModeGroupFields(GraphQLField):
 
 
 class ObservingModeGroupSelectResultFields(GraphQLField):
+    """The matching ObservingModeGroup results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ObservingModeGroupFields":
+        """Matching ObservingModeGroups up to the return size limit of 1000"""
         return ObservingModeGroupFields("matches")
 
     has_more: "ObservingModeGroupSelectResultGraphQLField" = (
         ObservingModeGroupSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -8267,10 +9968,12 @@ class ObservingModeGroupSelectResultFields(GraphQLField):
 class OffsetFields(GraphQLField):
     @classmethod
     def p(cls) -> "OffsetPFields":
+        """Offset in p"""
         return OffsetPFields("p")
 
     @classmethod
     def q(cls) -> "OffsetQFields":
+        """Offset in q"""
         return OffsetQFields("q")
 
     def fields(
@@ -8287,8 +9990,11 @@ class OffsetFields(GraphQLField):
 
 class OffsetPFields(GraphQLField):
     microarcseconds: "OffsetPGraphQLField" = OffsetPGraphQLField("microarcseconds")
+    "p offset in µas"
     milliarcseconds: "OffsetPGraphQLField" = OffsetPGraphQLField("milliarcseconds")
+    "p offset in mas"
     arcseconds: "OffsetPGraphQLField" = OffsetPGraphQLField("arcseconds")
+    "p offset in arcsec"
 
     def fields(self, *subfields: OffsetPGraphQLField) -> "OffsetPFields":
         """Subfields should come from the OffsetPFields class"""
@@ -8302,8 +10008,11 @@ class OffsetPFields(GraphQLField):
 
 class OffsetQFields(GraphQLField):
     microarcseconds: "OffsetQGraphQLField" = OffsetQGraphQLField("microarcseconds")
+    "q offset in µas"
     milliarcseconds: "OffsetQGraphQLField" = OffsetQGraphQLField("milliarcseconds")
+    "q offset in mas"
     arcseconds: "OffsetQGraphQLField" = OffsetQGraphQLField("arcseconds")
+    "q offset in arcsec"
 
     def fields(self, *subfields: OffsetQGraphQLField) -> "OffsetQFields":
         """Subfields should come from the OffsetQFields class"""
@@ -8320,8 +10029,22 @@ class OpportunityFields(GraphQLField):
     def region(cls) -> "RegionFields":
         return RegionFields("region")
 
+    @classmethod
+    def resolution(cls) -> "TargetResolutionFields":
+        """How this Target of Opportunity is tracked, once the alert has arrived and
+        identified it -- or null while it is still unresolved.
+
+        A Target of Opportunity does not stop being one when it is resolved.  It keeps
+        its `region` (which is what the accepted proposal authorized) and continues to
+        appear here rather than moving to the top-level `sidereal` or `nonsidereal`
+        field, so exactly one of those three remains non-null for any target."""
+        return TargetResolutionFields("resolution")
+
     def fields(
-        self, *subfields: Union[OpportunityGraphQLField, "RegionFields"]
+        self,
+        *subfields: Union[
+            OpportunityGraphQLField, "RegionFields", "TargetResolutionFields"
+        ],
     ) -> "OpportunityFields":
         """Subfields should come from the OpportunityFields class"""
         self._subfields.extend(subfields)
@@ -8334,7 +10057,9 @@ class OpportunityFields(GraphQLField):
 
 class ParallaxFields(GraphQLField):
     microarcseconds: "ParallaxGraphQLField" = ParallaxGraphQLField("microarcseconds")
+    "Parallax in microarcseconds"
     milliarcseconds: "ParallaxGraphQLField" = ParallaxGraphQLField("milliarcseconds")
+    "Parallax in milliarcseconds"
 
     def fields(self, *subfields: ParallaxGraphQLField) -> "ParallaxFields":
         """Subfields should come from the ParallaxFields class"""
@@ -8347,7 +10072,10 @@ class ParallaxFields(GraphQLField):
 
 
 class PartnerLinkInterface(GraphQLField):
+    """Represents the association of a user with a `Partner`, if any."""
+
     link_type: "PartnerLinkGraphQLField" = PartnerLinkGraphQLField("linkType")
+    "Partner link discriminator."
 
     def fields(self, *subfields: PartnerLinkGraphQLField) -> "PartnerLinkInterface":
         """Subfields should come from the PartnerLinkInterface class"""
@@ -8364,8 +10092,12 @@ class PartnerLinkInterface(GraphQLField):
 
 
 class PartnerSplitFields(GraphQLField):
+    """Partner splits detail how requested time for a Queue or Classical proposal
+    should be distributed amongst Gemini partners."""
+
     partner: "PartnerSplitGraphQLField" = PartnerSplitGraphQLField("partner")
     percent: "PartnerSplitGraphQLField" = PartnerSplitGraphQLField("percent")
+    "Percentage of requested time that should be associated with the partner."
 
     def fields(self, *subfields: PartnerSplitGraphQLField) -> "PartnerSplitFields":
         """Subfields should come from the PartnerSplitFields class"""
@@ -8378,9 +10110,12 @@ class PartnerSplitFields(GraphQLField):
 
 
 class PoorWeatherFields(GraphQLField):
+    """Proposal properties for Regular Semester (Poor Weather) CallForProposals."""
+
     science_subtype: "PoorWeatherGraphQLField" = PoorWeatherGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
 
     def fields(self, *subfields: PoorWeatherGraphQLField) -> "PoorWeatherFields":
         """Subfields should come from the PoorWeatherFields class"""
@@ -8393,10 +10128,15 @@ class PoorWeatherFields(GraphQLField):
 
 
 class PosAngleConstraintFields(GraphQLField):
+    """Constraints (if any) on the observation's position angle."""
+
     mode: "PosAngleConstraintGraphQLField" = PosAngleConstraintGraphQLField("mode")
+    "The position angle constraint mode in use.  The value will determine whether\nthe angle is respected or ignored."
 
     @classmethod
     def angle(cls) -> "AngleFields":
+        """The fixed position angle.  This will be kept but ignored for UNBOUNDED and
+        AVERAGE_PARALLACTIC modes."""
         return AngleFields("angle")
 
     def fields(
@@ -8412,6 +10152,8 @@ class PosAngleConstraintFields(GraphQLField):
 
 
 class PreImagingVariantFields(GraphQLField):
+    """A special imaging case, MOS pre-imaging is defined by an offset region."""
+
     @classmethod
     def offset_1(cls) -> "OffsetFields":
         return OffsetFields("offset1")
@@ -8442,12 +10184,17 @@ class PreImagingVariantFields(GraphQLField):
 
 class ProgramFields(GraphQLField):
     id: "ProgramGraphQLField" = ProgramGraphQLField("id")
+    "Program ID"
     existence: "ProgramGraphQLField" = ProgramGraphQLField("existence")
+    "DELETED or PRESENT"
     name: "ProgramGraphQLField" = ProgramGraphQLField("name")
+    "Program name / title."
     description: "ProgramGraphQLField" = ProgramGraphQLField("description")
+    "Program description / abstract."
 
     @classmethod
     def notes(cls, include_deleted: bool) -> "ProgramNoteFields":
+        """Notes associated with the program, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -8457,28 +10204,39 @@ class ProgramFields(GraphQLField):
         return ProgramNoteFields("notes", arguments=cleared_arguments)
 
     type_: "ProgramGraphQLField" = ProgramGraphQLField("type")
+    "Program type"
 
     @classmethod
     def reference(cls) -> "ProgramReferenceInterface":
+        """Program reference, if any."""
         return ProgramReferenceInterface("reference")
 
     @classmethod
     def proposal(cls) -> "ProposalFields":
+        """Program proposal"""
         return ProposalFields("proposal")
 
     @classmethod
     def active(cls) -> "DateIntervalFields":
+        """Active period for this program.  Observations must be completed during this
+        time interval. By default, if there is an associated proposal tied to a
+        particular Call for Proposals (CfP), the active period will correspond to the
+        Cfp active period."""
         return DateIntervalFields("active")
 
     is_active: "ProgramGraphQLField" = ProgramGraphQLField("isActive")
+    "Whether the program is currently active, i.e. whether the current UTC date\nfalls within the `active` period (inclusive of both bounds)."
     proposal_status: "ProgramGraphQLField" = ProgramGraphQLField("proposalStatus")
+    "Proposal status of the program"
 
     @classmethod
     def pi(cls) -> "ProgramUserFields":
+        """Principal Investigator"""
         return ProgramUserFields("pi")
 
     @classmethod
     def users(cls) -> "ProgramUserFields":
+        """Users assigned to this science program"""
         return ProgramUserFields("users")
 
     @classmethod
@@ -8489,6 +10247,7 @@ class ProgramFields(GraphQLField):
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
+        """All observations associated with the program."""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -8505,6 +10264,7 @@ class ProgramFields(GraphQLField):
     def configuration_requests(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "ConfigurationRequestSelectResultFields":
+        """All configuration requests associated with the program."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ConfigurationRequestId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -8518,10 +10278,12 @@ class ProgramFields(GraphQLField):
 
     @classmethod
     def attachments(cls) -> "AttachmentFields":
+        """Attachments assocated with the program"""
         return AttachmentFields("attachments")
 
     @classmethod
     def group_elements(cls, include_deleted: bool) -> "GroupElementFields":
+        """Top-level group elements (observations and sub-groups) in the program."""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -8532,6 +10294,7 @@ class ProgramFields(GraphQLField):
 
     @classmethod
     def all_group_elements(cls, include_deleted: bool) -> "GroupElementFields":
+        """All group elements (observations and sub-groups) in the program."""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -8542,32 +10305,48 @@ class ProgramFields(GraphQLField):
 
     @classmethod
     def time_estimate_range(cls) -> "CalculatedCategorizedTimeRangeFields":
+        """Remaining execution time estimate range, assuming it can be calculated.  In
+        order for an observation to have an estimate, it must be fully defined such
+        that a sequence can be generated for it.  If a program has observations that
+        are required and which are not fully defined, the remaining time estimate
+        cannot be calculated."""
         return CalculatedCategorizedTimeRangeFields("timeEstimateRange")
 
     @classmethod
     def time_estimate_banded(cls) -> "CalculatedBandedTimeFields":
+        """Prepared time by band ignoring `minimumRequired` in groups, for observations
+        that can be calculated.  In order for an observation to have an estimate, it
+        must be fully defined such that a sequence can be generated for it.  All
+        defined observations in every band present in the program are included."""
         return CalculatedBandedTimeFields("timeEstimateBanded")
 
     @classmethod
     def time_charge(cls) -> "BandedTimeFields":
+        """Program-wide time charge, summing all corrected observation time charges."""
         return BandedTimeFields("timeCharge")
 
     @classmethod
     def user_invitations(cls) -> "UserInvitationFields":
+        """All user invitations associated with this program."""
         return UserInvitationFields("userInvitations")
 
     @classmethod
     def allocations(cls) -> "AllocationFields":
+        """All partner time allocations."""
         return AllocationFields("allocations")
 
     calibration_role: "ProgramGraphQLField" = ProgramGraphQLField("calibrationRole")
+    "Calibration role of the program"
 
     @classmethod
     def goa(cls) -> "GoaPropertiesFields":
+        """Observatory archive properties related to this program."""
         return GoaPropertiesFields("goa")
 
     resource_limit: "ProgramGraphQLField" = ProgramGraphQLField("resourceLimit")
+    "Maximum number of resources (observations, groups, targets, attachments, and\nprogram notes, combined) that may be associated with this program."
     resource_count: "ProgramGraphQLField" = ProgramGraphQLField("resourceCount")
+    "Current number of resources (present, non-system observations, groups,\ntargets, attachments, and program notes) associated with this program, counted\nagainst `resourceLimit`."
 
     def fields(
         self,
@@ -8600,16 +10379,25 @@ class ProgramFields(GraphQLField):
 
 
 class ProgramNoteFields(GraphQLField):
+    """Program notes are arbitrary titled text messages associated with a particular
+    program.  Notes may be private, in which case they are only visible to staff."""
+
     id: "ProgramNoteGraphQLField" = ProgramNoteGraphQLField("id")
+    "This note's unique id."
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The program with which this note is associated."""
         return ProgramFields("program")
 
     title: "ProgramNoteGraphQLField" = ProgramNoteGraphQLField("title")
+    "The note title."
     text: "ProgramNoteGraphQLField" = ProgramNoteGraphQLField("text")
+    "The note text, if any."
     is_private: "ProgramNoteGraphQLField" = ProgramNoteGraphQLField("isPrivate")
+    "Whether the note is only available to Gemini staff."
     existence: "ProgramNoteGraphQLField" = ProgramNoteGraphQLField("existence")
+    "DELETED or PRESENT"
 
     def fields(
         self, *subfields: Union[ProgramNoteGraphQLField, "ProgramFields"]
@@ -8626,11 +10414,13 @@ class ProgramNoteFields(GraphQLField):
 class ProgramNoteSelectResultFields(GraphQLField):
     @classmethod
     def matches(cls) -> "ProgramNoteFields":
+        """Matching notes up to the return size limit of 1000."""
         return ProgramNoteFields("matches")
 
     has_more: "ProgramNoteSelectResultGraphQLField" = (
         ProgramNoteSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -8646,6 +10436,9 @@ class ProgramNoteSelectResultFields(GraphQLField):
 
 
 class ProgramReferenceInterface(GraphQLField):
+    """Defines the category of program references, where specific implementations exist
+    for calibration, engineering, etc."""
+
     label: "ProgramReferenceGraphQLField" = ProgramReferenceGraphQLField("label")
     type_: "ProgramReferenceGraphQLField" = ProgramReferenceGraphQLField("type")
 
@@ -8668,13 +10461,17 @@ class ProgramReferenceInterface(GraphQLField):
 
 
 class ProgramSelectResultFields(GraphQLField):
+    """The matching program results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ProgramFields":
+        """Matching programs up to the return size limit of 1000"""
         return ProgramFields("matches")
 
     has_more: "ProgramSelectResultGraphQLField" = ProgramSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[ProgramSelectResultGraphQLField, "ProgramFields"]
@@ -8689,6 +10486,8 @@ class ProgramSelectResultFields(GraphQLField):
 
 
 class ProgramUserFields(GraphQLField):
+    """An assignment of a user to a program."""
+
     id: "ProgramUserGraphQLField" = ProgramUserGraphQLField("id")
     role: "ProgramUserGraphQLField" = ProgramUserGraphQLField("role")
 
@@ -8702,31 +10501,42 @@ class ProgramUserFields(GraphQLField):
 
     @classmethod
     def partner_link(cls) -> "PartnerLinkInterface":
+        """How the partner is associated with a partner."""
         return PartnerLinkInterface("partnerLink")
 
     @classmethod
     def preferred_profile(cls) -> "UserProfileFields":
+        """The preferred profile overrides any values that may be in the Orcid profile (user.profile)."""
         return UserProfileFields("preferredProfile")
 
     educational_status: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "educationalStatus"
     )
+    "User educational status. PHD/Undergrad/Grad/Other."
     gender: "ProgramUserGraphQLField" = ProgramUserGraphQLField("gender")
+    "Users' reported gender."
     thesis: "ProgramUserGraphQLField" = ProgramUserGraphQLField("thesis")
+    "Flag indicating whether the user's proposal is part of a thesis."
 
     @classmethod
     def invitations(cls) -> "UserInvitationFields":
+        """User invitations, if any, associated with this program user."""
         return UserInvitationFields("invitations")
 
     affiliation: "ProgramUserGraphQLField" = ProgramUserGraphQLField("affiliation")
+    "Investigator affiliation."
     has_data_access: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "hasDataAccess"
     )
+    "Has access to data."
     classical_visitor: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
         "classicalVisitor"
     )
+    "Whether this investigator will visit to carry out the observations.\nThis property is only meaningful for classical proposals."
     display_name: "ProgramUserGraphQLField" = ProgramUserGraphQLField("displayName")
+    "Name created preferentially from the fields of the preferred profile, falling back\nto the Orcid profile if the preferred fields are not set."
     email: "ProgramUserGraphQLField" = ProgramUserGraphQLField("email")
+    "The user's email address from the preferred profile, falling back to the Orcid profile\nif the preferred email is not set."
 
     def fields(
         self,
@@ -8749,13 +10559,17 @@ class ProgramUserFields(GraphQLField):
 
 
 class ProgramUserSelectResultFields(GraphQLField):
+    """The matching program user results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "ProgramUserFields":
+        """Matching program users up to the return size limit of 1000"""
         return ProgramUserFields("matches")
 
     has_more: "ProgramUserSelectResultGraphQLField" = (
         ProgramUserSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -8773,10 +10587,12 @@ class ProgramUserSelectResultFields(GraphQLField):
 class ProperMotionFields(GraphQLField):
     @classmethod
     def ra(cls) -> "ProperMotionRAFields":
+        """Proper motion in RA"""
         return ProperMotionRAFields("ra")
 
     @classmethod
     def dec(cls) -> "ProperMotionDeclinationFields":
+        """Proper motion in declination"""
         return ProperMotionDeclinationFields("dec")
 
     def fields(
@@ -8800,9 +10616,11 @@ class ProperMotionDeclinationFields(GraphQLField):
     microarcseconds_per_year: "ProperMotionDeclinationGraphQLField" = (
         ProperMotionDeclinationGraphQLField("microarcsecondsPerYear")
     )
+    "Proper motion in properMotion μas/year"
     milliarcseconds_per_year: "ProperMotionDeclinationGraphQLField" = (
         ProperMotionDeclinationGraphQLField("milliarcsecondsPerYear")
     )
+    "Proper motion in properMotion mas/year"
 
     def fields(
         self, *subfields: ProperMotionDeclinationGraphQLField
@@ -8820,9 +10638,11 @@ class ProperMotionRAFields(GraphQLField):
     microarcseconds_per_year: "ProperMotionRAGraphQLField" = ProperMotionRAGraphQLField(
         "microarcsecondsPerYear"
     )
+    "Proper motion in properMotion μas/year"
     milliarcseconds_per_year: "ProperMotionRAGraphQLField" = ProperMotionRAGraphQLField(
         "milliarcsecondsPerYear"
     )
+    "Proper motion in properMotion mas/year"
 
     def fields(self, *subfields: ProperMotionRAGraphQLField) -> "ProperMotionRAFields":
         """Subfields should come from the ProperMotionRAFields class"""
@@ -8837,35 +10657,71 @@ class ProperMotionRAFields(GraphQLField):
 class ProposalFields(GraphQLField):
     @classmethod
     def reference(cls) -> "ProposalReferenceFields":
+        """The proposal reference, assuming the proposal has been submitted and
+        assigned a semester."""
         return ProposalReferenceFields("reference")
 
     @classmethod
     def call(cls) -> "CallForProposalsFields":
+        """The corresponding CallForProposals definition itself, if the call id has been
+        set."""
         return CallForProposalsFields("call")
 
     category: "ProposalGraphQLField" = ProposalGraphQLField("category")
+    "Proposal TAC category"
+
+    @classmethod
+    def time_request(cls) -> "CalculatedCategorizedTimeRangeFields":
+        """The observing time this proposal requests: `explicitTimeRequest` if set,
+        otherwise `defaultTimeRequest`."""
+        return CalculatedCategorizedTimeRangeFields("timeRequest")
+
+    @classmethod
+    def default_time_request(cls) -> "CalculatedCategorizedTimeRangeFields":
+        """The request that applies when none is explicitly set: the sum of the time
+        estimates of the program's observations, the same figure reported by the
+        program's `timeEstimateRange`.  Observations that are not fully defined have
+        no estimate and so contribute nothing to it."""
+        return CalculatedCategorizedTimeRangeFields("defaultTimeRequest")
+
+    @classmethod
+    def explicit_time_request(cls) -> "TimeSpanFields":
+        """The time explicitly requested for this proposal, if any: by the PI before
+        submission, or by staff during review.  Set it when the sum of the
+        observations' estimates does not describe the real ask -- most obviously for a
+        Target of Opportunity proposal, whose observations cannot all be written down
+        before the targets are known."""
+        return TimeSpanFields("explicitTimeRequest")
 
     @classmethod
     def gemini(cls) -> "GeminiProposalTypeInterface":
+        """Properties of a Gemini proposal that depend upon the Call for Proposals type.
+        Set for Gemini proposals; null otherwise (when `keck` or `subaru` is set)."""
         return GeminiProposalTypeInterface("gemini")
 
     @classmethod
     def keck(cls) -> "KeckProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Keck.  Set for Keck
+        exchange proposals; null otherwise."""
         return KeckProposalTypeFields("keck")
 
     @classmethod
     def subaru(cls) -> "SubaruProposalTypeFields":
+        """Properties of an exchange proposal requesting time at Subaru.  Set for Subaru
+        exchange proposals; null otherwise."""
         return SubaruProposalTypeFields("subaru")
 
     def fields(
         self,
         *subfields: Union[
             ProposalGraphQLField,
+            "CalculatedCategorizedTimeRangeFields",
             "CallForProposalsFields",
             "GeminiProposalTypeInterface",
             "KeckProposalTypeFields",
             "ProposalReferenceFields",
             "SubaruProposalTypeFields",
+            "TimeSpanFields",
         ],
     ) -> "ProposalFields":
         """Subfields should come from the ProposalFields class"""
@@ -8899,27 +10755,40 @@ class ProposalReferenceFields(GraphQLField):
 
 
 class QueueFields(GraphQLField):
+    """Proposal properties for Regular Semester (Queue) CallForProposals."""
+
     science_subtype: "QueueGraphQLField" = QueueGraphQLField("scienceSubtype")
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
         "tooActivationCeiling"
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
         "defaultTooActivationCeiling"
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
         "explicitTooActivationCeiling"
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "QueueGraphQLField" = QueueGraphQLField("minPercentTime")
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
     exchange_partner: "QueueGraphQLField" = QueueGraphQLField("exchangePartner")
+    "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
+    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
     aeon_multi_facility: "QueueGraphQLField" = QueueGraphQLField("aeonMultiFacility")
+    "Whether this proposal is part of the AEON/Multi-facility program."
     jwst_synergy: "QueueGraphQLField" = QueueGraphQLField("jwstSynergy")
+    "Whether this proposal has JWST synergy."
     us_long_term: "QueueGraphQLField" = QueueGraphQLField("usLongTerm")
+    "Whether this is a US Long Term proposal."
 
     def fields(
         self, *subfields: Union[QueueGraphQLField, "PartnerSplitFields"]
@@ -8937,12 +10806,15 @@ class RadialVelocityFields(GraphQLField):
     centimeters_per_second: "RadialVelocityGraphQLField" = RadialVelocityGraphQLField(
         "centimetersPerSecond"
     )
+    "Radial velocity in cm/s"
     meters_per_second: "RadialVelocityGraphQLField" = RadialVelocityGraphQLField(
         "metersPerSecond"
     )
+    "Radial velocity in m/s"
     kilometers_per_second: "RadialVelocityGraphQLField" = RadialVelocityGraphQLField(
         "kilometersPerSecond"
     )
+    "Radial velocity in km/s"
 
     def fields(self, *subfields: RadialVelocityGraphQLField) -> "RadialVelocityFields":
         """Subfields should come from the RadialVelocityFields class"""
@@ -8983,8 +10855,11 @@ class RandomTelescopeConfigGeneratorFields(GraphQLField):
 
 
 class RecordDatasetResultFields(GraphQLField):
+    """The result of recording a new dataset."""
+
     @classmethod
     def dataset(cls) -> "DatasetFields":
+        """The new dataset that was added."""
         return DatasetFields("dataset")
 
     def fields(
@@ -9000,8 +10875,11 @@ class RecordDatasetResultFields(GraphQLField):
 
 
 class RecordFlamingos2VisitResultFields(GraphQLField):
+    """Result for recordFlamingos2Visit mutation."""
+
     @classmethod
     def visit(cls) -> "VisitFields":
+        """The newly added visit record itself."""
         return VisitFields("visit")
 
     def fields(
@@ -9017,8 +10895,11 @@ class RecordFlamingos2VisitResultFields(GraphQLField):
 
 
 class RecordGmosNorthVisitResultFields(GraphQLField):
+    """The result of recording a GmosNorth visit."""
+
     @classmethod
     def visit(cls) -> "VisitFields":
+        """The newly added visit record itself."""
         return VisitFields("visit")
 
     def fields(
@@ -9034,8 +10915,11 @@ class RecordGmosNorthVisitResultFields(GraphQLField):
 
 
 class RecordGmosSouthVisitResultFields(GraphQLField):
+    """The result of recording a GmosSouth visit."""
+
     @classmethod
     def visit(cls) -> "VisitFields":
+        """The newly added visit record itself."""
         return VisitFields("visit")
 
     def fields(
@@ -9051,8 +10935,11 @@ class RecordGmosSouthVisitResultFields(GraphQLField):
 
 
 class RecordIgrins2VisitResultFields(GraphQLField):
+    """Result for recordIgrins2Visit mutation."""
+
     @classmethod
     def visit(cls) -> "VisitFields":
+        """The newly added visit record itself."""
         return VisitFields("visit")
 
     def fields(
@@ -9068,6 +10955,8 @@ class RecordIgrins2VisitResultFields(GraphQLField):
 
 
 class RecordVisitResultFields(GraphQLField):
+    """The result of recording a new Visit."""
+
     @classmethod
     def visit(cls) -> "VisitFields":
         return VisitFields("visit")
@@ -9087,6 +10976,7 @@ class RecordVisitResultFields(GraphQLField):
 class RedeemUserInvitationResultFields(GraphQLField):
     @classmethod
     def invitation(cls) -> "UserInvitationFields":
+        """The redeemed invitation."""
         return UserInvitationFields("invitation")
 
     def fields(
@@ -9105,12 +10995,16 @@ class RedeemUserInvitationResultFields(GraphQLField):
 
 
 class RefreshArchiveDuplicationResultFields(GraphQLField):
+    """The result of re-running the Archive Duplication Search."""
+
     @classmethod
     def archive_duplication(cls) -> "ArchiveDuplicationFields":
+        """The search result as it now stands."""
         return ArchiveDuplicationFields("archiveDuplication")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The observation that was searched."""
         return ObservationFields("observation")
 
     def fields(
@@ -9155,6 +11049,9 @@ class RegionFields(GraphQLField):
 
 
 class ReplaceFlamingos2SequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "Flamingos2AtomFields":
         return Flamingos2AtomFields("sequence")
@@ -9175,6 +11072,9 @@ class ReplaceFlamingos2SequenceResultFields(GraphQLField):
 
 
 class ReplaceGhostSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "GhostAtomFields":
         return GhostAtomFields("sequence")
@@ -9193,6 +11093,9 @@ class ReplaceGhostSequenceResultFields(GraphQLField):
 
 
 class ReplaceGmosNorthSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "GmosNorthAtomFields":
         return GmosNorthAtomFields("sequence")
@@ -9213,6 +11116,9 @@ class ReplaceGmosNorthSequenceResultFields(GraphQLField):
 
 
 class ReplaceGmosSouthSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "GmosSouthAtomFields":
         return GmosSouthAtomFields("sequence")
@@ -9233,6 +11139,9 @@ class ReplaceGmosSouthSequenceResultFields(GraphQLField):
 
 
 class ReplaceGnirsSequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "GnirsAtomFields":
         return GnirsAtomFields("sequence")
@@ -9251,6 +11160,9 @@ class ReplaceGnirsSequenceResultFields(GraphQLField):
 
 
 class ReplaceIgrins2SequenceResultFields(GraphQLField):
+    """The result of a replace sequence mutation, consisting of the newly inserted
+    sequence."""
+
     @classmethod
     def sequence(cls) -> "Igrins2AtomFields":
         return Igrins2AtomFields("sequence")
@@ -9271,8 +11183,11 @@ class ReplaceIgrins2SequenceResultFields(GraphQLField):
 
 
 class ResetAcquisitionResultFields(GraphQLField):
+    """The result of resetting the acquisition sequence."""
+
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The observation whose acquisition was reset."""
         return ObservationFields("observation")
 
     def fields(
@@ -9290,6 +11205,7 @@ class ResetAcquisitionResultFields(GraphQLField):
 class RevokeUserInvitationResultFields(GraphQLField):
     @classmethod
     def invitation(cls) -> "UserInvitationFields":
+        """The revoked invitation."""
         return UserInvitationFields("invitation")
 
     def fields(
@@ -9309,11 +11225,15 @@ class RevokeUserInvitationResultFields(GraphQLField):
 
 class RightAscensionFields(GraphQLField):
     hms: "RightAscensionGraphQLField" = RightAscensionGraphQLField("hms")
+    "Right Ascension (RA) in HH:MM:SS.SSS format"
     hours: "RightAscensionGraphQLField" = RightAscensionGraphQLField("hours")
+    "Right Ascension (RA) in hours"
     degrees: "RightAscensionGraphQLField" = RightAscensionGraphQLField("degrees")
+    "Right Ascension (RA) in degrees"
     microseconds: "RightAscensionGraphQLField" = RightAscensionGraphQLField(
         "microseconds"
     )
+    "Right Ascension (RA) in µs"
 
     def fields(self, *subfields: RightAscensionGraphQLField) -> "RightAscensionFields":
         """Subfields should come from the RightAscensionFields class"""
@@ -9349,24 +11269,27 @@ class RightAscensionArcFields(GraphQLField):
 
 
 class SchedulingConstraintsFields(GraphQLField):
+    """Configuration that controls how and when the Scheduler may plan execution of an
+    observation, including whether it can be split across multiple visits and any
+    timing constraints."""
+
     too_activation: "SchedulingConstraintsGraphQLField" = (
         SchedulingConstraintsGraphQLField("tooActivation")
     )
-    execution_requirement: "SchedulingConstraintsGraphQLField" = (
-        SchedulingConstraintsGraphQLField("executionRequirement")
+    "Whether this observation is a Target of Opportunity, and how disruptive its\nexecution may be.  Derived, not set: an observation is a Target of Opportunity\nexactly when its asterism holds an opportunity target, and how disruptive it\nmay be follows from its `schedulingMode`.  May not exceed the ceiling\nestablished by the program's accepted proposal; an observation that exceeds it\nis flagged and cannot become ready to execute."
+    scheduling_mode: "SchedulingConstraintsGraphQLField" = (
+        SchedulingConstraintsGraphQLField("schedulingMode")
     )
-    default_execution_requirement: "SchedulingConstraintsGraphQLField" = (
-        SchedulingConstraintsGraphQLField("defaultExecutionRequirement")
-    )
-    explicit_execution_requirement: "SchedulingConstraintsGraphQLField" = (
-        SchedulingConstraintsGraphQLField("explicitExecutionRequirement")
-    )
+    "What the Scheduler may do with this observation."
     is_splittable: "SchedulingConstraintsGraphQLField" = (
         SchedulingConstraintsGraphQLField("isSplittable")
     )
+    'Controls whether the observation may be split across multiple visits. When\ntrue, the scheduler may divide the science sequence into discrete segments\n(i.e. "atoms") scheduled in order across separate visits. When false, the\nentire science sequence must complete within a single uninterrupted visit.'
 
     @classmethod
     def timing_windows(cls) -> "TimingWindowFields":
+        """One or more windows during which the observation is permitted to execute.  If
+        empty, there are no timing constraints for the observation."""
         return TimingWindowFields("timingWindows")
 
     def fields(
@@ -9382,7 +11305,10 @@ class SchedulingConstraintsFields(GraphQLField):
 
 
 class ScienceFields(GraphQLField):
+    """Science step"""
+
     step_type: "ScienceGraphQLField" = ScienceGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: ScienceGraphQLField) -> "ScienceFields":
         """Subfields should come from the ScienceFields class"""
@@ -9425,17 +11351,21 @@ class ScienceProgramReferenceFields(GraphQLField):
 
 class ScienceRequirementsFields(GraphQLField):
     mode: "ScienceRequirementsGraphQLField" = ScienceRequirementsGraphQLField("mode")
+    "Science mode"
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """Requested exposure time mode."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     @classmethod
     def spectroscopy(cls) -> "SpectroscopyScienceRequirementsFields":
+        """Spectroscopy requirements, if mode is Spectroscopy, this mode must be set"""
         return SpectroscopyScienceRequirementsFields("spectroscopy")
 
     @classmethod
     def imaging(cls) -> "ImagingScienceRequirementsFields":
+        """Imaging requirements, if mode is Imaging, this mode must be set"""
         return ImagingScienceRequirementsFields("imaging")
 
     def fields(
@@ -9460,19 +11390,24 @@ class SequenceDigestFields(GraphQLField):
     observe_class: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField(
         "observeClass"
     )
+    "ObserveClass of the whole sequence."
 
     @classmethod
     def time_estimate(cls) -> "CategorizedTimeFields":
+        """Time estimate for the whole sequence."""
         return CategorizedTimeFields("timeEstimate")
 
     @classmethod
     def telescope_configs(cls) -> "TelescopeConfigFields":
+        """TelescopeConfig (offset + guiding) for each step."""
         return TelescopeConfigFields("telescopeConfigs")
 
     atom_count: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField("atomCount")
+    "Total count of anticipated atoms, including the 'nextAtom', 'possibleFuture'\nand any remaining atoms not included in 'possibleFuture'."
     execution_state: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField(
         "executionState"
     )
+    "Execution state for the sequence. Note, acquisition sequences are never\n'COMPLETED'.  The execution state for the observation as a whole is that of\nthe science sequence."
 
     def fields(
         self,
@@ -9490,29 +11425,41 @@ class SequenceDigestFields(GraphQLField):
 
 
 class SequenceEventFields(GraphQLField):
+    """Sequence-level events.  As commands are issued to execute a sequence, corresponding events are generated."""
+
     id: "SequenceEventGraphQLField" = SequenceEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
         "recordedTime"
     )
+    "Time at which this event was recorded in the database."
     received: "SequenceEventGraphQLField" = SequenceEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
         "effectiveTime"
     )
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "SequenceEventGraphQLField" = SequenceEventGraphQLField("eventType")
+    "Event type."
     command: "SequenceEventGraphQLField" = SequenceEventGraphQLField("command")
+    "Sequence event data."
     idempotency_key: "SequenceEventGraphQLField" = SequenceEventGraphQLField(
         "idempotencyKey"
     )
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -9547,6 +11494,8 @@ class SetAllocationsResultFields(GraphQLField):
 
 
 class SetGuideTargetNameResultFields(GraphQLField):
+    """The result of setting the guide target name for an observation."""
+
     @classmethod
     def observation(cls) -> "ObservationFields":
         return ObservationFields("observation")
@@ -9567,6 +11516,7 @@ class SetGuideTargetNameResultFields(GraphQLField):
 class SetProgramReferenceResultFields(GraphQLField):
     @classmethod
     def reference(cls) -> "ProgramReferenceInterface":
+        """The resulting program reference, if any."""
         return ProgramReferenceInterface("reference")
 
     def fields(
@@ -9585,8 +11535,11 @@ class SetProgramReferenceResultFields(GraphQLField):
 
 
 class SetProgramResourceLimitResultFields(GraphQLField):
+    """The result of `setProgramResourceLimit`."""
+
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The updated program."""
         return ProgramFields("program")
 
     def fields(
@@ -9603,8 +11556,13 @@ class SetProgramResourceLimitResultFields(GraphQLField):
 
 
 class SetProposalStatusResultFields(GraphQLField):
+    """The result of setting the proposal status."""
+
     @classmethod
     def program(cls) -> "ProgramFields":
+        """The program on which the proposal status was set. Returning the program allows checking
+        the proposal reference, program reference and other values that can be affected by changing
+        the proposal status."""
         return ProgramFields("program")
 
     def fields(
@@ -9622,10 +11580,12 @@ class SetProposalStatusResultFields(GraphQLField):
 class SetupTimeFields(GraphQLField):
     @classmethod
     def full(cls) -> "TimeSpanFields":
+        """Full setup time estimate, including slew, configuration and target acquisition"""
         return TimeSpanFields("full")
 
     @classmethod
     def reacquisition(cls) -> "TimeSpanFields":
+        """A reduced setup time contemplating reacquiring a previously acquired target"""
         return TimeSpanFields("reacquisition")
 
     def fields(
@@ -9643,28 +11603,35 @@ class SetupTimeFields(GraphQLField):
 class SiderealFields(GraphQLField):
     @classmethod
     def ra(cls) -> "RightAscensionFields":
+        """Right ascension at epoch"""
         return RightAscensionFields("ra")
 
     @classmethod
     def dec(cls) -> "DeclinationFields":
+        """Declination at epoch"""
         return DeclinationFields("dec")
 
     epoch: "SiderealGraphQLField" = SiderealGraphQLField("epoch")
+    "Epoch, time of base observation"
 
     @classmethod
     def proper_motion(cls) -> "ProperMotionFields":
+        """Proper motion per year in right ascension and declination"""
         return ProperMotionFields("properMotion")
 
     @classmethod
     def radial_velocity(cls) -> "RadialVelocityFields":
+        """Radial velocity"""
         return RadialVelocityFields("radialVelocity")
 
     @classmethod
     def parallax(cls) -> "ParallaxFields":
+        """Parallax"""
         return ParallaxFields("parallax")
 
     @classmethod
     def catalog_info(cls) -> "CatalogInfoFields":
+        """Catalog info, if any, describing from where the information in this target was obtained"""
         return CatalogInfoFields("catalogInfo")
 
     def fields(
@@ -9689,11 +11656,16 @@ class SiderealFields(GraphQLField):
 
 
 class SignalToNoiseAtFields(GraphQLField):
+    """Calculated signal to noise at a specific wavelength"""
+
     single: "SignalToNoiseAtGraphQLField" = SignalToNoiseAtGraphQLField("single")
+    "Single exposure signal to noise"
     total: "SignalToNoiseAtGraphQLField" = SignalToNoiseAtGraphQLField("total")
+    "Total exposure signal to noise"
 
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Wavelength sn was calculated at"""
         return WavelengthFields("wavelength")
 
     def fields(
@@ -9709,12 +11681,16 @@ class SignalToNoiseAtFields(GraphQLField):
 
 
 class SignalToNoiseExposureTimeModeFields(GraphQLField):
+    """Signal to noise exposure time mode"""
+
     value: "SignalToNoiseExposureTimeModeGraphQLField" = (
         SignalToNoiseExposureTimeModeGraphQLField("value")
     )
+    "Signal/Noise value"
 
     @classmethod
     def at(cls) -> "WavelengthFields":
+        """Signal/Noise wavelength"""
         return WavelengthFields("at")
 
     def fields(
@@ -9733,12 +11709,16 @@ class SignalToNoiseExposureTimeModeFields(GraphQLField):
 
 
 class SiteCoordinateLimitsFields(GraphQLField):
+    """Coordinate limits per site."""
+
     @classmethod
     def north(cls) -> "CoordinateLimitsFields":
+        """Gemini North coordinate limits."""
         return CoordinateLimitsFields("north")
 
     @classmethod
     def south(cls) -> "CoordinateLimitsFields":
+        """Gemini South coordinate limits."""
         return CoordinateLimitsFields("south")
 
     def fields(
@@ -9755,23 +11735,35 @@ class SiteCoordinateLimitsFields(GraphQLField):
 
 
 class SlewEventFields(GraphQLField):
+    """Slew events."""
+
     id: "SlewEventGraphQLField" = SlewEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "SlewEventGraphQLField" = SlewEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "SlewEventGraphQLField" = SlewEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "SlewEventGraphQLField" = SlewEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "SlewEventGraphQLField" = SlewEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "SlewEventGraphQLField" = SlewEventGraphQLField("eventType")
+    "Event type."
     slew_stage: "SlewEventGraphQLField" = SlewEventGraphQLField("slewStage")
+    "Slew event data."
     idempotency_key: "SlewEventGraphQLField" = SlewEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -9787,6 +11779,9 @@ class SlewEventFields(GraphQLField):
 
 
 class SlitTelescopeConfigsFields(GraphQLField):
+    """A list of telescope configurations associated with a slit. The discriminant
+    `offsetMode` selects which of `alongSlit` or `toSky` is populated."""
+
     offset_mode: "SlitTelescopeConfigsGraphQLField" = SlitTelescopeConfigsGraphQLField(
         "offsetMode"
     )
@@ -9817,8 +11812,11 @@ class SlitTelescopeConfigsFields(GraphQLField):
 
 
 class SmartGcalFields(GraphQLField):
+    """SmartGcal step configuration."""
+
     smart_gcal_type: "SmartGcalGraphQLField" = SmartGcalGraphQLField("smartGcalType")
     step_type: "SmartGcalGraphQLField" = SmartGcalGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: SmartGcalGraphQLField) -> "SmartGcalFields":
         """Subfields should come from the SmartGcalFields class"""
@@ -9831,16 +11829,21 @@ class SmartGcalFields(GraphQLField):
 
 
 class SourceProfileFields(GraphQLField):
+    """Source profile, exactly one of the fields will be defined"""
+
     @classmethod
     def point(cls) -> "SpectralDefinitionIntegratedFields":
+        """point source, integrated units"""
         return SpectralDefinitionIntegratedFields("point")
 
     @classmethod
     def uniform(cls) -> "SpectralDefinitionSurfaceFields":
+        """uniform source, surface units"""
         return SpectralDefinitionSurfaceFields("uniform")
 
     @classmethod
     def gaussian(cls) -> "GaussianSourceFields":
+        """gaussian source, integrated units"""
         return GaussianSourceFields("gaussian")
 
     def fields(
@@ -9862,12 +11865,16 @@ class SourceProfileFields(GraphQLField):
 
 
 class SpectralDefinitionIntegratedFields(GraphQLField):
+    """Spectral definition integrated.  Exactly one of the fields will be defined."""
+
     @classmethod
     def band_normalized(cls) -> "BandNormalizedIntegratedFields":
+        """Band normalized spectral definition"""
         return BandNormalizedIntegratedFields("bandNormalized")
 
     @classmethod
     def emission_lines(cls) -> "EmissionLinesIntegratedFields":
+        """Emission lines spectral definition"""
         return EmissionLinesIntegratedFields("emissionLines")
 
     def fields(
@@ -9888,12 +11895,16 @@ class SpectralDefinitionIntegratedFields(GraphQLField):
 
 
 class SpectralDefinitionSurfaceFields(GraphQLField):
+    """Spectral definition surface.  Exactly one of the fields will be defined."""
+
     @classmethod
     def band_normalized(cls) -> "BandNormalizedSurfaceFields":
+        """Band normalized spectral definition"""
         return BandNormalizedSurfaceFields("bandNormalized")
 
     @classmethod
     def emission_lines(cls) -> "EmissionLinesSurfaceFields":
+        """Emission lines spectral definition"""
         return EmissionLinesSurfaceFields("emissionLines")
 
     def fields(
@@ -9914,6 +11925,8 @@ class SpectralDefinitionSurfaceFields(GraphQLField):
 
 
 class SpectroscopyConfigOptionFields(GraphQLField):
+    """Describes an instrument configuration option for spectroscopy."""
+
     name: "SpectroscopyConfigOptionGraphQLField" = SpectroscopyConfigOptionGraphQLField(
         "name"
     )
@@ -9967,28 +11980,37 @@ class SpectroscopyConfigOptionFields(GraphQLField):
     capability: "SpectroscopyConfigOptionGraphQLField" = (
         SpectroscopyConfigOptionGraphQLField("capability")
     )
+    "A special capability (if any) that the configuration may have."
     site: "SpectroscopyConfigOptionGraphQLField" = SpectroscopyConfigOptionGraphQLField(
         "site"
     )
 
     @classmethod
     def flamingos_2(cls) -> "SpectroscopyConfigOptionFlamingos2Fields":
+        """For Flamingos2 options, the Flamingos 2configuration.  Null for other
+        instruments."""
         return SpectroscopyConfigOptionFlamingos2Fields("flamingos2")
 
     @classmethod
     def ghost(cls) -> "SpectroscopyConfigOptionGhostFields":
+        """For GHOST options, the GHOST configuration.  Null for other instruments."""
         return SpectroscopyConfigOptionGhostFields("ghost")
 
     @classmethod
     def gmos_north(cls) -> "SpectroscopyConfigOptionGmosNorthFields":
+        """For GMOS North options, the GMOS North configuration.  Null for other
+        instruments."""
         return SpectroscopyConfigOptionGmosNorthFields("gmosNorth")
 
     @classmethod
     def gmos_south(cls) -> "SpectroscopyConfigOptionGmosSouthFields":
+        """For GMOS South options, the GMOS South configuration.  Null for other
+        instruments."""
         return SpectroscopyConfigOptionGmosSouthFields("gmosSouth")
 
     @classmethod
     def gnirs(cls) -> "SpectroscopyConfigOptionGnirsFields":
+        """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
         return SpectroscopyConfigOptionGnirsFields("gnirs")
 
     def fields(
@@ -10017,6 +12039,11 @@ class SpectroscopyConfigOptionFlamingos2Fields(GraphQLField):
     fpu: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
         SpectroscopyConfigOptionFlamingos2GraphQLField("fpu")
     )
+    "The builtin FPU, present for single-slit configurations. Null for multislit\n(MOS) configurations, where the focal-plane unit is a custom mask."
+    custom_slit_width: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
+        SpectroscopyConfigOptionFlamingos2GraphQLField("customSlitWidth")
+    )
+    "The custom mask slit width, present for multislit (MOS) configurations. Null\nfor single-slit configurations, where the width is implied by `fpu`."
     disperser: "SpectroscopyConfigOptionFlamingos2GraphQLField" = (
         SpectroscopyConfigOptionFlamingos2GraphQLField("disperser")
     )
@@ -10060,6 +12087,11 @@ class SpectroscopyConfigOptionGmosNorthFields(GraphQLField):
     fpu: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("fpu")
     )
+    "The builtin FPU, present for single-slit configurations. Null for multislit\n(MOS) configurations, where the focal-plane unit is a custom mask."
+    custom_slit_width: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
+        SpectroscopyConfigOptionGmosNorthGraphQLField("customSlitWidth")
+    )
+    "The custom mask slit width, present for multislit (MOS) configurations. Null\nfor single-slit configurations, where the width is implied by `fpu`."
     grating: "SpectroscopyConfigOptionGmosNorthGraphQLField" = (
         SpectroscopyConfigOptionGmosNorthGraphQLField("grating")
     )
@@ -10083,6 +12115,11 @@ class SpectroscopyConfigOptionGmosSouthFields(GraphQLField):
     fpu: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("fpu")
     )
+    "The builtin FPU, present for single-slit configurations. Null for multislit\n(MOS) configurations, where the focal-plane unit is a custom mask."
+    custom_slit_width: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
+        SpectroscopyConfigOptionGmosSouthGraphQLField("customSlitWidth")
+    )
+    "The custom mask slit width, present for multislit (MOS) configurations. Null\nfor single-slit configurations, where the width is implied by `fpu`."
     grating: "SpectroscopyConfigOptionGmosSouthGraphQLField" = (
         SpectroscopyConfigOptionGmosSouthGraphQLField("grating")
     )
@@ -10112,9 +12149,11 @@ class SpectroscopyConfigOptionGnirsFields(GraphQLField):
     fpu_slit: "SpectroscopyConfigOptionGnirsGraphQLField" = (
         SpectroscopyConfigOptionGnirsGraphQLField("fpuSlit")
     )
+    "Long-slit FPU, when this option is a single-slit configuration. Exactly one of\n`fpuSlit` / `fpuIfu` is present."
     fpu_ifu: "SpectroscopyConfigOptionGnirsGraphQLField" = (
         SpectroscopyConfigOptionGnirsGraphQLField("fpuIfu")
     )
+    "IFU FPU, when this option is an integral field unit configuration. Exactly one\nof `fpuSlit` / `fpuIfu` is present."
     prism: "SpectroscopyConfigOptionGnirsGraphQLField" = (
         SpectroscopyConfigOptionGnirsGraphQLField("prism")
     )
@@ -10137,27 +12176,33 @@ class SpectroscopyConfigOptionGnirsFields(GraphQLField):
 class SpectroscopyScienceRequirementsFields(GraphQLField):
     @classmethod
     def wavelength(cls) -> "WavelengthFields":
+        """Requested central wavelength"""
         return WavelengthFields("wavelength")
 
     resolution: "SpectroscopyScienceRequirementsGraphQLField" = (
         SpectroscopyScienceRequirementsGraphQLField("resolution")
     )
+    "Requested resolution"
 
     @classmethod
     def wavelength_coverage(cls) -> "WavelengthFields":
+        """Wavelength range"""
         return WavelengthFields("wavelengthCoverage")
 
     focal_plane: "SpectroscopyScienceRequirementsGraphQLField" = (
         SpectroscopyScienceRequirementsGraphQLField("focalPlane")
     )
+    "Focal plane choice"
 
     @classmethod
     def focal_plane_angle(cls) -> "AngleFields":
+        """Focal plane angle"""
         return AngleFields("focalPlaneAngle")
 
     capability: "SpectroscopyScienceRequirementsGraphQLField" = (
         SpectroscopyScienceRequirementsGraphQLField("capability")
     )
+    "Spectroscopy Capabilities"
 
     def fields(
         self,
@@ -10205,7 +12250,10 @@ class SpiralTelescopeConfigGeneratorFields(GraphQLField):
 
 
 class StepConfigInterface(GraphQLField):
+    """Step (bias, dark, gcal, science, etc.)"""
+
     step_type: "StepConfigGraphQLField" = StepConfigGraphQLField("stepType")
+    "Step type"
 
     def fields(self, *subfields: StepConfigGraphQLField) -> "StepConfigInterface":
         """Subfields should come from the StepConfigInterface class"""
@@ -10222,16 +12270,24 @@ class StepConfigInterface(GraphQLField):
 
 
 class StepEstimateFields(GraphQLField):
+    """Time estimate for an individual step, including configuration changes and
+    dataset production."""
+
     @classmethod
     def config_change(cls) -> "AllConfigChangeEstimatesFields":
+        """Configuration changes required before the step is executed.  This will
+        obviously depend not only on the step configuration but also the previous
+        step configuration."""
         return AllConfigChangeEstimatesFields("configChange")
 
     @classmethod
     def detector(cls) -> "AllDetectorEstimatesFields":
+        """Time for producing the datasets for this step."""
         return AllDetectorEstimatesFields("detector")
 
     @classmethod
     def total(cls) -> "TimeSpanFields":
+        """Total time estimate for the step."""
         return TimeSpanFields("total")
 
     def fields(
@@ -10253,32 +12309,46 @@ class StepEstimateFields(GraphQLField):
 
 
 class StepEventFields(GraphQLField):
+    """Step-level events.  The execution of a single step will generate multiple events."""
+
     id: "StepEventGraphQLField" = StepEventGraphQLField("id")
+    "Event id."
 
     @classmethod
     def visit(cls) -> "VisitFields":
+        """Visit associated with the event."""
         return VisitFields("visit")
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation whose execution produced this event."""
         return ObservationFields("observation")
 
     recorded_time: "StepEventGraphQLField" = StepEventGraphQLField("recordedTime")
+    "Time at which this event was recorded in the database."
     received: "StepEventGraphQLField" = StepEventGraphQLField("received")
+    "Deprecated alias for `recordedTime`."
     client_time: "StepEventGraphQLField" = StepEventGraphQLField("clientTime")
+    "Client-supplied event time, if provided."
     effective_time: "StepEventGraphQLField" = StepEventGraphQLField("effectiveTime")
+    "Time we associate with this event.  This is the client-supplied event time when\none was provided, otherwise the time the event was recorded (see `recordedTime`)."
     event_type: "StepEventGraphQLField" = StepEventGraphQLField("eventType")
+    "Event type."
 
     @classmethod
     def atom(cls) -> "AtomRecordFields":
+        """Atom associated with this event."""
         return AtomRecordFields("atom")
 
     @classmethod
     def step(cls) -> "StepRecordFields":
+        """Step associated with this event."""
         return StepRecordFields("step")
 
     step_stage: "StepEventGraphQLField" = StepEventGraphQLField("stepStage")
+    "Step execution stage."
     idempotency_key: "StepEventGraphQLField" = StepEventGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe event is created and is used to enable problem-free retry in the case of\nfailure."
 
     def fields(
         self,
@@ -10300,40 +12370,58 @@ class StepEventFields(GraphQLField):
 
 
 class StepRecordFields(GraphQLField):
+    """A step as recorded by Observe.  There will be one instrument configuration per
+    instrument, all but one of which will be null."""
+
     id: "StepRecordGraphQLField" = StepRecordGraphQLField("id")
+    "Step ID."
     index: "StepRecordGraphQLField" = StepRecordGraphQLField("index")
+    "Step Index, relative to other step records in the observation."
     instrument: "StepRecordGraphQLField" = StepRecordGraphQLField("instrument")
+    "Instrument associated with the step. This will indicate which of the\ninstrument-specific dynamic fields (e.g., `gmosNorth: GmosNorthDynamic`) is\ndefined."
 
     @classmethod
     def atom(cls) -> "AtomRecordFields":
+        """The atom in which the step was executed."""
         return AtomRecordFields("atom")
 
     execution_state: "StepRecordGraphQLField" = StepRecordGraphQLField("executionState")
+    "The execution state of this step, according to events received (if any) from\nObserve."
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """Time interval during which this step executed.  This measures the range of
+        time from the first event to the last, whether or not the step ever
+        actually completed."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def step_config(cls) -> "StepConfigInterface":
+        """The step configuration, apart from instrument details found in the
+        instrument-specific 'StepRecord' implementation."""
         return StepConfigInterface("stepConfig")
 
     @classmethod
     def telescope_config(cls) -> "TelescopeConfigFields":
+        """The telescope configuration for this step."""
         return TelescopeConfigFields("telescopeConfig")
 
     observe_class: "StepRecordGraphQLField" = StepRecordGraphQLField("observeClass")
+    "The observe class of this step."
 
     @classmethod
     def estimate(cls) -> "TimeSpanFields":
+        """Original time estimate for executing this step."""
         return TimeSpanFields("estimate")
 
     qa_state: "StepRecordGraphQLField" = StepRecordGraphQLField("qaState")
+    "QA state based on a combination of dataset QA states.  The worst QA state is\ntaken as the overall step QA state.  For example, one FAIL dataset will\nresult in the step having a FAIL QA state.  Unset QA states are ignored, but\nif none are set the result will be null."
 
     @classmethod
     def datasets(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "DatasetSelectResultFields":
+        """Datasets associated with this step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -10347,6 +12435,7 @@ class StepRecordFields(GraphQLField):
     def events(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "ExecutionEventSelectResultFields":
+        """Execution events associated with this step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -10358,26 +12447,38 @@ class StepRecordFields(GraphQLField):
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2DynamicFields":
+        """Flamingos 2 instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "FLAMINGOS2"."""
         return Flamingos2DynamicFields("flamingos2")
 
     @classmethod
     def ghost(cls) -> "GhostDynamicFields":
+        """Ghost instrument configuration for this step, if any. This will be null unless
+        the `instrument` discriminator is "GHOST"."""
         return GhostDynamicFields("ghost")
 
     @classmethod
     def gmos_north(cls) -> "GmosNorthDynamicFields":
+        """GMOS North instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "GMOS_NORTH"."""
         return GmosNorthDynamicFields("gmosNorth")
 
     @classmethod
     def gmos_south(cls) -> "GmosSouthDynamicFields":
+        """GMOS South instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "GMOS_SOUTH"."""
         return GmosSouthDynamicFields("gmosSouth")
 
     @classmethod
     def igrins_2(cls) -> "Igrins2DynamicFields":
+        """IGRINS-2 instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "IGRINS2"."""
         return Igrins2DynamicFields("igrins2")
 
     @classmethod
     def gnirs(cls) -> "GnirsDynamicFields":
+        """GNIRS instrument configuration for this step, if any.  This will be null
+        unless the `instrument` discriminator is "GNIRS"."""
         return GnirsDynamicFields("gnirs")
 
     def fields(
@@ -10409,13 +12510,17 @@ class StepRecordFields(GraphQLField):
 
 
 class StepRecordSelectResultFields(GraphQLField):
+    """StepRecord query results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "StepRecordFields":
+        """Matching step records up to the return size limit of 1000."""
         return StepRecordFields("matches")
 
     has_more: "StepRecordSelectResultGraphQLField" = StepRecordSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[StepRecordSelectResultGraphQLField, "StepRecordFields"]
@@ -10430,13 +12535,20 @@ class StepRecordSelectResultFields(GraphQLField):
 
 
 class SubaruCallPropertiesFields(GraphQLField):
+    """Subaru-specific CfP properties.  Note, properties shared across all observatories
+    are found in the `CallForProposals` type."""
+
     type_: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField("type")
+    "Subaru proposal type."
     instruments: "SubaruCallPropertiesGraphQLField" = SubaruCallPropertiesGraphQLField(
         "instruments"
     )
+    "When specified, the observations executed in this Call may only use these\ninstruments.  When not specified, all otherwise available instruments may be\nused."
 
     @classmethod
     def coordinate_limits(cls) -> "CoordinateLimitsFields":
+        """Coordinate limits, associated with Subaru, for targets that may be observed in
+        this Call for Proposals."""
         return CoordinateLimitsFields("coordinateLimits")
 
     def fields(
@@ -10453,6 +12565,8 @@ class SubaruCallPropertiesFields(GraphQLField):
 
 
 class SubaruProgramReferenceFields(GraphQLField):
+    """Reference for a Subaru time-exchange program."""
+
     label: "SubaruProgramReferenceGraphQLField" = SubaruProgramReferenceGraphQLField(
         "label"
     )
@@ -10468,6 +12582,7 @@ class SubaruProgramReferenceFields(GraphQLField):
     subaru_type: "SubaruProgramReferenceGraphQLField" = (
         SubaruProgramReferenceGraphQLField("subaruType")
     )
+    "The Subaru call type (normal or intensive) that determines the reference letter (U or I)."
 
     def fields(
         self, *subfields: SubaruProgramReferenceGraphQLField
@@ -10482,12 +12597,16 @@ class SubaruProgramReferenceFields(GraphQLField):
 
 
 class SubaruProposalTypeFields(GraphQLField):
+    """Proposal properties for an exchange proposal requesting time at Subaru."""
+
     min_percent_time: "SubaruProposalTypeGraphQLField" = SubaruProposalTypeGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     @classmethod
     def partner_splits(cls) -> "PartnerSplitFields":
+        """Describes how time for the program will be apportioned across partners."""
         return PartnerSplitFields("partnerSplits")
 
     def fields(
@@ -10523,21 +12642,28 @@ class SystemProgramReferenceFields(GraphQLField):
 
 
 class SystemVerificationFields(GraphQLField):
+    """Proposal properties for System Verification CallForProposals."""
+
     science_subtype: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
         "scienceSubtype"
     )
+    "The science type of this Call for Proposals."
     too_activation_ceiling: "SystemVerificationGraphQLField" = (
         SystemVerificationGraphQLField("tooActivationCeiling")
     )
+    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
     default_too_activation_ceiling: "SystemVerificationGraphQLField" = (
         SystemVerificationGraphQLField("defaultTooActivationCeiling")
     )
+    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
     explicit_too_activation_ceiling: "SystemVerificationGraphQLField" = (
         SystemVerificationGraphQLField("explicitTooActivationCeiling")
     )
+    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
         "minPercentTime"
     )
+    "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
     def fields(
         self, *subfields: SystemVerificationGraphQLField
@@ -10552,11 +12678,16 @@ class SystemVerificationFields(GraphQLField):
 
 
 class TargetFields(GraphQLField):
+    """Target description"""
+
     id: "TargetGraphQLField" = TargetGraphQLField("id")
+    "Target ID"
     existence: "TargetGraphQLField" = TargetGraphQLField("existence")
+    "DELETED or PRESENT"
 
     @classmethod
     def program(cls, include_deleted: bool) -> "ProgramFields":
+        """Program that contains this target"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -10566,23 +12697,30 @@ class TargetFields(GraphQLField):
         return ProgramFields("program", arguments=cleared_arguments)
 
     name: "TargetGraphQLField" = TargetGraphQLField("name")
+    "Target name."
     disposition: "TargetGraphQLField" = TargetGraphQLField("disposition")
+    "Target disposition. See TargetDisposition for more information."
     calibration_role: "TargetGraphQLField" = TargetGraphQLField("calibrationRole")
+    "calibration role"
 
     @classmethod
     def source_profile(cls) -> "SourceProfileFields":
+        """source profile"""
         return SourceProfileFields("sourceProfile")
 
     @classmethod
     def sidereal(cls) -> "SiderealFields":
+        """Sidereal tracking information, if this is a sidereal target"""
         return SiderealFields("sidereal")
 
     @classmethod
     def nonsidereal(cls) -> "NonsiderealFields":
+        """Nonsidereal tracking information, if this is a nonsidereal target"""
         return NonsiderealFields("nonsidereal")
 
     @classmethod
     def opportunity(cls) -> "OpportunityFields":
+        """Target of opportunity range information, if this a TOO target"""
         return OpportunityFields("opportunity")
 
     def fields(
@@ -10608,6 +12746,7 @@ class TargetFields(GraphQLField):
 class TargetEnvironmentFields(GraphQLField):
     @classmethod
     def asterism(cls, include_deleted: bool) -> "TargetFields":
+        """All the observation's science targets, if any"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -10618,6 +12757,7 @@ class TargetEnvironmentFields(GraphQLField):
 
     @classmethod
     def first_science_target(cls, include_deleted: bool) -> "TargetFields":
+        """First, perhaps only, science target in the asterism"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted}
         }
@@ -10628,20 +12768,39 @@ class TargetEnvironmentFields(GraphQLField):
 
     @classmethod
     def explicit_signal_to_noise_target(cls) -> "TargetFields":
+        """The asterism target explicitly selected to drive the signal-to-noise (ITC)
+        calculation, overriding the automatic choice. This is always one of the
+        observation's asterism targets. When null, no explicit selection has been
+        made and a representative target is chosen automatically; the target that will
+        actually be used in that case is available via the `itc` field's `selected`
+        result. It is set with `TargetEnvironmentInput.explicitSignalToNoiseTargetId`
+        and is cleared automatically if the target is removed from the asterism."""
         return TargetFields("explicitSignalToNoiseTarget")
 
     @classmethod
     def base_position(cls) -> "BasePositionFields":
+        """The base position used by navigate to slew and track the target.
+        Uses the observation's stored observation time.
+        Returns a GraphQL error when the observation time is required
+        to compute the base but is not set on the observation."""
         return BasePositionFields("basePosition")
 
     @classmethod
     def guide_environment(cls) -> "GuideEnvironmentFields":
+        """The guide target(s) and related information.
+        If a guide target has been set via `guideTargetName`, that target will be
+        returned. If it not found or not usable, an error will be returned.
+        If no guide target has been set, or it has been invalidated by observation/target
+        changes, Gaia will be searched for the best guide target available."""
         return GuideEnvironmentFields("guideEnvironment")
 
     @classmethod
     def guide_availability(
         cls, start: Any, end: Any
     ) -> "GuideAvailabilityPeriodFields":
+        """Availability of guide stars during a specified time range.
+        There can be multiple `GuideAvailabilityPeriod`s returned if availability changes over the time
+        range. In this case, the `end` of one period will be the same as the `start` of the next period."""
         arguments: dict[str, dict[str, Any]] = {
             "start": {"type": "Timestamp!", "value": start},
             "end": {"type": "Timestamp!", "value": end},
@@ -10655,25 +12814,31 @@ class TargetEnvironmentFields(GraphQLField):
 
     @classmethod
     def explicit_base(cls) -> "CoordinatesFields":
+        """When set, overrides the default base position of the target group"""
         return CoordinatesFields("explicitBase")
 
     guide_target_name: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "guideTargetName"
     )
+    "The name of the guide target, if any, set by `setGuideTargetName`.\nIf the name is no longer valid or a sequence cannot be generated, null will\nbe returned."
     use_blind_offset: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "useBlindOffset"
     )
+    "Whether blind offset is enabled for this observation"
 
     @classmethod
     def blind_offset_target(cls) -> "TargetFields":
+        """The target used for blind offset acquisition, if any"""
         return TargetFields("blindOffsetTarget")
 
     blind_offset_type: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "blindOffsetType"
     )
+    "The type of blind offset (automatic or manual) if a blind offset exists."
     cass_rotator: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "cassRotator"
     )
+    "The cassegrain rotator tracking mode."
 
     def fields(
         self,
@@ -10704,6 +12869,7 @@ class TargetGroupFields(GraphQLField):
         offset: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
+        """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
@@ -10718,10 +12884,12 @@ class TargetGroupFields(GraphQLField):
 
     @classmethod
     def target(cls) -> "TargetFields":
+        """Commonly held value across the observations"""
         return TargetFields("target")
 
     @classmethod
     def program(cls) -> "ProgramFields":
+        """Link back to program."""
         return ProgramFields("program")
 
     def fields(
@@ -10743,13 +12911,17 @@ class TargetGroupFields(GraphQLField):
 
 
 class TargetGroupSelectResultFields(GraphQLField):
+    """The matching targetGroup results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "TargetGroupFields":
+        """Matching targetGroups up to the return size limit of 1000"""
         return TargetGroupFields("matches")
 
     has_more: "TargetGroupSelectResultGraphQLField" = (
         TargetGroupSelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -10764,14 +12936,48 @@ class TargetGroupSelectResultFields(GraphQLField):
         return self
 
 
+class TargetResolutionFields(GraphQLField):
+    """What a Target of Opportunity turned out to be.  Exactly one field is non-null.
+    The types are the same ones an ordinary target uses, since a resolution differs
+    from a plain target only in that its name and source profile live on the Target."""
+
+    @classmethod
+    def sidereal(cls) -> "SiderealFields":
+        """Sidereal tracking information, if the target resolved to a sidereal target."""
+        return SiderealFields("sidereal")
+
+    @classmethod
+    def nonsidereal(cls) -> "NonsiderealFields":
+        """Nonsidereal tracking information, if the target resolved to a nonsidereal target."""
+        return NonsiderealFields("nonsidereal")
+
+    def fields(
+        self,
+        *subfields: Union[
+            TargetResolutionGraphQLField, "NonsiderealFields", "SiderealFields"
+        ],
+    ) -> "TargetResolutionFields":
+        """Subfields should come from the TargetResolutionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TargetResolutionFields":
+        self._alias = alias
+        return self
+
+
 class TargetSelectResultFields(GraphQLField):
+    """The matching target results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "TargetFields":
+        """Matching targets up to the return size limit of 1000"""
         return TargetFields("matches")
 
     has_more: "TargetSelectResultGraphQLField" = TargetSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[TargetSelectResultGraphQLField, "TargetFields"]
@@ -10788,9 +12994,11 @@ class TargetSelectResultFields(GraphQLField):
 class TelescopeConfigFields(GraphQLField):
     @classmethod
     def offset(cls) -> "OffsetFields":
+        """Offset"""
         return OffsetFields("offset")
 
     guiding: "TelescopeConfigGraphQLField" = TelescopeConfigGraphQLField("guiding")
+    "Guide State (whether guiding is enabled for this step)"
 
     def fields(
         self, *subfields: Union[TelescopeConfigGraphQLField, "OffsetFields"]
@@ -10805,6 +13013,8 @@ class TelescopeConfigFields(GraphQLField):
 
 
 class TelescopeConfigAlongSlitFields(GraphQLField):
+    """Telescope configuration along the slit: a single `q` offset plus guide state."""
+
     @classmethod
     def q(cls) -> "OffsetQFields":
         return OffsetQFields("q")
@@ -10826,6 +13036,12 @@ class TelescopeConfigAlongSlitFields(GraphQLField):
 
 
 class TelescopeConfigGeneratorFields(GraphQLField):
+    """An offset generator produces a series of offsets according to generator-specific
+    parameters.  Only (at most) one of `enumerated`, `random`, `spiral` or `uniform`
+    will be defined.  All others will be `null`.  The `generatorType` corresponds to
+    the entry (if any) that is defined.  If the generator type of `NONE`, then none
+    of the entries will be defined."""
+
     generator_type: "TelescopeConfigGeneratorGraphQLField" = (
         TelescopeConfigGeneratorGraphQLField("generatorType")
     )
@@ -10866,6 +13082,8 @@ class TelescopeConfigGeneratorFields(GraphQLField):
 
 
 class TelluricTypeFields(GraphQLField):
+    """Telluric calibration type"""
+
     tag: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("tag")
     star_types: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("starTypes")
 
@@ -10880,16 +13098,21 @@ class TelluricTypeFields(GraphQLField):
 
 
 class TimeAndCountExposureTimeModeFields(GraphQLField):
+    """Time and Count exposure time mode."""
+
     @classmethod
     def time(cls) -> "TimeSpanFields":
+        """Exposure time."""
         return TimeSpanFields("time")
 
     count: "TimeAndCountExposureTimeModeGraphQLField" = (
         TimeAndCountExposureTimeModeGraphQLField("count")
     )
+    "Exposure count."
 
     @classmethod
     def at(cls) -> "WavelengthFields":
+        """S/N at Wavelength."""
         return WavelengthFields("at")
 
     def fields(
@@ -10910,25 +13133,35 @@ class TimeAndCountExposureTimeModeFields(GraphQLField):
 
 
 class TimeChargeCorrectionFields(GraphQLField):
+    """A manual correction to time accounting calculations.  Note that the
+    application of a correction is bounded by a zero time span and the
+    maximum time span."""
+
     created: "TimeChargeCorrectionGraphQLField" = TimeChargeCorrectionGraphQLField(
         "created"
     )
+    "When the correction was made."
     charge_class: "TimeChargeCorrectionGraphQLField" = TimeChargeCorrectionGraphQLField(
         "chargeClass"
     )
+    "The charge class to be corrected."
     op: "TimeChargeCorrectionGraphQLField" = TimeChargeCorrectionGraphQLField("op")
+    "The operation (add or subtract) to perform."
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """The amount of time to add or subtract (respecting the min and max time span)."""
         return TimeSpanFields("amount")
 
     @classmethod
     def user(cls) -> "UserFields":
+        """The user responsible for the change."""
         return UserFields("user")
 
     comment: "TimeChargeCorrectionGraphQLField" = TimeChargeCorrectionGraphQLField(
         "comment"
     )
+    "Optional justification for the correction."
 
     def fields(
         self,
@@ -10946,20 +13179,28 @@ class TimeChargeCorrectionFields(GraphQLField):
 
 
 class TimeChargeDaylightDiscountFields(GraphQLField):
+    """A time charge discount that is applied when part of the observation is executed
+    outside of nautical twilight boundaries.  The portion that occurs during day
+    time is not charged."""
+
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
         return TimeSpanFields("amount")
 
     comment: "TimeChargeDaylightDiscountGraphQLField" = (
         TimeChargeDaylightDiscountGraphQLField("comment")
     )
+    "Additional detail."
     site: "TimeChargeDaylightDiscountGraphQLField" = (
         TimeChargeDaylightDiscountGraphQLField("site")
     )
+    "The site where the observation was executed."
 
     def fields(
         self,
@@ -10979,17 +13220,23 @@ class TimeChargeDaylightDiscountFields(GraphQLField):
 
 
 class TimeChargeDiscountInterface(GraphQLField):
+    """Describes a time charge discount, broken out by charge class.  For each class,
+    the associated time is subtracted and then added to uncharged."""
+
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
         return TimeSpanFields("amount")
 
     comment: "TimeChargeDiscountGraphQLField" = TimeChargeDiscountGraphQLField(
         "comment"
     )
+    "Additional detail."
 
     def fields(
         self,
@@ -11013,20 +13260,29 @@ class TimeChargeDiscountInterface(GraphQLField):
 
 
 class TimeChargeInvoiceFields(GraphQLField):
+    """Detailed time accounting information for a visit, showing the raw execution
+    time along with any automatically applied discounts (e.g., for bad weather)
+    and manual adjustments made by staff."""
+
     @classmethod
     def execution_time(cls) -> "CategorizedTimeFields":
+        """Raw execution time."""
         return CategorizedTimeFields("executionTime")
 
     @classmethod
     def discounts(cls) -> "TimeChargeDiscountInterface":
+        """Automatic discounts for weather loss, fault reports, and non-passing datasets."""
         return TimeChargeDiscountInterface("discounts")
 
     @classmethod
     def corrections(cls) -> "TimeChargeCorrectionFields":
+        """Any manual corrections to the execution time."""
         return TimeChargeCorrectionFields("corrections")
 
     @classmethod
     def final_charge(cls) -> "CategorizedTimeFields":
+        """Final time charge once discounts and corrections have been applied to the
+        initial 'executionTime'."""
         return CategorizedTimeFields("finalCharge")
 
     def fields(
@@ -11048,17 +13304,23 @@ class TimeChargeInvoiceFields(GraphQLField):
 
 
 class TimeChargeNoDataDiscountFields(GraphQLField):
+    """A time charge discount that is applied when no data is collected during the
+    entirety of the visit."""
+
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
         return TimeSpanFields("amount")
 
     comment: "TimeChargeNoDataDiscountGraphQLField" = (
         TimeChargeNoDataDiscountGraphQLField("comment")
     )
+    "Additional detail."
 
     def fields(
         self,
@@ -11078,20 +13340,28 @@ class TimeChargeNoDataDiscountFields(GraphQLField):
 
 
 class TimeChargeOverlapDiscountFields(GraphQLField):
+    """A time charge discount that is applied when part of the observation is executed
+    after an overlapping chargeable observation is started.  For example, when
+    writing out datasets while slewing to a new target."""
+
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
         return TimeSpanFields("amount")
 
     comment: "TimeChargeOverlapDiscountGraphQLField" = (
         TimeChargeOverlapDiscountGraphQLField("comment")
     )
+    "Additional detail."
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The overlapping observation."""
         return ObservationFields("observation")
 
     def fields(
@@ -11115,18 +13385,22 @@ class TimeChargeOverlapDiscountFields(GraphQLField):
 class TimeChargeQaDiscountFields(GraphQLField):
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """The interval during which this discount applies."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def amount(cls) -> "TimeSpanFields":
+        """Time amount to discount from the program."""
         return TimeSpanFields("amount")
 
     comment: "TimeChargeQaDiscountGraphQLField" = TimeChargeQaDiscountGraphQLField(
         "comment"
     )
+    "Additional detail."
 
     @classmethod
     def datasets(cls) -> "DatasetFields":
+        """Datasets associated with the discount."""
         return DatasetFields("datasets")
 
     def fields(
@@ -11148,12 +13422,20 @@ class TimeChargeQaDiscountFields(GraphQLField):
 
 
 class TimeSpanFields(GraphQLField):
+    """Equivalent time amount in several unit options (e.g., 120 seconds or 2 minutes)"""
+
     microseconds: "TimeSpanGraphQLField" = TimeSpanGraphQLField("microseconds")
+    "TimeSpan in µs"
     milliseconds: "TimeSpanGraphQLField" = TimeSpanGraphQLField("milliseconds")
+    "TimeSpan in ms"
     seconds: "TimeSpanGraphQLField" = TimeSpanGraphQLField("seconds")
+    "TimeSpan in seconds"
     minutes: "TimeSpanGraphQLField" = TimeSpanGraphQLField("minutes")
+    "TimeSpan in minutes"
     hours: "TimeSpanGraphQLField" = TimeSpanGraphQLField("hours")
+    "TimeSpan in hours"
     iso: "TimeSpanGraphQLField" = TimeSpanGraphQLField("iso")
+    "TimeSpan as an ISO-8601 string"
 
     def fields(self, *subfields: TimeSpanGraphQLField) -> "TimeSpanFields":
         """Subfields should come from the TimeSpanFields class"""
@@ -11166,11 +13448,17 @@ class TimeSpanFields(GraphQLField):
 
 
 class TimestampIntervalFields(GraphQLField):
+    """Time interval marked by a start 'Timestamp' (inclusive) and an end 'Timestamp'
+    (exclusive)."""
+
     start: "TimestampIntervalGraphQLField" = TimestampIntervalGraphQLField("start")
+    "Start time of the interval (inclusive)."
     end: "TimestampIntervalGraphQLField" = TimestampIntervalGraphQLField("end")
+    "End time of the interval (exclusive)."
 
     @classmethod
     def duration(cls) -> "TimeSpanFields":
+        """Duration of the interval."""
         return TimeSpanFields("duration")
 
     def fields(
@@ -11187,8 +13475,11 @@ class TimestampIntervalFields(GraphQLField):
 
 class TimingWindowFields(GraphQLField):
     inclusion: "TimingWindowGraphQLField" = TimingWindowGraphQLField("inclusion")
+    "Whether this is an INCLUDE or EXCLUDE window."
     start_utc: "TimingWindowGraphQLField" = TimingWindowGraphQLField("startUtc")
+    "Window start time, in UTC."
     end: "TimingWindowEndUnion" = TimingWindowEndUnion("end")
+    "Window end. If absent, the window will never end."
 
     def fields(
         self, *subfields: Union[TimingWindowGraphQLField, "TimingWindowEndUnion"]
@@ -11203,12 +13494,16 @@ class TimingWindowFields(GraphQLField):
 
 
 class TimingWindowEndAfterFields(GraphQLField):
+    """Timing window end after a period of time."""
+
     @classmethod
     def after(cls) -> "TimeSpanFields":
+        """Window duration."""
         return TimeSpanFields("after")
 
     @classmethod
     def repeat(cls) -> "TimingWindowRepeatFields":
+        """Window repetetion. If absent, will not repeat."""
         return TimingWindowRepeatFields("repeat")
 
     def fields(
@@ -11229,7 +13524,10 @@ class TimingWindowEndAfterFields(GraphQLField):
 
 
 class TimingWindowEndAtFields(GraphQLField):
+    """Timing window end at a specified date and time."""
+
     at_utc: "TimingWindowEndAtGraphQLField" = TimingWindowEndAtGraphQLField("atUtc")
+    "Window end date and time, in UTC."
 
     def fields(
         self, *subfields: TimingWindowEndAtGraphQLField
@@ -11244,11 +13542,15 @@ class TimingWindowEndAtFields(GraphQLField):
 
 
 class TimingWindowRepeatFields(GraphQLField):
+    """Timing window repetition"""
+
     @classmethod
     def period(cls) -> "TimeSpanFields":
+        """Repeat period, counting from the start of the window."""
         return TimeSpanFields("period")
 
     times: "TimingWindowRepeatGraphQLField" = TimingWindowRepeatGraphQLField("times")
+    "Repetition times. If absent, will repeat forever."
 
     def fields(
         self, *subfields: Union[TimingWindowRepeatGraphQLField, "TimeSpanFields"]
@@ -11263,23 +13565,33 @@ class TimingWindowRepeatFields(GraphQLField):
 
 
 class TooTriggerFields(GraphQLField):
+    """A Target-of-Opportunity trigger: a per-attempt record of a request to activate a
+    ToO observation, together with its lifecycle status."""
+
     id: "TooTriggerGraphQLField" = TooTriggerGraphQLField("id")
+    "This trigger's unique id."
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """The observation this trigger is for."""
         return ObservationFields("observation")
 
     status: "TooTriggerGraphQLField" = TooTriggerGraphQLField("status")
+    "The trigger's lifecycle status."
     resolution_reason: "TooTriggerGraphQLField" = TooTriggerGraphQLField(
         "resolutionReason"
     )
+    "Reason accompanying a terminal transition (e.g. a denial or withdrawal), if any."
     requested_at: "TooTriggerGraphQLField" = TooTriggerGraphQLField("requestedAt")
+    "When the trigger was requested (created)."
 
     @classmethod
     def requested_by(cls) -> "UserFields":
+        """The user who requested the trigger, if known."""
         return UserFields("requestedBy")
 
     updated_at: "TooTriggerGraphQLField" = TooTriggerGraphQLField("updatedAt")
+    "When the trigger was last modified."
 
     def fields(
         self,
@@ -11295,6 +13607,9 @@ class TooTriggerFields(GraphQLField):
 
 
 class TooTriggerChronicleEntryFields(GraphQLField):
+    """A single entry in the Target-of-Opportunity trigger chronicle: one transaction's
+    worth of change to a trigger (its creation or a lifecycle transition)."""
+
     id: "TooTriggerChronicleEntryGraphQLField" = TooTriggerChronicleEntryGraphQLField(
         "id"
     )
@@ -11304,17 +13619,21 @@ class TooTriggerChronicleEntryFields(GraphQLField):
 
     @classmethod
     def user(cls) -> "UserFields":
+        """The user who performed the insertion or update, if known."""
         return UserFields("user")
 
     timestamp: "TooTriggerChronicleEntryGraphQLField" = (
         TooTriggerChronicleEntryGraphQLField("timestamp")
     )
+    "When the update happened."
     operation: "TooTriggerChronicleEntryGraphQLField" = (
         TooTriggerChronicleEntryGraphQLField("operation")
     )
+    "The database operation that was performed."
 
     @classmethod
     def too_trigger(cls) -> "TooTriggerFields":
+        """The trigger that was inserted or updated."""
         return TooTriggerFields("tooTrigger")
 
     mod_observation_id: "TooTriggerChronicleEntryGraphQLField" = (
@@ -11358,13 +13677,17 @@ class TooTriggerChronicleEntryFields(GraphQLField):
 
 
 class TooTriggerChronicleEntrySelectResultFields(GraphQLField):
+    """The matching trigger chronicle entries, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "TooTriggerChronicleEntryFields":
+        """Matching entries up to the return size limit of 1000."""
         return TooTriggerChronicleEntryFields("matches")
 
     has_more: "TooTriggerChronicleEntrySelectResultGraphQLField" = (
         TooTriggerChronicleEntrySelectResultGraphQLField("hasMore")
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self,
@@ -11383,13 +13706,17 @@ class TooTriggerChronicleEntrySelectResultFields(GraphQLField):
 
 
 class TooTriggerSelectResultFields(GraphQLField):
+    """The matching triggers, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "TooTriggerFields":
+        """Matching triggers up to the return size limit of 1000."""
         return TooTriggerFields("matches")
 
     has_more: "TooTriggerSelectResultGraphQLField" = TooTriggerSelectResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[TooTriggerSelectResultGraphQLField, "TooTriggerFields"]
@@ -11404,6 +13731,9 @@ class TooTriggerSelectResultFields(GraphQLField):
 
 
 class UniformTelescopeConfigGeneratorFields(GraphQLField):
+    """Defines a region of the sky using two corners.  Exposures are
+    then distributed across this region as evenly as possible."""
+
     @classmethod
     def corner_a(cls) -> "OffsetFields":
         return OffsetFields("cornerA")
@@ -11427,6 +13757,7 @@ class UniformTelescopeConfigGeneratorFields(GraphQLField):
 
 class UnlinkUserResultFields(GraphQLField):
     result: "UnlinkUserResultGraphQLField" = UnlinkUserResultGraphQLField("result")
+    "Returns true if the user was unlinked, false if no such link existed."
 
     def fields(
         self, *subfields: UnlinkUserResultGraphQLField
@@ -11441,6 +13772,8 @@ class UnlinkUserResultFields(GraphQLField):
 
 
 class UnnormalizedSedFields(GraphQLField):
+    """Un-normalized spectral energy distribution.  Exactly one of the definitions will be non-null."""
+
     stellar_library: "UnnormalizedSedGraphQLField" = UnnormalizedSedGraphQLField(
         "stellarLibrary"
     )
@@ -11478,13 +13811,19 @@ class UnnormalizedSedFields(GraphQLField):
 
 
 class UpdateAsterismsResultFields(GraphQLField):
+    """The result of updating the selected observations, up to `LIMIT` or the maximum
+    of (1000).  If `hasMore` is true, additional observations were modified and not
+    included here."""
+
     @classmethod
     def observations(cls) -> "ObservationFields":
+        """The edited observations, up to the specified LIMIT or the default maximum of 1000."""
         return ObservationFields("observations")
 
     has_more: "UpdateAsterismsResultGraphQLField" = UpdateAsterismsResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateAsterismsResultGraphQLField, "ObservationFields"]
@@ -11499,13 +13838,17 @@ class UpdateAsterismsResultFields(GraphQLField):
 
 
 class UpdateAttachmentsResultFields(GraphQLField):
+    """The result of updating the selected attachments, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional attachments were modified and not included here."""
+
     @classmethod
     def attachments(cls) -> "AttachmentFields":
+        """The edited attachments, up to the specified LIMIT or the default maximum of 1000."""
         return AttachmentFields("attachments")
 
     has_more: "UpdateAttachmentsResultGraphQLField" = (
         UpdateAttachmentsResultGraphQLField("hasMore")
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateAttachmentsResultGraphQLField, "AttachmentFields"]
@@ -11520,13 +13863,20 @@ class UpdateAttachmentsResultFields(GraphQLField):
 
 
 class UpdateCallsForProposalsResultFields(GraphQLField):
+    """The result of updating the selected calls for proposals, up to `LIMIT` or the
+    maximum of 1000.  If `hasMore` is true, additional calls were modified and not
+    included here."""
+
     @classmethod
     def calls_for_proposals(cls) -> "CallForProposalsFields":
+        """The edited observations, up to the specified LIMIT or the default maximum of
+        1000."""
         return CallForProposalsFields("callsForProposals")
 
     has_more: "UpdateCallsForProposalsResultGraphQLField" = (
         UpdateCallsForProposalsResultGraphQLField("hasMore")
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self,
@@ -11544,13 +13894,17 @@ class UpdateCallsForProposalsResultFields(GraphQLField):
 
 
 class UpdateConfigurationRequestsResultFields(GraphQLField):
+    """The result of updating the selected observations, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional observations were modified and not included here."""
+
     @classmethod
     def requests(cls) -> "ConfigurationRequestFields":
+        """The edited observations, up to the specified LIMIT or the default maximum of 1000."""
         return ConfigurationRequestFields("requests")
 
     has_more: "UpdateConfigurationRequestsResultGraphQLField" = (
         UpdateConfigurationRequestsResultGraphQLField("hasMore")
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self,
@@ -11568,13 +13922,17 @@ class UpdateConfigurationRequestsResultFields(GraphQLField):
 
 
 class UpdateDatasetsResultFields(GraphQLField):
+    """The result of updating the selected datasets, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional datasets were modified and not included here."""
+
     @classmethod
     def datasets(cls) -> "DatasetFields":
+        """The edited datasets, up to the specified LIMIT or the default maximum of 1000."""
         return DatasetFields("datasets")
 
     has_more: "UpdateDatasetsResultGraphQLField" = UpdateDatasetsResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateDatasetsResultGraphQLField, "DatasetFields"]
@@ -11591,11 +13949,13 @@ class UpdateDatasetsResultFields(GraphQLField):
 class UpdateGroupsResultFields(GraphQLField):
     @classmethod
     def groups(cls) -> "GroupFields":
+        """The edited groups, up to the specified LIMIT or the default maximum of 1000."""
         return GroupFields("groups")
 
     has_more: "UpdateGroupsResultGraphQLField" = UpdateGroupsResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateGroupsResultGraphQLField, "GroupFields"]
@@ -11610,13 +13970,17 @@ class UpdateGroupsResultFields(GraphQLField):
 
 
 class UpdateObservationsResultFields(GraphQLField):
+    """The result of updating the selected observations, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional observations were modified and not included here."""
+
     @classmethod
     def observations(cls) -> "ObservationFields":
+        """The edited observations, up to the specified LIMIT or the default maximum of 1000."""
         return ObservationFields("observations")
 
     has_more: "UpdateObservationsResultGraphQLField" = (
         UpdateObservationsResultGraphQLField("hasMore")
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self,
@@ -11632,13 +13996,19 @@ class UpdateObservationsResultFields(GraphQLField):
 
 
 class UpdateProgramNotesResultFields(GraphQLField):
+    """The result of updating the selected notes, up to `LIMIT` or the maximum of
+    (1000).  If `hasMore` is true, additional notes were modified and not included
+    here."""
+
     @classmethod
     def program_notes(cls) -> "ProgramNoteFields":
+        """The edited notes, up to the specified LIMIT or the default maximum of 1000."""
         return ProgramNoteFields("programNotes")
 
     has_more: "UpdateProgramNotesResultGraphQLField" = (
         UpdateProgramNotesResultGraphQLField("hasMore")
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self,
@@ -11654,13 +14024,20 @@ class UpdateProgramNotesResultFields(GraphQLField):
 
 
 class UpdateProgramUsersResultFields(GraphQLField):
+    """The result of calling 'updateProgramUsers', up to 'LIMIT' or the maximum of
+    1000.  If 'hasMore' is true, additional program users were modified but not
+    included in the result."""
+
     @classmethod
     def program_users(cls) -> "ProgramUserFields":
+        """The first program users that were updated (up to the LIMIT specified in the
+        mutation)."""
         return ProgramUserFields("programUsers")
 
     has_more: "UpdateProgramUsersResultGraphQLField" = (
         UpdateProgramUsersResultGraphQLField("hasMore")
     )
+    "Whether there were additional updated program users that were not returned."
 
     def fields(
         self,
@@ -11676,13 +14053,17 @@ class UpdateProgramUsersResultFields(GraphQLField):
 
 
 class UpdateProgramsResultFields(GraphQLField):
+    """The result of updating the selected programs, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional programs were modified and not included here."""
+
     @classmethod
     def programs(cls) -> "ProgramFields":
+        """The edited programs, up to the specified LIMIT or the default maximum of 1000."""
         return ProgramFields("programs")
 
     has_more: "UpdateProgramsResultGraphQLField" = UpdateProgramsResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateProgramsResultGraphQLField, "ProgramFields"]
@@ -11697,8 +14078,11 @@ class UpdateProgramsResultFields(GraphQLField):
 
 
 class UpdateProposalResultFields(GraphQLField):
+    """The result of updating a proposal"""
+
     @classmethod
     def proposal(cls) -> "ProposalFields":
+        """The updated proposal."""
         return ProposalFields("proposal")
 
     def fields(
@@ -11714,13 +14098,17 @@ class UpdateProposalResultFields(GraphQLField):
 
 
 class UpdateTargetsResultFields(GraphQLField):
+    """The result of updating the selected targets, up to `LIMIT` or the maximum of (1000).  If `hasMore` is true, additional targets were modified and not included here."""
+
     @classmethod
     def targets(cls) -> "TargetFields":
+        """The edited targets, up to the specified LIMIT or the default maximum of 1000."""
         return TargetFields("targets")
 
     has_more: "UpdateTargetsResultGraphQLField" = UpdateTargetsResultGraphQLField(
         "hasMore"
     )
+    "`true` when there were additional edits that were not returned."
 
     def fields(
         self, *subfields: Union[UpdateTargetsResultGraphQLField, "TargetFields"]
@@ -11757,23 +14145,31 @@ class UserFields(GraphQLField):
 
 
 class UserInvitationFields(GraphQLField):
+    """Invitation"""
+
     id: "UserInvitationGraphQLField" = UserInvitationGraphQLField("id")
+    "Id"
     status: "UserInvitationGraphQLField" = UserInvitationGraphQLField("status")
+    "Invitation status."
 
     @classmethod
     def issuer(cls) -> "UserFields":
+        """User who issued the invitation."""
         return UserFields("issuer")
 
     recipient_email: "UserInvitationGraphQLField" = UserInvitationGraphQLField(
         "recipientEmail"
     )
+    "Recipient email address."
 
     @classmethod
     def program_user(cls) -> "ProgramUserFields":
+        """The ProgramUser associated with the invitation."""
         return ProgramUserFields("programUser")
 
     @classmethod
     def email(cls) -> "EmailFields":
+        """The email sent for the invitation."""
         return EmailFields("email")
 
     def fields(
@@ -11808,27 +14204,41 @@ class UserProfileFields(GraphQLField):
 
 
 class VisitFields(GraphQLField):
+    """A visit is recorded whenever any part of an observation is attempted.  There
+    is a specific static configuration for each instrument, only one of which is
+    defined.  The same static configuration holds for the entire visit."""
+
     id: "VisitGraphQLField" = VisitGraphQLField("id")
+    "Visit id."
     instrument: "VisitGraphQLField" = VisitGraphQLField("instrument")
+    "Instrument in use for this visit.  This serves as a discriminator between the\nvarious specific static instrument configuration types (e.g.,\n`gmosNorth: GmosNorthStatic`.)"
 
     @classmethod
     def observation(cls) -> "ObservationFields":
+        """Observation associated with this visit."""
         return ObservationFields("observation")
 
     recorded_time: "VisitGraphQLField" = VisitGraphQLField("recordedTime")
+    "Time at which this visit was recorded in the database."
     created: "VisitGraphQLField" = VisitGraphQLField("created")
+    "Deprecated alias for `recordedTime`."
     client_time: "VisitGraphQLField" = VisitGraphQLField("clientTime")
+    "The client-suplied creation time, if one was supplied."
     effective_time: "VisitGraphQLField" = VisitGraphQLField("effectiveTime")
+    "Time we associate with this visit.  This is the client-supplied creation time\nwhen one was provided (by the slew or recordVisit that opened the visit),\notherwise the time it was recorded in the database (see `recordedTime`)."
     site: "VisitGraphQLField" = VisitGraphQLField("site")
+    "Site of the visit."
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
+        """Time interval during which this visit executed."""
         return TimestampIntervalFields("interval")
 
     @classmethod
     def atom_records(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "AtomRecordSelectResultFields":
+        """Executed (or at least partially executed) atom records for this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -11842,6 +14252,7 @@ class VisitFields(GraphQLField):
     def datasets(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "DatasetSelectResultFields":
+        """Datasets associated with this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -11855,6 +14266,7 @@ class VisitFields(GraphQLField):
     def events(
         cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
     ) -> "ExecutionEventSelectResultFields":
+        """Execution events associated with this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
             "LIMIT": {"type": "NonNegInt", "value": limit},
@@ -11866,28 +14278,45 @@ class VisitFields(GraphQLField):
 
     @classmethod
     def time_charge_invoice(cls) -> "TimeChargeInvoiceFields":
+        """Time accounting details for this visit."""
         return TimeChargeInvoiceFields("timeChargeInvoice")
 
     idempotency_key: "VisitGraphQLField" = VisitGraphQLField("idempotencyKey")
+    "Idempotency key, if any.  The IdempotencyKey may be provided by clients when\nthe visit is created and is used to enable problem-free retry in the case of\nfailure."
 
     @classmethod
     def flamingos_2(cls) -> "Flamingos2StaticFields":
+        """Flamingos 2 static instrument configuration, for Flamingos 2 visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `FLAMINGOS2`."""
         return Flamingos2StaticFields("flamingos2")
 
     @classmethod
     def gmos_north(cls) -> "GmosNorthStaticFields":
+        """GmosNorth static instrument configuration, for GMOS North visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `GMOS_NORTH`."""
         return GmosNorthStaticFields("gmosNorth")
 
     @classmethod
     def gmos_south(cls) -> "GmosSouthStaticFields":
+        """GmosSouth static instrument configuration, for GMOS South visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `GMOS_SOUTH`."""
         return GmosSouthStaticFields("gmosSouth")
 
     @classmethod
     def igrins_2(cls) -> "Igrins2StaticFields":
+        """IGRINS-2 static instrument configuration, for IGRINS-2 visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `IGRINS2`."""
         return Igrins2StaticFields("igrins2")
 
     @classmethod
     def gnirs(cls) -> "GnirsStaticFields":
+        """GNIRS static instrument configuration, for GNIRS visits.  See the
+        `instrument` discriminator.  This will be null unless the instrument is
+        `GNIRS`."""
         return GnirsStaticFields("gnirs")
 
     def fields(
@@ -11917,11 +14346,15 @@ class VisitFields(GraphQLField):
 
 
 class VisitSelectResultFields(GraphQLField):
+    """Matching visit results, limited to a maximum of 1000 entries."""
+
     @classmethod
     def matches(cls) -> "VisitFields":
+        """Matching visits up to the return size limit of 1000."""
         return VisitFields("matches")
 
     has_more: "VisitSelectResultGraphQLField" = VisitSelectResultGraphQLField("hasMore")
+    "`true` when there were additional matches that were not returned."
 
     def fields(
         self, *subfields: Union[VisitSelectResultGraphQLField, "VisitFields"]
@@ -11944,16 +14377,20 @@ class VisitorFields(GraphQLField):
 
     @classmethod
     def ags_diameter(cls) -> "AngleFields":
+        """AGS field of view, understood as the diameter of a circular area."""
         return AngleFields("agsDiameter")
 
     @classmethod
     def science_fov_diameter(cls) -> "AngleFields":
+        """Science field of view, understood as the diameter of a circular area."""
         return AngleFields("scienceFovDiameter")
 
     name: "VisitorGraphQLField" = VisitorGraphQLField("name")
+    "Optional descriptive name for this visitor mode selection."
 
     @classmethod
     def total_request_time(cls) -> "TimeSpanFields":
+        """Optional total requested observing time."""
         return TimeSpanFields("totalRequestTime")
 
     def fields(
@@ -11973,9 +14410,13 @@ class VisitorFields(GraphQLField):
 
 class WavelengthFields(GraphQLField):
     picometers: "WavelengthGraphQLField" = WavelengthGraphQLField("picometers")
+    "Wavelength in pm"
     angstroms: "WavelengthGraphQLField" = WavelengthGraphQLField("angstroms")
+    "Wavelength in Å"
     nanometers: "WavelengthGraphQLField" = WavelengthGraphQLField("nanometers")
+    "Wavelength in nm"
     micrometers: "WavelengthGraphQLField" = WavelengthGraphQLField("micrometers")
+    "Wavelength in µm"
 
     def fields(self, *subfields: WavelengthGraphQLField) -> "WavelengthFields":
         """Subfields should come from the WavelengthFields class"""
@@ -11988,18 +14429,26 @@ class WavelengthFields(GraphQLField):
 
 
 class WavelengthDitherFields(GraphQLField):
+    """A WavelengthDither is expressed in the same units as Wavelength but
+    constrained to positive values.  It expresses an "offset" to a given
+    Wavelength."""
+
     picometers: "WavelengthDitherGraphQLField" = WavelengthDitherGraphQLField(
         "picometers"
     )
+    "Wavelength dither in pm"
     angstroms: "WavelengthDitherGraphQLField" = WavelengthDitherGraphQLField(
         "angstroms"
     )
+    "Wavelength dither in Å"
     nanometers: "WavelengthDitherGraphQLField" = WavelengthDitherGraphQLField(
         "nanometers"
     )
+    "Wavelength dither in nm"
     micrometers: "WavelengthDitherGraphQLField" = WavelengthDitherGraphQLField(
         "micrometers"
     )
+    "Wavelength dither in µm"
 
     def fields(
         self, *subfields: WavelengthDitherGraphQLField

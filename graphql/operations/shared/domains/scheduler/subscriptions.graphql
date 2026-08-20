@@ -5,12 +5,15 @@
 # =============================================================================
 
 subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
-  obscalcUpdate(input: {executableOnly: $executableOnly}) {
+  obscalcUpdate(input: {executableOnly: $executableOnly, newCalculationState: {EQ: READY}}) {
     oldCalculationState
     newCalculationState
     editType
     value {
       id
+      reference{
+        label
+      }
       observationTime
       program {
         active {

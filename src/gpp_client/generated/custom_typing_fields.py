@@ -1195,6 +1195,18 @@ class Flamingos2LongSlitGraphQLField(GraphQLField):
         return self
 
 
+class Flamingos2MosAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2MosAcquisitionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class Flamingos2MosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "Flamingos2MosGraphQLField":
+        self._alias = alias
+        return self
+
+
 class Flamingos2ImagingFilterGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "Flamingos2ImagingFilterGraphQLField":
         self._alias = alias
@@ -1609,6 +1621,12 @@ class ItcResultGraphQLField(GraphQLField):
         return self
 
 
+class ItcPeakPixelGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcPeakPixelGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ItcResultSetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ItcResultSetGraphQLField":
         self._alias = alias
@@ -1693,8 +1711,8 @@ class ItcSpectroscopyGraphQLField(GraphQLField):
         return self
 
 
-class ItcIgrins2SpectroscopyGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ItcIgrins2SpectroscopyGraphQLField":
+class ItcScienceOnlySpectroscopyGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ItcScienceOnlySpectroscopyGraphQLField":
         self._alias = alias
         return self
 
@@ -1843,6 +1861,12 @@ class ConfigurationGmosSouthImagingGraphQLField(GraphQLField):
 
 class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationFlamingos2MosGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationFlamingos2MosGraphQLField":
         self._alias = alias
         return self
 
@@ -2239,6 +2263,12 @@ class TargetGraphQLField(GraphQLField):
 
 class OpportunityGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "OpportunityGraphQLField":
+        self._alias = alias
+        return self
+
+
+class TargetResolutionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TargetResolutionGraphQLField":
         self._alias = alias
         return self
 
