@@ -25,6 +25,7 @@ query GetGOATSObservations($programId: ProgramId!) {
       }
       instrument
       title
+      subtitle
       constraintSet {
         imageQuality
         cloudExtinction

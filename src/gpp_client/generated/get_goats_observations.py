@@ -57,6 +57,7 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     reference: Optional["GetGOATSObservationsObservationsMatchesReference"]
     instrument: Optional[Instrument]
     title: Any
+    subtitle: Optional[Any]
     constraint_set: "GetGOATSObservationsObservationsMatchesConstraintSet" = Field(
         alias="constraintSet"
     )

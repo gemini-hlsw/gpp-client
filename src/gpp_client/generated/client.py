@@ -700,6 +700,7 @@ class GraphQLClient(AsyncBaseClient):
                   }
                   instrument
                   title
+                  subtitle
                   constraintSet {
                     imageQuality
                     cloudExtinction
@@ -10311,6 +10312,9 @@ class GraphQLClient(AsyncBaseClient):
                 editType
                 value {
                   id
+                  reference {
+                    label
+                  }
                   observationTime
                   program {
                     active {
