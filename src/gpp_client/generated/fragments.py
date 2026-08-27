@@ -343,17 +343,12 @@ class GmosNorthLongSlitDetails(BaseModel):
     central_wavelength: "GmosNorthLongSlitDetailsCentralWavelength" = Field(
         alias="centralWavelength"
     )
-    offsets: list["GmosNorthLongSlitDetailsOffsets"]
     x_bin: GmosBinning = Field(alias="xBin")
     y_bin: GmosBinning = Field(alias="yBin")
 
 
 class GmosNorthLongSlitDetailsCentralWavelength(BaseModel):
     nanometers: Any
-
-
-class GmosNorthLongSlitDetailsOffsets(BaseModel):
-    arcseconds: Any
 
 
 class GmosSouthImagingDetails(BaseModel):
@@ -372,17 +367,12 @@ class GmosSouthLongSlitDetails(BaseModel):
     central_wavelength: "GmosSouthLongSlitDetailsCentralWavelength" = Field(
         alias="centralWavelength"
     )
-    offsets: list["GmosSouthLongSlitDetailsOffsets"]
     x_bin: GmosBinning = Field(alias="xBin")
     y_bin: GmosBinning = Field(alias="yBin")
 
 
 class GmosSouthLongSlitDetailsCentralWavelength(BaseModel):
     nanometers: Any
-
-
-class GmosSouthLongSlitDetailsOffsets(BaseModel):
-    arcseconds: Any
 
 
 class GnirsImagingDetails(BaseModel):

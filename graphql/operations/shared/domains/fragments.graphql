@@ -53,9 +53,6 @@ fragment GmosNorthLongSlitDetails on GmosNorthLongSlit {
   centralWavelength {
     nanometers
   }
-  offsets {
-    arcseconds
-  }
   xBin
   yBin
 }
@@ -66,9 +63,6 @@ fragment GmosSouthLongSlitDetails on GmosSouthLongSlit {
   fpu
   centralWavelength {
     nanometers
-  }
-  offsets {
-    arcseconds
   }
   xBin
   yBin

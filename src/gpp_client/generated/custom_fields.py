@@ -10,6 +10,7 @@ from .custom_typing_fields import (
     AddSlewEventResultGraphQLField,
     AddStepEventResultGraphQLField,
     AddTimeChargeCorrectionResultGraphQLField,
+    AeonMultiFacilityGraphQLField,
     AirMassRangeGraphQLField,
     AllConfigChangeEstimatesGraphQLField,
     AllDetectorEstimatesGraphQLField,
@@ -197,9 +198,11 @@ from .custom_typing_fields import (
     GnirsImagingAcquisitionGraphQLField,
     GnirsImagingFilterGraphQLField,
     GnirsImagingGraphQLField,
-    GnirsSlitGraphQLField,
+    GnirsLongSlitGraphQLField,
     GnirsSpectroscopyAcquisitionGraphQLField,
     GnirsSpectroscopyGraphQLField,
+    GnirsSpectroscopyIfuGraphQLField,
+    GnirsSpectroscopyLongSlitGraphQLField,
     GnirsStaticGraphQLField,
     GnirsStepGraphQLField,
     GoaPropertiesGraphQLField,
@@ -255,6 +258,8 @@ from .custom_typing_fields import (
     LineFluxIntegratedGraphQLField,
     LineFluxSurfaceGraphQLField,
     LinkUserResultGraphQLField,
+    MaskDefinitionGraphQLField,
+    MaskSlitGraphQLField,
     MonitoringProgramReferenceGraphQLField,
     NonsiderealGraphQLField,
     ObservationGraphQLField,
@@ -572,6 +577,27 @@ class AddTimeChargeCorrectionResultFields(GraphQLField):
         return self
 
 
+class AeonMultiFacilityFields(GraphQLField):
+    """The AEON/Multi-facility aspects of a Gemini proposal.  Its presence is what
+    marks the proposal as part of the program."""
+
+    required_instruments: "AeonMultiFacilityGraphQLField" = (
+        AeonMultiFacilityGraphQLField("requiredInstruments")
+    )
+    "The instruments whose requested Gemini time is required for this\nmulti-facility project to be feasible.  Instruments not listed are not\nrequired, which is the default."
+
+    def fields(
+        self, *subfields: AeonMultiFacilityGraphQLField
+    ) -> "AeonMultiFacilityFields":
+        """Subfields should come from the AeonMultiFacilityFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "AeonMultiFacilityFields":
+        self._alias = alias
+        return self
+
+
 class AirMassRangeFields(GraphQLField):
     min: "AirMassRangeGraphQLField" = AirMassRangeGraphQLField("min")
     "Minimum AirMass (unitless)"
@@ -698,6 +724,10 @@ class AllocationFields(GraphQLField):
 
 
 class AngleFields(GraphQLField):
+    """An angle in a variety of units.  Values are normalized to [0, 360°) unless
+    the field documents a signed quantity, in which case negative values are
+    rendered negative (as with `Declination`) rather than wrapped."""
+
     microarcseconds: "AngleGraphQLField" = AngleGraphQLField("microarcseconds")
     "Angle in µas"
     microseconds: "AngleGraphQLField" = AngleGraphQLField("microseconds")
@@ -743,6 +773,9 @@ class ArchiveDuplicationFields(GraphQLField):
     describe the last search that succeeded, and `lastCheckedAt` says when that was."""
 
     state: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("state")
+    "State of the stored snapshot.  Partly derived: an observation with no\nobserving mode reads NOT_APPLICABLE whatever was stored."
+    stale: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("stale")
+    "Whether the snapshot no longer describes the observation as it now stands:\nthe archive queries the search would run today differ from `queryUrls`.\nNever true when nothing was searched, when nothing can be searched now, or\nafter submission."
     match_count: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "matchCount"
     )
@@ -754,7 +787,11 @@ class ArchiveDuplicationFields(GraphQLField):
     last_checked_at: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "lastCheckedAt"
     )
-    "When the reported matches were gathered.  Null exactly when `state` is\nNOT_CHECKED, since every other state follows an attempt."
+    "When the reported matches were gathered, i.e. when the last successful\nsearch ran.  Null when no search ever succeeded."
+    attempted_at: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
+        "attemptedAt"
+    )
+    "When a search last ran, successfully or not.  Later than `lastCheckedAt`\nexactly when the most recent attempt failed.  Null when the search never ran."
     error: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("error")
     "Why the most recent attempt failed.  Set when `state` is ERROR."
 
@@ -1141,6 +1178,15 @@ class AttachmentFields(GraphQLField):
     file_name: "AttachmentGraphQLField" = AttachmentGraphQLField("fileName")
     mask_name: "AttachmentGraphQLField" = AttachmentGraphQLField("maskName")
     "The identifier of the physical mask plate this attachment describes.  It is\nderived from the file name by dropping the `_ODF.fits` suffix.\nThe file name must follow the standard ODF naming convention, either\n`G(N|S)YYYY(A|B)<type>PPP-XX_ODF.fits` or\n`GYYYY(A|B)PPPP<type>-XX_ODF.fits`.\nNot settable.  Null when the attachment is not a MOS_MASK, always present when it is."
+
+    @classmethod
+    def mask(cls) -> "MaskDefinitionFields":
+        """The design read from a MOS mask attachment's file when it was uploaded.
+        Null when the attachment is not a MOS_MASK, and null for MOS_MASK
+        attachments uploaded before mask parsing was introduced (re-uploading the
+        file populates it).  Not settable."""
+        return MaskDefinitionFields("mask")
+
     description: "AttachmentGraphQLField" = AttachmentGraphQLField("description")
     checked: "AttachmentGraphQLField" = AttachmentGraphQLField("checked")
     file_size: "AttachmentGraphQLField" = AttachmentGraphQLField("fileSize")
@@ -1151,7 +1197,10 @@ class AttachmentFields(GraphQLField):
         return ProgramFields("program")
 
     def fields(
-        self, *subfields: Union[AttachmentGraphQLField, "ProgramFields"]
+        self,
+        *subfields: Union[
+            AttachmentGraphQLField, "MaskDefinitionFields", "ProgramFields"
+        ],
     ) -> "AttachmentFields":
         """Subfields should come from the AttachmentFields class"""
         self._subfields.extend(subfields)
@@ -1813,17 +1862,23 @@ class ClassicalFields(GraphQLField):
 
     exchange_partner: "ClassicalGraphQLField" = ClassicalGraphQLField("exchangePartner")
     "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
-    aeon_multi_facility: "ClassicalGraphQLField" = ClassicalGraphQLField(
-        "aeonMultiFacility"
-    )
-    "Whether this proposal is part of the AEON/Multi-facility program."
+
+    @classmethod
+    def aeon_multi_facility(cls) -> "AeonMultiFacilityFields":
+        """The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+        is part of the AEON/Multi-facility program."""
+        return AeonMultiFacilityFields("aeonMultiFacility")
+
     jwst_synergy: "ClassicalGraphQLField" = ClassicalGraphQLField("jwstSynergy")
     "Whether this proposal has JWST synergy."
     us_long_term: "ClassicalGraphQLField" = ClassicalGraphQLField("usLongTerm")
     "Whether this is a US Long Term proposal."
 
     def fields(
-        self, *subfields: Union[ClassicalGraphQLField, "PartnerSplitFields"]
+        self,
+        *subfields: Union[
+            ClassicalGraphQLField, "AeonMultiFacilityFields", "PartnerSplitFields"
+        ],
     ) -> "ClassicalFields":
         """Subfields should come from the ClassicalFields class"""
         self._subfields.extend(subfields)
@@ -4746,7 +4801,7 @@ class Flamingos2MosAcquisitionFields(GraphQLField):
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
-        """The exposure time mode used for ITC lookup for the acquisition sequence."""
+        """The Time & Count exposure time mode used for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
     def fields(
@@ -5992,38 +6047,22 @@ class GmosNorthLongSlitFields(GraphQLField):
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
-    def offsets(cls) -> "OffsetQFields":
-        """Q offsets, either explicitly specified in explicitOffsets
-        or else taken from defaultOffsets"""
-        return OffsetQFields("offsets")
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
 
     @classmethod
-    def default_offsets(cls) -> "OffsetQFields":
-        """Default offsets."""
-        return OffsetQFields("defaultOffsets")
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configurations: three guided positions along the slit."""
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
-    def explicit_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified q offsets. If set it overrides the
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
         the default."""
-        return OffsetQFields("explicitOffsets")
-
-    @classmethod
-    def spatial_offsets(cls) -> "OffsetQFields":
-        """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-        or else taken from defaultSpatialOffsets"""
-        return OffsetQFields("spatialOffsets")
-
-    @classmethod
-    def default_spatial_offsets(cls) -> "OffsetQFields":
-        """Default spatial offsets."""
-        return OffsetQFields("defaultSpatialOffsets")
-
-    @classmethod
-    def explicit_spatial_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified spatial q offsets. If set it overrides the
-        the default."""
-        return OffsetQFields("explicitSpatialOffsets")
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
 
     @classmethod
     def acquisition(cls) -> "GmosNorthLongSlitAcquisitionFields":
@@ -6055,7 +6094,7 @@ class GmosNorthLongSlitFields(GraphQLField):
             GmosNorthLongSlitGraphQLField,
             "ExposureTimeModeFields",
             "GmosNorthLongSlitAcquisitionFields",
-            "OffsetQFields",
+            "SlitTelescopeConfigsFields",
             "WavelengthDitherFields",
             "WavelengthFields",
         ],
@@ -6208,20 +6247,23 @@ class GmosNorthMosFields(GraphQLField):
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
-    def offsets(cls) -> "OffsetQFields":
-        """Q offsets, either explicitly specified in explicitOffsets or else taken from
-        defaultOffsets."""
-        return OffsetQFields("offsets")
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs.  A MOS mask has no single slit to nod
+        along, so these are plain offsets rather than slit telescope configurations."""
+        return TelescopeConfigFields("telescopeConfigs")
 
     @classmethod
-    def default_offsets(cls) -> "OffsetQFields":
-        """Default offsets."""
-        return OffsetQFields("defaultOffsets")
+    def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default telescope configurations: a single guided position on target."""
+        return TelescopeConfigFields("defaultTelescopeConfigs")
 
     @classmethod
-    def explicit_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified q offsets. If set it overrides the default."""
-        return OffsetQFields("explicitOffsets")
+    def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
+        the default."""
+        return TelescopeConfigFields("explicitTelescopeConfigs")
 
     initial_grating: "GmosNorthMosGraphQLField" = GmosNorthMosGraphQLField(
         "initialGrating"
@@ -6254,7 +6296,7 @@ class GmosNorthMosFields(GraphQLField):
             "ExposureTimeModeFields",
             "GmosCustomMaskFields",
             "GmosNorthMosAcquisitionFields",
-            "OffsetQFields",
+            "TelescopeConfigFields",
             "WavelengthDitherFields",
             "WavelengthFields",
         ],
@@ -6789,38 +6831,22 @@ class GmosSouthLongSlitFields(GraphQLField):
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
-    def offsets(cls) -> "OffsetQFields":
-        """Q offsets, either explicitly specified in explicitOffsets
-        or else taken from defaultOffsets"""
-        return OffsetQFields("offsets")
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
 
     @classmethod
-    def default_offsets(cls) -> "OffsetQFields":
-        """Default offsets."""
-        return OffsetQFields("defaultOffsets")
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configurations: three guided positions along the slit."""
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
-    def explicit_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified q offsets. If set it overrides the
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
         the default."""
-        return OffsetQFields("explicitOffsets")
-
-    @classmethod
-    def spatial_offsets(cls) -> "OffsetQFields":
-        """Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-        or else taken from defaultSpatialOffsets"""
-        return OffsetQFields("spatialOffsets")
-
-    @classmethod
-    def default_spatial_offsets(cls) -> "OffsetQFields":
-        """Default spatial offsets."""
-        return OffsetQFields("defaultSpatialOffsets")
-
-    @classmethod
-    def explicit_spatial_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified spatial q offsets. If set it overrides the
-        the default."""
-        return OffsetQFields("explicitSpatialOffsets")
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
 
     @classmethod
     def acquisition(cls) -> "GmosSouthLongSlitAcquisitionFields":
@@ -6852,7 +6878,7 @@ class GmosSouthLongSlitFields(GraphQLField):
             GmosSouthLongSlitGraphQLField,
             "ExposureTimeModeFields",
             "GmosSouthLongSlitAcquisitionFields",
-            "OffsetQFields",
+            "SlitTelescopeConfigsFields",
             "WavelengthDitherFields",
             "WavelengthFields",
         ],
@@ -7005,20 +7031,23 @@ class GmosSouthMosFields(GraphQLField):
         return WavelengthDitherFields("explicitWavelengthDithers")
 
     @classmethod
-    def offsets(cls) -> "OffsetQFields":
-        """Q offsets, either explicitly specified in explicitOffsets or else taken from
-        defaultOffsets."""
-        return OffsetQFields("offsets")
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs.  A MOS mask has no single slit to nod
+        along, so these are plain offsets rather than slit telescope configurations."""
+        return TelescopeConfigFields("telescopeConfigs")
 
     @classmethod
-    def default_offsets(cls) -> "OffsetQFields":
-        """Default offsets."""
-        return OffsetQFields("defaultOffsets")
+    def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default telescope configurations: a single guided position on target."""
+        return TelescopeConfigFields("defaultTelescopeConfigs")
 
     @classmethod
-    def explicit_offsets(cls) -> "OffsetQFields":
-        """Optional explicitly specified q offsets. If set it overrides the default."""
-        return OffsetQFields("explicitOffsets")
+    def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
+        the default."""
+        return TelescopeConfigFields("explicitTelescopeConfigs")
 
     initial_grating: "GmosSouthMosGraphQLField" = GmosSouthMosGraphQLField(
         "initialGrating"
@@ -7051,7 +7080,7 @@ class GmosSouthMosFields(GraphQLField):
             "ExposureTimeModeFields",
             "GmosCustomMaskFields",
             "GmosSouthMosAcquisitionFields",
-            "OffsetQFields",
+            "TelescopeConfigFields",
             "WavelengthDitherFields",
             "WavelengthFields",
         ],
@@ -7414,10 +7443,30 @@ class GnirsExecutionSequenceFields(GraphQLField):
 
 
 class GnirsIfuFields(GraphQLField):
-    """GNIRS IFU-specific configuration: the IFU FPU plus the telescope configs as full
-    p/q offsets. Present on `GnirsSpectroscopy.ifu` iff the observation is an IFU; null
-    for long slit."""
+    """GNIRS IFU (integral field unit) mode."""
 
+    grating: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("grating")
+    explicit_grating: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("explicitGrating")
+    initial_grating: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialGrating")
+    prism: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("prism")
+    explicit_prism: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("explicitPrism")
+    initial_prism: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialPrism")
+
+    @classmethod
+    def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths at which spectra are taken, in increasing wavelength
+        order.  Each one is a separate configuration with its own exposure time mode,
+        coadds, ITC calculation and calibrations."""
+        return GnirsCentralWavelengthConfigFields("centralWavelengths")
+
+    @classmethod
+    def initial_central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths as they were configured when the observing mode was
+        created."""
+        return GnirsCentralWavelengthConfigFields("initialCentralWavelengths")
+
+    camera: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("camera")
+    initial_camera: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialCamera")
     fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("fpu")
     initial_fpu: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialFpu")
 
@@ -7427,8 +7476,43 @@ class GnirsIfuFields(GraphQLField):
         default: they are seeded from the FPU at creation and then edited in place."""
         return TelescopeConfigFields("telescopeConfigs")
 
+    filter_: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("filter")
+    initial_filter: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("initialFilter")
+    decker: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("decker")
+    explicit_decker: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("explicitDecker")
+    default_decker: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("defaultDecker")
+    explicit_read_mode: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField(
+        "explicitReadMode"
+    )
+    well_depth: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField("wellDepth")
+    explicit_well_depth: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField(
+        "explicitWellDepth"
+    )
+    default_well_depth: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField(
+        "defaultWellDepth"
+    )
+    explicit_focus_motor_steps: "GnirsIfuGraphQLField" = GnirsIfuGraphQLField(
+        "explicitFocusMotorSteps"
+    )
+
+    @classmethod
+    def acquisition(cls) -> "GnirsSpectroscopyAcquisitionFields":
+        return GnirsSpectroscopyAcquisitionFields("acquisition")
+
+    @classmethod
+    def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
+        return TelluricTypeFields("telluricType")
+
     def fields(
-        self, *subfields: Union[GnirsIfuGraphQLField, "TelescopeConfigFields"]
+        self,
+        *subfields: Union[
+            GnirsIfuGraphQLField,
+            "GnirsCentralWavelengthConfigFields",
+            "GnirsSpectroscopyAcquisitionFields",
+            "TelescopeConfigFields",
+            "TelluricTypeFields",
+        ],
     ) -> "GnirsIfuFields":
         """Subfields should come from the GnirsIfuFields class"""
         self._subfields.extend(subfields)
@@ -7505,7 +7589,16 @@ class GnirsImagingAcquisitionFields(GraphQLField):
 
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The effective acquisition exposure time mode.  When `explicitExposureTimeMode` is
+        null this is a signal-to-noise mode whose value follows the ITC brightness
+        classification -- VERY_BRIGHT 30, BRIGHT 20, FAINT 10 -- and is maintained
+        automatically."""
         return ExposureTimeModeFields("exposureTimeMode")
+
+    @classmethod
+    def explicit_exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """An explicitly specified acquisition exposure time mode.  When null the mode is derived from the acquisition type (see `exposureTimeMode`)."""
+        return ExposureTimeModeFields("explicitExposureTimeMode")
 
     coadds: "GnirsImagingAcquisitionGraphQLField" = GnirsImagingAcquisitionGraphQLField(
         "coadds"
@@ -7567,13 +7660,43 @@ class GnirsImagingFilterFields(GraphQLField):
         return self
 
 
-class GnirsSlitFields(GraphQLField):
-    """GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
-    taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
-    long slit; null for IFU."""
+class GnirsLongSlitFields(GraphQLField):
+    """GNIRS Long Slit mode."""
 
-    fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("fpu")
-    initial_fpu: "GnirsSlitGraphQLField" = GnirsSlitGraphQLField("initialFpu")
+    grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("grating")
+    explicit_grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitGrating"
+    )
+    initial_grating: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "initialGrating"
+    )
+    prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("prism")
+    explicit_prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitPrism"
+    )
+    initial_prism: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "initialPrism"
+    )
+
+    @classmethod
+    def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths at which spectra are taken, in increasing wavelength
+        order.  Each one is a separate configuration with its own exposure time mode,
+        coadds, ITC calculation and calibrations."""
+        return GnirsCentralWavelengthConfigFields("centralWavelengths")
+
+    @classmethod
+    def initial_central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
+        """The central wavelengths as they were configured when the observing mode was
+        created."""
+        return GnirsCentralWavelengthConfigFields("initialCentralWavelengths")
+
+    camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("camera")
+    initial_camera: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "initialCamera"
+    )
+    fpu: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("fpu")
+    initial_fpu: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("initialFpu")
 
     @classmethod
     def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
@@ -7588,14 +7711,55 @@ class GnirsSlitFields(GraphQLField):
     def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
         return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
 
+    filter_: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("filter")
+    initial_filter: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "initialFilter"
+    )
+    decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("decker")
+    explicit_decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitDecker"
+    )
+    default_decker: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "defaultDecker"
+    )
+    explicit_read_mode: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitReadMode"
+    )
+    well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField("wellDepth")
+    explicit_well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitWellDepth"
+    )
+    default_well_depth: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "defaultWellDepth"
+    )
+    explicit_focus_motor_steps: "GnirsLongSlitGraphQLField" = GnirsLongSlitGraphQLField(
+        "explicitFocusMotorSteps"
+    )
+
+    @classmethod
+    def acquisition(cls) -> "GnirsSpectroscopyAcquisitionFields":
+        return GnirsSpectroscopyAcquisitionFields("acquisition")
+
+    @classmethod
+    def telluric_type(cls) -> "TelluricTypeFields":
+        """Telluric type configuration for this observation."""
+        return TelluricTypeFields("telluricType")
+
     def fields(
-        self, *subfields: Union[GnirsSlitGraphQLField, "SlitTelescopeConfigsFields"]
-    ) -> "GnirsSlitFields":
-        """Subfields should come from the GnirsSlitFields class"""
+        self,
+        *subfields: Union[
+            GnirsLongSlitGraphQLField,
+            "GnirsCentralWavelengthConfigFields",
+            "GnirsSpectroscopyAcquisitionFields",
+            "SlitTelescopeConfigsFields",
+            "TelluricTypeFields",
+        ],
+    ) -> "GnirsLongSlitFields":
+        """Subfields should come from the GnirsLongSlitFields class"""
         self._subfields.extend(subfields)
         return self
 
-    def alias(self, alias: str) -> "GnirsSlitFields":
+    def alias(self, alias: str) -> "GnirsLongSlitFields":
         self._alias = alias
         return self
 
@@ -7637,16 +7801,16 @@ class GnirsSpectroscopyFields(GraphQLField):
     )
 
     @classmethod
-    def slit(cls) -> "GnirsSlitFields":
+    def slit(cls) -> "GnirsSpectroscopyLongSlitFields":
         """Long-slit configuration (FPU + along-slit telescope configs), when this is a
         long-slit observation. Exactly one of `slit` / `ifu` is present."""
-        return GnirsSlitFields("slit")
+        return GnirsSpectroscopyLongSlitFields("slit")
 
     @classmethod
-    def ifu(cls) -> "GnirsIfuFields":
+    def ifu(cls) -> "GnirsSpectroscopyIfuFields":
         """IFU configuration (FPU + p/q telescope configs), when this is an integral field
         unit observation. Exactly one of `slit` / `ifu` is present."""
-        return GnirsIfuFields("ifu")
+        return GnirsSpectroscopyIfuFields("ifu")
 
     filter_: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField("filter")
     initial_filter: "GnirsSpectroscopyGraphQLField" = GnirsSpectroscopyGraphQLField(
@@ -7689,9 +7853,9 @@ class GnirsSpectroscopyFields(GraphQLField):
         *subfields: Union[
             GnirsSpectroscopyGraphQLField,
             "GnirsCentralWavelengthConfigFields",
-            "GnirsIfuFields",
-            "GnirsSlitFields",
             "GnirsSpectroscopyAcquisitionFields",
+            "GnirsSpectroscopyIfuFields",
+            "GnirsSpectroscopyLongSlitFields",
             "TelluricTypeFields",
         ],
     ) -> "GnirsSpectroscopyFields":
@@ -7707,7 +7871,16 @@ class GnirsSpectroscopyFields(GraphQLField):
 class GnirsSpectroscopyAcquisitionFields(GraphQLField):
     @classmethod
     def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The effective acquisition exposure time mode.  When `explicitExposureTimeMode` is
+        null this is a signal-to-noise mode whose value follows the ITC brightness
+        classification -- VERY_BRIGHT 30, BRIGHT 20, FAINT 10 -- and is maintained
+        automatically."""
         return ExposureTimeModeFields("exposureTimeMode")
+
+    @classmethod
+    def explicit_exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """An explicitly specified acquisition exposure time mode.  When null the mode is derived from the acquisition type (see `exposureTimeMode`)."""
+        return ExposureTimeModeFields("explicitExposureTimeMode")
 
     coadds: "GnirsSpectroscopyAcquisitionGraphQLField" = (
         GnirsSpectroscopyAcquisitionGraphQLField("coadds")
@@ -7737,6 +7910,75 @@ class GnirsSpectroscopyAcquisitionFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GnirsSpectroscopyAcquisitionFields":
+        self._alias = alias
+        return self
+
+
+class GnirsSpectroscopyIfuFields(GraphQLField):
+    """GNIRS IFU-specific configuration: the IFU FPU plus the telescope configs as full
+    p/q offsets. Present on `GnirsSpectroscopy.ifu` iff the observation is an IFU; null
+    for long slit."""
+
+    fpu: "GnirsSpectroscopyIfuGraphQLField" = GnirsSpectroscopyIfuGraphQLField("fpu")
+    initial_fpu: "GnirsSpectroscopyIfuGraphQLField" = GnirsSpectroscopyIfuGraphQLField(
+        "initialFpu"
+    )
+
+    @classmethod
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """Telescope configs (full p/q offsets). Unlike the long slit these have no derived
+        default: they are seeded from the FPU at creation and then edited in place."""
+        return TelescopeConfigFields("telescopeConfigs")
+
+    def fields(
+        self,
+        *subfields: Union[GnirsSpectroscopyIfuGraphQLField, "TelescopeConfigFields"],
+    ) -> "GnirsSpectroscopyIfuFields":
+        """Subfields should come from the GnirsSpectroscopyIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsSpectroscopyIfuFields":
+        self._alias = alias
+        return self
+
+
+class GnirsSpectroscopyLongSlitFields(GraphQLField):
+    """GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
+    taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
+    long slit; null for IFU."""
+
+    fpu: "GnirsSpectroscopyLongSlitGraphQLField" = (
+        GnirsSpectroscopyLongSlitGraphQLField("fpu")
+    )
+    initial_fpu: "GnirsSpectroscopyLongSlitGraphQLField" = (
+        GnirsSpectroscopyLongSlitGraphQLField("initialFpu")
+    )
+
+    @classmethod
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GnirsSpectroscopyLongSlitGraphQLField, "SlitTelescopeConfigsFields"
+        ],
+    ) -> "GnirsSpectroscopyLongSlitFields":
+        """Subfields should come from the GnirsSpectroscopyLongSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GnirsSpectroscopyLongSlitFields":
         self._alias = alias
         return self
 
@@ -9322,15 +9564,20 @@ class LargeProgramFields(GraphQLField):
         """Total time requested (over multiple all semesters) for this proposal."""
         return TimeSpanFields("totalTime")
 
-    aeon_multi_facility: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
-        "aeonMultiFacility"
-    )
-    "Whether this proposal is part of the AEON/Multi-facility program."
+    @classmethod
+    def aeon_multi_facility(cls) -> "AeonMultiFacilityFields":
+        """The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+        is part of the AEON/Multi-facility program."""
+        return AeonMultiFacilityFields("aeonMultiFacility")
+
     jwst_synergy: "LargeProgramGraphQLField" = LargeProgramGraphQLField("jwstSynergy")
     "Whether this proposal has JWST synergy."
 
     def fields(
-        self, *subfields: Union[LargeProgramGraphQLField, "TimeSpanFields"]
+        self,
+        *subfields: Union[
+            LargeProgramGraphQLField, "AeonMultiFacilityFields", "TimeSpanFields"
+        ],
     ) -> "LargeProgramFields":
         """Subfields should come from the LargeProgramFields class"""
         self._subfields.extend(subfields)
@@ -9412,6 +9659,138 @@ class LinkUserResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "LinkUserResultFields":
+        self._alias = alias
+        return self
+
+
+class MaskDefinitionFields(GraphQLField):
+    """The design read from a MOS mask attachment's file (ODF/MDF): the instrument
+    the mask was cut for, the position angle it must be observed at, and its
+    slits."""
+
+    name: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField("name")
+    "The mask name of the attachment."
+    instrument: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField("instrument")
+    "The instrument the mask was designed for."
+    pixel_scale: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField("pixelScale")
+    "Nominal plate scale of the pre-image, in arcseconds per pixel."
+
+    @classmethod
+    def pointing(cls) -> "CoordinatesFields":
+        """Pointing centre of the pre-image the mask was designed on."""
+        return CoordinatesFields("pointing")
+
+    @classmethod
+    def position_angle(cls) -> "AngleFields":
+        """The position angle the mask must be observed at."""
+        return AngleFields("positionAngle")
+
+    dispersion_direction: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField(
+        "dispersionDirection"
+    )
+    "Axis along which the instrument spreads a spectrum, in pre-image detector\ncoordinates.  It decides how the design's x and y columns were read: a\nslit's width is its extent along the dispersion direction, its length the\nextent across it."
+
+    @classmethod
+    def slits(cls) -> "MaskSlitFields":
+        """Every aperture in the design, acquisition boxes included."""
+        return MaskSlitFields("slits")
+
+    science_slit_count: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField(
+        "scienceSlitCount"
+    )
+    "Number of science slits in the design, alignment-star boxes excluded."
+    acquisition_slit_count: "MaskDefinitionGraphQLField" = MaskDefinitionGraphQLField(
+        "acquisitionSlitCount"
+    )
+    "Number of alignment-star boxes in the design."
+
+    @classmethod
+    def average_slit_width(cls) -> "AngleFields":
+        """Mean width of the science slits.  Alignment-star boxes are excluded so
+        their wide boxes do not skew the mean, and a design with no science slits
+        has no average."""
+        return AngleFields("averageSlitWidth")
+
+    def fields(
+        self,
+        *subfields: Union[
+            MaskDefinitionGraphQLField,
+            "AngleFields",
+            "CoordinatesFields",
+            "MaskSlitFields",
+        ],
+    ) -> "MaskDefinitionFields":
+        """Subfields should come from the MaskDefinitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "MaskDefinitionFields":
+        self._alias = alias
+        return self
+
+
+class MaskSlitFields(GraphQLField):
+    """One aperture of a MOS mask design.  The width is always the extent along the
+    dispersion direction (horizontal for GMOS-S/N, vertical for FLAMINGOS2) and
+    the length the extent across it."""
+
+    id: "MaskSlitGraphQLField" = MaskSlitGraphQLField("id")
+    "Object identifier, unique within the mask."
+
+    @classmethod
+    def coordinates(cls) -> "CoordinatesFields":
+        """Sky position of the object the slit targets."""
+        return CoordinatesFields("coordinates")
+
+    x: "MaskSlitGraphQLField" = MaskSlitGraphQLField("x")
+    "Object centroid on the pre-image along the detector x axis, in pixels\n(`x_ccd` in the design file).  Fractional: it is a measured centroid, not a\npixel index."
+    y: "MaskSlitGraphQLField" = MaskSlitGraphQLField("y")
+    "Object centroid on the pre-image along the detector y axis, in pixels\n(`y_ccd` in the design file)."
+
+    @classmethod
+    def width(cls) -> "AngleFields":
+        """Extent along the dispersion direction."""
+        return AngleFields("width")
+
+    @classmethod
+    def length(cls) -> "AngleFields":
+        """Extent across the dispersion direction."""
+        return AngleFields("length")
+
+    @classmethod
+    def offset_along_slit(cls) -> "AngleFields":
+        """Displacement of the slit from the object along the slit's length.  A signed
+        quantity: the slit may be slid either way, and negative displacements are
+        rendered in the signed representation (-1.5 arcseconds reads as -1.5), not
+        wrapped to just under a full turn."""
+        return AngleFields("offsetAlongSlit")
+
+    @classmethod
+    def offset_across_slit(cls) -> "AngleFields":
+        """Displacement of the slit from the object across its width.  A non-zero value
+        drives a point source off the slit and loses flux.  A signed quantity,
+        rendered in the signed representation like `offsetAlongSlit`."""
+        return AngleFields("offsetAcrossSlit")
+
+    @classmethod
+    def tilt(cls) -> "AngleFields":
+        """Slit position angle, counter-clockwise positive.  A signed quantity bounded
+        to 45 degrees either way, rendered in the signed representation like
+        `offsetAlongSlit`."""
+        return AngleFields("tilt")
+
+    priority: "MaskSlitGraphQLField" = MaskSlitGraphQLField("priority")
+    "Placement priority of the object.  ACQUISITION marks an alignment-star box\nrather than a science slit."
+
+    def fields(
+        self,
+        *subfields: Union[MaskSlitGraphQLField, "AngleFields", "CoordinatesFields"],
+    ) -> "MaskSlitFields":
+        """Subfields should come from the MaskSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "MaskSlitFields":
         self._alias = alias
         return self
 
@@ -9839,13 +10218,23 @@ class ObservingModeFields(GraphQLField):
         return GmosSouthMosFields("gmosSouthMos")
 
     @classmethod
+    def gnirs_ifu(cls) -> "GnirsIfuFields":
+        """GNIRS IFU mode"""
+        return GnirsIfuFields("gnirsIfu")
+
+    @classmethod
     def gnirs_imaging(cls) -> "GnirsImagingFields":
         """GNIRS Imaging mode"""
         return GnirsImagingFields("gnirsImaging")
 
     @classmethod
-    def gnirs_spectroscopy(cls) -> "GnirsSpectroscopyFields":
+    def gnirs_long_slit(cls) -> "GnirsLongSlitFields":
         """GNIRS Long Slit mode"""
+        return GnirsLongSlitFields("gnirsLongSlit")
+
+    @classmethod
+    def gnirs_spectroscopy(cls) -> "GnirsSpectroscopyFields":
+        """GNIRS spectroscopy mode, long slit and IFU combined."""
         return GnirsSpectroscopyFields("gnirsSpectroscopy")
 
     @classmethod
@@ -9872,7 +10261,9 @@ class ObservingModeFields(GraphQLField):
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
             "GmosSouthMosFields",
+            "GnirsIfuFields",
             "GnirsImagingFields",
+            "GnirsLongSlitFields",
             "GnirsSpectroscopyFields",
             "Igrins2LongSlitFields",
             "VisitorFields",
@@ -10783,15 +11174,23 @@ class QueueFields(GraphQLField):
     "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
     "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
-    aeon_multi_facility: "QueueGraphQLField" = QueueGraphQLField("aeonMultiFacility")
-    "Whether this proposal is part of the AEON/Multi-facility program."
+
+    @classmethod
+    def aeon_multi_facility(cls) -> "AeonMultiFacilityFields":
+        """The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+        is part of the AEON/Multi-facility program."""
+        return AeonMultiFacilityFields("aeonMultiFacility")
+
     jwst_synergy: "QueueGraphQLField" = QueueGraphQLField("jwstSynergy")
     "Whether this proposal has JWST synergy."
     us_long_term: "QueueGraphQLField" = QueueGraphQLField("usLongTerm")
     "Whether this is a US Long Term proposal."
 
     def fields(
-        self, *subfields: Union[QueueGraphQLField, "PartnerSplitFields"]
+        self,
+        *subfields: Union[
+            QueueGraphQLField, "AeonMultiFacilityFields", "PartnerSplitFields"
+        ],
     ) -> "QueueFields":
         """Subfields should come from the QueueFields class"""
         self._subfields.extend(subfields)
@@ -13578,6 +13977,17 @@ class TooTriggerFields(GraphQLField):
 
     status: "TooTriggerGraphQLField" = TooTriggerGraphQLField("status")
     "The trigger's lifecycle status."
+    too_activation: "TooTriggerGraphQLField" = TooTriggerGraphQLField("tooActivation")
+    "The ToO activation this request was made at.  Fixed when the trigger is created\nand never changed: a request at a different activation is a different request,\nsince who is notified, how fast, and what they are expected to drop all differ.\nIf the observation's activation moves while this request is outstanding, this\ntrigger becomes SUPERSEDED and a successor carries the new value.  Never NONE."
+
+    @classmethod
+    def supersedes(cls) -> "TooTriggerFields":
+        """The request this one replaced, null for a first request.  Following the chain
+        back gives the moment the observation first went live at any activation, which
+        `requestedAt` deliberately does not -- it is the age of this request, at this
+        activation."""
+        return TooTriggerFields("supersedes")
+
     resolution_reason: "TooTriggerGraphQLField" = TooTriggerGraphQLField(
         "resolutionReason"
     )
@@ -13595,7 +14005,12 @@ class TooTriggerFields(GraphQLField):
 
     def fields(
         self,
-        *subfields: Union[TooTriggerGraphQLField, "ObservationFields", "UserFields"],
+        *subfields: Union[
+            TooTriggerGraphQLField,
+            "ObservationFields",
+            "TooTriggerFields",
+            "UserFields",
+        ],
     ) -> "TooTriggerFields":
         """Subfields should come from the TooTriggerFields class"""
         self._subfields.extend(subfields)
@@ -13648,6 +14063,14 @@ class TooTriggerChronicleEntryFields(GraphQLField):
     mod_resolution_reason: "TooTriggerChronicleEntryGraphQLField" = (
         TooTriggerChronicleEntryGraphQLField("modResolutionReason")
     )
+    mod_too_activation: "TooTriggerChronicleEntryGraphQLField" = (
+        TooTriggerChronicleEntryGraphQLField("modTooActivation")
+    )
+    "Always false on an update -- a trigger's activation never changes -- so this is\ntrue exactly on the row that recorded the trigger's creation."
+    mod_supersedes: "TooTriggerChronicleEntryGraphQLField" = (
+        TooTriggerChronicleEntryGraphQLField("modSupersedes")
+    )
+    "As `modTooActivation`: only ever true on a creation."
     new_observation_id: "TooTriggerChronicleEntryGraphQLField" = (
         TooTriggerChronicleEntryGraphQLField("newObservationId")
     )
@@ -13659,6 +14082,12 @@ class TooTriggerChronicleEntryFields(GraphQLField):
     )
     new_resolution_reason: "TooTriggerChronicleEntryGraphQLField" = (
         TooTriggerChronicleEntryGraphQLField("newResolutionReason")
+    )
+    new_too_activation: "TooTriggerChronicleEntryGraphQLField" = (
+        TooTriggerChronicleEntryGraphQLField("newTooActivation")
+    )
+    new_supersedes: "TooTriggerChronicleEntryGraphQLField" = (
+        TooTriggerChronicleEntryGraphQLField("newSupersedes")
     )
 
     def fields(

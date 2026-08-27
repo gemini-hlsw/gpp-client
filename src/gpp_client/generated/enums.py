@@ -360,6 +360,20 @@ class AttachmentType(str, Enum):
     MOS_MASK = "MOS_MASK"
     PRE_IMAGING = "PRE_IMAGING"
     CUSTOM_SED = "CUSTOM_SED"
+    SUMMARY = "SUMMARY"
+
+
+class MosDispersionDirection(str, Enum):
+    HORIZONTAL = "HORIZONTAL"
+    VERTICAL = "VERTICAL"
+
+
+class MosSlitPriority(str, Enum):
+    ACQUISITION = "ACQUISITION"
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    IGNORE = "IGNORE"
 
 
 class Band(str, Enum):
@@ -1050,8 +1064,10 @@ class ConfigurationRequestStatus(str, Enum):
 
 class TooTriggerStatus(str, Enum):
     REQUESTED = "REQUESTED"
+    ACCEPTED = "ACCEPTED"
     DECLINED = "DECLINED"
     WITHDRAWN = "WITHDRAWN"
+    SUPERSEDED = "SUPERSEDED"
 
 
 class ObservationValidationCode(str, Enum):
@@ -1063,6 +1079,7 @@ class ObservationValidationCode(str, Enum):
     CONFIG_REQUEST_DENIED = "CONFIG_REQUEST_DENIED"
     CONFIG_REQUEST_PENDING = "CONFIG_REQUEST_PENDING"
     TOO_ACTIVATION_UNAPPROVED = "TOO_ACTIVATION_UNAPPROVED"
+    GENERIC_WARNING = "GENERIC_WARNING"
 
 
 class ObserveClass(str, Enum):
@@ -1442,6 +1459,7 @@ class ObservationWorkflowState(str, Enum):
     UNDEFINED = "UNDEFINED"
     UNAPPROVED = "UNAPPROVED"
     DEFINED = "DEFINED"
+    FOR_REVIEW = "FOR_REVIEW"
     READY = "READY"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"

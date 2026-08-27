@@ -541,6 +541,12 @@ class ProgramUserGraphQLField(GraphQLField):
         return self
 
 
+class AeonMultiFacilityGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "AeonMultiFacilityGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GeminiProposalTypeGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GeminiProposalTypeGraphQLField":
         self._alias = alias
@@ -855,6 +861,18 @@ class AsterismGroupSelectResultGraphQLField(GraphQLField):
 
 class AttachmentGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "AttachmentGraphQLField":
+        self._alias = alias
+        return self
+
+
+class MaskDefinitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "MaskDefinitionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class MaskSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "MaskSlitGraphQLField":
         self._alias = alias
         return self
 
@@ -1351,8 +1369,20 @@ class GnirsSpectroscopyGraphQLField(GraphQLField):
         return self
 
 
-class GnirsSlitGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GnirsSlitGraphQLField":
+class GnirsSpectroscopyLongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsSpectroscopyLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GnirsSpectroscopyIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsSpectroscopyIfuGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GnirsLongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GnirsLongSlitGraphQLField":
         self._alias = alias
         return self
 

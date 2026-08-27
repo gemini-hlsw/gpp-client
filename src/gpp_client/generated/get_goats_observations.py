@@ -35,6 +35,7 @@ from .enums import (
     ScienceBand,
     ScienceMode,
     SkyBackground,
+    SlitOffsetMode,
     StellarLibrarySpectrum,
     TelescopeConfigGeneratorType,
     TimingWindowInclusion,
@@ -487,9 +488,12 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit(Base
     exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode" = Field(
         alias="exposureTimeMode"
     )
-    offsets: list[
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets"
-    ]
+    default_telescope_configs: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigs" = Field(
+        alias="defaultTelescopeConfigs"
+    )
+    explicit_telescope_configs: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
 
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitCentralWavelength(
@@ -548,7 +552,111 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExpos
     nanometers: Any
 
 
-class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitOffsets(
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigs(
+    BaseModel
+):
+    along_slit: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsAlongSlit"
+        ]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSky"
+        ]
+    ] = Field(alias="toSky")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsAlongSlit(
+    BaseModel
+):
+    guiding: GuideState
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsAlongSlitQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsAlongSlitQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSky(
+    BaseModel
+):
+    guiding: GuideState
+    offset: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffset"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffset(
+    BaseModel
+):
+    p: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffsetP"
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffsetQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffsetP(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffsetQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigs(
+    BaseModel
+):
+    along_slit: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsAlongSlit"
+        ]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSky"
+        ]
+    ] = Field(alias="toSky")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsAlongSlit(
+    BaseModel
+):
+    guiding: GuideState
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsAlongSlitQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsAlongSlitQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSky(
+    BaseModel
+):
+    guiding: GuideState
+    offset: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffset"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffset(
+    BaseModel
+):
+    p: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffsetP"
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffsetQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffsetP(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffsetQ(
     BaseModel
 ):
     arcseconds: Any
@@ -571,9 +679,12 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit(Base
     exposure_time_mode: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode" = Field(
         alias="exposureTimeMode"
     )
-    offsets: list[
-        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets"
-    ]
+    default_telescope_configs: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigs" = Field(
+        alias="defaultTelescopeConfigs"
+    )
+    explicit_telescope_configs: Optional[
+        "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
 
 
 class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitCentralWavelength(
@@ -632,7 +743,111 @@ class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExpos
     nanometers: Any
 
 
-class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitOffsets(
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigs(
+    BaseModel
+):
+    along_slit: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsAlongSlit"
+        ]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSky"
+        ]
+    ] = Field(alias="toSky")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsAlongSlit(
+    BaseModel
+):
+    guiding: GuideState
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsAlongSlitQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsAlongSlitQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSky(
+    BaseModel
+):
+    guiding: GuideState
+    offset: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffset"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffset(
+    BaseModel
+):
+    p: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffsetP"
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffsetQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffsetP(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffsetQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigs(
+    BaseModel
+):
+    along_slit: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsAlongSlit"
+        ]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[
+        list[
+            "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSky"
+        ]
+    ] = Field(alias="toSky")
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsAlongSlit(
+    BaseModel
+):
+    guiding: GuideState
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsAlongSlitQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsAlongSlitQ(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSky(
+    BaseModel
+):
+    guiding: GuideState
+    offset: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffset"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffset(
+    BaseModel
+):
+    p: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffsetP"
+    q: "GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffsetQ"
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffsetP(
+    BaseModel
+):
+    arcseconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffsetQ(
     BaseModel
 ):
     arcseconds: Any
@@ -2428,10 +2643,26 @@ GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlit.model_rebu
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeMode.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigs.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsAlongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSky.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitDefaultTelescopeConfigsToSkyOffset.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigs.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsAlongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSky.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosNorthLongSlitExplicitTelescopeConfigsToSkyOffset.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlit.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeMode.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeSignalToNoise.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExposureTimeModeTimeAndCount.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigs.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsAlongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSky.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitDefaultTelescopeConfigsToSkyOffset.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigs.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsAlongSlit.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSky.model_rebuild()
+GetGOATSObservationsObservationsMatchesObservingModeGmosSouthLongSlitExplicitTelescopeConfigsToSkyOffset.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImaging.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImagingFilters.model_rebuild()
 GetGOATSObservationsObservationsMatchesObservingModeGmosNorthImagingFiltersExposureTimeMode.model_rebuild()

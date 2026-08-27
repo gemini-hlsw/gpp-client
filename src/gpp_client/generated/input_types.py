@@ -861,14 +861,10 @@ class GmosNorthLongSlitInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitOffsets"), default=None
+    explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
     )
-    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_spatial_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitSpatialOffsets"), default=None
-    )
-    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosNorthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -1012,14 +1008,10 @@ class GmosSouthLongSlitInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitOffsets"), default=None
+    explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
     )
-    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_spatial_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitSpatialOffsets"), default=None
-    )
-    "The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosSouthLongSlitAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -1069,10 +1061,10 @@ class GmosNorthMosInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitOffsets"), default=None
+    explicit_telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
     )
-    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosNorthMosAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -1136,10 +1128,10 @@ class GmosSouthMosInput(BaseModel):
         alias=str("explicitWavelengthDithers"), default=None
     )
     "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
-    explicit_offsets: Optional[list["OffsetComponentInput"]] = Field(
-        alias=str("explicitOffsets"), default=None
+    explicit_telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
     )
-    "The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether"
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
     acquisition: Optional["GmosSouthMosAcquisitionInput"] = None
     "Parameters that override acquisition defaults."
 
@@ -1562,6 +1554,15 @@ class ProperMotionInput(BaseModel):
     dec: "ProperMotionComponentInput"
 
 
+class AeonMultiFacilityInput(BaseModel):
+    """The AEON/Multi-facility aspects of a Gemini proposal."""
+
+    required_instruments: Optional[list[Instrument]] = Field(
+        alias=str("requiredInstruments"), default=None
+    )
+    "The instruments whose requested Gemini time is required for the\nmulti-facility project to be feasible.  Each instrument must be in use by an\nactive observation in the program.  Setting it replaces the whole list; null\n(or empty) clears it.  When editing, leave it out to keep the list as it\nstands."
+
+
 class GeminiProposalTypeInput(BaseModel):
     """Properties associated with particular proposal types.  Exactly one of
     these should be set upon creation or editing."""
@@ -1621,10 +1622,10 @@ class ClassicalInput(BaseModel):
         alias=str("exchangePartner"), default=None
     )
     "Set when the time request is on behalf of an exchange partner community (the\nPI is from Keck or Subaru); the entire request is associated with it and\n`partnerSplits` must be empty.  Mutually exclusive with `partnerSplits`."
-    aeon_multi_facility: Optional[bool] = Field(
+    aeon_multi_facility: Optional["AeonMultiFacilityInput"] = Field(
         alias=str("aeonMultiFacility"), default=None
     )
-    "Whether this proposal is part of the AEON/Multi-facility program."
+    "The AEON/Multi-facility aspects of the proposal.  Supply the object to place\nthe proposal in the AEON/Multi-facility program, null to take it out (which\nalso clears the required instruments).  When editing, leave it out to keep\nthe proposal as it stands."
     jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
     "Whether this proposal has JWST synergy."
     us_long_term: Optional[bool] = Field(alias=str("usLongTerm"), default=None)
@@ -1675,10 +1676,10 @@ class LargeProgramInput(BaseModel):
     "The minimum percentage of time required over the lifetime of the program to\nconsider this proposal a success.  If not set, 100% is assumed."
     total_time: Optional["TimeSpanInput"] = Field(alias=str("totalTime"), default=None)
     "The total time requested over the lifetime of the program.  If not set, zero\nhours are assumed."
-    aeon_multi_facility: Optional[bool] = Field(
+    aeon_multi_facility: Optional["AeonMultiFacilityInput"] = Field(
         alias=str("aeonMultiFacility"), default=None
     )
-    "Whether this proposal is part of the AEON/Multi-facility program."
+    "The AEON/Multi-facility aspects of the proposal.  Supply the object to place\nthe proposal in the AEON/Multi-facility program, null to take it out (which\nalso clears the required instruments).  When editing, leave it out to keep\nthe proposal as it stands."
     jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
     "Whether this proposal has JWST synergy."
 
@@ -1721,10 +1722,10 @@ class QueueInput(BaseModel):
         alias=str("considerForBand3"), default=None
     )
     "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
-    aeon_multi_facility: Optional[bool] = Field(
+    aeon_multi_facility: Optional["AeonMultiFacilityInput"] = Field(
         alias=str("aeonMultiFacility"), default=None
     )
-    "Whether this proposal is part of the AEON/Multi-facility program."
+    "The AEON/Multi-facility aspects of the proposal.  Supply the object to place\nthe proposal in the AEON/Multi-facility program, null to take it out (which\nalso clears the required instruments).  When editing, leave it out to keep\nthe proposal as it stands."
     jwst_synergy: Optional[bool] = Field(alias=str("jwstSynergy"), default=None)
     "Whether this proposal has JWST synergy."
     us_long_term: Optional[bool] = Field(alias=str("usLongTerm"), default=None)
@@ -1893,10 +1894,16 @@ class ObservingModeInput(BaseModel):
         alias=str("gmosSouthMos"), default=None
     )
     "The gmosSouthMos field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gnirs_ifu: Optional["GnirsIfuInput"] = Field(alias=str("gnirsIfu"), default=None)
+    "The gnirsIfu field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gnirs_imaging: Optional["GnirsImagingInput"] = Field(
         alias=str("gnirsImaging"), default=None
     )
     "The gnirsImaging field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gnirs_long_slit: Optional["GnirsLongSlitInput"] = Field(
+        alias=str("gnirsLongSlit"), default=None
+    )
+    "The gnirsLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     gnirs_spectroscopy: Optional["GnirsSpectroscopyInput"] = Field(
         alias=str("gnirsSpectroscopy"), default=None
     )
@@ -2883,7 +2890,7 @@ class Flamingos2MosAcquisitionInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
-    "Exposure time mode for the acquisition sequence.  If not specified, a default\nexposure time mode is used."
+    "Exposure time mode for the acquisition sequence.  MOS acquisition must be\nTime & Count; a signal-to-noise mode is rejected.  If not specified, the\ndefault is 5 seconds with a count of 1."
 
 
 class Flamingos2MosInput(BaseModel):
@@ -3070,9 +3077,10 @@ class GnirsImagingAcquisitionInput(BaseModel):
     )
     coadds: Optional[Any] = None
     sky_offset: Optional["OffsetInput"] = Field(alias=str("skyOffset"), default=None)
-    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
-        alias=str("exposureTimeMode"), default=None
+    explicit_exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("explicitExposureTimeMode"), default=None
     )
+    "An explicitly specified acquisition exposure time mode.  Assign null to revert to\nthe mode derived from the acquisition brightness classification, or skip it\naltogether to leave it alone."
 
 
 class GnirsImagingInput(BaseModel):
@@ -3118,9 +3126,10 @@ class GnirsSpectroscopyAcquisitionInput(BaseModel):
     )
     coadds: Optional[Any] = None
     sky_offset: Optional["OffsetInput"] = Field(alias=str("skyOffset"), default=None)
-    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
-        alias=str("exposureTimeMode"), default=None
+    explicit_exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("explicitExposureTimeMode"), default=None
     )
+    "An explicitly specified acquisition exposure time mode.  Assign null to revert to\nthe mode derived from the acquisition brightness classification, or skip it\naltogether to leave it alone."
 
 
 class TelescopeConfigAlongSlitInput(BaseModel):
@@ -3137,7 +3146,7 @@ class SlitTelescopeConfigsInput(BaseModel):
     )
 
 
-class GnirsSlitInput(BaseModel):
+class GnirsSpectroscopyLongSlitInput(BaseModel):
     """GNIRS long-slit-specific configuration input. `fpu` is required on create."""
 
     fpu: Optional[GnirsFpuSlit] = None
@@ -3147,7 +3156,7 @@ class GnirsSlitInput(BaseModel):
     "Long-slit telescope configs. Null clears an explicit override back to the default."
 
 
-class GnirsIfuInput(BaseModel):
+class GnirsSpectroscopyIfuInput(BaseModel):
     """GNIRS IFU-specific configuration input. `fpu` is required on create. A missing
     `telescopeConfigs` is left unedited (and on create is seeded from the FPU)."""
 
@@ -3165,10 +3174,94 @@ class GnirsSpectroscopyInput(BaseModel):
     )
     "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
     filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
-    slit: Optional["GnirsSlitInput"] = None
+    slit: Optional["GnirsSpectroscopyLongSlitInput"] = None
     "Long-slit configuration. On create, exactly one of `slit` / `ifu` is required."
-    ifu: Optional["GnirsIfuInput"] = None
+    ifu: Optional["GnirsSpectroscopyIfuInput"] = None
     "IFU configuration. On create, exactly one of `slit` / `ifu` is required."
+    camera: Optional[GnirsCamera] = None
+    grating: Optional[GnirsGrating] = None
+    prism: Optional[GnirsPrism] = None
+    explicit_decker: Optional[GnirsDecker] = Field(
+        alias=str("explicitDecker"), default=None
+    )
+    explicit_grating: Optional[GnirsGrating] = Field(
+        alias=str("explicitGrating"), default=None
+    )
+    explicit_prism: Optional[GnirsPrism] = Field(
+        alias=str("explicitPrism"), default=None
+    )
+    explicit_focus_motor_steps: Optional[int] = Field(
+        alias=str("explicitFocusMotorSteps"), default=None
+    )
+    explicit_read_mode: Optional[GnirsReadMode] = Field(
+        alias=str("explicitReadMode"), default=None
+    )
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(
+        alias=str("explicitWellDepth"), default=None
+    )
+    acquisition: Optional["GnirsSpectroscopyAcquisitionInput"] = None
+    telluric_type: Optional["TelluricTypeInput"] = Field(
+        alias=str("telluricType"), default=None
+    )
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+
+
+class GnirsLongSlitInput(BaseModel):
+    """Edit or create GNIRS Long Slit configuration."""
+
+    central_wavelengths: Optional[list["GnirsCentralWavelengthConfigInput"]] = Field(
+        alias=str("centralWavelengths"), default=None
+    )
+    "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
+    filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
+    fpu: Optional[GnirsFpuSlit] = None
+    "The FPU. Required on create."
+    explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    "Long-slit telescope configs. Null clears an explicit override back to the default."
+    camera: Optional[GnirsCamera] = None
+    grating: Optional[GnirsGrating] = None
+    prism: Optional[GnirsPrism] = None
+    explicit_decker: Optional[GnirsDecker] = Field(
+        alias=str("explicitDecker"), default=None
+    )
+    explicit_grating: Optional[GnirsGrating] = Field(
+        alias=str("explicitGrating"), default=None
+    )
+    explicit_prism: Optional[GnirsPrism] = Field(
+        alias=str("explicitPrism"), default=None
+    )
+    explicit_focus_motor_steps: Optional[int] = Field(
+        alias=str("explicitFocusMotorSteps"), default=None
+    )
+    explicit_read_mode: Optional[GnirsReadMode] = Field(
+        alias=str("explicitReadMode"), default=None
+    )
+    explicit_well_depth: Optional[GnirsWellDepth] = Field(
+        alias=str("explicitWellDepth"), default=None
+    )
+    acquisition: Optional["GnirsSpectroscopyAcquisitionInput"] = None
+    telluric_type: Optional["TelluricTypeInput"] = Field(
+        alias=str("telluricType"), default=None
+    )
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+
+
+class GnirsIfuInput(BaseModel):
+    """Edit or create GNIRS IFU configuration."""
+
+    central_wavelengths: Optional[list["GnirsCentralWavelengthConfigInput"]] = Field(
+        alias=str("centralWavelengths"), default=None
+    )
+    "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
+    filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
+    fpu: Optional[GnirsFpuIfu] = None
+    "The FPU. Required on create."
+    telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("telescopeConfigs"), default=None
+    )
+    "Telescope configs. A missing value is left unedited; on create it is seeded\nfrom the FPU."
     camera: Optional[GnirsCamera] = None
     grating: Optional[GnirsGrating] = None
     prism: Optional[GnirsPrism] = None
@@ -3287,7 +3380,7 @@ class GroupPropertiesInput(BaseModel):
     description: Optional[Any] = None
     "Group description (optional)."
     minimum_required: Optional[Any] = Field(alias=str("minimumRequired"), default=None)
-    "Minimum number of elements to be observed. If unspecified then all elements will be observed."
+    "Minimum number of elements to be observed. If unspecified then all elements\nwill be observed. If specified it must be at least 1. For a non-empty group it\nmay not exceed the number of elements the group already has; an empty group\naccepts any positive value. It is lowered automatically if elements are later\nremoved, but is left alone once the group is empty."
     ordered: Optional[bool] = None
     "If true, elements will be observed in order. Defaults to false if left unspecified."
     minimum_interval: Optional["TimeSpanInput"] = Field(
@@ -3349,6 +3442,10 @@ class TooTriggerEditInput(BaseModel):
     "If provided, only edits for triggers on this observation are delivered."
     too_trigger_id: Optional[Any] = Field(alias=str("tooTriggerId"), default=None)
     "If provided, only edits for this specific trigger are delivered."
+    too_activation: Optional["WhereOrderTooActivation"] = Field(
+        alias=str("tooActivation"), default=None
+    )
+    "If provided, only edits for triggers requested at a matching activation are\ndelivered.  Ordered, so `EQ: INTERRRUPTING` follows just the requests that\ncannot wait for the ordinary queue.  Matched against the activation the\ntrigger carries, which is fixed when it is created -- so a supersession\nreports the predecessor's own activation on its closing event, not the\nsuccessor's."
 
 
 class DeclineTooTriggerInput(BaseModel):
@@ -3382,8 +3479,9 @@ class WhereOrderTooTriggerId(BaseModel):
 
 class WhereOrderTooTriggerStatus(BaseModel):
     """Filters on equality or order comparisons of the TooTriggerStatus property.  Order
-    follows the lifecycle declaration: REQUESTED < ACCEPTED < DENIED < WITHDRAWN, so
-    `GTE: REQUESTED` matches every status."""
+    follows the lifecycle declaration: REQUESTED < ACCEPTED < DECLINED < WITHDRAWN <
+    SUPERSEDED,
+    so `GTE: REQUESTED` matches every status."""
 
     eq: Optional[TooTriggerStatus] = Field(alias=str("EQ"), default=None)
     "Matches if the property is exactly the supplied value."
@@ -3400,6 +3498,31 @@ class WhereOrderTooTriggerStatus(BaseModel):
     gte: Optional[TooTriggerStatus] = Field(alias=str("GTE"), default=None)
     "Matches if the property is ordered after or equal (>=) the supplied value."
     lte: Optional[TooTriggerStatus] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
+
+
+class WhereOrderTooActivation(BaseModel):
+    """Filters on equality or order comparisons of the TooActivation property.  Order
+    follows the declaration NONE < STANDARD < RAPID < INTERRUPTING, so `GTE: RAPID`
+    matches the activations that cannot wait for the ordinary queue.  Note that only
+    INTERRUPTING may displace work already under way; RAPID is observed as soon as
+    possible but takes its turn."""
+
+    eq: Optional[TooActivation] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
+    neq: Optional[TooActivation] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
+    in_: Optional[list[TooActivation]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
+    nin: Optional[list[TooActivation]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
+    gt: Optional[TooActivation] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
+    lt: Optional[TooActivation] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
+    gte: Optional[TooActivation] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
+    lte: Optional[TooActivation] = Field(alias=str("LTE"), default=None)
     "Matches if the property is ordered before or equal (<=) the supplied value."
 
 
@@ -3422,6 +3545,10 @@ class WhereTooTrigger(BaseModel):
     "Matches the program id (e.g. all triggers for one or more programs)."
     status: Optional["WhereOrderTooTriggerStatus"] = None
     "Matches the trigger status."
+    too_activation: Optional["WhereOrderTooActivation"] = Field(
+        alias=str("tooActivation"), default=None
+    )
+    "Matches the activation the trigger was requested at.  Ordered, so\n`EQ: INTERRUPTING` selects the requests that cannot wait for the ordinary queue."
     requested_at: Optional["WhereOrderTimestamp"] = Field(
         alias=str("requestedAt"), default=None
     )
@@ -3471,6 +3598,12 @@ class WhereTooTriggerChronicleEntry(BaseModel):
     mod_status: Optional["WhereBoolean"] = Field(alias=str("modStatus"), default=None)
     mod_resolution_reason: Optional["WhereBoolean"] = Field(
         alias=str("modResolutionReason"), default=None
+    )
+    mod_too_activation: Optional["WhereBoolean"] = Field(
+        alias=str("modTooActivation"), default=None
+    )
+    mod_supersedes: Optional["WhereBoolean"] = Field(
+        alias=str("modSupersedes"), default=None
     )
 
 
@@ -5739,9 +5872,11 @@ GnirsCentralWavelengthConfigInput.model_rebuild()
 GnirsSpectroscopyAcquisitionInput.model_rebuild()
 TelescopeConfigAlongSlitInput.model_rebuild()
 SlitTelescopeConfigsInput.model_rebuild()
-GnirsSlitInput.model_rebuild()
-GnirsIfuInput.model_rebuild()
+GnirsSpectroscopyLongSlitInput.model_rebuild()
+GnirsSpectroscopyIfuInput.model_rebuild()
 GnirsSpectroscopyInput.model_rebuild()
+GnirsLongSlitInput.model_rebuild()
+GnirsIfuInput.model_rebuild()
 ImagingVariantInput.model_rebuild()
 GroupedImagingVariantInput.model_rebuild()
 InterleavedImagingVariantInput.model_rebuild()
@@ -5750,6 +5885,7 @@ GmosNorthImagingFilterInput.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
 ImagingScienceRequirementsInput.model_rebuild()
+TooTriggerEditInput.model_rebuild()
 WhereTooTrigger.model_rebuild()
 WhereTooTriggerChronicleEntry.model_rebuild()
 CreateConfigurationRequestInput.model_rebuild()

@@ -222,8 +222,45 @@ query GetGOATSObservations($programId: ProgramId!) {
               }
             }
           }
-          offsets {
-            arcseconds
+          defaultTelescopeConfigs {
+            alongSlit {
+              guiding
+              q {
+                arcseconds
+              }
+            }
+            offsetMode
+            toSky {
+              guiding
+              offset {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+            }
+          }
+          explicitTelescopeConfigs {
+            alongSlit {
+              guiding
+              q {
+                arcseconds
+              }
+            }
+            offsetMode
+            toSky {
+              guiding
+              offset {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+            }
           }
         }
         gmosSouthLongSlit {
@@ -257,8 +294,45 @@ query GetGOATSObservations($programId: ProgramId!) {
               }
             }
           }
-          offsets {
-            arcseconds
+          defaultTelescopeConfigs {
+            alongSlit {
+              guiding
+              q {
+                arcseconds
+              }
+            }
+            offsetMode
+            toSky {
+              guiding
+              offset {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+            }
+          }
+          explicitTelescopeConfigs {
+            alongSlit {
+              guiding
+              q {
+                arcseconds
+              }
+            }
+            offsetMode
+            toSky {
+              guiding
+              offset {
+                p {
+                  arcseconds
+                }
+                q {
+                  arcseconds
+                }
+              }
+            }
           }
         }
         gmosNorthImaging {

@@ -37,6 +37,7 @@ class SchedulerObservationsUpdatesObscalcUpdate(BaseModel):
 
 class SchedulerObservationsUpdatesObscalcUpdateValue(BaseModel):
     id: Any
+    reference: Optional["SchedulerObservationsUpdatesObscalcUpdateValueReference"]
     observation_time: Optional[Any] = Field(alias="observationTime")
     program: "SchedulerObservationsUpdatesObscalcUpdateValueProgram"
     workflow: Optional["SchedulerObservationsUpdatesObscalcUpdateValueWorkflow"]
@@ -51,6 +52,10 @@ class SchedulerObservationsUpdatesObscalcUpdateValue(BaseModel):
         "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindows"
     ] = Field(alias="timingWindows")
     instrument: Optional[Instrument]
+
+
+class SchedulerObservationsUpdatesObscalcUpdateValueReference(BaseModel):
+    label: Any
 
 
 class SchedulerObservationsUpdatesObscalcUpdateValueProgram(BaseModel):

@@ -898,8 +898,45 @@ class GraphQLClient(AsyncBaseClient):
                           }
                         }
                       }
-                      offsets {
-                        arcseconds
+                      defaultTelescopeConfigs {
+                        alongSlit {
+                          guiding
+                          q {
+                            arcseconds
+                          }
+                        }
+                        offsetMode
+                        toSky {
+                          guiding
+                          offset {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
+                      }
+                      explicitTelescopeConfigs {
+                        alongSlit {
+                          guiding
+                          q {
+                            arcseconds
+                          }
+                        }
+                        offsetMode
+                        toSky {
+                          guiding
+                          offset {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
                       }
                     }
                     gmosSouthLongSlit {
@@ -933,8 +970,45 @@ class GraphQLClient(AsyncBaseClient):
                           }
                         }
                       }
-                      offsets {
-                        arcseconds
+                      defaultTelescopeConfigs {
+                        alongSlit {
+                          guiding
+                          q {
+                            arcseconds
+                          }
+                        }
+                        offsetMode
+                        toSky {
+                          guiding
+                          offset {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
+                      }
+                      explicitTelescopeConfigs {
+                        alongSlit {
+                          guiding
+                          q {
+                            arcseconds
+                          }
+                        }
+                        offsetMode
+                        toSky {
+                          guiding
+                          offset {
+                            p {
+                              arcseconds
+                            }
+                            q {
+                              arcseconds
+                            }
+                          }
+                        }
                       }
                     }
                     gmosNorthImaging {
@@ -1982,9 +2056,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -2002,9 +2073,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -2639,9 +2707,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -2659,9 +2724,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -3297,9 +3359,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -3317,9 +3376,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -3957,9 +4013,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -3977,9 +4030,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -4620,9 +4670,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -4640,9 +4687,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -5283,9 +5327,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -5303,9 +5344,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -5943,9 +5981,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -5963,9 +5998,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -6603,9 +6635,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -6623,9 +6652,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -7263,9 +7289,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -7283,9 +7306,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -7924,9 +7944,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -7944,9 +7961,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
@@ -8592,9 +8606,6 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
-              offsets {
-                arcseconds
-              }
               xBin
               yBin
             }
@@ -8612,9 +8623,6 @@ class GraphQLClient(AsyncBaseClient):
               fpu
               centralWavelength {
                 nanometers
-              }
-              offsets {
-                arcseconds
               }
               xBin
               yBin
