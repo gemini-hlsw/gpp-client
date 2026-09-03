@@ -8,6 +8,7 @@ from .enums import (
     Band,
     BrightnessIntegratedUnits,
     CalculationState,
+    CalibrationRole,
     CloudExtinctionPreset,
     CoolStarTemperature,
     GalaxySpectrum,
@@ -57,6 +58,7 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     id: Any
     reference: Optional["GetGOATSObservationsObservationsMatchesReference"]
     instrument: Optional[Instrument]
+    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
     title: Any
     subtitle: Optional[Any]
     constraint_set: "GetGOATSObservationsObservationsMatchesConstraintSet" = Field(

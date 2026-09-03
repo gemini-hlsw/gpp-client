@@ -699,6 +699,7 @@ class GraphQLClient(AsyncBaseClient):
                     label
                   }
                   instrument
+                  calibrationRole
                   title
                   subtitle
                   constraintSet {
