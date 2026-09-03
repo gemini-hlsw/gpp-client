@@ -10,6 +10,7 @@ from .enums import (
     CloudExtinctionPreset,
     EphemerisKeyType,
     Existence,
+    Flamingos2CustomSlitWidth,
     Flamingos2Decker,
     Flamingos2Disperser,
     Flamingos2Filter,
@@ -23,13 +24,20 @@ from .enums import (
     GhostIfu2FiberAgitator,
     GhostReadMode,
     GhostResolutionMode,
+    GmosAmpGain,
+    GmosAmpReadMode,
     GmosBinning,
+    GmosCustomSlitWidth,
+    GmosMosAcquisitionType,
     GmosNorthBuiltinFpu,
     GmosNorthFilter,
     GmosNorthGrating,
+    GmosNorthIfuFpu,
+    GmosRoi,
     GmosSouthBuiltinFpu,
     GmosSouthFilter,
     GmosSouthGrating,
+    GmosSouthIfuFpu,
     GnirsAcquisitionType,
     GnirsCamera,
     GnirsDecker,
@@ -717,11 +725,537 @@ class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetQ(BaseModel):
     arcseconds: Any
 
 
+class Flamingos2MosDetails(BaseModel):
+    readout_mode: Flamingos2ReadoutMode = Field(alias="readoutMode")
+    initial_slit_width: Flamingos2CustomSlitWidth = Field(alias="initialSlitWidth")
+    initial_filter: Flamingos2Filter = Field(alias="initialFilter")
+    initial_disperser: Flamingos2Disperser = Field(alias="initialDisperser")
+    filter_: Flamingos2Filter = Field(alias="filter")
+    explicit_reads: Optional[Flamingos2Reads] = Field(alias="explicitReads")
+    explicit_readout_mode: Optional[Flamingos2ReadoutMode] = Field(
+        alias="explicitReadoutMode"
+    )
+    explicit_read_mode: Optional[Flamingos2ReadMode] = Field(alias="explicitReadMode")
+    explicit_decker: Optional[Flamingos2Decker] = Field(alias="explicitDecker")
+    disperser: Flamingos2Disperser
+    default_readout_mode: Flamingos2ReadoutMode = Field(alias="defaultReadoutMode")
+    default_decker: Flamingos2Decker = Field(alias="defaultDecker")
+    decker: Flamingos2Decker
+    exposure_time_mode: "Flamingos2MosDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    explicit_telescope_configs: Optional[
+        "Flamingos2MosDetailsExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
+    default_telescope_configs: "Flamingos2MosDetailsDefaultTelescopeConfigs" = Field(
+        alias="defaultTelescopeConfigs"
+    )
+    telluric_type: "Flamingos2MosDetailsTelluricType" = Field(alias="telluricType")
+
+
+class Flamingos2MosDetailsExposureTimeMode(BaseModel):
+    time_and_count: Optional["Flamingos2MosDetailsExposureTimeModeTimeAndCount"] = (
+        Field(alias="timeAndCount")
+    )
+    signal_to_noise: Optional["Flamingos2MosDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+
+
+class Flamingos2MosDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "Flamingos2MosDetailsExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "Flamingos2MosDetailsExposureTimeModeTimeAndCountTime"
+
+
+class Flamingos2MosDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2MosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Flamingos2MosDetailsExposureTimeModeSignalToNoise(BaseModel):
+    at: "Flamingos2MosDetailsExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class Flamingos2MosDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigs(BaseModel):
+    along_slit: Optional[
+        list["Flamingos2MosDetailsExplicitTelescopeConfigsAlongSlit"]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[list["Flamingos2MosDetailsExplicitTelescopeConfigsToSky"]] = Field(
+        alias="toSky"
+    )
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "Flamingos2MosDetailsExplicitTelescopeConfigsAlongSlitQ"
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsToSky(BaseModel):
+    guiding: GuideState
+    offset: "Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffset"
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffset(BaseModel):
+    p: "Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffsetP"
+    q: "Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffsetQ"
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsExplicitTelescopeConfigsToSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigs(BaseModel):
+    along_slit: Optional[
+        list["Flamingos2MosDetailsDefaultTelescopeConfigsAlongSlit"]
+    ] = Field(alias="alongSlit")
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[list["Flamingos2MosDetailsDefaultTelescopeConfigsToSky"]] = Field(
+        alias="toSky"
+    )
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "Flamingos2MosDetailsDefaultTelescopeConfigsAlongSlitQ"
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsToSky(BaseModel):
+    guiding: GuideState
+    offset: "Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffset"
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffset(BaseModel):
+    p: "Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffsetP"
+    q: "Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffsetQ"
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class Flamingos2MosDetailsTelluricType(BaseModel):
+    star_types: Optional[list[str]] = Field(alias="starTypes")
+    tag: TelluricTag
+
+
+class GmosNorthIfuDetails(BaseModel):
+    y_bin: GmosBinning = Field(alias="yBin")
+    x_bin: GmosBinning = Field(alias="xBin")
+    roi: GmosRoi
+    initial_grating: GmosNorthGrating = Field(alias="initialGrating")
+    initial_fpu: GmosNorthIfuFpu = Field(alias="initialFpu")
+    initial_filter: Optional[GmosNorthFilter] = Field(alias="initialFilter")
+    grating: GmosNorthGrating
+    fpu: GmosNorthIfuFpu
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
+    explicit_y_bin: Optional[GmosBinning] = Field(alias="explicitYBin")
+    explicit_x_bin: Optional[GmosBinning] = Field(alias="explicitXBin")
+    explicit_roi: Optional[GmosRoi] = Field(alias="explicitRoi")
+    amp_gain: GmosAmpGain = Field(alias="ampGain")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    default_amp_gain: GmosAmpGain = Field(alias="defaultAmpGain")
+    default_amp_read_mode: GmosAmpReadMode = Field(alias="defaultAmpReadMode")
+    default_roi: GmosRoi = Field(alias="defaultRoi")
+    default_x_bin: GmosBinning = Field(alias="defaultXBin")
+    default_y_bin: GmosBinning = Field(alias="defaultYBin")
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(alias="explicitAmpGain")
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias="explicitAmpReadMode"
+    )
+    central_wavelength: "GmosNorthIfuDetailsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    acquisition: "GmosNorthIfuDetailsAcquisition"
+
+
+class GmosNorthIfuDetailsCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthIfuDetailsAcquisition(BaseModel):
+    exposure_time_mode: "GmosNorthIfuDetailsAcquisitionExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GmosNorthIfuDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosNorthIfuDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthIfuDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosNorthMosDetails(BaseModel):
+    acquisition: "GmosNorthMosDetailsAcquisition"
+    acquisition_type: GmosMosAcquisitionType = Field(alias="acquisitionType")
+    amp_gain: GmosAmpGain = Field(alias="ampGain")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    default_amp_gain: GmosAmpGain = Field(alias="defaultAmpGain")
+    default_amp_read_mode: GmosAmpReadMode = Field(alias="defaultAmpReadMode")
+    default_roi: GmosRoi = Field(alias="defaultRoi")
+    default_x_bin: GmosBinning = Field(alias="defaultXBin")
+    default_y_bin: GmosBinning = Field(alias="defaultYBin")
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(alias="explicitAmpGain")
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias="explicitAmpReadMode"
+    )
+    explicit_roi: Optional[GmosRoi] = Field(alias="explicitRoi")
+    explicit_x_bin: Optional[GmosBinning] = Field(alias="explicitXBin")
+    exposure_time_mode: "GmosNorthMosDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    explicit_y_bin: Optional[GmosBinning] = Field(alias="explicitYBin")
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
+    grating: GmosNorthGrating
+    initial_filter: Optional[GmosNorthFilter] = Field(alias="initialFilter")
+    initial_grating: GmosNorthGrating = Field(alias="initialGrating")
+    initial_slit_width: GmosCustomSlitWidth = Field(alias="initialSlitWidth")
+    roi: GmosRoi
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+    central_wavelength: "GmosNorthMosDetailsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+
+
+class GmosNorthMosDetailsAcquisition(BaseModel):
+    filter_: GmosNorthFilter = Field(alias="filter")
+    exposure_time_mode: "GmosNorthMosDetailsAcquisitionExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GmosNorthMosDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosNorthMosDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthMosDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosNorthMosDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["GmosNorthMosDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["GmosNorthMosDetailsExposureTimeModeTimeAndCount"] = Field(
+        alias="timeAndCount"
+    )
+
+
+class GmosNorthMosDetailsExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosNorthMosDetailsExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosNorthMosDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthMosDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosNorthMosDetailsExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosNorthMosDetailsExposureTimeModeTimeAndCountTime"
+
+
+class GmosNorthMosDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosNorthMosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosNorthMosDetailsCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthIfuDetails(BaseModel):
+    acquisition: "GmosSouthIfuDetailsAcquisition"
+    amp_gain: GmosAmpGain = Field(alias="ampGain")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    default_amp_gain: GmosAmpGain = Field(alias="defaultAmpGain")
+    default_amp_read_mode: GmosAmpReadMode = Field(alias="defaultAmpReadMode")
+    default_roi: GmosRoi = Field(alias="defaultRoi")
+    default_x_bin: GmosBinning = Field(alias="defaultXBin")
+    default_y_bin: GmosBinning = Field(alias="defaultYBin")
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(alias="explicitAmpGain")
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias="explicitAmpReadMode"
+    )
+    explicit_roi: Optional[GmosRoi] = Field(alias="explicitRoi")
+    explicit_x_bin: Optional[GmosBinning] = Field(alias="explicitXBin")
+    explicit_y_bin: Optional[GmosBinning] = Field(alias="explicitYBin")
+    exposure_time_mode: "GmosSouthIfuDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
+    fpu: GmosSouthIfuFpu
+    grating: GmosSouthGrating
+    initial_fpu: GmosSouthIfuFpu = Field(alias="initialFpu")
+    initial_filter: Optional[GmosSouthFilter] = Field(alias="initialFilter")
+    initial_grating: GmosSouthGrating = Field(alias="initialGrating")
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+
+
+class GmosSouthIfuDetailsAcquisition(BaseModel):
+    exposure_time_mode: "GmosSouthIfuDetailsAcquisitionExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GmosSouthIfuDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosSouthIfuDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthIfuDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosSouthIfuDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["GmosSouthIfuDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["GmosSouthIfuDetailsExposureTimeModeTimeAndCount"] = Field(
+        alias="timeAndCount"
+    )
+
+
+class GmosSouthIfuDetailsExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosSouthIfuDetailsExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosSouthIfuDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthIfuDetailsExposureTimeModeTimeAndCount(BaseModel):
+    count: Any
+    at: "GmosSouthIfuDetailsExposureTimeModeTimeAndCountAt"
+    time: "GmosSouthIfuDetailsExposureTimeModeTimeAndCountTime"
+
+
+class GmosSouthIfuDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthIfuDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosSouthMosDetails(BaseModel):
+    acquisition: "GmosSouthMosDetailsAcquisition"
+    acquisition_type: GmosMosAcquisitionType = Field(alias="acquisitionType")
+    amp_gain: GmosAmpGain = Field(alias="ampGain")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    default_amp_gain: GmosAmpGain = Field(alias="defaultAmpGain")
+    default_amp_read_mode: GmosAmpReadMode = Field(alias="defaultAmpReadMode")
+    default_roi: GmosRoi = Field(alias="defaultRoi")
+    default_x_bin: GmosBinning = Field(alias="defaultXBin")
+    default_y_bin: GmosBinning = Field(alias="defaultYBin")
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(alias="explicitAmpGain")
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias="explicitAmpReadMode"
+    )
+    explicit_roi: Optional[GmosRoi] = Field(alias="explicitRoi")
+    explicit_x_bin: Optional[GmosBinning] = Field(alias="explicitXBin")
+    exposure_time_mode: "GmosSouthMosDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    explicit_y_bin: Optional[GmosBinning] = Field(alias="explicitYBin")
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
+    grating: GmosSouthGrating
+    initial_filter: Optional[GmosSouthFilter] = Field(alias="initialFilter")
+    initial_grating: GmosSouthGrating = Field(alias="initialGrating")
+    initial_slit_width: GmosCustomSlitWidth = Field(alias="initialSlitWidth")
+    roi: GmosRoi
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+
+
+class GmosSouthMosDetailsAcquisition(BaseModel):
+    filter_: GmosSouthFilter = Field(alias="filter")
+    exposure_time_mode: "GmosSouthMosDetailsAcquisitionExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GmosSouthMosDetailsAcquisitionExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosSouthMosDetailsAcquisitionExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCountTime"
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthMosDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GmosSouthMosDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["GmosSouthMosDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["GmosSouthMosDetailsExposureTimeModeTimeAndCount"] = Field(
+        alias="timeAndCount"
+    )
+
+
+class GmosSouthMosDetailsExposureTimeModeSignalToNoise(BaseModel):
+    at: "GmosSouthMosDetailsExposureTimeModeSignalToNoiseAt"
+    value: Any
+
+
+class GmosSouthMosDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthMosDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "GmosSouthMosDetailsExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "GmosSouthMosDetailsExposureTimeModeTimeAndCountTime"
+
+
+class GmosSouthMosDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GmosSouthMosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
 class GnirsDetails(BaseModel):
     gnirs_spectroscopy: Optional["GnirsDetailsGnirsSpectroscopy"] = Field(
         alias="gnirsSpectroscopy"
     )
     gnirs_imaging: Optional["GnirsDetailsGnirsImaging"] = Field(alias="gnirsImaging")
+    gmos_south_mos: Optional["GnirsDetailsGmosSouthMos"] = Field(alias="gmosSouthMos")
+    gmos_south_ifu: Optional["GnirsDetailsGmosSouthIfu"] = Field(alias="gmosSouthIfu")
+    gmos_north_mos: Optional["GnirsDetailsGmosNorthMos"] = Field(alias="gmosNorthMos")
+    gmos_north_ifu: Optional["GnirsDetailsGmosNorthIfu"] = Field(alias="gmosNorthIfu")
+    flamingos_2_mos: Optional["GnirsDetailsFlamingos2Mos"] = Field(
+        alias="flamingos2Mos"
+    )
 
 
 class GnirsDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
@@ -729,6 +1263,26 @@ class GnirsDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
 
 
 class GnirsDetailsGnirsImaging(GnirsImagingDetails):
+    pass
+
+
+class GnirsDetailsGmosSouthMos(GmosSouthMosDetails):
+    pass
+
+
+class GnirsDetailsGmosSouthIfu(GmosSouthIfuDetails):
+    pass
+
+
+class GnirsDetailsGmosNorthMos(GmosNorthMosDetails):
+    pass
+
+
+class GnirsDetailsGmosNorthIfu(GmosNorthIfuDetails):
+    pass
+
+
+class GnirsDetailsFlamingos2Mos(Flamingos2MosDetails):
     pass
 
 
@@ -942,6 +1496,21 @@ class ObservingModeDetails(BaseModel):
     gnirs_imaging: Optional["ObservingModeDetailsGnirsImaging"] = Field(
         alias="gnirsImaging"
     )
+    gmos_south_mos: Optional["ObservingModeDetailsGmosSouthMos"] = Field(
+        alias="gmosSouthMos"
+    )
+    gmos_south_ifu: Optional["ObservingModeDetailsGmosSouthIfu"] = Field(
+        alias="gmosSouthIfu"
+    )
+    gmos_north_mos: Optional["ObservingModeDetailsGmosNorthMos"] = Field(
+        alias="gmosNorthMos"
+    )
+    gmos_north_ifu: Optional["ObservingModeDetailsGmosNorthIfu"] = Field(
+        alias="gmosNorthIfu"
+    )
+    flamingos_2_mos: Optional["ObservingModeDetailsFlamingos2Mos"] = Field(
+        alias="flamingos2Mos"
+    )
 
 
 class ObservingModeDetailsGmosNorthLongSlit(GmosNorthLongSlitDetails):
@@ -985,6 +1554,26 @@ class ObservingModeDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
 
 
 class ObservingModeDetailsGnirsImaging(GnirsImagingDetails):
+    pass
+
+
+class ObservingModeDetailsGmosSouthMos(GmosSouthMosDetails):
+    pass
+
+
+class ObservingModeDetailsGmosSouthIfu(GmosSouthIfuDetails):
+    pass
+
+
+class ObservingModeDetailsGmosNorthMos(GmosNorthMosDetails):
+    pass
+
+
+class ObservingModeDetailsGmosNorthIfu(GmosNorthIfuDetails):
+    pass
+
+
+class ObservingModeDetailsFlamingos2Mos(Flamingos2MosDetails):
     pass
 
 
@@ -1467,6 +2056,11 @@ GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
 GnirsImagingDetails.model_rebuild()
 GnirsSpectroscopyDetails.model_rebuild()
+Flamingos2MosDetails.model_rebuild()
+GmosNorthIfuDetails.model_rebuild()
+GmosNorthMosDetails.model_rebuild()
+GmosSouthIfuDetails.model_rebuild()
+GmosSouthMosDetails.model_rebuild()
 GnirsDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()

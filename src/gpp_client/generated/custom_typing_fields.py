@@ -865,6 +865,12 @@ class AttachmentGraphQLField(GraphQLField):
         return self
 
 
+class ProposalSummaryPropertiesGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ProposalSummaryPropertiesGraphQLField":
+        self._alias = alias
+        return self
+
+
 class MaskDefinitionGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "MaskDefinitionGraphQLField":
         self._alias = alias
@@ -1435,6 +1441,12 @@ class GaussianSourceGraphQLField(GraphQLField):
         return self
 
 
+class GmosIfuAnalysisGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosIfuAnalysisGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GmosNorthLongSlitAcquisitionGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosNorthLongSlitAcquisitionGraphQLField":
         self._alias = alias
@@ -1491,6 +1503,30 @@ class GmosSouthLongSlitAcquisitionGraphQLField(GraphQLField):
 
 class GmosSouthLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GmosSouthLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosNorthIfuAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthIfuAcquisitionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosNorthIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosNorthIfuGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosSouthIfuAcquisitionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthIfuAcquisitionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GmosSouthIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GmosSouthIfuGraphQLField":
         self._alias = alias
         return self
 
@@ -1903,6 +1939,18 @@ class ConfigurationFlamingos2MosGraphQLField(GraphQLField):
 
 class ConfigurationGnirsLongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGnirsLongSlitGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosNorthIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosNorthIfuGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGmosSouthIfuGraphQLField":
         self._alias = alias
         return self
 

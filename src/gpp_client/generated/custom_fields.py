@@ -59,9 +59,11 @@ from .custom_typing_fields import (
     ConfigurationConditionsGraphQLField,
     ConfigurationFlamingos2LongSlitGraphQLField,
     ConfigurationFlamingos2MosGraphQLField,
+    ConfigurationGmosNorthIfuGraphQLField,
     ConfigurationGmosNorthImagingGraphQLField,
     ConfigurationGmosNorthLongSlitGraphQLField,
     ConfigurationGmosNorthMosGraphQLField,
+    ConfigurationGmosSouthIfuGraphQLField,
     ConfigurationGmosSouthImagingGraphQLField,
     ConfigurationGmosSouthLongSlitGraphQLField,
     ConfigurationGmosSouthMosGraphQLField,
@@ -159,6 +161,7 @@ from .custom_typing_fields import (
     GhostTargetPlusSkyGraphQLField,
     GmosCcdModeGraphQLField,
     GmosCustomMaskGraphQLField,
+    GmosIfuAnalysisGraphQLField,
     GmosNodAndShuffleGraphQLField,
     GmosNorthAtomGraphQLField,
     GmosNorthDynamicGraphQLField,
@@ -166,6 +169,8 @@ from .custom_typing_fields import (
     GmosNorthExecutionSequenceGraphQLField,
     GmosNorthFpuGraphQLField,
     GmosNorthGratingConfigGraphQLField,
+    GmosNorthIfuAcquisitionGraphQLField,
+    GmosNorthIfuGraphQLField,
     GmosNorthImagingFilterGraphQLField,
     GmosNorthImagingGraphQLField,
     GmosNorthLongSlitAcquisitionGraphQLField,
@@ -180,6 +185,8 @@ from .custom_typing_fields import (
     GmosSouthExecutionSequenceGraphQLField,
     GmosSouthFpuGraphQLField,
     GmosSouthGratingConfigGraphQLField,
+    GmosSouthIfuAcquisitionGraphQLField,
+    GmosSouthIfuGraphQLField,
     GmosSouthImagingFilterGraphQLField,
     GmosSouthImagingGraphQLField,
     GmosSouthLongSlitAcquisitionGraphQLField,
@@ -293,6 +300,7 @@ from .custom_typing_fields import (
     ProperMotionRAGraphQLField,
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
+    ProposalSummaryPropertiesGraphQLField,
     QueueGraphQLField,
     RadialVelocityGraphQLField,
     RandomTelescopeConfigGeneratorGraphQLField,
@@ -1193,13 +1201,22 @@ class AttachmentFields(GraphQLField):
     updated_at: "AttachmentGraphQLField" = AttachmentGraphQLField("updatedAt")
 
     @classmethod
+    def proposal_summary(cls) -> "ProposalSummaryPropertiesFields":
+        """How an ODB-generated proposal summary was rendered.  Present exactly for
+        SUMMARY attachments; null for every other type.  Not settable."""
+        return ProposalSummaryPropertiesFields("proposalSummary")
+
+    @classmethod
     def program(cls) -> "ProgramFields":
         return ProgramFields("program")
 
     def fields(
         self,
         *subfields: Union[
-            AttachmentGraphQLField, "MaskDefinitionFields", "ProgramFields"
+            AttachmentGraphQLField,
+            "MaskDefinitionFields",
+            "ProgramFields",
+            "ProposalSummaryPropertiesFields",
         ],
     ) -> "AttachmentFields":
         """Subfields should come from the AttachmentFields class"""
@@ -2219,6 +2236,26 @@ class ConfigurationFlamingos2MosFields(GraphQLField):
         return self
 
 
+class ConfigurationGmosNorthIfuFields(GraphQLField):
+    grating: "ConfigurationGmosNorthIfuGraphQLField" = (
+        ConfigurationGmosNorthIfuGraphQLField("grating")
+    )
+    fpu: "ConfigurationGmosNorthIfuGraphQLField" = (
+        ConfigurationGmosNorthIfuGraphQLField("fpu")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosNorthIfuGraphQLField
+    ) -> "ConfigurationGmosNorthIfuFields":
+        """Subfields should come from the ConfigurationGmosNorthIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosNorthIfuFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGmosNorthImagingFields(GraphQLField):
     filters: "ConfigurationGmosNorthImagingGraphQLField" = (
         ConfigurationGmosNorthImagingGraphQLField("filters")
@@ -2266,6 +2303,26 @@ class ConfigurationGmosNorthMosFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationGmosNorthMosFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGmosSouthIfuFields(GraphQLField):
+    grating: "ConfigurationGmosSouthIfuGraphQLField" = (
+        ConfigurationGmosSouthIfuGraphQLField("grating")
+    )
+    fpu: "ConfigurationGmosSouthIfuGraphQLField" = (
+        ConfigurationGmosSouthIfuGraphQLField("fpu")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGmosSouthIfuGraphQLField
+    ) -> "ConfigurationGmosSouthIfuFields":
+        """Subfields should come from the ConfigurationGmosSouthIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGmosSouthIfuFields":
         self._alias = alias
         return self
 
@@ -2404,6 +2461,14 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationGmosSouthMosFields("gmosSouthMos")
 
     @classmethod
+    def gmos_north_ifu(cls) -> "ConfigurationGmosNorthIfuFields":
+        return ConfigurationGmosNorthIfuFields("gmosNorthIfu")
+
+    @classmethod
+    def gmos_south_ifu(cls) -> "ConfigurationGmosSouthIfuFields":
+        return ConfigurationGmosSouthIfuFields("gmosSouthIfu")
+
+    @classmethod
     def gmos_north_imaging(cls) -> "ConfigurationGmosNorthImagingFields":
         return ConfigurationGmosNorthImagingFields("gmosNorthImaging")
 
@@ -2441,9 +2506,11 @@ class ConfigurationObservingModeFields(GraphQLField):
             ConfigurationObservingModeGraphQLField,
             "ConfigurationFlamingos2LongSlitFields",
             "ConfigurationFlamingos2MosFields",
+            "ConfigurationGmosNorthIfuFields",
             "ConfigurationGmosNorthImagingFields",
             "ConfigurationGmosNorthLongSlitFields",
             "ConfigurationGmosNorthMosFields",
+            "ConfigurationGmosSouthIfuFields",
             "ConfigurationGmosSouthImagingFields",
             "ConfigurationGmosSouthLongSlitFields",
             "ConfigurationGmosSouthMosFields",
@@ -5611,6 +5678,33 @@ class GmosCustomMaskFields(GraphQLField):
         return self
 
 
+class GmosIfuAnalysisFields(GraphQLField):
+    """How the ITC samples the IFU field.  Exactly one of the two is set."""
+
+    @classmethod
+    def sum_radius(cls) -> "AngleFields":
+        """Sum every IFU element whose centre falls within this radius of the field
+        centre.  Null when a single element is measured instead."""
+        return AngleFields("sumRadius")
+
+    @classmethod
+    def single_offset(cls) -> "AngleFields":
+        """Measure the single IFU element sitting this far from the field centre.  Null when
+        elements are summed instead."""
+        return AngleFields("singleOffset")
+
+    def fields(
+        self, *subfields: Union[GmosIfuAnalysisGraphQLField, "AngleFields"]
+    ) -> "GmosIfuAnalysisFields":
+        """Subfields should come from the GmosIfuAnalysisFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosIfuAnalysisFields":
+        self._alias = alias
+        return self
+
+
 class GmosNodAndShuffleFields(GraphQLField):
     @classmethod
     def pos_a(cls) -> "OffsetFields":
@@ -5847,6 +5941,220 @@ class GmosNorthGratingConfigFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosNorthGratingConfigFields":
+        self._alias = alias
+        return self
+
+
+class GmosNorthIfuFields(GraphQLField):
+    """GMOS North IFU mode.  This is GMOS long slit with the slit replaced by one of the
+    IFU apertures, so the science sequence is generated the same way.  What differs
+    is that the IFU samples a field rather than a slit: it reads out unbinned, it
+    dithers within its field instead of nodding along a slit, and it carries the
+    sampling geometry the ITC integrates over."""
+
+    grating: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("grating")
+    "GMOS North Grating"
+    filter_: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("filter")
+    "GMOS North Filter"
+    fpu: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("fpu")
+    "The IFU aperture through which the observation is taken."
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    @classmethod
+    def ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """How the ITC samples the IFU field, either explicitly specified in
+        explicitIfuAnalysis or else taken from defaultIfuAnalysis."""
+        return GmosIfuAnalysisFields("ifuAnalysis")
+
+    @classmethod
+    def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
+        centre, which encloses only the element on the target."""
+        return GmosIfuAnalysisFields("defaultIfuAnalysis")
+
+    @classmethod
+    def explicit_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """Optional explicitly specified IFU sampling.  If set it overrides the default."""
+        return GmosIfuAnalysisFields("explicitIfuAnalysis")
+
+    x_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
+    default_x_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("defaultXBin")
+    "Default GMOS X-Binning (ONE).  The IFU fibre traces blend together on the\ndetector if it is binned, so the default is unbinned."
+    explicit_x_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "explicitXBin"
+    )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
+    y_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
+    default_y_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning (ONE).  See `defaultXBin`."
+    explicit_y_bin: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "explicitYBin"
+    )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
+    amp_read_mode: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
+    default_amp_read_mode: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "defaultAmpReadMode"
+    )
+    "Default GmosAmpReadMode (SLOW)."
+    explicit_amp_read_mode: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "explicitAmpReadMode"
+    )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
+    amp_gain: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
+    default_amp_gain: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "defaultAmpGain"
+    )
+    "Default GMOS amp gain (LOW)."
+    explicit_amp_gain: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "explicitAmpGain"
+    )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
+    roi: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
+    default_roi: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
+    explicit_roi: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
+
+    @classmethod
+    def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
+        return WavelengthDitherFields("wavelengthDithers")
+
+    @classmethod
+    def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
+        return WavelengthDitherFields("defaultWavelengthDithers")
+
+    @classmethod
+    def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
+        return WavelengthDitherFields("explicitWavelengthDithers")
+
+    @classmethod
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs.  The IFU has no slit to nod along, so
+        these are plain offsets rather than slit telescope configurations."""
+        return TelescopeConfigFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default telescope configurations: a single guided position on target.  The
+        IFU has a dedicated sky field, so it does not nod for background."""
+        return TelescopeConfigFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
+        the default."""
+        return TelescopeConfigFields("explicitTelescopeConfigs")
+
+    initial_grating: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "initialGrating"
+    )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
+    initial_filter: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField(
+        "initialFilter"
+    )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
+    initial_fpu: "GmosNorthIfuGraphQLField" = GmosNorthIfuGraphQLField("initialFpu")
+    "The IFU aperture as it was initially selected.  See the `fpu` field for the\naperture that will be used in the observation."
+
+    @classmethod
+    def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
+        return WavelengthFields("initialCentralWavelength")
+
+    @classmethod
+    def acquisition(cls) -> "GmosNorthIfuAcquisitionFields":
+        """Parameters that override acquisition defaults."""
+        return GmosNorthIfuAcquisitionFields("acquisition")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosNorthIfuGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosIfuAnalysisFields",
+            "GmosNorthIfuAcquisitionFields",
+            "TelescopeConfigFields",
+            "WavelengthDitherFields",
+            "WavelengthFields",
+        ],
+    ) -> "GmosNorthIfuFields":
+        """Subfields should come from the GmosNorthIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosNorthIfuFields":
+        self._alias = alias
+        return self
+
+
+class GmosNorthIfuAcquisitionFields(GraphQLField):
+    """GMOS North IFU acquisition parameters.  The IFU acquires through the mirror with
+    the field imaged full frame, so there is no ROI to configure."""
+
+    filter_: "GmosNorthIfuAcquisitionGraphQLField" = (
+        GmosNorthIfuAcquisitionGraphQLField("filter")
+    )
+    "The GMOS North filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "GmosNorthIfuAcquisitionGraphQLField" = (
+        GmosNorthIfuAcquisitionGraphQLField("defaultFilter")
+    )
+    "The GMOS North filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
+    explicit_filter: "GmosNorthIfuAcquisitionGraphQLField" = (
+        GmosNorthIfuAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified GMOS North filter to use in acquisition (if any)."
+    roi: "GmosNorthIfuAcquisitionGraphQLField" = GmosNorthIfuAcquisitionGraphQLField(
+        "roi"
+    )
+    "The ROIs that will be used for the acquisition sequence.  The first is used for the imaging\nstep and the second for the steps taken through the IFU.  This will be the `explicitRoi` if\nspecified, but otherwise the `defaultRoi`."
+    default_roi: "GmosNorthIfuAcquisitionGraphQLField" = (
+        GmosNorthIfuAcquisitionGraphQLField("defaultRoi")
+    )
+    "The acquisition ROIs that will be used by default, if an explicit ROI was not specified."
+    explicit_roi: "GmosNorthIfuAcquisitionGraphQLField" = (
+        GmosNorthIfuAcquisitionGraphQLField("explicitRoi")
+    )
+    "An explicitly specified acquisition ROI (if any)."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosNorthIfuAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ],
+    ) -> "GmosNorthIfuAcquisitionFields":
+        """Subfields should come from the GmosNorthIfuAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosNorthIfuAcquisitionFields":
         self._alias = alias
         return self
 
@@ -6631,6 +6939,220 @@ class GmosSouthGratingConfigFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GmosSouthGratingConfigFields":
+        self._alias = alias
+        return self
+
+
+class GmosSouthIfuFields(GraphQLField):
+    """GMOS South IFU mode.  This is GMOS long slit with the slit replaced by one of the
+    IFU apertures, so the science sequence is generated the same way.  What differs
+    is that the IFU samples a field rather than a slit: it reads out unbinned, it
+    dithers within its field instead of nodding along a slit, and it carries the
+    sampling geometry the ITC integrates over."""
+
+    grating: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("grating")
+    "GMOS South Grating"
+    filter_: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("filter")
+    "GMOS South Filter"
+    fpu: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("fpu")
+    "The IFU aperture through which the observation is taken."
+
+    @classmethod
+    def central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength."""
+        return WavelengthFields("centralWavelength")
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode used for ITC lookup for the science sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    @classmethod
+    def ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """How the ITC samples the IFU field, either explicitly specified in
+        explicitIfuAnalysis or else taken from defaultIfuAnalysis."""
+        return GmosIfuAnalysisFields("ifuAnalysis")
+
+    @classmethod
+    def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
+        centre, which encloses only the element on the target."""
+        return GmosIfuAnalysisFields("defaultIfuAnalysis")
+
+    @classmethod
+    def explicit_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
+        """Optional explicitly specified IFU sampling.  If set it overrides the default."""
+        return GmosIfuAnalysisFields("explicitIfuAnalysis")
+
+    x_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("xBin")
+    "GMOS X-Binning, either explicitly specified in explicitXBin or else taken\nfrom the defaultXBin."
+    default_x_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("defaultXBin")
+    "Default GMOS X-Binning (ONE).  The IFU fibre traces blend together on the\ndetector if it is binned, so the default is unbinned."
+    explicit_x_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "explicitXBin"
+    )
+    "Optional explicitly specified GMOS X-Binning. If set it overrides the\ndefault."
+    y_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("yBin")
+    "GMOS Y-Binning, either explicitly specified in explicitYBin or else taken\nfrom the defaultYBin."
+    default_y_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("defaultYBin")
+    "Default GMOS Y-Binning (ONE).  See `defaultXBin`."
+    explicit_y_bin: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "explicitYBin"
+    )
+    "Optional explicitly specified GMOS Y-Binning. If set it overrides the\ndefault."
+    amp_read_mode: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("ampReadMode")
+    "GMOS amp read mode, either explicitly specified in explicitAmpReadMode or\nelse taken from the defaultAmpReadMode."
+    default_amp_read_mode: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "defaultAmpReadMode"
+    )
+    "Default GmosAmpReadMode (SLOW)."
+    explicit_amp_read_mode: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "explicitAmpReadMode"
+    )
+    "Optional explicitly specified GMOS amp read mode. If set it overrides the\ndefault."
+    amp_gain: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("ampGain")
+    "GMOS amp read gain, either explicitly specified in explicitAmpGain or else\ntaken from the defaultAmpGain."
+    default_amp_gain: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "defaultAmpGain"
+    )
+    "Default GMOS amp gain (LOW)."
+    explicit_amp_gain: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "explicitAmpGain"
+    )
+    "Optional explicitly specified GMOS amp gain.  If set it overrides the default."
+    roi: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("roi")
+    "GMOS ROI, either explicitly specified in explicitRoi or else taken from the\ndefaultRoi."
+    default_roi: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("defaultRoi")
+    "Default GMOS ROI (FULL_FRAME)."
+    explicit_roi: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("explicitRoi")
+    "Optional explicitly specified GMOS ROI. If set it overrides the default."
+
+    @classmethod
+    def wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Wavelength dithers required to fill in the chip gaps. This value is either
+        explicitly specified in explicitWavelengthDithers or else taken from
+        defaultWavelengthDithers"""
+        return WavelengthDitherFields("wavelengthDithers")
+
+    @classmethod
+    def default_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Default wavelength dithers, calculated based on the grating dispersion."""
+        return WavelengthDitherFields("defaultWavelengthDithers")
+
+    @classmethod
+    def explicit_wavelength_dithers(cls) -> "WavelengthDitherFields":
+        """Optional explicitly specified wavelength dithers.  If set it overrides the
+        default."""
+        return WavelengthDitherFields("explicitWavelengthDithers")
+
+    @classmethod
+    def telescope_configs(cls) -> "TelescopeConfigFields":
+        """The telescope configuration at each spatial position the science steps cycle
+        through, either explicitly specified in explicitTelescopeConfigs or else
+        taken from defaultTelescopeConfigs.  The IFU has no slit to nod along, so
+        these are plain offsets rather than slit telescope configurations."""
+        return TelescopeConfigFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Default telescope configurations: a single guided position on target.  The
+        IFU has a dedicated sky field, so it does not nod for background."""
+        return TelescopeConfigFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "TelescopeConfigFields":
+        """Optional explicitly specified telescope configurations. If set it overrides
+        the default."""
+        return TelescopeConfigFields("explicitTelescopeConfigs")
+
+    initial_grating: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "initialGrating"
+    )
+    "The grating as it was initially selected.  See the `grating` field for the\ngrating that will be used in the observation."
+    initial_filter: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField(
+        "initialFilter"
+    )
+    "The filter as it was initially selected (if any).  See the `filter` field\nfor the filter that will be used in the observation."
+    initial_fpu: "GmosSouthIfuGraphQLField" = GmosSouthIfuGraphQLField("initialFpu")
+    "The IFU aperture as it was initially selected.  See the `fpu` field for the\naperture that will be used in the observation."
+
+    @classmethod
+    def initial_central_wavelength(cls) -> "WavelengthFields":
+        """The central wavelength as initially selected.  See the `centralWavelength`
+        field for the wavelength that will be used in the observation."""
+        return WavelengthFields("initialCentralWavelength")
+
+    @classmethod
+    def acquisition(cls) -> "GmosSouthIfuAcquisitionFields":
+        """Parameters that override acquisition defaults."""
+        return GmosSouthIfuAcquisitionFields("acquisition")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosSouthIfuGraphQLField,
+            "ExposureTimeModeFields",
+            "GmosIfuAnalysisFields",
+            "GmosSouthIfuAcquisitionFields",
+            "TelescopeConfigFields",
+            "WavelengthDitherFields",
+            "WavelengthFields",
+        ],
+    ) -> "GmosSouthIfuFields":
+        """Subfields should come from the GmosSouthIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosSouthIfuFields":
+        self._alias = alias
+        return self
+
+
+class GmosSouthIfuAcquisitionFields(GraphQLField):
+    """GMOS South IFU acquisition parameters.  The IFU acquires through the mirror with
+    the field imaged full frame, so there is no ROI to configure."""
+
+    filter_: "GmosSouthIfuAcquisitionGraphQLField" = (
+        GmosSouthIfuAcquisitionGraphQLField("filter")
+    )
+    "The GMOS South filter that will be used in the acquisition sequence.  This will\nbe the `explicitFilter` if specified, but otherwise the `defaultFilter`."
+    default_filter: "GmosSouthIfuAcquisitionGraphQLField" = (
+        GmosSouthIfuAcquisitionGraphQLField("defaultFilter")
+    )
+    "The GMOS South filter that will be used by default, if an explicit acquisition\nfilter was not specified.  The default is calculated as the broadband filter\nclosest in wavelength to the observation's `centralWavelength`."
+    explicit_filter: "GmosSouthIfuAcquisitionGraphQLField" = (
+        GmosSouthIfuAcquisitionGraphQLField("explicitFilter")
+    )
+    "An explicitly specified GMOS South filter to use in acquisition (if any)."
+    roi: "GmosSouthIfuAcquisitionGraphQLField" = GmosSouthIfuAcquisitionGraphQLField(
+        "roi"
+    )
+    "The ROIs that will be used for the acquisition sequence.  The first is used for the imaging\nstep and the second for the steps taken through the IFU.  This will be the `explicitRoi` if\nspecified, but otherwise the `defaultRoi`."
+    default_roi: "GmosSouthIfuAcquisitionGraphQLField" = (
+        GmosSouthIfuAcquisitionGraphQLField("defaultRoi")
+    )
+    "The acquisition ROIs that will be used by default, if an explicit ROI was not specified."
+    explicit_roi: "GmosSouthIfuAcquisitionGraphQLField" = (
+        GmosSouthIfuAcquisitionGraphQLField("explicitRoi")
+    )
+    "An explicitly specified acquisition ROI (if any)."
+
+    @classmethod
+    def exposure_time_mode(cls) -> "ExposureTimeModeFields":
+        """The exposure time mode for the acquisition sequence."""
+        return ExposureTimeModeFields("exposureTimeMode")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GmosSouthIfuAcquisitionGraphQLField, "ExposureTimeModeFields"
+        ],
+    ) -> "GmosSouthIfuAcquisitionFields":
+        """Subfields should come from the GmosSouthIfuAcquisitionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GmosSouthIfuAcquisitionFields":
         self._alias = alias
         return self
 
@@ -10188,6 +10710,11 @@ class ObservingModeFields(GraphQLField):
         return GhostIfuFields("ghostIfu")
 
     @classmethod
+    def gmos_north_ifu(cls) -> "GmosNorthIfuFields":
+        """GMOS North IFU mode"""
+        return GmosNorthIfuFields("gmosNorthIfu")
+
+    @classmethod
     def gmos_north_imaging(cls) -> "GmosNorthImagingFields":
         """GMOS North Imaging mode"""
         return GmosNorthImagingFields("gmosNorthImaging")
@@ -10201,6 +10728,11 @@ class ObservingModeFields(GraphQLField):
     def gmos_north_mos(cls) -> "GmosNorthMosFields":
         """GMOS North MOS mode"""
         return GmosNorthMosFields("gmosNorthMos")
+
+    @classmethod
+    def gmos_south_ifu(cls) -> "GmosSouthIfuFields":
+        """GMOS South IFU mode"""
+        return GmosSouthIfuFields("gmosSouthIfu")
 
     @classmethod
     def gmos_south_imaging(cls) -> "GmosSouthImagingFields":
@@ -10255,9 +10787,11 @@ class ObservingModeFields(GraphQLField):
             "Flamingos2LongSlitFields",
             "Flamingos2MosFields",
             "GhostIfuFields",
+            "GmosNorthIfuFields",
             "GmosNorthImagingFields",
             "GmosNorthLongSlitFields",
             "GmosNorthMosFields",
+            "GmosSouthIfuFields",
             "GmosSouthImagingFields",
             "GmosSouthLongSlitFields",
             "GmosSouthMosFields",
@@ -10615,8 +11149,12 @@ class ProgramFields(GraphQLField):
         Cfp active period."""
         return DateIntervalFields("active")
 
-    is_active: "ProgramGraphQLField" = ProgramGraphQLField("isActive")
-    "Whether the program is currently active, i.e. whether the current UTC date\nfalls within the `active` period (inclusive of both bounds)."
+    status: "ProgramGraphQLField" = ProgramGraphQLField("status")
+    "Effective program status: `explicitStatus` when set, otherwise\n`defaultStatus`."
+    explicit_status: "ProgramGraphQLField" = ProgramGraphQLField("explicitStatus")
+    "Explicitly declared program status, if any, masking the derived\n`defaultStatus`.  May be set (and cleared) only by those with staff access\nor better."
+    default_status: "ProgramGraphQLField" = ProgramGraphQLField("defaultStatus")
+    "Derived program status: ACTIVE when the current UTC date falls within the\n`active` period (inclusive of both bounds), INACTIVE otherwise."
     proposal_status: "ProgramGraphQLField" = ProgramGraphQLField("proposalStatus")
     "Proposal status of the program"
 
@@ -10738,6 +11276,8 @@ class ProgramFields(GraphQLField):
     "Maximum number of resources (observations, groups, targets, attachments, and\nprogram notes, combined) that may be associated with this program."
     resource_count: "ProgramGraphQLField" = ProgramGraphQLField("resourceCount")
     "Current number of resources (present, non-system observations, groups,\ntargets, attachments, and program notes) associated with this program, counted\nagainst `resourceLimit`."
+    dismissed_warnings: "ProgramGraphQLField" = ProgramGraphQLField("dismissedWarnings")
+    "List of validation codes that have been dismissed for this program."
 
     def fields(
         self,
@@ -11145,6 +11685,30 @@ class ProposalReferenceFields(GraphQLField):
         return self
 
 
+class ProposalSummaryPropertiesFields(GraphQLField):
+    """Properties of an ODB-generated proposal summary PDF."""
+
+    partner: "ProposalSummaryPropertiesGraphQLField" = (
+        ProposalSummaryPropertiesGraphQLField("partner")
+    )
+    "The partner the summary was rendered for.  Null for the single summary of a\nproposal with no partner splits."
+    style: "ProposalSummaryPropertiesGraphQLField" = (
+        ProposalSummaryPropertiesGraphQLField("style")
+    )
+    "The style the summary was produced in.  Recorded at generation, so it stays\naccurate if the partner-to-style mapping changes later."
+
+    def fields(
+        self, *subfields: ProposalSummaryPropertiesGraphQLField
+    ) -> "ProposalSummaryPropertiesFields":
+        """Subfields should come from the ProposalSummaryPropertiesFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProposalSummaryPropertiesFields":
+        self._alias = alias
+        return self
+
+
 class QueueFields(GraphQLField):
     """Proposal properties for Regular Semester (Queue) CallForProposals."""
 
@@ -11173,7 +11737,7 @@ class QueueFields(GraphQLField):
     exchange_partner: "QueueGraphQLField" = QueueGraphQLField("exchangePartner")
     "When the time request is made on behalf of an exchange partner community\n(i.e., the PI is from Keck or Subaru), the exchange partner is given here and\nthe entire request is associated with it.  In that case `partnerSplits` is\nempty.  Null when the request uses Gemini partner splits."
     consider_for_band_3: "QueueGraphQLField" = QueueGraphQLField("considerForBand3")
-    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
+    "Whether this proposal should be considered for Band 3. Defaults to CONSIDER\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
 
     @classmethod
     def aeon_multi_facility(cls) -> "AeonMultiFacilityFields":

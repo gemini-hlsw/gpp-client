@@ -62,18 +62,21 @@ from .enums import (
     GmosDtax,
     GmosEOffsetting,
     GmosGratingOrder,
+    GmosIfuAcquisitionRoi,
     GmosLongSlitAcquisitionRoi,
     GmosMosAcquisitionType,
     GmosNorthBuiltinFpu,
     GmosNorthDetector,
     GmosNorthFilter,
     GmosNorthGrating,
+    GmosNorthIfuFpu,
     GmosNorthStageMode,
     GmosRoi,
     GmosSouthBuiltinFpu,
     GmosSouthDetector,
     GmosSouthFilter,
     GmosSouthGrating,
+    GmosSouthIfuFpu,
     GmosSouthStageMode,
     GnirsAcquisitionType,
     GnirsCamera,
@@ -96,6 +99,7 @@ from .enums import (
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
     MosPreImaging,
+    ObservationValidationCode,
     ObservationWorkflowState,
     Observatory,
     ObserveClass,
@@ -105,6 +109,7 @@ from .enums import (
     PlanetaryNebulaSpectrum,
     PlanetSpectrum,
     PosAngleConstraintMode,
+    ProgramStatus,
     ProgramType,
     ProgramUserRole,
     ProposalStatus,
@@ -1016,6 +1021,144 @@ class GmosSouthLongSlitInput(BaseModel):
     "Parameters that override acquisition defaults."
 
 
+class GmosNorthIfuInput(BaseModel):
+    """Edit or create GMOS North IFU advanced configuration"""
+
+    grating: Optional[GmosNorthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    filter_: Optional[GmosNorthFilter] = Field(alias=str("filter"), default=None)
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
+    fpu: Optional[GmosNorthIfuFpu] = None
+    "The IFU aperture.  It must be either specified or skipped altogether; it cannot\nbe unset with a null value."
+    central_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("centralWavelength"), default=None
+    )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used."
+    explicit_ifu_analysis: Optional["GmosIfuAnalysisInput"] = Field(
+        alias=str("explicitIfuAnalysis"), default=None
+    )
+    "How the ITC samples the IFU field.  The explicitIfuAnalysis field may be unset by\nassigning a null value, or ignored by skipping it altogether.  When unset the\ndefault sampling applies."
+    explicit_x_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitXBin"), default=None
+    )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_y_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitYBin"), default=None
+    )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_wavelength_dithers: Optional[list["WavelengthDitherInput"]] = Field(
+        alias=str("explicitWavelengthDithers"), default=None
+    )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
+    acquisition: Optional["GmosNorthIfuAcquisitionInput"] = None
+    "Parameters that override acquisition defaults."
+
+
+class GmosNorthIfuAcquisitionInput(BaseModel):
+    """Parameters that override IFU acquisition defaults.  IFU acquisition images the
+    field full frame, so (unlike long slit) there is no ROI to configure."""
+
+    explicit_filter: Optional[GmosNorthFilter] = Field(
+        alias=str("explicitFilter"), default=None
+    )
+    "An explicit acquisition filter to use instead of the default.  The `explicitFilter`\nmay be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,\nthe filter that will be used for the acquisition sequence is the broadband filter closest to\nthe central wavelength."
+    explicit_roi: Optional[GmosIfuAcquisitionRoi] = Field(
+        alias=str("explicitRoi"), default=None
+    )
+    "An explicit acquisition ROI to use instead of the default.  The `explicitRoi` may be unset by\nassigning a null value, or ignored by skipping it altogether.  If not provided, the ROIs used\ndepend on the observation's calibration role."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the acquisition sequence."
+
+
+class GmosSouthIfuInput(BaseModel):
+    """Edit or create GMOS South IFU advanced configuration"""
+
+    grating: Optional[GmosSouthGrating] = None
+    "The grating field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    filter_: Optional[GmosSouthFilter] = Field(alias=str("filter"), default=None)
+    "The filter field may be unset by assigning a null value, or ignored by skipping it altogether"
+    fpu: Optional[GmosSouthIfuFpu] = None
+    "The IFU aperture.  It must be either specified or skipped altogether; it cannot\nbe unset with a null value."
+    central_wavelength: Optional["WavelengthInput"] = Field(
+        alias=str("centralWavelength"), default=None
+    )
+    "The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used."
+    explicit_ifu_analysis: Optional["GmosIfuAnalysisInput"] = Field(
+        alias=str("explicitIfuAnalysis"), default=None
+    )
+    "How the ITC samples the IFU field.  The explicitIfuAnalysis field may be unset by\nassigning a null value, or ignored by skipping it altogether.  When unset the\ndefault sampling applies."
+    explicit_x_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitXBin"), default=None
+    )
+    "The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_y_bin: Optional[GmosBinning] = Field(
+        alias=str("explicitYBin"), default=None
+    )
+    "The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_read_mode: Optional[GmosAmpReadMode] = Field(
+        alias=str("explicitAmpReadMode"), default=None
+    )
+    "The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_amp_gain: Optional[GmosAmpGain] = Field(
+        alias=str("explicitAmpGain"), default=None
+    )
+    "The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_roi: Optional[GmosRoi] = Field(alias=str("explicitRoi"), default=None)
+    "The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_wavelength_dithers: Optional[list["WavelengthDitherInput"]] = Field(
+        alias=str("explicitWavelengthDithers"), default=None
+    )
+    "The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether"
+    explicit_telescope_configs: Optional[list["TelescopeConfigInput"]] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    "The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether"
+    acquisition: Optional["GmosSouthIfuAcquisitionInput"] = None
+    "Parameters that override acquisition defaults."
+
+
+class GmosSouthIfuAcquisitionInput(BaseModel):
+    """Parameters that override IFU acquisition defaults.  IFU acquisition images the
+    field full frame, so (unlike long slit) there is no ROI to configure."""
+
+    explicit_filter: Optional[GmosSouthFilter] = Field(
+        alias=str("explicitFilter"), default=None
+    )
+    "An explicit acquisition filter to use instead of the default.  The `explicitFilter`\nmay be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,\nthe filter that will be used for the acquisition sequence is the broadband filter closest to\nthe central wavelength."
+    explicit_roi: Optional[GmosIfuAcquisitionRoi] = Field(
+        alias=str("explicitRoi"), default=None
+    )
+    "An explicit acquisition ROI to use instead of the default.  The `explicitRoi` may be unset by\nassigning a null value, or ignored by skipping it altogether.  If not provided, the ROIs used\ndepend on the observation's calibration role."
+    exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
+        alias=str("exposureTimeMode"), default=None
+    )
+    "Exposure time mode for the acquisition sequence."
+
+
 class GmosNorthMosInput(BaseModel):
     """Edit or create GMOS North MOS advanced configuration"""
 
@@ -1488,10 +1631,18 @@ class ProgramPropertiesInput(BaseModel):
     "Sets the GOA properties for this program.  If not specified on create,\ndefault values are used."
     existence: Optional[Existence] = None
     "Whether the program is considered deleted (defaults to PRESENT) but may be edited"
+    explicit_status: Optional[ProgramStatus] = Field(
+        alias=str("explicitStatus"), default=None
+    )
+    "Explicit program status, masking the status derived from the active period.\nSet to null to return to the derived status.  May be set or cleared only by\nthose with staff access or better."
     active_start: Optional[Any] = Field(alias=str("activeStart"), default=None)
     "Active period start date (inclusive) for this program.  The date is considered\nto be the local date at each observation site.  Observations may begin the\nevening of the indicated date at the site of the observation.\n\nThis property is avaliable only to those with staff access or better. Not\nnullable.  Limited to dates between 1900 and 2100 (exclusive)."
     active_end: Optional[Any] = Field(alias=str("activeEnd"), default=None)
     "Active period end date (exclusive) for this program.  The date is considered\nto be the local date at each observation site.  Observations may end the\nmorning of the indicated date at the site of the observation.\n\nThis property is avaliable only to those with staff access or better. Not\nnullable.  Limited to dates between 1900 and 2100 (exclusive)."
+    dismissed_warnings: Optional[list[ObservationValidationCode]] = Field(
+        alias=str("dismissedWarnings"), default=None
+    )
+    "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users. "
 
 
 class ProgramNotePropertiesInput(BaseModel):
@@ -1721,7 +1872,7 @@ class QueueInput(BaseModel):
     consider_for_band_3: Optional[ConsiderForBand3] = Field(
         alias=str("considerForBand3"), default=None
     )
-    "Whether this proposal should be considered for Band 3. Defaults to UNSET\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
+    "Whether this proposal should be considered for Band 3. Defaults to CONSIDER\non creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can\nbe submitted."
     aeon_multi_facility: Optional["AeonMultiFacilityInput"] = Field(
         alias=str("aeonMultiFacility"), default=None
     )
@@ -1870,6 +2021,10 @@ class ObservingModeInput(BaseModel):
     "The flamingos2Mos field must be either specified or skipped altogether.  It cannot be unset with a null value."
     ghost_ifu: Optional["GhostIfuInput"] = Field(alias=str("ghostIfu"), default=None)
     "The ghostIfu field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gmos_north_ifu: Optional["GmosNorthIfuInput"] = Field(
+        alias=str("gmosNorthIfu"), default=None
+    )
+    "GMOS North IFU"
     gmos_north_imaging: Optional["GmosNorthImagingInput"] = Field(
         alias=str("gmosNorthImaging"), default=None
     )
@@ -1882,6 +2037,10 @@ class ObservingModeInput(BaseModel):
         alias=str("gmosNorthMos"), default=None
     )
     "The gmosNorthMos field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    gmos_south_ifu: Optional["GmosSouthIfuInput"] = Field(
+        alias=str("gmosSouthIfu"), default=None
+    )
+    "GMOS South IFU"
     gmos_south_imaging: Optional["GmosSouthImagingInput"] = Field(
         alias=str("gmosSouthImaging"), default=None
     )
@@ -3290,6 +3449,19 @@ class GnirsIfuInput(BaseModel):
     "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
 
 
+class GmosIfuAnalysisInput(BaseModel):
+    """How the ITC samples the IFU field: exactly one of a summation radius or a
+    single element offset.  The number of fibres on sky is not settable; it follows
+    from the focal plane unit."""
+
+    sum_radius: Optional["AngleInput"] = Field(alias=str("sumRadius"), default=None)
+    "Sum every IFU element whose centre falls within this radius of the field\ncentre.  Must be greater than zero."
+    single_offset: Optional["AngleInput"] = Field(
+        alias=str("singleOffset"), default=None
+    )
+    "Measure the single IFU element sitting this far from the field centre.  A distance:\nthe ITC places the element on one axis and integrates a centred source, so the two\ndirections along it give the same answer."
+
+
 class ImagingVariantInput(BaseModel):
     """Input that specifies which imaging sub-type is desired along with its configuration
     details.  Exactly one of the options should be defined and the other two left
@@ -4024,10 +4196,21 @@ class WhereEqProgramType(BaseModel):
     "Matches if the program type is none of the supplied values."
 
 
-class WhereEqProposalStatus(BaseModel):
+class WhereEqProgramStatus(BaseModel):
     """Filters on equality of the property.  All supplied
     criteria must match, but usually only one is selected.  E.g., 'EQ: "SUBMITTED'"""
 
+    eq: Optional[ProgramStatus] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
+    neq: Optional[ProgramStatus] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
+    in_: Optional[list[ProgramStatus]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
+    nin: Optional[list[ProgramStatus]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
+
+
+class WhereEqProposalStatus(BaseModel):
     eq: Optional[ProposalStatus] = Field(alias=str("EQ"), default=None)
     "Matches if the property is exactly the supplied value."
     neq: Optional[ProposalStatus] = Field(alias=str("NEQ"), default=None)
@@ -5175,8 +5358,8 @@ class WhereProgram(BaseModel):
     "Matches the active period start."
     active_end: Optional["WhereOrderDate"] = Field(alias=str("activeEnd"), default=None)
     "Matches the active period end."
-    is_active: Optional[bool] = Field(alias=str("isActive"), default=None)
-    "When true, matches programs whose active period `[activeStart, activeEnd]` contains the\ncurrent UTC date; when false, matches the complement. Evaluated in the database, so the\ndate is taken at transaction start."
+    status: Optional["WhereEqProgramStatus"] = None
+    "Matches the effective program status. Evaluated in the database, so the\nderived component is taken at transaction start."
 
 
 class WhereProgramReference(BaseModel):
@@ -5776,6 +5959,10 @@ GmosSouthFpuInput.model_rebuild()
 GmosSouthGratingConfigInput.model_rebuild()
 GmosSouthLongSlitAcquisitionInput.model_rebuild()
 GmosSouthLongSlitInput.model_rebuild()
+GmosNorthIfuInput.model_rebuild()
+GmosNorthIfuAcquisitionInput.model_rebuild()
+GmosSouthIfuInput.model_rebuild()
+GmosSouthIfuAcquisitionInput.model_rebuild()
 GmosNorthMosInput.model_rebuild()
 GmosNorthMosAcquisitionInput.model_rebuild()
 GmosSouthMosInput.model_rebuild()
@@ -5877,6 +6064,7 @@ GnirsSpectroscopyIfuInput.model_rebuild()
 GnirsSpectroscopyInput.model_rebuild()
 GnirsLongSlitInput.model_rebuild()
 GnirsIfuInput.model_rebuild()
+GmosIfuAnalysisInput.model_rebuild()
 ImagingVariantInput.model_rebuild()
 GroupedImagingVariantInput.model_rebuild()
 InterleavedImagingVariantInput.model_rebuild()

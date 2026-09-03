@@ -2397,6 +2397,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -2496,6 +2511,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -2548,6 +2640,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -3048,6 +3370,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -3147,6 +3484,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -3199,6 +3613,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -3700,6 +4344,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -3799,6 +4458,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -3851,6 +4587,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -4354,6 +5320,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -4453,6 +5434,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -4505,6 +5563,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id, "SET": set_}
@@ -5011,6 +6299,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -5110,6 +6413,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -5162,6 +6542,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {
@@ -5668,6 +7278,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -5767,6 +7392,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -5819,6 +7521,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id}
@@ -6322,6 +8254,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -6421,6 +8368,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -6473,6 +8497,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"observationReference": observation_reference}
@@ -6976,6 +9230,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -7075,6 +9344,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -7127,6 +9473,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id}
@@ -7630,6 +10206,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -7729,6 +10320,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -7781,6 +10449,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {"observationReference": observation_reference}
@@ -8285,6 +11183,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -8384,6 +11297,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -8436,6 +11426,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {
@@ -8947,6 +12167,21 @@ class GraphQLClient(AsyncBaseClient):
               gnirsImaging {
                 ...GnirsImagingDetails
               }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
             }
 
             fragment ProgramCore on Program {
@@ -9046,6 +12281,83 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
 
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
             fragment ghostDetectorConfigDetails on GhostDetectorConfig {
               binning
               defaultBinning
@@ -9098,6 +12410,236 @@ class GraphQLClient(AsyncBaseClient):
               slitViewingCameraExposureTime {
                 seconds
               }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
             }
             """)
         variables: dict[str, object] = {

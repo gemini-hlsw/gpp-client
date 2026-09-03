@@ -363,6 +363,15 @@ class AttachmentType(str, Enum):
     SUMMARY = "SUMMARY"
 
 
+class ProposalSummaryStyle(str, Enum):
+    GEMINI_STANDARD = "GEMINI_STANDARD"
+    GEMINI_DARP = "GEMINI_DARP"
+    GEMINI_NO_INVESTIGATORS = "GEMINI_NO_INVESTIGATORS"
+    GEMINI_INVESTIGATORS_AT_END = "GEMINI_INVESTIGATORS_AT_END"
+    CHILE = "CHILE"
+    NOIRLAB_DARP = "NOIRLAB_DARP"
+
+
 class MosDispersionDirection(str, Enum):
     HORIZONTAL = "HORIZONTAL"
     VERTICAL = "VERTICAL"
@@ -461,9 +470,11 @@ class ObservingModeType(str, Enum):
     FLAMINGOS_2_LONG_SLIT = "FLAMINGOS_2_LONG_SLIT"
     FLAMINGOS_2_MOS = "FLAMINGOS_2_MOS"
     GHOST_IFU = "GHOST_IFU"
+    GMOS_NORTH_IFU = "GMOS_NORTH_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
     GMOS_NORTH_LONG_SLIT = "GMOS_NORTH_LONG_SLIT"
     GMOS_NORTH_MOS = "GMOS_NORTH_MOS"
+    GMOS_SOUTH_IFU = "GMOS_SOUTH_IFU"
     GMOS_SOUTH_IMAGING = "GMOS_SOUTH_IMAGING"
     GMOS_SOUTH_LONG_SLIT = "GMOS_SOUTH_LONG_SLIT"
     GMOS_SOUTH_MOS = "GMOS_SOUTH_MOS"
@@ -640,6 +651,7 @@ class TelluricTag(str, Enum):
     A0V = "A0V"
     SOLAR = "SOLAR"
     MANUAL = "MANUAL"
+    NO_TELLURIC = "NO_TELLURIC"
 
 
 class GhostIfu1FiberAgitator(str, Enum):
@@ -706,11 +718,29 @@ class GmosAmpReadMode(str, Enum):
     FAST = "FAST"
 
 
+class GmosIfuAcquisitionRoi(str, Enum):
+    CCD2_FULL_FRAME = "CCD2_FULL_FRAME"
+    STAMP_FULL_FRAME = "STAMP_FULL_FRAME"
+    FULL_FRAME = "FULL_FRAME"
+
+
 class GmosLongSlitAcquisitionRoi(str, Enum):
     CCD2_STAMP = "CCD2_STAMP"
     CCD2 = "CCD2"
     STAMP = "STAMP"
     FULL_CCD2 = "FULL_CCD2"
+
+
+class GmosNorthIfuFpu(str, Enum):
+    TWO_SLITS = "TWO_SLITS"
+    ONE_SLIT_BLUE = "ONE_SLIT_BLUE"
+    ONE_SLIT_RED = "ONE_SLIT_RED"
+
+
+class GmosSouthIfuFpu(str, Enum):
+    TWO_SLITS = "TWO_SLITS"
+    ONE_SLIT_BLUE = "ONE_SLIT_BLUE"
+    ONE_SLIT_RED = "ONE_SLIT_RED"
 
 
 class GmosNorthBuiltinFpu(str, Enum):
@@ -1028,7 +1058,6 @@ class ObsStatus(str, Enum):
     INCLUDED = "INCLUDED"
     PROPOSED = "PROPOSED"
     APPROVED = "APPROVED"
-    FOR_REVIEW = "FOR_REVIEW"
     READY = "READY"
     ONGOING = "ONGOING"
     OBSERVED = "OBSERVED"
@@ -1080,6 +1109,8 @@ class ObservationValidationCode(str, Enum):
     CONFIG_REQUEST_PENDING = "CONFIG_REQUEST_PENDING"
     TOO_ACTIVATION_UNAPPROVED = "TOO_ACTIVATION_UNAPPROVED"
     GENERIC_WARNING = "GENERIC_WARNING"
+    LOW_TOTAL_SIGNAL_TO_NOISE = "LOW_TOTAL_SIGNAL_TO_NOISE"
+    CONDITIONS_UNLIKELY = "CONDITIONS_UNLIKELY"
 
 
 class ObserveClass(str, Enum):
@@ -1108,6 +1139,13 @@ class PosAngleConstraintMode(str, Enum):
     ALLOW_FLIP = "ALLOW_FLIP"
     AVERAGE_PARALLACTIC = "AVERAGE_PARALLACTIC"
     PARALLACTIC_OVERRIDE = "PARALLACTIC_OVERRIDE"
+
+
+class ProgramStatus(str, Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    COMPLETE = "COMPLETE"
+    INCOMPLETE = "INCOMPLETE"
 
 
 class ProgramType(str, Enum):
@@ -1459,7 +1497,6 @@ class ObservationWorkflowState(str, Enum):
     UNDEFINED = "UNDEFINED"
     UNAPPROVED = "UNAPPROVED"
     DEFINED = "DEFINED"
-    FOR_REVIEW = "FOR_REVIEW"
     READY = "READY"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
