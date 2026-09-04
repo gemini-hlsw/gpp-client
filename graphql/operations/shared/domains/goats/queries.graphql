@@ -1222,3 +1222,105 @@ query GetGOATSObservations($programId: ProgramId!) {
     hasMore
   }
 }
+
+query GetGOATSConfigurationRequests($programId: ProgramId!) {
+  configurationRequests(
+    WHERE: { program: { id: { EQ: $programId } }, status: { EQ: APPROVED } }
+  ) {
+    matches {
+      id
+      status
+      justification
+      applicableObservations
+      configuration {
+        conditions {
+          imageQuality
+          cloudExtinction
+          skyBackground
+          waterVapor
+        }
+        target {
+          coordinates {
+            ra {
+              hms
+              degrees
+            }
+            dec {
+              dms
+              degrees
+            }
+          }
+        }
+        observingMode {
+          instrument
+          mode
+          gmosNorthLongSlit {
+            grating
+          }
+          gmosSouthLongSlit {
+            grating
+          }
+          gmosNorthImaging {
+            filters
+          }
+          gmosSouthImaging {
+            filters
+          }
+        }
+      }
+    }
+    hasMore
+  }
+}
+
+query GetGOATSConfigOptions($instrument: Instrument!) {
+  spectroscopyConfigOptions(WHERE: { instrument: { EQ: $instrument } }) {
+    name
+    instrument
+    site
+    focalPlane
+    fpuLabel
+    disperserLabel
+    filterLabel
+    slitWidth {
+      arcseconds
+    }
+    resolution
+    wavelengthMin {
+      nanometers
+    }
+    wavelengthMax {
+      nanometers
+    }
+    wavelengthOptimal {
+      nanometers
+    }
+    wavelengthCoverage {
+      nanometers
+    }
+    gmosNorth {
+      fpu
+      grating
+      filter
+    }
+    gmosSouth {
+      fpu
+      grating
+      filter
+    }
+  }
+  imagingConfigOptions(WHERE: { instrument: { EQ: $instrument } }) {
+    instrument
+    site
+    filterLabel
+    fov {
+      arcseconds
+    }
+    gmosNorth {
+      filter
+    }
+    gmosSouth {
+      filter
+    }
+  }
+}

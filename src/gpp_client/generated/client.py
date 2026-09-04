@@ -30,9 +30,11 @@ from .delete_observation_by_id import DeleteObservationById
 from .delete_observation_by_reference import DeleteObservationByReference
 from .delete_program_by_id import DeleteProgramById
 from .delete_target_by_id import DeleteTargetById
-from .enums import ObservationWorkflowState
+from .enums import Instrument, ObservationWorkflowState
 from .get_call_for_proposals import GetCallForProposals
 from .get_calls_for_proposals import GetCallsForProposals
+from .get_goats_config_options import GetGOATSConfigOptions
+from .get_goats_configuration_requests import GetGOATSConfigurationRequests
 from .get_goats_observations import GetGOATSObservations
 from .get_goats_programs import GetGOATSPrograms
 from .get_observation import GetObservation
@@ -1908,6 +1910,136 @@ class GraphQLClient(AsyncBaseClient):
         )
         data = self.get_data(response)
         return GetGOATSObservations.model_validate(data)
+
+    async def get_goats_configuration_requests(
+        self, program_id: Any, **kwargs: Any
+    ) -> GetGOATSConfigurationRequests:
+        query = gql("""
+            query GetGOATSConfigurationRequests($programId: ProgramId!) {
+              configurationRequests(
+                WHERE: {program: {id: {EQ: $programId}}, status: {EQ: APPROVED}}
+              ) {
+                matches {
+                  id
+                  status
+                  justification
+                  applicableObservations
+                  configuration {
+                    conditions {
+                      imageQuality
+                      cloudExtinction
+                      skyBackground
+                      waterVapor
+                    }
+                    target {
+                      coordinates {
+                        ra {
+                          hms
+                          degrees
+                        }
+                        dec {
+                          dms
+                          degrees
+                        }
+                      }
+                    }
+                    observingMode {
+                      instrument
+                      mode
+                      gmosNorthLongSlit {
+                        grating
+                      }
+                      gmosSouthLongSlit {
+                        grating
+                      }
+                      gmosNorthImaging {
+                        filters
+                      }
+                      gmosSouthImaging {
+                        filters
+                      }
+                    }
+                  }
+                }
+                hasMore
+              }
+            }
+            """)
+        variables: dict[str, object] = {"programId": program_id}
+        response = await self.execute(
+            query=query,
+            operation_name="GetGOATSConfigurationRequests",
+            variables=variables,
+            **kwargs,
+        )
+        data = self.get_data(response)
+        return GetGOATSConfigurationRequests.model_validate(data)
+
+    async def get_goats_config_options(
+        self, instrument: Instrument, **kwargs: Any
+    ) -> GetGOATSConfigOptions:
+        query = gql("""
+            query GetGOATSConfigOptions($instrument: Instrument!) {
+              spectroscopyConfigOptions(WHERE: {instrument: {EQ: $instrument}}) {
+                name
+                instrument
+                site
+                focalPlane
+                fpuLabel
+                disperserLabel
+                filterLabel
+                slitWidth {
+                  arcseconds
+                }
+                resolution
+                wavelengthMin {
+                  nanometers
+                }
+                wavelengthMax {
+                  nanometers
+                }
+                wavelengthOptimal {
+                  nanometers
+                }
+                wavelengthCoverage {
+                  nanometers
+                }
+                gmosNorth {
+                  fpu
+                  grating
+                  filter
+                }
+                gmosSouth {
+                  fpu
+                  grating
+                  filter
+                }
+              }
+              imagingConfigOptions(WHERE: {instrument: {EQ: $instrument}}) {
+                instrument
+                site
+                filterLabel
+                fov {
+                  arcseconds
+                }
+                gmosNorth {
+                  filter
+                }
+                gmosSouth {
+                  filter
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {"instrument": instrument}
+        response = await self.execute(
+            query=query,
+            operation_name="GetGOATSConfigOptions",
+            variables=variables,
+            **kwargs,
+        )
+        data = self.get_data(response)
+        return GetGOATSConfigOptions.model_validate(data)
 
     async def create_observation(
         self, input: CreateObservationInput, **kwargs: Any
