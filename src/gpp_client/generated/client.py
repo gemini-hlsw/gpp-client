@@ -2555,6 +2555,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -2882,6 +2898,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -3002,6 +3022,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -3528,6 +3552,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -3855,6 +3895,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -3975,6 +4019,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -4502,6 +4550,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -4829,6 +4893,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -4949,6 +5017,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"input": input}
@@ -5478,6 +5550,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -5805,6 +5893,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -5925,6 +6017,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id, "SET": set_}
@@ -6457,6 +6553,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -6784,6 +6896,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -6904,6 +7020,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {
@@ -7436,6 +7556,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -7763,6 +7899,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -7883,6 +8023,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id}
@@ -8412,6 +8556,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -8739,6 +8899,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -8859,6 +9023,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"observationReference": observation_reference}
@@ -9388,6 +9556,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -9715,6 +9899,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -9835,6 +10023,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"observationId": observation_id}
@@ -10364,6 +10556,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -10691,6 +10899,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -10811,6 +11023,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {"observationReference": observation_reference}
@@ -11341,6 +11557,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -11668,6 +11900,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -11788,6 +12024,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {
@@ -12325,6 +12565,22 @@ class GraphQLClient(AsyncBaseClient):
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
               mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -12652,6 +12908,10 @@ class GraphQLClient(AsyncBaseClient):
               centralWavelength {
                 nanometers
               }
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
 
             fragment gmosSouthIfuDetails on GmosSouthIfu {
@@ -12772,6 +13032,10 @@ class GraphQLClient(AsyncBaseClient):
               roi
               xBin
               yBin
+              customMask {
+                attachmentId
+                slitWidth
+              }
             }
             """)
         variables: dict[str, object] = {

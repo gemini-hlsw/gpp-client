@@ -709,6 +709,12 @@ class SetProgramResourceLimitResultGraphQLField(GraphQLField):
         return self
 
 
+class RegenerateProposalSummariesResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RegenerateProposalSummariesResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class SetProposalStatusResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SetProposalStatusResultGraphQLField":
         self._alias = alias

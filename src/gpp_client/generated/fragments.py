@@ -967,6 +967,7 @@ class GmosNorthMosDetails(BaseModel):
     central_wavelength: "GmosNorthMosDetailsCentralWavelength" = Field(
         alias="centralWavelength"
     )
+    custom_mask: "GmosNorthMosDetailsCustomMask" = Field(alias="customMask")
 
 
 class GmosNorthMosDetailsAcquisition(BaseModel):
@@ -1042,6 +1043,11 @@ class GmosNorthMosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
 
 class GmosNorthMosDetailsCentralWavelength(BaseModel):
     nanometers: Any
+
+
+class GmosNorthMosDetailsCustomMask(BaseModel):
+    attachment_id: Optional[Any] = Field(alias="attachmentId")
+    slit_width: GmosCustomSlitWidth = Field(alias="slitWidth")
 
 
 class GmosSouthIfuDetails(BaseModel):
@@ -1171,6 +1177,7 @@ class GmosSouthMosDetails(BaseModel):
     roi: GmosRoi
     x_bin: GmosBinning = Field(alias="xBin")
     y_bin: GmosBinning = Field(alias="yBin")
+    custom_mask: "GmosSouthMosDetailsCustomMask" = Field(alias="customMask")
 
 
 class GmosSouthMosDetailsAcquisition(BaseModel):
@@ -1242,6 +1249,11 @@ class GmosSouthMosDetailsExposureTimeModeTimeAndCountAt(BaseModel):
 
 class GmosSouthMosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
     seconds: Any
+
+
+class GmosSouthMosDetailsCustomMask(BaseModel):
+    attachment_id: Optional[Any] = Field(alias="attachmentId")
+    slit_width: GmosCustomSlitWidth = Field(alias="slitWidth")
 
 
 class GnirsDetails(BaseModel):
@@ -1586,6 +1598,40 @@ class ProgramCore(BaseModel):
 
 class ScienceRequirementsDetails(BaseModel):
     mode: Optional[ScienceMode]
+    exposure_time_mode: Optional["ScienceRequirementsDetailsExposureTimeMode"] = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class ScienceRequirementsDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "ScienceRequirementsDetailsExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "ScienceRequirementsDetailsExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class ScienceRequirementsDetailsExposureTimeModeSignalToNoise(BaseModel):
+    at: "ScienceRequirementsDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class ScienceRequirementsDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class ScienceRequirementsDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "ScienceRequirementsDetailsExposureTimeModeTimeAndCountAt"
+    count: Any
+    time: "ScienceRequirementsDetailsExposureTimeModeTimeAndCountTime"
+
+
+class ScienceRequirementsDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class ScienceRequirementsDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
 
 
 class SiderealTargetDetails(BaseModel):

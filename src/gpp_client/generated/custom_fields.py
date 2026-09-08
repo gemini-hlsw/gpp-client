@@ -312,6 +312,7 @@ from .custom_typing_fields import (
     RecordVisitResultGraphQLField,
     RedeemUserInvitationResultGraphQLField,
     RefreshArchiveDuplicationResultGraphQLField,
+    RegenerateProposalSummariesResultGraphQLField,
     RegionGraphQLField,
     ReplaceFlamingos2SequenceResultGraphQLField,
     ReplaceGhostSequenceResultGraphQLField,
@@ -5977,8 +5978,8 @@ class GmosNorthIfuFields(GraphQLField):
 
     @classmethod
     def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
-        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-        centre, which encloses only the element on the target."""
+        """Default IFU sampling: the single element on the field centre, which is where a
+        centred target sits."""
         return GmosIfuAnalysisFields("defaultIfuAnalysis")
 
     @classmethod
@@ -6975,8 +6976,8 @@ class GmosSouthIfuFields(GraphQLField):
 
     @classmethod
     def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
-        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-        centre, which encloses only the element on the target."""
+        """Default IFU sampling: the single element on the field centre, which is where a
+        centred target sits."""
         return GmosIfuAnalysisFields("defaultIfuAnalysis")
 
     @classmethod
@@ -11983,6 +11984,29 @@ class RefreshArchiveDuplicationResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "RefreshArchiveDuplicationResultFields":
+        self._alias = alias
+        return self
+
+
+class RegenerateProposalSummariesResultFields(GraphQLField):
+    """The result of requesting proposal summary regeneration."""
+
+    @classmethod
+    def program(cls) -> "ProgramFields":
+        """The program whose summaries were queued; the rendered PDFs appear as its SUMMARY attachments."""
+        return ProgramFields("program")
+
+    def fields(
+        self,
+        *subfields: Union[
+            RegenerateProposalSummariesResultGraphQLField, "ProgramFields"
+        ],
+    ) -> "RegenerateProposalSummariesResultFields":
+        """Subfields should come from the RegenerateProposalSummariesResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RegenerateProposalSummariesResultFields":
         self._alias = alias
         return self
 

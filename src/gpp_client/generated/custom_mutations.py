@@ -37,6 +37,7 @@ from .custom_fields import (
     RecordVisitResultFields,
     RedeemUserInvitationResultFields,
     RefreshArchiveDuplicationResultFields,
+    RegenerateProposalSummariesResultFields,
     ReplaceFlamingos2SequenceResultFields,
     ReplaceGhostSequenceResultFields,
     ReplaceGmosNorthSequenceResultFields,
@@ -100,6 +101,7 @@ from .input_types import (
     RecordVisitInput,
     RedeemUserInvitationInput,
     RefreshArchiveDuplicationInput,
+    RegenerateProposalSummariesInput,
     ReplaceFlamingos2SequenceInput,
     ReplaceGhostSequenceInput,
     ReplaceGmosNorthSequenceInput,
@@ -790,6 +792,26 @@ class Mutation:
         }
         return SetProgramResourceLimitResultFields(
             field_name="setProgramResourceLimit", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def regenerate_proposal_summaries(
+        cls, input: RegenerateProposalSummariesInput
+    ) -> RegenerateProposalSummariesResultFields:
+        """Regenerate the proposal summary PDFs for a proposal: one per partner it
+        applies to, each in that partner's style, replacing the existing SUMMARY
+        attachments once rendered.
+        Rendering is asynchronous and completion shows up as the program's SUMMARY
+        attachments.
+        Requires write access to the program (staff, or membership as PI, CoI or support)."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RegenerateProposalSummariesInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RegenerateProposalSummariesResultFields(
+            field_name="regenerateProposalSummaries", arguments=cleared_arguments
         )
 
     @classmethod

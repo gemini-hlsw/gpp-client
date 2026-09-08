@@ -1642,7 +1642,7 @@ class ProgramPropertiesInput(BaseModel):
     dismissed_warnings: Optional[list[ObservationValidationCode]] = Field(
         alias=str("dismissedWarnings"), default=None
     )
-    "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users. "
+    "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users."
 
 
 class ProgramNotePropertiesInput(BaseModel):
@@ -2273,6 +2273,12 @@ class SetProposalStatusInput(BaseModel):
         alias=str("programReference"), default=None
     )
     status: ProposalStatus
+
+
+class RegenerateProposalSummariesInput(BaseModel):
+    """Input for the `regenerateProposalSummaries` mutation."""
+
+    program_id: Any = Field(alias=str("programId"))
 
 
 class SiderealInput(BaseModel):

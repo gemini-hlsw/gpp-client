@@ -427,6 +427,10 @@ fragment gmosSouthMosDetails on GmosSouthMos {
         roi
         xBin
         yBin
+        customMask {
+          attachmentId
+          slitWidth
+        }
 }
 
 fragment gmosNorthMosDetails on GmosNorthMos {
@@ -491,15 +495,11 @@ fragment gmosNorthMosDetails on GmosNorthMos {
         centralWavelength {
           nanometers
         }
+        customMask {
+          attachmentId
+          slitWidth
+        }
 }
-
-
-
-
-
-
-
-
 
 fragment GnirsDetails on ObservingMode {
   gnirsSpectroscopy {

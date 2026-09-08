@@ -3394,6 +3394,16 @@ type Mutation {
   """
   setProgramResourceLimit(input: SetProgramResourceLimitInput!): SetProgramResourceLimitResult!
 
+  """
+  Regenerate the proposal summary PDFs for a proposal: one per partner it
+  applies to, each in that partner's style, replacing the existing SUMMARY
+  attachments once rendered.
+  Rendering is asynchronous and completion shows up as the program's SUMMARY
+  attachments.
+  Requires write access to the program (staff, or membership as PI, CoI or support).
+  """
+  regenerateProposalSummaries(input: RegenerateProposalSummariesInput!): RegenerateProposalSummariesResult!
+
   """Set the proposal status."""
   setProposalStatus(input: SetProposalStatusInput!): SetProposalStatusResult!
 
@@ -4129,7 +4139,7 @@ input ProgramPropertiesInput {
 
   """
   List of validation codes to treat as 'dismissed' by the workflow computation. This
-  field can only be set by staff users. 
+  field can only be set by staff users.
   """
   dismissedWarnings: [ObservationValidationCode!]
 }
@@ -5553,6 +5563,19 @@ input SetProposalStatusInput {
   proposalReference: ProposalReferenceLabel
   programReference: ProgramReferenceLabel
   status: ProposalStatus!
+}
+
+"""Input for the `regenerateProposalSummaries` mutation."""
+input RegenerateProposalSummariesInput {
+  programId: ProgramId!
+}
+
+"""The result of requesting proposal summary regeneration."""
+type RegenerateProposalSummariesResult {
+  """
+  The program whose summaries were queued; the rendered PDFs appear as its SUMMARY attachments.
+  """
+  program: Program!
 }
 
 """The result of setting the proposal status."""
@@ -11616,8 +11639,8 @@ type GmosNorthIfu {
   ifuAnalysis: GmosIfuAnalysis!
 
   """
-  Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-  centre, which encloses only the element on the target.
+  Default IFU sampling: the single element on the field centre, which is where a
+  centred target sits.
   """
   defaultIfuAnalysis: GmosIfuAnalysis!
 
@@ -11840,8 +11863,8 @@ type GmosSouthIfu {
   ifuAnalysis: GmosIfuAnalysis!
 
   """
-  Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-  centre, which encloses only the element on the target.
+  Default IFU sampling: the single element on the field centre, which is where a
+  centred target sits.
   """
   defaultIfuAnalysis: GmosIfuAnalysis!
 

@@ -1,5 +1,21 @@
 fragment ScienceRequirementsDetails on ScienceRequirements {
   mode
+  exposureTimeMode {
+    signalToNoise {
+      at {
+        nanometers
+      }
+    }
+    timeAndCount {
+      at {
+        nanometers
+      }
+      count
+      time {
+        seconds
+      }
+    }
+  }
 }
 
 fragment ConstraintSetDetails on ConstraintSet {
