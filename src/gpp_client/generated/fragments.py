@@ -725,6 +725,94 @@ class GnirsSpectroscopyDetailsSlitTelescopeConfigsToSkyOffsetQ(BaseModel):
     arcseconds: Any
 
 
+class Igrins2LongSlitDetails(BaseModel):
+    exposure_time_mode: "Igrins2LongSlitDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
+
+
+class Igrins2LongSlitDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["Igrins2LongSlitDetailsExposureTimeModeSignalToNoise"] = (
+        Field(alias="signalToNoise")
+    )
+    time_and_count: Optional["Igrins2LongSlitDetailsExposureTimeModeTimeAndCount"] = (
+        Field(alias="timeAndCount")
+    )
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
+    time: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt"
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class Igrins2LongSlitDetailsTelluricType(BaseModel):
+    tag: TelluricTag
+    star_types: Optional[list[str]] = Field(alias="starTypes")
+
+
+class NonsiderealTargetDetails(BaseModel):
+    des: str
+    key_type: EphemerisKeyType = Field(alias="keyType")
+    key: str
+
+
+class ObservationCore(BaseModel):
+    id: Any
+    existence: Existence
+    reference: Optional["ObservationCoreReference"]
+    title: Any
+    instrument: Optional[Instrument]
+    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
+
+
+class ObservationCoreReference(BaseModel):
+    label: Any
+
+
+class VisitorDetails(BaseModel):
+    mode: VisitorObservingModeType
+    name: Optional[Any]
+    central_wavelength: "VisitorDetailsCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    total_request_time: Optional["VisitorDetailsTotalRequestTime"] = Field(
+        alias="totalRequestTime"
+    )
+    ags_diameter: "VisitorDetailsAgsDiameter" = Field(alias="agsDiameter")
+
+
+class VisitorDetailsCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class VisitorDetailsTotalRequestTime(BaseModel):
+    seconds: Any
+
+
+class VisitorDetailsAgsDiameter(BaseModel):
+    dms: str
+    hms: str
+
+
 class Flamingos2MosDetails(BaseModel):
     readout_mode: Flamingos2ReadoutMode = Field(alias="readoutMode")
     initial_slit_width: Flamingos2CustomSlitWidth = Field(alias="initialSlitWidth")
@@ -862,6 +950,96 @@ class Flamingos2MosDetailsDefaultTelescopeConfigsToSkyOffsetQ(BaseModel):
 class Flamingos2MosDetailsTelluricType(BaseModel):
     star_types: Optional[list[str]] = Field(alias="starTypes")
     tag: TelluricTag
+
+
+class GhostDetectorConfigDetails(BaseModel):
+    binning: GhostBinning
+    default_binning: GhostBinning = Field(alias="defaultBinning")
+    default_read_mode: GhostReadMode = Field(alias="defaultReadMode")
+    explicit_binning: Optional[GhostBinning] = Field(alias="explicitBinning")
+    explicit_read_mode: Optional[GhostReadMode] = Field(alias="explicitReadMode")
+    read_mode: GhostReadMode = Field(alias="readMode")
+    exposure_time_mode: "GhostDetectorConfigDetailsExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GhostDetectorConfigDetailsExposureTimeMode(BaseModel):
+    signal_to_noise: Optional[
+        "GhostDetectorConfigDetailsExposureTimeModeSignalToNoise"
+    ] = Field(alias="signalToNoise")
+    time_and_count: Optional[
+        "GhostDetectorConfigDetailsExposureTimeModeTimeAndCount"
+    ] = Field(alias="timeAndCount")
+
+
+class GhostDetectorConfigDetailsExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt"
+
+
+class GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCount(BaseModel):
+    at: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt"
+    time: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime"
+    count: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GhostIfuDetails(BaseModel):
+    default_ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="defaultIfu1Agitator")
+    default_ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="defaultIfu2Agitator")
+    explicit_ifu_1_agitator: Optional[GhostIfu1FiberAgitator] = Field(
+        alias="explicitIfu1Agitator"
+    )
+    explicit_ifu_2_agitator: Optional[GhostIfu2FiberAgitator] = Field(
+        alias="explicitIfu2Agitator"
+    )
+    ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="ifu1Agitator")
+    ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="ifu2Agitator")
+    resolution_mode: GhostResolutionMode = Field(alias="resolutionMode")
+    step_count: Any = Field(alias="stepCount")
+    blue: "GhostIfuDetailsBlue"
+    red: "GhostIfuDetailsRed"
+    sky_position: Optional["GhostIfuDetailsSkyPosition"] = Field(alias="skyPosition")
+    slit_viewing_camera_exposure_time: Optional[
+        "GhostIfuDetailsSlitViewingCameraExposureTime"
+    ] = Field(alias="slitViewingCameraExposureTime")
+
+
+class GhostIfuDetailsBlue(GhostDetectorConfigDetails):
+    pass
+
+
+class GhostIfuDetailsRed(GhostDetectorConfigDetails):
+    pass
+
+
+class GhostIfuDetailsSkyPosition(BaseModel):
+    dec: "GhostIfuDetailsSkyPositionDec"
+    ra: "GhostIfuDetailsSkyPositionRa"
+
+
+class GhostIfuDetailsSkyPositionDec(BaseModel):
+    degrees: Any
+
+
+class GhostIfuDetailsSkyPositionRa(BaseModel):
+    degrees: Any
+
+
+class GhostIfuDetailsSlitViewingCameraExposureTime(BaseModel):
+    seconds: Any
 
 
 class GmosNorthIfuDetails(BaseModel):
@@ -1254,226 +1432,6 @@ class GmosSouthMosDetailsExposureTimeModeTimeAndCountTime(BaseModel):
 class GmosSouthMosDetailsCustomMask(BaseModel):
     attachment_id: Optional[Any] = Field(alias="attachmentId")
     slit_width: GmosCustomSlitWidth = Field(alias="slitWidth")
-
-
-class GnirsDetails(BaseModel):
-    gnirs_spectroscopy: Optional["GnirsDetailsGnirsSpectroscopy"] = Field(
-        alias="gnirsSpectroscopy"
-    )
-    gnirs_imaging: Optional["GnirsDetailsGnirsImaging"] = Field(alias="gnirsImaging")
-    gmos_south_mos: Optional["GnirsDetailsGmosSouthMos"] = Field(alias="gmosSouthMos")
-    gmos_south_ifu: Optional["GnirsDetailsGmosSouthIfu"] = Field(alias="gmosSouthIfu")
-    gmos_north_mos: Optional["GnirsDetailsGmosNorthMos"] = Field(alias="gmosNorthMos")
-    gmos_north_ifu: Optional["GnirsDetailsGmosNorthIfu"] = Field(alias="gmosNorthIfu")
-    flamingos_2_mos: Optional["GnirsDetailsFlamingos2Mos"] = Field(
-        alias="flamingos2Mos"
-    )
-
-
-class GnirsDetailsGnirsSpectroscopy(GnirsSpectroscopyDetails):
-    pass
-
-
-class GnirsDetailsGnirsImaging(GnirsImagingDetails):
-    pass
-
-
-class GnirsDetailsGmosSouthMos(GmosSouthMosDetails):
-    pass
-
-
-class GnirsDetailsGmosSouthIfu(GmosSouthIfuDetails):
-    pass
-
-
-class GnirsDetailsGmosNorthMos(GmosNorthMosDetails):
-    pass
-
-
-class GnirsDetailsGmosNorthIfu(GmosNorthIfuDetails):
-    pass
-
-
-class GnirsDetailsFlamingos2Mos(Flamingos2MosDetails):
-    pass
-
-
-class Igrins2LongSlitDetails(BaseModel):
-    exposure_time_mode: "Igrins2LongSlitDetailsExposureTimeMode" = Field(
-        alias="exposureTimeMode"
-    )
-    telluric_type: "Igrins2LongSlitDetailsTelluricType" = Field(alias="telluricType")
-
-
-class Igrins2LongSlitDetailsExposureTimeMode(BaseModel):
-    signal_to_noise: Optional["Igrins2LongSlitDetailsExposureTimeModeSignalToNoise"] = (
-        Field(alias="signalToNoise")
-    )
-    time_and_count: Optional["Igrins2LongSlitDetailsExposureTimeModeTimeAndCount"] = (
-        Field(alias="timeAndCount")
-    )
-
-
-class Igrins2LongSlitDetailsExposureTimeModeSignalToNoise(BaseModel):
-    value: Any
-    at: "Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt"
-
-
-class Igrins2LongSlitDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
-    nanometers: Any
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCount(BaseModel):
-    time: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime"
-    count: Any
-    at: "Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt"
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountTime(BaseModel):
-    seconds: Any
-
-
-class Igrins2LongSlitDetailsExposureTimeModeTimeAndCountAt(BaseModel):
-    nanometers: Any
-
-
-class Igrins2LongSlitDetailsTelluricType(BaseModel):
-    tag: TelluricTag
-    star_types: Optional[list[str]] = Field(alias="starTypes")
-
-
-class NonsiderealTargetDetails(BaseModel):
-    des: str
-    key_type: EphemerisKeyType = Field(alias="keyType")
-    key: str
-
-
-class ObservationCore(BaseModel):
-    id: Any
-    existence: Existence
-    reference: Optional["ObservationCoreReference"]
-    title: Any
-    instrument: Optional[Instrument]
-    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
-
-
-class ObservationCoreReference(BaseModel):
-    label: Any
-
-
-class VisitorDetails(BaseModel):
-    mode: VisitorObservingModeType
-    name: Optional[Any]
-    central_wavelength: "VisitorDetailsCentralWavelength" = Field(
-        alias="centralWavelength"
-    )
-    total_request_time: Optional["VisitorDetailsTotalRequestTime"] = Field(
-        alias="totalRequestTime"
-    )
-    ags_diameter: "VisitorDetailsAgsDiameter" = Field(alias="agsDiameter")
-
-
-class VisitorDetailsCentralWavelength(BaseModel):
-    nanometers: Any
-
-
-class VisitorDetailsTotalRequestTime(BaseModel):
-    seconds: Any
-
-
-class VisitorDetailsAgsDiameter(BaseModel):
-    dms: str
-    hms: str
-
-
-class GhostDetectorConfigDetails(BaseModel):
-    binning: GhostBinning
-    default_binning: GhostBinning = Field(alias="defaultBinning")
-    default_read_mode: GhostReadMode = Field(alias="defaultReadMode")
-    explicit_binning: Optional[GhostBinning] = Field(alias="explicitBinning")
-    explicit_read_mode: Optional[GhostReadMode] = Field(alias="explicitReadMode")
-    read_mode: GhostReadMode = Field(alias="readMode")
-    exposure_time_mode: "GhostDetectorConfigDetailsExposureTimeMode" = Field(
-        alias="exposureTimeMode"
-    )
-
-
-class GhostDetectorConfigDetailsExposureTimeMode(BaseModel):
-    signal_to_noise: Optional[
-        "GhostDetectorConfigDetailsExposureTimeModeSignalToNoise"
-    ] = Field(alias="signalToNoise")
-    time_and_count: Optional[
-        "GhostDetectorConfigDetailsExposureTimeModeTimeAndCount"
-    ] = Field(alias="timeAndCount")
-
-
-class GhostDetectorConfigDetailsExposureTimeModeSignalToNoise(BaseModel):
-    value: Any
-    at: "GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt"
-
-
-class GhostDetectorConfigDetailsExposureTimeModeSignalToNoiseAt(BaseModel):
-    nanometers: Any
-
-
-class GhostDetectorConfigDetailsExposureTimeModeTimeAndCount(BaseModel):
-    at: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt"
-    time: "GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime"
-    count: Any
-
-
-class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountAt(BaseModel):
-    nanometers: Any
-
-
-class GhostDetectorConfigDetailsExposureTimeModeTimeAndCountTime(BaseModel):
-    seconds: Any
-
-
-class GhostIfuDetails(BaseModel):
-    default_ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="defaultIfu1Agitator")
-    default_ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="defaultIfu2Agitator")
-    explicit_ifu_1_agitator: Optional[GhostIfu1FiberAgitator] = Field(
-        alias="explicitIfu1Agitator"
-    )
-    explicit_ifu_2_agitator: Optional[GhostIfu2FiberAgitator] = Field(
-        alias="explicitIfu2Agitator"
-    )
-    ifu_1_agitator: GhostIfu1FiberAgitator = Field(alias="ifu1Agitator")
-    ifu_2_agitator: GhostIfu2FiberAgitator = Field(alias="ifu2Agitator")
-    resolution_mode: GhostResolutionMode = Field(alias="resolutionMode")
-    step_count: Any = Field(alias="stepCount")
-    blue: "GhostIfuDetailsBlue"
-    red: "GhostIfuDetailsRed"
-    sky_position: Optional["GhostIfuDetailsSkyPosition"] = Field(alias="skyPosition")
-    slit_viewing_camera_exposure_time: Optional[
-        "GhostIfuDetailsSlitViewingCameraExposureTime"
-    ] = Field(alias="slitViewingCameraExposureTime")
-
-
-class GhostIfuDetailsBlue(GhostDetectorConfigDetails):
-    pass
-
-
-class GhostIfuDetailsRed(GhostDetectorConfigDetails):
-    pass
-
-
-class GhostIfuDetailsSkyPosition(BaseModel):
-    dec: "GhostIfuDetailsSkyPositionDec"
-    ra: "GhostIfuDetailsSkyPositionRa"
-
-
-class GhostIfuDetailsSkyPositionDec(BaseModel):
-    degrees: Any
-
-
-class GhostIfuDetailsSkyPositionRa(BaseModel):
-    degrees: Any
-
-
-class GhostIfuDetailsSlitViewingCameraExposureTime(BaseModel):
-    seconds: Any
 
 
 class ObservingModeDetails(BaseModel):
@@ -2102,18 +2060,17 @@ GmosSouthImagingDetails.model_rebuild()
 GmosSouthLongSlitDetails.model_rebuild()
 GnirsImagingDetails.model_rebuild()
 GnirsSpectroscopyDetails.model_rebuild()
-Flamingos2MosDetails.model_rebuild()
-GmosNorthIfuDetails.model_rebuild()
-GmosNorthMosDetails.model_rebuild()
-GmosSouthIfuDetails.model_rebuild()
-GmosSouthMosDetails.model_rebuild()
-GnirsDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
 ObservationCore.model_rebuild()
 VisitorDetails.model_rebuild()
+Flamingos2MosDetails.model_rebuild()
 GhostDetectorConfigDetails.model_rebuild()
 GhostIfuDetails.model_rebuild()
+GmosNorthIfuDetails.model_rebuild()
+GmosNorthMosDetails.model_rebuild()
+GmosSouthIfuDetails.model_rebuild()
+GmosSouthMosDetails.model_rebuild()
 ObservingModeDetails.model_rebuild()
 ProgramCore.model_rebuild()
 ScienceRequirementsDetails.model_rebuild()

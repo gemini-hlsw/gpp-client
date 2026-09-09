@@ -299,6 +299,511 @@ fragment Flamingos2ImagingDetails on Flamingos2Imaging {
   explicitReadoutMode
 }
 
+fragment GnirsImagingDetails on GnirsImaging {
+    camera
+    defaultWellDepth
+    explicitReadMode
+    explicitWellDepth
+    filters {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      filter
+    }
+    initialFilters {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      filter
+    }
+    wellDepth
+}
+
+fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+    acquisition {
+      explicitAcquisitionType
+      explicitFilter
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+      skyOffset {
+        p {
+          arcseconds
+        }
+        q {
+          arcseconds
+        }
+      }
+    }
+    camera
+    centralWavelengths {
+      centralWavelength {
+        nanometers
+      }
+    }
+    decker
+    defaultDecker
+    defaultWellDepth
+    explicitDecker
+    explicitFocusMotorSteps
+    explicitGrating
+    explicitPrism
+    explicitReadMode
+    explicitWellDepth
+    filter
+    grating
+    ifu {
+      fpu
+      initialFpu
+      telescopeConfigs {
+        guiding
+        offset {
+          p {
+            arcseconds
+          }
+          q {
+            arcseconds
+          }
+        }
+      }
+    }
+    initialCamera
+    initialFilter
+    initialGrating
+    initialPrism
+    prism
+    telluricType {
+      starTypes
+      tag
+    }
+    wellDepth
+    slit {
+      fpu
+      initialFpu
+      defaultTelescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+      explicitTelescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+      telescopeConfigs {
+        alongSlit {
+          guiding
+          q {
+            arcseconds
+          }
+        }
+        offsetMode
+        toSky {
+          guiding
+          offset {
+            p {
+              arcseconds
+            }
+            q {
+              arcseconds
+            }
+          }
+        }
+      }
+    }
+}
+
+fragment flamingos2MosDetails on Flamingos2Mos {
+  readoutMode
+  initialSlitWidth
+  initialFilter
+  initialDisperser
+  filter
+  explicitReads
+  explicitReadoutMode
+  explicitReadMode
+  explicitDecker
+  disperser
+  defaultReadoutMode
+  defaultDecker
+  decker
+  exposureTimeMode {
+    timeAndCount {
+      at {
+        nanometers
+      }
+      count
+      time {
+        seconds
+      }
+    }
+    signalToNoise {
+      at {
+        nanometers
+      }
+      value
+    }
+  }
+  explicitTelescopeConfigs {
+    alongSlit {
+      guiding
+      q {
+        arcseconds
+      }
+    }
+    offsetMode
+    toSky {
+      guiding
+      offset {
+        p {
+          arcseconds
+        }
+        q {
+          arcseconds
+        }
+      }
+    }
+  }
+  defaultTelescopeConfigs {
+    alongSlit {
+      guiding
+      q {
+        arcseconds
+      }
+    }
+    offsetMode
+    toSky {
+      guiding
+      offset {
+        p {
+          arcseconds
+        }
+        q {
+          arcseconds
+        }
+      }
+    }
+  }
+  telluricType {
+    starTypes
+    tag
+  }
+}
+
+
+fragment gmosNorthIfuDetails on GmosNorthIfu {
+    yBin
+    xBin
+    roi
+    initialGrating
+    initialFpu
+    initialFilter
+    grating
+    fpu
+    filter
+    explicitYBin
+    explicitXBin
+    explicitRoi
+    ampGain
+    ampReadMode
+    defaultAmpGain
+    defaultAmpReadMode
+    defaultRoi
+    defaultXBin
+    defaultYBin
+    explicitAmpGain
+    explicitAmpReadMode
+    centralWavelength {
+      nanometers
+    }
+    acquisition {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+    }
+}
+
+fragment gmosSouthIfuDetails on GmosSouthIfu {
+    acquisition {
+      exposureTimeMode {
+        signalToNoise {
+          at {
+            nanometers
+          }
+          value
+        }
+        timeAndCount {
+          at {
+            nanometers
+          }
+          count
+          time {
+            seconds
+          }
+        }
+      }
+    }
+    ampGain
+    ampReadMode
+    defaultAmpGain
+    defaultAmpReadMode
+    defaultRoi
+    defaultXBin
+    defaultYBin
+    explicitAmpGain
+    explicitAmpReadMode
+    explicitRoi
+    explicitXBin
+    explicitYBin
+    exposureTimeMode {
+      signalToNoise {
+        at {
+          nanometers
+        }
+        value
+      }
+      timeAndCount {
+        count
+        at {
+          nanometers
+        }
+        time {
+          seconds
+        }
+      }
+    }
+    filter
+    fpu
+    grating
+    initialFpu
+    initialFilter
+    initialGrating
+    xBin
+    yBin
+}
+
+
+fragment gmosSouthMosDetails on GmosSouthMos {
+        acquisition {
+          filter
+          exposureTimeMode {
+            signalToNoise {
+              at {
+                nanometers
+              }
+              value
+            }
+            timeAndCount {
+              at {
+                nanometers
+              }
+              count
+              time {
+                seconds
+              }
+            }
+          }
+        }
+        acquisitionType
+        ampGain
+        ampReadMode
+        defaultAmpGain
+        defaultAmpReadMode
+        defaultRoi
+        defaultXBin
+        defaultYBin
+        explicitAmpGain
+        explicitAmpReadMode
+        explicitRoi
+        explicitXBin
+        exposureTimeMode {
+          signalToNoise {
+            at {
+              nanometers
+            }
+            value
+          }
+          timeAndCount {
+            at {
+              nanometers
+            }
+            count
+            time {
+              seconds
+            }
+          }
+        }
+        explicitYBin
+        filter
+        grating
+        initialFilter
+        initialGrating
+        initialSlitWidth
+        roi
+        xBin
+        yBin
+        customMask {
+          attachmentId
+          slitWidth
+        }
+}
+
+fragment gmosNorthMosDetails on GmosNorthMos {
+        acquisition {
+          filter
+          exposureTimeMode {
+            signalToNoise {
+              at {
+                nanometers
+              }
+              value
+            }
+            timeAndCount {
+              at {
+                nanometers
+              }
+              count
+              time {
+                seconds
+              }
+            }
+          }
+        }
+        acquisitionType
+        ampGain
+        ampReadMode
+        defaultAmpGain
+        defaultAmpReadMode
+        defaultRoi
+        defaultXBin
+        defaultYBin
+        explicitAmpGain
+        explicitAmpReadMode
+        explicitRoi
+        explicitXBin
+        exposureTimeMode {
+          signalToNoise {
+            at {
+              nanometers
+            }
+            value
+          }
+          timeAndCount {
+            at {
+              nanometers
+            }
+            count
+            time {
+              seconds
+            }
+          }
+        }
+        explicitYBin
+        filter
+        grating
+        initialFilter
+        initialGrating
+        initialSlitWidth
+        roi
+        xBin
+        yBin
+        centralWavelength {
+          nanometers
+        }
+        customMask {
+          attachmentId
+          slitWidth
+        }
+}
+
+
+
 fragment ObservingModeDetails on ObservingMode {
   instrument
   mode
@@ -329,6 +834,27 @@ fragment ObservingModeDetails on ObservingMode {
   }
   ghostIfu {
     ...ghostIfuDetails
+  }
+    gnirsSpectroscopy {
+    ...GnirsSpectroscopyDetails
+  }
+  gnirsImaging {
+    ...GnirsImagingDetails
+  }
+  gmosSouthMos {
+    ...gmosSouthMosDetails
+  }
+  gmosSouthIfu {
+    ...gmosSouthIfuDetails
+  }
+  gmosNorthMos {
+    ...gmosNorthMosDetails
+  }
+  gmosNorthIfu {
+    ...gmosNorthIfuDetails
+  }
+  flamingos2Mos {
+    ...flamingos2MosDetails
   }
 
 }
