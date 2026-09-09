@@ -2100,14 +2100,9 @@ input GmosNorthLongSlitInput {
   explicitWavelengthDithers: [WavelengthDitherInput!]
 
   """
-  The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitOffsets: [OffsetComponentInput!]
-
-  """
-  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosNorthLongSlitAcquisitionInput
@@ -2449,17 +2444,210 @@ input GmosSouthLongSlitInput {
   explicitWavelengthDithers: [WavelengthDitherInput!]
 
   """
-  The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitOffsets: [OffsetComponentInput!]
-
-  """
-  The explicitSpatialOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
-  """
-  explicitSpatialOffsets: [OffsetComponentInput!] @deprecated(reason: "Use 'explicitOffsets' instead.")
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosSouthLongSlitAcquisitionInput
+}
+
+"""Edit or create GMOS North IFU advanced configuration"""
+input GmosNorthIfuInput {
+  """
+  The grating field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  grating: GmosNorthGrating
+
+  """
+  The filter field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  filter: GmosNorthFilter
+
+  """
+  The IFU aperture.  It must be either specified or skipped altogether; it cannot
+  be unset with a null value.
+  """
+  fpu: GmosNorthIfuFpu
+
+  """
+  The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  centralWavelength: WavelengthInput
+
+  """
+  Exposure time mode for the science sequence.  If not specified, the exposure
+  time mode of the observation's science requirements are used.
+  """
+  exposureTimeMode: ExposureTimeModeInput
+
+  """
+  How the ITC samples the IFU field.  The explicitIfuAnalysis field may be unset by
+  assigning a null value, or ignored by skipping it altogether.  When unset the
+  default sampling applies.
+  """
+  explicitIfuAnalysis: GmosIfuAnalysisInput
+
+  """
+  The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitXBin: GmosBinning
+
+  """
+  The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitYBin: GmosBinning
+
+  """
+  The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitRoi: GmosRoi
+
+  """
+  The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+
+  """
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+
+  """Parameters that override acquisition defaults."""
+  acquisition: GmosNorthIfuAcquisitionInput
+}
+
+"""
+Parameters that override IFU acquisition defaults.  IFU acquisition images the
+field full frame, so (unlike long slit) there is no ROI to configure.
+"""
+input GmosNorthIfuAcquisitionInput {
+  """
+  An explicit acquisition filter to use instead of the default.  The `explicitFilter`
+  may be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,
+  the filter that will be used for the acquisition sequence is the broadband filter closest to
+  the central wavelength.
+  """
+  explicitFilter: GmosNorthFilter
+
+  """
+  An explicit acquisition ROI to use instead of the default.  The `explicitRoi` may be unset by
+  assigning a null value, or ignored by skipping it altogether.  If not provided, the ROIs used
+  depend on the observation's calibration role.
+  """
+  explicitRoi: GmosIfuAcquisitionRoi
+
+  """Exposure time mode for the acquisition sequence."""
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+"""Edit or create GMOS South IFU advanced configuration"""
+input GmosSouthIfuInput {
+  """
+  The grating field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  grating: GmosSouthGrating
+
+  """
+  The filter field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  filter: GmosSouthFilter
+
+  """
+  The IFU aperture.  It must be either specified or skipped altogether; it cannot
+  be unset with a null value.
+  """
+  fpu: GmosSouthIfuFpu
+
+  """
+  The centralWavelength field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  centralWavelength: WavelengthInput
+
+  """
+  Exposure time mode for the science sequence.  If not specified, the exposure
+  time mode of the observation's science requirements are used.
+  """
+  exposureTimeMode: ExposureTimeModeInput
+
+  """
+  How the ITC samples the IFU field.  The explicitIfuAnalysis field may be unset by
+  assigning a null value, or ignored by skipping it altogether.  When unset the
+  default sampling applies.
+  """
+  explicitIfuAnalysis: GmosIfuAnalysisInput
+
+  """
+  The explicitXBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitXBin: GmosBinning
+
+  """
+  The explicitYBin field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitYBin: GmosBinning
+
+  """
+  The explicitAmpReadMode field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  The explicitAmpGain field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  The explicitRoi field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitRoi: GmosRoi
+
+  """
+  The explicitWavelengthDithers field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+
+  """
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
+  """
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+
+  """Parameters that override acquisition defaults."""
+  acquisition: GmosSouthIfuAcquisitionInput
+}
+
+"""
+Parameters that override IFU acquisition defaults.  IFU acquisition images the
+field full frame, so (unlike long slit) there is no ROI to configure.
+"""
+input GmosSouthIfuAcquisitionInput {
+  """
+  An explicit acquisition filter to use instead of the default.  The `explicitFilter`
+  may be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,
+  the filter that will be used for the acquisition sequence is the broadband filter closest to
+  the central wavelength.
+  """
+  explicitFilter: GmosSouthFilter
+
+  """
+  An explicit acquisition ROI to use instead of the default.  The `explicitRoi` may be unset by
+  assigning a null value, or ignored by skipping it altogether.  If not provided, the ROIs used
+  depend on the observation's calibration role.
+  """
+  explicitRoi: GmosIfuAcquisitionRoi
+
+  """Exposure time mode for the acquisition sequence."""
+  exposureTimeMode: ExposureTimeModeInput
 }
 
 """Edit or create GMOS North MOS advanced configuration"""
@@ -2528,9 +2716,9 @@ input GmosNorthMosInput {
   explicitWavelengthDithers: [WavelengthDitherInput!]
 
   """
-  The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitOffsets: [OffsetComponentInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosNorthMosAcquisitionInput
@@ -2622,9 +2810,9 @@ input GmosSouthMosInput {
   explicitWavelengthDithers: [WavelengthDitherInput!]
 
   """
-  The explicitOffsets field may be unset by assigning a null value, or ignored by skipping it altogether
+  The explicitTelescopeConfigs field may be unset by assigning a null value, or ignored by skipping it altogether
   """
-  explicitOffsets: [OffsetComponentInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
 
   """Parameters that override acquisition defaults."""
   acquisition: GmosSouthMosAcquisitionInput
@@ -3913,6 +4101,13 @@ input ProgramPropertiesInput {
   existence: Existence
 
   """
+  Explicit program status, masking the status derived from the active period.
+  Set to null to return to the derived status.  May be set or cleared only by
+  those with staff access or better.
+  """
+  explicitStatus: ProgramStatus
+
+  """
   Active period start date (inclusive) for this program.  The date is considered
   to be the local date at each observation site.  Observations may begin the
   evening of the indicated date at the site of the observation.
@@ -3931,6 +4126,12 @@ input ProgramPropertiesInput {
   nullable.  Limited to dates between 1900 and 2100 (exclusive).
   """
   activeEnd: Date
+
+  """
+  List of validation codes to treat as 'dismissed' by the workflow computation. This
+  field can only be set by staff users. 
+  """
+  dismissedWarnings: [ObservationValidationCode!]
 }
 
 """ProgramNote creation and edit properties."""
@@ -4082,6 +4283,19 @@ input ProperMotionInput {
 }
 
 """
+The AEON/Multi-facility aspects of a Gemini proposal.  Its presence is what
+marks the proposal as part of the program.
+"""
+type AeonMultiFacility {
+  """
+  The instruments whose requested Gemini time is required for this
+  multi-facility project to be feasible.  Instruments not listed are not
+  required, which is the default.
+  """
+  requiredInstruments: [Instrument!]!
+}
+
+"""
 Proposal properties that depend on the particular call for proposals associated
 with this proposal.
 """
@@ -4144,8 +4358,11 @@ type Classical implements GeminiProposalType {
   """
   exchangePartner: ExchangePartner
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean!
+  """
+  The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+  is part of the AEON/Multi-facility program.
+  """
+  aeonMultiFacility: AeonMultiFacility
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean!
@@ -4327,8 +4544,11 @@ type LargeProgram implements GeminiProposalType {
   """Total time requested (over multiple all semesters) for this proposal."""
   totalTime: TimeSpan!
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean!
+  """
+  The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+  is part of the AEON/Multi-facility program.
+  """
+  aeonMultiFacility: AeonMultiFacility
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean!
@@ -4394,14 +4614,17 @@ type Queue implements GeminiProposalType {
   exchangePartner: ExchangePartner
 
   """
-  Whether this proposal should be considered for Band 3. Defaults to UNSET
+  Whether this proposal should be considered for Band 3. Defaults to CONSIDER
   on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
   be submitted.
   """
   considerForBand3: ConsiderForBand3!
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean!
+  """
+  The AEON/Multi-facility aspects of this proposal.  Null unless the proposal
+  is part of the AEON/Multi-facility program.
+  """
+  aeonMultiFacility: AeonMultiFacility
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean!
@@ -4447,6 +4670,18 @@ type SystemVerification implements GeminiProposalType {
   successful.
   """
   minPercentTime: IntPercent!
+}
+
+"""The AEON/Multi-facility aspects of a Gemini proposal."""
+input AeonMultiFacilityInput {
+  """
+  The instruments whose requested Gemini time is required for the
+  multi-facility project to be feasible.  Each instrument must be in use by an
+  active observation in the program.  Setting it replaces the whole list; null
+  (or empty) clears it.  When editing, leave it out to keep the list as it
+  stands.
+  """
+  requiredInstruments: [Instrument!]
 }
 
 """
@@ -4518,8 +4753,13 @@ input ClassicalInput {
   """
   exchangePartner: ExchangePartner
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean
+  """
+  The AEON/Multi-facility aspects of the proposal.  Supply the object to place
+  the proposal in the AEON/Multi-facility program, null to take it out (which
+  also clears the required instruments).  When editing, leave it out to keep
+  the proposal as it stands.
+  """
+  aeonMultiFacility: AeonMultiFacilityInput
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean
@@ -4619,8 +4859,13 @@ input LargeProgramInput {
   """
   totalTime: TimeSpanInput
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean
+  """
+  The AEON/Multi-facility aspects of the proposal.  Supply the object to place
+  the proposal in the AEON/Multi-facility program, null to take it out (which
+  also clears the required instruments).  When editing, leave it out to keep
+  the proposal as it stands.
+  """
+  aeonMultiFacility: AeonMultiFacilityInput
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean
@@ -4695,14 +4940,19 @@ input QueueInput {
   exchangePartner: ExchangePartner
 
   """
-  Whether this proposal should be considered for Band 3. Defaults to UNSET
+  Whether this proposal should be considered for Band 3. Defaults to CONSIDER
   on creation; must be CONSIDER or DO_NOT_CONSIDER before the proposal can
   be submitted.
   """
   considerForBand3: ConsiderForBand3
 
-  """Whether this proposal is part of the AEON/Multi-facility program."""
-  aeonMultiFacility: Boolean
+  """
+  The AEON/Multi-facility aspects of the proposal.  Supply the object to place
+  the proposal in the AEON/Multi-facility program, null to take it out (which
+  also clears the required instruments).  When editing, leave it out to keep
+  the proposal as it stands.
+  """
+  aeonMultiFacility: AeonMultiFacilityInput
 
   """Whether this proposal has JWST synergy."""
   jwstSynergy: Boolean
@@ -4985,6 +5235,9 @@ input ObservingModeInput @oneOf {
   """
   ghostIfu: GhostIfuInput
 
+  """GMOS North IFU"""
+  gmosNorthIfu: GmosNorthIfuInput
+
   """
   The gmosNorthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
@@ -4999,6 +5252,9 @@ input ObservingModeInput @oneOf {
   The gmosNorthMos field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   gmosNorthMos: GmosNorthMosInput
+
+  """GMOS South IFU"""
+  gmosSouthIfu: GmosSouthIfuInput
 
   """
   The gmosSouthImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -5016,14 +5272,24 @@ input ObservingModeInput @oneOf {
   gmosSouthMos: GmosSouthMosInput
 
   """
+  The gnirsIfu field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gnirsIfu: GnirsIfuInput
+
+  """
   The gnirsImaging field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
   gnirsImaging: GnirsImagingInput
 
   """
+  The gnirsLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
+  """
+  gnirsLongSlit: GnirsLongSlitInput
+
+  """
   The gnirsSpectroscopy field must be either specified or skipped altogether.  It cannot be unset with a null value.
   """
-  gnirsSpectroscopy: GnirsSpectroscopyInput
+  gnirsSpectroscopy: GnirsSpectroscopyInput @deprecated(reason: "Use 'gnirsLongSlit' or 'gnirsIfu' instead.")
 
   """
   The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value.
@@ -6470,6 +6736,11 @@ type AirMassRange {
   max: PosBigDecimal!
 }
 
+"""
+An angle in a variety of units.  Values are normalized to [0, 360°) unless
+the field documents a signed quantity, in which case negative values are
+rendered negative (as with `Declination`) rather than wrapped.
+"""
 type Angle {
   """Angle in µas"""
   microarcseconds: Long!
@@ -6564,6 +6835,9 @@ enum AttachmentType {
 
   """A target attachment for custom SEDs"""
   CUSTOM_SED
+
+  """A proposal attachment for the ODB-generated proposal summary"""
+  SUMMARY
 }
 
 """Attachment"""
@@ -6580,12 +6854,62 @@ type Attachment {
   `GYYYY(A|B)PPPP<type>-XX_ODF.fits`.
   Not settable.  Null when the attachment is not a MOS_MASK, always present when it is.
   """
-  maskName: NonEmptyString
+  maskName: NonEmptyString @deprecated(reason: "Use `mask.name` instead.")
+
+  """
+  The design read from a MOS mask attachment's file when it was uploaded.
+  Null when the attachment is not a MOS_MASK, and null for MOS_MASK
+  attachments uploaded before mask parsing was introduced (re-uploading the
+  file populates it).  Not settable.
+  """
+  mask: MaskDefinition
   description: NonEmptyString
   checked: Boolean!
   fileSize: Long!
   updatedAt: Timestamp!
+
+  """
+  How an ODB-generated proposal summary was rendered.  Present exactly for
+  SUMMARY attachments; null for every other type.  Not settable.
+  """
+  proposalSummary: ProposalSummaryProperties
   program: Program!
+}
+
+"""Properties of an ODB-generated proposal summary PDF."""
+type ProposalSummaryProperties {
+  """
+  The partner the summary was rendered for.  Null for the single summary of a
+  proposal with no partner splits.
+  """
+  partner: Partner
+
+  """
+  The style the summary was produced in.  Recorded at generation, so it stays
+  accurate if the partner-to-style mapping changes later.
+  """
+  style: ProposalSummaryStyle!
+}
+
+"""The layouts a proposal summary PDF can be rendered in."""
+enum ProposalSummaryStyle {
+  """The default Gemini layout."""
+  GEMINI_STANDARD
+
+  """Gemini layout for dual-anonymous review: investigators omitted."""
+  GEMINI_DARP
+
+  """Gemini layout without the investigator list."""
+  GEMINI_NO_INVESTIGATORS
+
+  """Gemini layout with the investigator list moved to the end."""
+  GEMINI_INVESTIGATORS_AT_END
+
+  """The Chilean TAC layout."""
+  CHILE
+
+  """The NOIRLab dual-anonymous review layout."""
+  NOIRLAB_DARP
 }
 
 input AttachmentPropertiesInput {
@@ -6596,6 +6920,144 @@ input AttachmentPropertiesInput {
 
   """The checked status can be set, or ignored by skipping it altogether"""
   checked: Boolean
+}
+
+"""
+The design read from a MOS mask attachment's file (ODF/MDF): the instrument
+the mask was cut for, the position angle it must be observed at, and its
+slits.
+"""
+type MaskDefinition {
+  """The mask name of the attachment."""
+  name: NonEmptyString!
+
+  """The instrument the mask was designed for."""
+  instrument: Instrument!
+
+  """Nominal plate scale of the pre-image, in arcseconds per pixel."""
+  pixelScale: BigDecimal!
+
+  """Pointing centre of the pre-image the mask was designed on."""
+  pointing: Coordinates!
+
+  """The position angle the mask must be observed at."""
+  positionAngle: Angle!
+
+  """
+  Axis along which the instrument spreads a spectrum, in pre-image detector
+  coordinates.  It decides how the design's x and y columns were read: a
+  slit's width is its extent along the dispersion direction, its length the
+  extent across it.
+  """
+  dispersionDirection: MosDispersionDirection!
+
+  """Every aperture in the design, acquisition boxes included."""
+  slits: [MaskSlit!]!
+
+  """Number of science slits in the design, alignment-star boxes excluded."""
+  scienceSlitCount: Int!
+
+  """Number of alignment-star boxes in the design."""
+  acquisitionSlitCount: Int!
+
+  """
+  Mean width of the science slits.  Alignment-star boxes are excluded so
+  their wide boxes do not skew the mean, and a design with no science slits
+  has no average.
+  """
+  averageSlitWidth: Angle
+}
+
+"""
+One aperture of a MOS mask design.  The width is always the extent along the
+dispersion direction (horizontal for GMOS-S/N, vertical for FLAMINGOS2) and
+the length the extent across it.
+"""
+type MaskSlit {
+  """Object identifier, unique within the mask."""
+  id: Int!
+
+  """Sky position of the object the slit targets."""
+  coordinates: Coordinates!
+
+  """
+  Object centroid on the pre-image along the detector x axis, in pixels
+  (`x_ccd` in the design file).  Fractional: it is a measured centroid, not a
+  pixel index.
+  """
+  x: BigDecimal!
+
+  """
+  Object centroid on the pre-image along the detector y axis, in pixels
+  (`y_ccd` in the design file).
+  """
+  y: BigDecimal!
+
+  """Extent along the dispersion direction."""
+  width: Angle!
+
+  """Extent across the dispersion direction."""
+  length: Angle!
+
+  """
+  Displacement of the slit from the object along the slit's length.  A signed
+  quantity: the slit may be slid either way, and negative displacements are
+  rendered in the signed representation (-1.5 arcseconds reads as -1.5), not
+  wrapped to just under a full turn.
+  """
+  offsetAlongSlit: Angle!
+
+  """
+  Displacement of the slit from the object across its width.  A non-zero value
+  drives a point source off the slit and loses flux.  A signed quantity,
+  rendered in the signed representation like `offsetAlongSlit`.
+  """
+  offsetAcrossSlit: Angle!
+
+  """
+  Slit position angle, counter-clockwise positive.  A signed quantity bounded
+  to 45 degrees either way, rendered in the signed representation like
+  `offsetAlongSlit`.
+  """
+  tilt: Angle!
+
+  """
+  Placement priority of the object.  ACQUISITION marks an alignment-star box
+  rather than a science slit.
+  """
+  priority: MosSlitPriority!
+}
+
+"""
+Axis along which an instrument spreads a spectrum, in pre-image detector
+coordinates.
+"""
+enum MosDispersionDirection {
+  """GMOS-N and GMOS-S: the x axis is the dispersion axis."""
+  HORIZONTAL
+
+  """Flamingos-2: the y axis is the dispersion axis."""
+  VERTICAL
+}
+
+"""Placement priority of an object in a MOS mask design."""
+enum MosSlitPriority {
+  """
+  Acquisition star, used to align the mask on sky rather than to take a spectrum.
+  """
+  ACQUISITION
+
+  """Highest science priority."""
+  HIGH
+
+  """Medium science priority."""
+  MEDIUM
+
+  """Lowest science priority."""
+  LOW
+
+  """Not a priority level: marks the object as excluded from the design."""
+  IGNORE
 }
 
 """Brightness bands"""
@@ -6849,6 +7311,9 @@ enum ObservingModeType {
   """ObservingModeType GhostIfu"""
   GHOST_IFU
 
+  """ObservingModeType GmosNorthIfu"""
+  GMOS_NORTH_IFU
+
   """ObservingModeType GmosNorthImaging"""
   GMOS_NORTH_IMAGING
 
@@ -6857,6 +7322,9 @@ enum ObservingModeType {
 
   """ObservingModeType GmosNorthMos"""
   GMOS_NORTH_MOS
+
+  """ObservingModeType GmosSouthIfu"""
+  GMOS_SOUTH_IFU
 
   """ObservingModeType GmosSouthImaging"""
   GMOS_SOUTH_IMAGING
@@ -8143,18 +8611,6 @@ enum Flamingos2CustomSlitWidth {
   OTHER
 }
 
-"""
-Flamingos 2 MOS offset preset, which selects the default telescope configs for
-the science sequence.
-"""
-enum Flamingos2MosOffsetPreset {
-  """Nod along the slit, ABBA at +/- 1.2 arcsec, all offsets guided."""
-  SPARSE_FIELD
-
-  """Nod to sky, with guiding disabled on the two sky offsets."""
-  CROWDED_FIELD
-}
-
 """Flamingos 2 Lyot Wheel"""
 enum Flamingos2LyotWheel {
   F16
@@ -8317,12 +8773,16 @@ enum Flamingos2Reads {
   READS_16
 }
 
-"""Telluric calibration type"""
+"""
+Telluric calibration type.  NO_TELLURIC means no telluric calibration is
+wanted: none are generated and existing ones without visits are removed.
+"""
 enum TelluricTag {
   HOT
   A0V
   SOLAR
   MANUAL
+  NO_TELLURIC
 }
 
 """Telluric calibration type"""
@@ -8535,11 +8995,56 @@ input Flamingos2LongSlitInput {
   acquisition: Flamingos2LongSlitAcquisitionInput
 }
 
+"""Flamingos2 MOS acquisition settings."""
+type Flamingos2MosAcquisition {
+  """
+  The filter that will be used in the acquisition sequence.  This will be the
+  `explicitFilter` if specified, but otherwise the `defaultFilter`.
+  """
+  filter: Flamingos2Filter!
+
+  """
+  The filter that will be used by default, if an explicit acquisition filter was
+  not specified.  The default is calculated as the acquisition filter closest in
+  wavelength to the observation's science filter.
+  """
+  defaultFilter: Flamingos2Filter!
+
+  """An explicitly specified filter to use in acquisition (if any)."""
+  explicitFilter: Flamingos2Filter
+
+  """The Time & Count exposure time mode used for the acquisition sequence."""
+  exposureTimeMode: ExposureTimeMode!
+}
+
+"""
+Flamingos2 MOS acquisition input parameters.  When specified, these override
+default values.
+"""
+input Flamingos2MosAcquisitionInput {
+  """
+  An explicit acquisition filter to use instead of the default.  The `explicitFilter`
+  may be unset by assigning a null value, or ignored by skipping it altogether.  If not provided,
+  the filter that will be used for the acquisition sequence is the acquisition filter closest to
+  the science filter wavelength.
+  Allowed filters are J, H and K_SHORT.
+  """
+  explicitFilter: Flamingos2Filter
+
+  """
+  Exposure time mode for the acquisition sequence.  MOS acquisition must be
+  Time & Count; a signal-to-noise mode is rejected.  If not specified, the
+  default is 5 seconds with a count of 1.
+  """
+  exposureTimeMode: ExposureTimeModeInput
+}
+
 """
 Flamingos 2 MOS mode.
 
-This is Flamingos 2 long slit with the builtin FPU replaced by a custom mask and
-with no acquisition.  Sequence generation is not yet implemented for this mode.
+This is Flamingos 2 long slit with the builtin FPU replaced by a custom mask.
+The acquisition images the field with the mask out of the beam before confirming
+the alignment through it.
 """
 type Flamingos2Mos {
   """Flamingos2 Disperser"""
@@ -8599,9 +9104,6 @@ type Flamingos2Mos {
   """
   explicitReadoutMode: Flamingos2ReadoutMode
 
-  """The offset preset from which the default telescope configs are taken."""
-  offsetPreset: Flamingos2MosOffsetPreset!
-
   """
   Effective telescope configs (explicit override coalesced with the default).
   """
@@ -8618,6 +9120,9 @@ type Flamingos2Mos {
 
   """Telluric type configuration for this observation."""
   telluricType: TelluricType!
+
+  """Acquisition settings for the acquisition sequence."""
+  acquisition: Flamingos2MosAcquisition!
 
   """
   The disperser as it was initially selected.  See the `disperser` field for the
@@ -8684,13 +9189,6 @@ input Flamingos2MosInput {
   explicitReadoutMode: Flamingos2ReadoutMode
 
   """
-  The offset preset from which the default telescope configs are taken.  It may be
-  specified or skipped altogether, but not unset with a null value.  On create the
-  default is SPARSE_FIELD.
-  """
-  offsetPreset: Flamingos2MosOffsetPreset
-
-  """
   Explicit telescope configs. May be unset by assigning null, or ignored by skipping.
   """
   explicitTelescopeConfigs: SlitTelescopeConfigsInput
@@ -8700,6 +9198,9 @@ input Flamingos2MosInput {
   a null value. On create the default is HOT.
   """
   telluricType: TelluricTypeInput
+
+  """Acquisition input parameters, which override the acquisition defaults."""
+  acquisition: Flamingos2MosAcquisitionInput
 }
 
 """Imaging filters combine an actual filter with an exposure time mode."""
@@ -9292,7 +9793,18 @@ GNIRS Imaging acquisition customization.  Every field overrides an otherwise
 automatic choice.
 """
 type GnirsImagingAcquisition {
+  """
+  The effective acquisition exposure time mode.  When `explicitExposureTimeMode` is
+  null this is a signal-to-noise mode whose value follows the ITC brightness
+  classification -- VERY_BRIGHT 30, BRIGHT 20, FAINT 10 -- and is maintained
+  automatically.
+  """
   exposureTimeMode: ExposureTimeMode!
+
+  """
+  An explicitly specified acquisition exposure time mode.  When null the mode is derived from the acquisition type (see `exposureTimeMode`).
+  """
+  explicitExposureTimeMode: ExposureTimeMode
   coadds: PosInt!
 
   """
@@ -9359,7 +9871,13 @@ input GnirsImagingAcquisitionInput {
   explicitAcquisitionType: GnirsAcquisitionType
   coadds: PosInt
   skyOffset: OffsetInput
-  exposureTimeMode: ExposureTimeModeInput
+
+  """
+  An explicitly specified acquisition exposure time mode.  Assign null to revert to
+  the mode derived from the acquisition brightness classification, or skip it
+  altogether to leave it alone.
+  """
+  explicitExposureTimeMode: ExposureTimeModeInput
 }
 
 """GNIRS Imaging creation and edit input parameters."""
@@ -9395,7 +9913,18 @@ input GnirsImagingInput {
 }
 
 type GnirsSpectroscopyAcquisition {
+  """
+  The effective acquisition exposure time mode.  When `explicitExposureTimeMode` is
+  null this is a signal-to-noise mode whose value follows the ITC brightness
+  classification -- VERY_BRIGHT 30, BRIGHT 20, FAINT 10 -- and is maintained
+  automatically.
+  """
   exposureTimeMode: ExposureTimeMode!
+
+  """
+  An explicitly specified acquisition exposure time mode.  When null the mode is derived from the acquisition type (see `exposureTimeMode`).
+  """
+  explicitExposureTimeMode: ExposureTimeMode
   coadds: PosInt!
   explicitAcquisitionType: GnirsAcquisitionType
 
@@ -9466,13 +9995,13 @@ type GnirsSpectroscopy {
   Long-slit configuration (FPU + along-slit telescope configs), when this is a
   long-slit observation. Exactly one of `slit` / `ifu` is present.
   """
-  slit: GnirsSlit
+  slit: GnirsSpectroscopyLongSlit
 
   """
   IFU configuration (FPU + p/q telescope configs), when this is an integral field
   unit observation. Exactly one of `slit` / `ifu` is present.
   """
-  ifu: GnirsIfu
+  ifu: GnirsSpectroscopyIfu
   filter: GnirsFilter!
   initialFilter: GnirsFilter!
   decker: GnirsDecker!
@@ -9494,7 +10023,7 @@ GNIRS long-slit-specific configuration: the slit FPU plus the telescope configs
 taken along the slit. Present on `GnirsSpectroscopy.slit` iff the observation is a
 long slit; null for IFU.
 """
-type GnirsSlit {
+type GnirsSpectroscopyLongSlit {
   fpu: GnirsFpuSlit!
   initialFpu: GnirsFpuSlit!
 
@@ -9511,7 +10040,7 @@ GNIRS IFU-specific configuration: the IFU FPU plus the telescope configs as full
 p/q offsets. Present on `GnirsSpectroscopy.ifu` iff the observation is an IFU; null
 for long slit.
 """
-type GnirsIfu {
+type GnirsSpectroscopyIfu {
   fpu: GnirsFpuIfu!
   initialFpu: GnirsFpuIfu!
 
@@ -9522,12 +10051,113 @@ type GnirsIfu {
   telescopeConfigs: [TelescopeConfig!]!
 }
 
+"""GNIRS Long Slit mode."""
+type GnirsLongSlit {
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+
+  """
+  The central wavelengths at which spectra are taken, in increasing wavelength
+  order.  Each one is a separate configuration with its own exposure time mode,
+  coadds, ITC calculation and calibrations.
+  """
+  centralWavelengths: [GnirsCentralWavelengthConfig!]!
+
+  """
+  The central wavelengths as they were configured when the observing mode was
+  created.
+  """
+  initialCentralWavelengths: [GnirsCentralWavelengthConfig!]!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  fpu: GnirsFpuSlit!
+  initialFpu: GnirsFpuSlit!
+
+  """
+  Effective telescope configs (explicit override coalesced with the default).
+  """
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  acquisition: GnirsSpectroscopyAcquisition!
+
+  """Telluric type configuration for this observation."""
+  telluricType: TelluricType!
+}
+
+"""GNIRS IFU (integral field unit) mode."""
+type GnirsIfu {
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+
+  """
+  The central wavelengths at which spectra are taken, in increasing wavelength
+  order.  Each one is a separate configuration with its own exposure time mode,
+  coadds, ITC calculation and calibrations.
+  """
+  centralWavelengths: [GnirsCentralWavelengthConfig!]!
+
+  """
+  The central wavelengths as they were configured when the observing mode was
+  created.
+  """
+  initialCentralWavelengths: [GnirsCentralWavelengthConfig!]!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  fpu: GnirsFpuIfu!
+  initialFpu: GnirsFpuIfu!
+
+  """
+  Telescope configs (full p/q offsets). Unlike the long slit these have no derived
+  default: they are seeded from the FPU at creation and then edited in place.
+  """
+  telescopeConfigs: [TelescopeConfig!]!
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  acquisition: GnirsSpectroscopyAcquisition!
+
+  """Telluric type configuration for this observation."""
+  telluricType: TelluricType!
+}
+
 input GnirsSpectroscopyAcquisitionInput {
   explicitFilter: GnirsFilter
   explicitAcquisitionType: GnirsAcquisitionType
   coadds: PosInt
   skyOffset: OffsetInput
-  exposureTimeMode: ExposureTimeModeInput
+
+  """
+  An explicitly specified acquisition exposure time mode.  Assign null to revert to
+  the mode derived from the acquisition brightness classification, or skip it
+  altogether to leave it alone.
+  """
+  explicitExposureTimeMode: ExposureTimeModeInput
 }
 
 """
@@ -9561,7 +10191,7 @@ input SlitTelescopeConfigsInput {
 """
 GNIRS long-slit-specific configuration input. `fpu` is required on create.
 """
-input GnirsSlitInput {
+input GnirsSpectroscopyLongSlitInput {
   fpu: GnirsFpuSlit
 
   """
@@ -9574,7 +10204,7 @@ input GnirsSlitInput {
 GNIRS IFU-specific configuration input. `fpu` is required on create. A missing
 `telescopeConfigs` is left unedited (and on create is seeded from the FPU).
 """
-input GnirsIfuInput {
+input GnirsSpectroscopyIfuInput {
   fpu: GnirsFpuIfu
   telescopeConfigs: [TelescopeConfigInput!]
 }
@@ -9592,12 +10222,83 @@ input GnirsSpectroscopyInput {
   """
   Long-slit configuration. On create, exactly one of `slit` / `ifu` is required.
   """
-  slit: GnirsSlitInput
+  slit: GnirsSpectroscopyLongSlitInput
 
   """
   IFU configuration. On create, exactly one of `slit` / `ifu` is required.
   """
-  ifu: GnirsIfuInput
+  ifu: GnirsSpectroscopyIfuInput
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsSpectroscopyAcquisitionInput
+
+  """
+  The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.
+  On create the default is HOT.
+  """
+  telluricType: TelluricTypeInput
+}
+
+"""Edit or create GNIRS Long Slit configuration."""
+input GnirsLongSlitInput {
+  """
+  The central wavelengths at which spectra are taken.  Required on create, and
+  must contain at least one entry with no duplicated wavelength.  When given on
+  edit, it replaces the existing list wholesale.
+  """
+  centralWavelengths: [GnirsCentralWavelengthConfigInput!]
+  filter: GnirsFilter
+
+  """The FPU. Required on create."""
+  fpu: GnirsFpuSlit
+
+  """
+  Long-slit telescope configs. Null clears an explicit override back to the default.
+  """
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsSpectroscopyAcquisitionInput
+
+  """
+  The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.
+  On create the default is HOT.
+  """
+  telluricType: TelluricTypeInput
+}
+
+"""Edit or create GNIRS IFU configuration."""
+input GnirsIfuInput {
+  """
+  The central wavelengths at which spectra are taken.  Required on create, and
+  must contain at least one entry with no duplicated wavelength.  When given on
+  edit, it replaces the existing list wholesale.
+  """
+  centralWavelengths: [GnirsCentralWavelengthConfigInput!]
+  filter: GnirsFilter
+
+  """The FPU. Required on create."""
+  fpu: GnirsFpuIfu
+
+  """
+  Telescope configs. A missing value is left unedited; on create it is seeded
+  from the FPU.
+  """
+  telescopeConfigs: [TelescopeConfigInput!]
   camera: GnirsCamera
   grating: GnirsGrating
   prism: GnirsPrism
@@ -9732,6 +10433,22 @@ enum GmosAmpReadMode {
 }
 
 """GMOS Long Slit Acquisition ROI options."""
+enum GmosIfuAcquisitionRoi {
+  """
+  Imaging step uses CCD2, steps through the IFU use Full Frame.  The default for science.
+  """
+  CCD2_FULL_FRAME
+
+  """
+  Imaging step uses Central Stamp, steps through the IFU use Full Frame.  The default for
+  spectrophotometric standards.
+  """
+  STAMP_FULL_FRAME
+
+  """Both the imaging step and the steps through the IFU use Full Frame."""
+  FULL_FRAME
+}
+
 enum GmosLongSlitAcquisitionRoi {
   """Imaging step uses CCD2, slit steps use Central Stamp."""
   CCD2_STAMP
@@ -9744,6 +10461,69 @@ enum GmosLongSlitAcquisitionRoi {
 
   """Imaging uses Full frame, slit steps use CCD2."""
   FULL_CCD2
+}
+
+"""
+The GMOS IFU apertures the IFU observing mode offers: both pseudo-slits, or
+either one alone.  The nod & shuffle units the South also carries are not
+offered, because nothing generates a nod & shuffle sequence yet.
+"""
+enum GmosNorthIfuFpu {
+  """Both pseudo-slits, covering the full 7" x 5" target field."""
+  TWO_SLITS
+
+  """The left pseudo-slit alone, covering half the field."""
+  ONE_SLIT_BLUE
+
+  """The right pseudo-slit alone, covering half the field."""
+  ONE_SLIT_RED
+}
+
+"""See `GmosNorthIfuFpu`.  The apertures are the same at both sites."""
+enum GmosSouthIfuFpu {
+  """Both pseudo-slits, covering the full 7" x 5" target field."""
+  TWO_SLITS
+
+  """The left pseudo-slit alone, covering half the field."""
+  ONE_SLIT_BLUE
+
+  """The right pseudo-slit alone, covering half the field."""
+  ONE_SLIT_RED
+}
+
+"""How the ITC samples the IFU field.  Exactly one of the two is set."""
+type GmosIfuAnalysis {
+  """
+  Sum every IFU element whose centre falls within this radius of the field
+  centre.  Null when a single element is measured instead.
+  """
+  sumRadius: Angle
+
+  """
+  Measure the single IFU element sitting this far from the field centre.  Null when
+  elements are summed instead.
+  """
+  singleOffset: Angle
+}
+
+"""
+How the ITC samples the IFU field: exactly one of a summation radius or a
+single element offset.  The number of fibres on sky is not settable; it follows
+from the focal plane unit.
+"""
+input GmosIfuAnalysisInput @oneOf {
+  """
+  Sum every IFU element whose centre falls within this radius of the field
+  centre.  Must be greater than zero.
+  """
+  sumRadius: AngleInput
+
+  """
+  Measure the single IFU element sitting this far from the field centre.  A distance:
+  the ITC places the element on one axis and integrates a centred source, so the two
+  directions along it give the same answer.
+  """
+  singleOffset: AngleInput
 }
 
 """GMOS North FPU"""
@@ -10062,34 +10842,22 @@ type GmosNorthLongSlit {
   explicitWavelengthDithers: [WavelengthDither!]
 
   """
-  Q offsets, either explicitly specified in explicitOffsets
-  or else taken from defaultOffsets
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.
   """
-  offsets: [OffsetQ!]!
-
-  """Default offsets."""
-  defaultOffsets: [OffsetQ!]!
+  telescopeConfigs: SlitTelescopeConfigs!
 
   """
-  Optional explicitly specified q offsets. If set it overrides the
+  Default telescope configurations: three guided positions along the slit.
+  """
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+
+  """
+  Optional explicitly specified telescope configurations. If set it overrides
   the default.
   """
-  explicitOffsets: [OffsetQ!]
-
-  """
-  Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-  or else taken from defaultSpatialOffsets
-  """
-  spatialOffsets: [OffsetQ!]! @deprecated(reason: "Use 'offsets', 'defaultOffsets', and 'explicitOffsets' instead.")
-
-  """Default spatial offsets."""
-  defaultSpatialOffsets: [OffsetQ!]! @deprecated(reason: "Use 'defaultOffsets' instead.")
-
-  """
-  Optional explicitly specified spatial q offsets. If set it overrides the
-  the default.
-  """
-  explicitSpatialOffsets: [OffsetQ!] @deprecated(reason: "Use 'explicitOffsets' instead.")
+  explicitTelescopeConfigs: SlitTelescopeConfigs
 
   """Settings that apply to the acquisition sequence."""
   acquisition: GmosNorthLongSlitAcquisition!
@@ -10731,34 +11499,22 @@ type GmosSouthLongSlit {
   explicitWavelengthDithers: [WavelengthDither!]
 
   """
-  Q offsets, either explicitly specified in explicitOffsets
-  or else taken from defaultOffsets
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.
   """
-  offsets: [OffsetQ!]!
-
-  """Default offsets."""
-  defaultOffsets: [OffsetQ!]!
+  telescopeConfigs: SlitTelescopeConfigs!
 
   """
-  Optional explicitly specified q offsets. If set it overrides the
+  Default telescope configurations: three guided positions along the slit.
+  """
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+
+  """
+  Optional explicitly specified telescope configurations. If set it overrides
   the default.
   """
-  explicitOffsets: [OffsetQ!]
-
-  """
-  Spacial q offsets, either explicitly specified in explicitSpatialOffsets
-  or else taken from defaultSpatialOffsets
-  """
-  spatialOffsets: [OffsetQ!]! @deprecated(reason: "Use 'offsets', 'defaultOffsets', and 'explicitOffsets' instead.")
-
-  """Default spatial offsets."""
-  defaultSpatialOffsets: [OffsetQ!]! @deprecated(reason: "Use 'defaultOffsets' instead.")
-
-  """
-  Optional explicitly specified spatial q offsets. If set it overrides the
-  the default.
-  """
-  explicitSpatialOffsets: [OffsetQ!] @deprecated(reason: "Use 'explicitOffsets' instead.")
+  explicitTelescopeConfigs: SlitTelescopeConfigs
 
   """Settings that apply to the acquisition sequence."""
   acquisition: GmosSouthLongSlitAcquisition!
@@ -10786,6 +11542,454 @@ type GmosSouthLongSlit {
   field for the wavelength that will be used in the observation.
   """
   initialCentralWavelength: Wavelength!
+}
+
+"""
+GMOS North IFU acquisition parameters.  The IFU acquires through the mirror with
+the field imaged full frame, so there is no ROI to configure.
+"""
+type GmosNorthIfuAcquisition {
+  """
+  The GMOS North filter that will be used in the acquisition sequence.  This will
+  be the `explicitFilter` if specified, but otherwise the `defaultFilter`.
+  """
+  filter: GmosNorthFilter!
+
+  """
+  The GMOS North filter that will be used by default, if an explicit acquisition
+  filter was not specified.  The default is calculated as the broadband filter
+  closest in wavelength to the observation's `centralWavelength`.
+  """
+  defaultFilter: GmosNorthFilter!
+
+  """
+  An explicitly specified GMOS North filter to use in acquisition (if any).
+  """
+  explicitFilter: GmosNorthFilter
+
+  """
+  The ROIs that will be used for the acquisition sequence.  The first is used for the imaging
+  step and the second for the steps taken through the IFU.  This will be the `explicitRoi` if
+  specified, but otherwise the `defaultRoi`.
+  """
+  roi: GmosIfuAcquisitionRoi!
+
+  """
+  The acquisition ROIs that will be used by default, if an explicit ROI was not specified.
+  """
+  defaultRoi: GmosIfuAcquisitionRoi!
+
+  """An explicitly specified acquisition ROI (if any)."""
+  explicitRoi: GmosIfuAcquisitionRoi
+
+  """The exposure time mode for the acquisition sequence."""
+  exposureTimeMode: ExposureTimeMode!
+}
+
+"""
+GMOS North IFU mode.  This is GMOS long slit with the slit replaced by one of the
+IFU apertures, so the science sequence is generated the same way.  What differs
+is that the IFU samples a field rather than a slit: it reads out unbinned, it
+dithers within its field instead of nodding along a slit, and it carries the
+sampling geometry the ITC integrates over.
+"""
+type GmosNorthIfu {
+  """GMOS North Grating"""
+  grating: GmosNorthGrating!
+
+  """GMOS North Filter"""
+  filter: GmosNorthFilter
+
+  """The IFU aperture through which the observation is taken."""
+  fpu: GmosNorthIfuFpu!
+
+  """The central wavelength."""
+  centralWavelength: Wavelength!
+
+  """The exposure time mode used for ITC lookup for the science sequence."""
+  exposureTimeMode: ExposureTimeMode!
+
+  """
+  How the ITC samples the IFU field, either explicitly specified in
+  explicitIfuAnalysis or else taken from defaultIfuAnalysis.
+  """
+  ifuAnalysis: GmosIfuAnalysis!
+
+  """
+  Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
+  centre, which encloses only the element on the target.
+  """
+  defaultIfuAnalysis: GmosIfuAnalysis!
+
+  """
+  Optional explicitly specified IFU sampling.  If set it overrides the default.
+  """
+  explicitIfuAnalysis: GmosIfuAnalysis
+
+  """
+  GMOS X-Binning, either explicitly specified in explicitXBin or else taken
+  from the defaultXBin.
+  """
+  xBin: GmosBinning!
+
+  """
+  Default GMOS X-Binning (ONE).  The IFU fibre traces blend together on the
+  detector if it is binned, so the default is unbinned.
+  """
+  defaultXBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS X-Binning. If set it overrides the
+  default.
+  """
+  explicitXBin: GmosBinning
+
+  """
+  GMOS Y-Binning, either explicitly specified in explicitYBin or else taken
+  from the defaultYBin.
+  """
+  yBin: GmosBinning!
+
+  """Default GMOS Y-Binning (ONE).  See `defaultXBin`."""
+  defaultYBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS Y-Binning. If set it overrides the
+  default.
+  """
+  explicitYBin: GmosBinning
+
+  """
+  GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
+  else taken from the defaultAmpReadMode.
+  """
+  ampReadMode: GmosAmpReadMode!
+
+  """Default GmosAmpReadMode (SLOW)."""
+  defaultAmpReadMode: GmosAmpReadMode!
+
+  """
+  Optional explicitly specified GMOS amp read mode. If set it overrides the
+  default.
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  GMOS amp read gain, either explicitly specified in explicitAmpGain or else
+  taken from the defaultAmpGain.
+  """
+  ampGain: GmosAmpGain!
+
+  """Default GMOS amp gain (LOW)."""
+  defaultAmpGain: GmosAmpGain!
+
+  """
+  Optional explicitly specified GMOS amp gain.  If set it overrides the default.
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  GMOS ROI, either explicitly specified in explicitRoi or else taken from the
+  defaultRoi.
+  """
+  roi: GmosRoi!
+
+  """Default GMOS ROI (FULL_FRAME)."""
+  defaultRoi: GmosRoi!
+
+  """
+  Optional explicitly specified GMOS ROI. If set it overrides the default.
+  """
+  explicitRoi: GmosRoi
+
+  """
+  Wavelength dithers required to fill in the chip gaps. This value is either
+  explicitly specified in explicitWavelengthDithers or else taken from
+  defaultWavelengthDithers
+  """
+  wavelengthDithers: [WavelengthDither!]!
+
+  """
+  Default wavelength dithers, calculated based on the grating dispersion.
+  """
+  defaultWavelengthDithers: [WavelengthDither!]!
+
+  """
+  Optional explicitly specified wavelength dithers.  If set it overrides the
+  default.
+  """
+  explicitWavelengthDithers: [WavelengthDither!]
+
+  """
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.  The IFU has no slit to nod along, so
+  these are plain offsets rather than slit telescope configurations.
+  """
+  telescopeConfigs: [TelescopeConfig!]!
+
+  """
+  Default telescope configurations: a single guided position on target.  The
+  IFU has a dedicated sky field, so it does not nod for background.
+  """
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+
+  """
+  Optional explicitly specified telescope configurations. If set it overrides
+  the default.
+  """
+  explicitTelescopeConfigs: [TelescopeConfig!]
+
+  """
+  The grating as it was initially selected.  See the `grating` field for the
+  grating that will be used in the observation.
+  """
+  initialGrating: GmosNorthGrating!
+
+  """
+  The filter as it was initially selected (if any).  See the `filter` field
+  for the filter that will be used in the observation.
+  """
+  initialFilter: GmosNorthFilter
+
+  """
+  The IFU aperture as it was initially selected.  See the `fpu` field for the
+  aperture that will be used in the observation.
+  """
+  initialFpu: GmosNorthIfuFpu!
+
+  """
+  The central wavelength as initially selected.  See the `centralWavelength`
+  field for the wavelength that will be used in the observation.
+  """
+  initialCentralWavelength: Wavelength!
+
+  """Parameters that override acquisition defaults."""
+  acquisition: GmosNorthIfuAcquisition!
+}
+
+"""
+GMOS South IFU acquisition parameters.  The IFU acquires through the mirror with
+the field imaged full frame, so there is no ROI to configure.
+"""
+type GmosSouthIfuAcquisition {
+  """
+  The GMOS South filter that will be used in the acquisition sequence.  This will
+  be the `explicitFilter` if specified, but otherwise the `defaultFilter`.
+  """
+  filter: GmosSouthFilter!
+
+  """
+  The GMOS South filter that will be used by default, if an explicit acquisition
+  filter was not specified.  The default is calculated as the broadband filter
+  closest in wavelength to the observation's `centralWavelength`.
+  """
+  defaultFilter: GmosSouthFilter!
+
+  """
+  An explicitly specified GMOS South filter to use in acquisition (if any).
+  """
+  explicitFilter: GmosSouthFilter
+
+  """
+  The ROIs that will be used for the acquisition sequence.  The first is used for the imaging
+  step and the second for the steps taken through the IFU.  This will be the `explicitRoi` if
+  specified, but otherwise the `defaultRoi`.
+  """
+  roi: GmosIfuAcquisitionRoi!
+
+  """
+  The acquisition ROIs that will be used by default, if an explicit ROI was not specified.
+  """
+  defaultRoi: GmosIfuAcquisitionRoi!
+
+  """An explicitly specified acquisition ROI (if any)."""
+  explicitRoi: GmosIfuAcquisitionRoi
+
+  """The exposure time mode for the acquisition sequence."""
+  exposureTimeMode: ExposureTimeMode!
+}
+
+"""
+GMOS South IFU mode.  This is GMOS long slit with the slit replaced by one of the
+IFU apertures, so the science sequence is generated the same way.  What differs
+is that the IFU samples a field rather than a slit: it reads out unbinned, it
+dithers within its field instead of nodding along a slit, and it carries the
+sampling geometry the ITC integrates over.
+"""
+type GmosSouthIfu {
+  """GMOS South Grating"""
+  grating: GmosSouthGrating!
+
+  """GMOS South Filter"""
+  filter: GmosSouthFilter
+
+  """The IFU aperture through which the observation is taken."""
+  fpu: GmosSouthIfuFpu!
+
+  """The central wavelength."""
+  centralWavelength: Wavelength!
+
+  """The exposure time mode used for ITC lookup for the science sequence."""
+  exposureTimeMode: ExposureTimeMode!
+
+  """
+  How the ITC samples the IFU field, either explicitly specified in
+  explicitIfuAnalysis or else taken from defaultIfuAnalysis.
+  """
+  ifuAnalysis: GmosIfuAnalysis!
+
+  """
+  Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
+  centre, which encloses only the element on the target.
+  """
+  defaultIfuAnalysis: GmosIfuAnalysis!
+
+  """
+  Optional explicitly specified IFU sampling.  If set it overrides the default.
+  """
+  explicitIfuAnalysis: GmosIfuAnalysis
+
+  """
+  GMOS X-Binning, either explicitly specified in explicitXBin or else taken
+  from the defaultXBin.
+  """
+  xBin: GmosBinning!
+
+  """
+  Default GMOS X-Binning (ONE).  The IFU fibre traces blend together on the
+  detector if it is binned, so the default is unbinned.
+  """
+  defaultXBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS X-Binning. If set it overrides the
+  default.
+  """
+  explicitXBin: GmosBinning
+
+  """
+  GMOS Y-Binning, either explicitly specified in explicitYBin or else taken
+  from the defaultYBin.
+  """
+  yBin: GmosBinning!
+
+  """Default GMOS Y-Binning (ONE).  See `defaultXBin`."""
+  defaultYBin: GmosBinning!
+
+  """
+  Optional explicitly specified GMOS Y-Binning. If set it overrides the
+  default.
+  """
+  explicitYBin: GmosBinning
+
+  """
+  GMOS amp read mode, either explicitly specified in explicitAmpReadMode or
+  else taken from the defaultAmpReadMode.
+  """
+  ampReadMode: GmosAmpReadMode!
+
+  """Default GmosAmpReadMode (SLOW)."""
+  defaultAmpReadMode: GmosAmpReadMode!
+
+  """
+  Optional explicitly specified GMOS amp read mode. If set it overrides the
+  default.
+  """
+  explicitAmpReadMode: GmosAmpReadMode
+
+  """
+  GMOS amp read gain, either explicitly specified in explicitAmpGain or else
+  taken from the defaultAmpGain.
+  """
+  ampGain: GmosAmpGain!
+
+  """Default GMOS amp gain (LOW)."""
+  defaultAmpGain: GmosAmpGain!
+
+  """
+  Optional explicitly specified GMOS amp gain.  If set it overrides the default.
+  """
+  explicitAmpGain: GmosAmpGain
+
+  """
+  GMOS ROI, either explicitly specified in explicitRoi or else taken from the
+  defaultRoi.
+  """
+  roi: GmosRoi!
+
+  """Default GMOS ROI (FULL_FRAME)."""
+  defaultRoi: GmosRoi!
+
+  """
+  Optional explicitly specified GMOS ROI. If set it overrides the default.
+  """
+  explicitRoi: GmosRoi
+
+  """
+  Wavelength dithers required to fill in the chip gaps. This value is either
+  explicitly specified in explicitWavelengthDithers or else taken from
+  defaultWavelengthDithers
+  """
+  wavelengthDithers: [WavelengthDither!]!
+
+  """
+  Default wavelength dithers, calculated based on the grating dispersion.
+  """
+  defaultWavelengthDithers: [WavelengthDither!]!
+
+  """
+  Optional explicitly specified wavelength dithers.  If set it overrides the
+  default.
+  """
+  explicitWavelengthDithers: [WavelengthDither!]
+
+  """
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.  The IFU has no slit to nod along, so
+  these are plain offsets rather than slit telescope configurations.
+  """
+  telescopeConfigs: [TelescopeConfig!]!
+
+  """
+  Default telescope configurations: a single guided position on target.  The
+  IFU has a dedicated sky field, so it does not nod for background.
+  """
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+
+  """
+  Optional explicitly specified telescope configurations. If set it overrides
+  the default.
+  """
+  explicitTelescopeConfigs: [TelescopeConfig!]
+
+  """
+  The grating as it was initially selected.  See the `grating` field for the
+  grating that will be used in the observation.
+  """
+  initialGrating: GmosSouthGrating!
+
+  """
+  The filter as it was initially selected (if any).  See the `filter` field
+  for the filter that will be used in the observation.
+  """
+  initialFilter: GmosSouthFilter
+
+  """
+  The IFU aperture as it was initially selected.  See the `fpu` field for the
+  aperture that will be used in the observation.
+  """
+  initialFpu: GmosSouthIfuFpu!
+
+  """
+  The central wavelength as initially selected.  See the `centralWavelength`
+  field for the wavelength that will be used in the observation.
+  """
+  initialCentralWavelength: Wavelength!
+
+  """Parameters that override acquisition defaults."""
+  acquisition: GmosSouthIfuAcquisition!
 }
 
 """
@@ -10940,18 +12144,21 @@ type GmosNorthMos {
   explicitWavelengthDithers: [WavelengthDither!]
 
   """
-  Q offsets, either explicitly specified in explicitOffsets or else taken from
-  defaultOffsets.
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.  A MOS mask has no single slit to nod
+  along, so these are plain offsets rather than slit telescope configurations.
   """
-  offsets: [OffsetQ!]!
+  telescopeConfigs: [TelescopeConfig!]!
 
-  """Default offsets."""
-  defaultOffsets: [OffsetQ!]!
+  """Default telescope configurations: a single guided position on target."""
+  defaultTelescopeConfigs: [TelescopeConfig!]!
 
   """
-  Optional explicitly specified q offsets. If set it overrides the default.
+  Optional explicitly specified telescope configurations. If set it overrides
+  the default.
   """
-  explicitOffsets: [OffsetQ!]
+  explicitTelescopeConfigs: [TelescopeConfig!]
 
   """
   The grating as it was initially selected.  See the `grating` field for the
@@ -11136,18 +12343,21 @@ type GmosSouthMos {
   explicitWavelengthDithers: [WavelengthDither!]
 
   """
-  Q offsets, either explicitly specified in explicitOffsets or else taken from
-  defaultOffsets.
+  The telescope configuration at each spatial position the science steps cycle
+  through, either explicitly specified in explicitTelescopeConfigs or else
+  taken from defaultTelescopeConfigs.  A MOS mask has no single slit to nod
+  along, so these are plain offsets rather than slit telescope configurations.
   """
-  offsets: [OffsetQ!]!
+  telescopeConfigs: [TelescopeConfig!]!
 
-  """Default offsets."""
-  defaultOffsets: [OffsetQ!]!
+  """Default telescope configurations: a single guided position on target."""
+  defaultTelescopeConfigs: [TelescopeConfig!]!
 
   """
-  Optional explicitly specified q offsets. If set it overrides the default.
+  Optional explicitly specified telescope configurations. If set it overrides
+  the default.
   """
-  explicitOffsets: [OffsetQ!]
+  explicitTelescopeConfigs: [TelescopeConfig!]
 
   """
   The grating as it was initially selected.  See the `grating` field for the
@@ -11413,7 +12623,11 @@ input GroupPropertiesInput {
   description: NonEmptyString
 
   """
-  Minimum number of elements to be observed. If unspecified then all elements will be observed.
+  Minimum number of elements to be observed. If unspecified then all elements
+  will be observed. If specified it must be at least 1. For a non-empty group it
+  may not exceed the number of elements the group already has; an empty group
+  accepts any positive value. It is lowered automatically if elements are later
+  removed, but is left alone once the group is empty.
   """
   minimumRequired: NonNegShort
 
@@ -12258,9 +13472,6 @@ enum ObsStatus {
   """ObsStatus Approved"""
   APPROVED
 
-  """ObsStatus ForReview"""
-  FOR_REVIEW
-
   """ObsStatus Ready"""
   READY
 
@@ -12446,9 +13657,10 @@ enum ArchiveDuplicationState {
   NOT_CHECKED
 
   """
-  The search ran, but this observation is one the archive cannot be asked about:
-  an instrument it does not know, or no resolvable pointing and no usable target
-  name.  Re-running will report the same thing until the observation changes.
+  The archive cannot be asked about this observation as it stands: it has no
+  observing mode now, or the search ran and found an instrument the archive
+  does not know, or no resolvable pointing and no usable target name.
+  Re-running will report the same thing until the observation changes.
   """
   NOT_APPLICABLE
 
@@ -12598,7 +13810,19 @@ leaves the previously found results in place rather than discarding them, so
 describe the last search that succeeded, and `lastCheckedAt` says when that was.
 """
 type ArchiveDuplication {
+  """
+  State of the stored snapshot.  Partly derived: an observation with no
+  observing mode reads NOT_APPLICABLE whatever was stored.
+  """
   state: ArchiveDuplicationState!
+
+  """
+  Whether the snapshot no longer describes the observation as it now stands:
+  the archive queries the search would run today differ from `queryUrls`.
+  Never true when nothing was searched, when nothing can be searched now, or
+  after submission.
+  """
+  stale: Boolean!
 
   """
   Number of matching archive files.  Counted per file rather than per archived
@@ -12615,10 +13839,16 @@ type ArchiveDuplication {
   saturated: Boolean!
 
   """
-  When the reported matches were gathered.  Null exactly when `state` is
-  NOT_CHECKED, since every other state follows an attempt.
+  When the reported matches were gathered, i.e. when the last successful
+  search ran.  Null when no search ever succeeded.
   """
   lastCheckedAt: Timestamp
+
+  """
+  When a search last ran, successfully or not.  Later than `lastCheckedAt`
+  exactly when the most recent attempt failed.  Null when the search never ran.
+  """
+  attemptedAt: Timestamp
 
   """Why the most recent attempt failed.  Set when `state` is ERROR."""
   error: NonEmptyString
@@ -12698,6 +13928,8 @@ type ConfigurationObservingMode {
   gmosSouthLongSlit: ConfigurationGmosSouthLongSlit
   gmosNorthMos: ConfigurationGmosNorthMos
   gmosSouthMos: ConfigurationGmosSouthMos
+  gmosNorthIfu: ConfigurationGmosNorthIfu
+  gmosSouthIfu: ConfigurationGmosSouthIfu
   gmosNorthImaging: ConfigurationGmosNorthImaging
   gmosSouthImaging: ConfigurationGmosSouthImaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
@@ -12751,6 +13983,16 @@ type ConfigurationGnirsLongSlit {
   prism: GnirsPrism!
 }
 
+type ConfigurationGmosNorthIfu {
+  grating: GmosNorthGrating!
+  fpu: GmosNorthIfuFpu!
+}
+
+type ConfigurationGmosSouthIfu {
+  grating: GmosSouthGrating!
+  fpu: GmosSouthIfuFpu!
+}
+
 type ConfigurationGnirsIfu {
   grating: GnirsGrating!
   fpu: GnirsFpuIfu!
@@ -12772,17 +14014,48 @@ enum ConfigurationRequestStatus {
 scalar TooTriggerId
 
 """
-Lifecycle status of a Target-of-Opportunity trigger.  A trigger is REQUESTED
-while its observation carries the READY workflow state, and WITHDRAWN when that
-state is cleared; DECLINED records that an observer saw it and chose not to
-observe.  Both terminal statuses are equivalent to never having been triggered:
-setting the observation READY again produces a new trigger, never a transition
-out of a terminal state.
+Lifecycle status of a Target-of-Opportunity trigger.
+
+A trigger is not requested directly.  It comes into being when a ToO observation
+is set to the READY workflow state with a resolved opportunity target.  REQUESTED
+is the only non-terminal status.
 """
 enum TooTriggerStatus {
+  """
+  A live, open, request. The observation is ready to be observed and the
+  observatory has it under consideration.  The only non-terminal status. At most
+  one trigger per observation is REQUESTED at a time. A trigger stops being
+  REQUESTED the moment its observation begins executing (see ACCEPTED).
+  """
   REQUESTED
+
+  """
+  An ACCEPTED request is one that the observatory has acted upon.  A ToO trigger
+  is marked ACCEPTED recorded when execution begins. Specifically, when its
+  first non-slew execution event arrives.
+  """
+  ACCEPTED
+
+  """
+  A DECLINED request is one that the observer has rejected for a reason, perhaps
+  setting a `resolutionReason` to explain why. Declining also returns the
+  observation to a DEFINED workflow state so it may be re-triggered in the
+  future.
+  """
   DECLINED
+
+  """
+  A WITHDRAWN ToO is one that has been rescinded before it was acted upon,
+  typically by the PI marking the observation DEFINED.
+  """
   WITHDRAWN
+
+  """
+  When the observation's scheduling mode is adjusted after a trigger has already
+  been fired, any existing ToOs in REQUESTED status are SUPERSEDED by a new
+  ToO trigger record.
+  """
+  SUPERSEDED
 }
 
 """
@@ -12814,6 +14087,16 @@ input TooTriggerEditInput {
 
   """If provided, only edits for this specific trigger are delivered."""
   tooTriggerId: TooTriggerId
+
+  """
+  If provided, only edits for triggers requested at a matching activation are
+  delivered.  Ordered, so `EQ: INTERRRUPTING` follows just the requests that
+  cannot wait for the ordinary queue.  Matched against the activation the
+  trigger carries, which is fixed when it is created -- so a supersession
+  reports the predecessor's own activation on its closing event, not the
+  successor's.
+  """
+  tooActivation: WhereOrderTooActivation
 }
 
 """
@@ -12829,6 +14112,23 @@ type TooTrigger {
 
   """The trigger's lifecycle status."""
   status: TooTriggerStatus!
+
+  """
+  The ToO activation this request was made at.  Fixed when the trigger is created
+  and never changed: a request at a different activation is a different request,
+  since who is notified, how fast, and what they are expected to drop all differ.
+  If the observation's activation moves while this request is outstanding, this
+  trigger becomes SUPERSEDED and a successor carries the new value.  Never NONE.
+  """
+  tooActivation: TooActivation!
+
+  """
+  The request this one replaced, null for a first request.  Following the chain
+  back gives the moment the observation first went live at any activation, which
+  `requestedAt` deliberately does not -- it is the age of this request, at this
+  activation.
+  """
+  supersedes: TooTrigger
 
   """
   Reason accompanying a terminal transition (e.g. a denial or withdrawal), if any.
@@ -12903,8 +14203,9 @@ input WhereOrderTooTriggerId {
 
 """
 Filters on equality or order comparisons of the TooTriggerStatus property.  Order
-follows the lifecycle declaration: REQUESTED < ACCEPTED < DENIED < WITHDRAWN, so
-`GTE: REQUESTED` matches every status.
+follows the lifecycle declaration: REQUESTED < ACCEPTED < DECLINED < WITHDRAWN <
+SUPERSEDED,
+so `GTE: REQUESTED` matches every status.
 """
 input WhereOrderTooTriggerStatus {
   """Matches if the property is exactly the supplied value."""
@@ -12936,6 +14237,43 @@ input WhereOrderTooTriggerStatus {
   LTE: TooTriggerStatus
 }
 
+"""
+Filters on equality or order comparisons of the TooActivation property.  Order
+follows the declaration NONE < STANDARD < RAPID < INTERRUPTING, so `GTE: RAPID`
+matches the activations that cannot wait for the ordinary queue.  Note that only
+INTERRUPTING may displace work already under way; RAPID is observed as soon as
+possible but takes its turn.
+"""
+input WhereOrderTooActivation {
+  """Matches if the property is exactly the supplied value."""
+  EQ: TooActivation
+
+  """Matches if the property is not the supplied value."""
+  NEQ: TooActivation
+
+  """Matches if the property value is any of the supplied options."""
+  IN: [TooActivation!]
+
+  """Matches if the property value is none of the supplied values."""
+  NIN: [TooActivation!]
+
+  """Matches if the property is ordered after (>) the supplied value."""
+  GT: TooActivation
+
+  """Matches if the property is ordered before (<) the supplied value."""
+  LT: TooActivation
+
+  """
+  Matches if the property is ordered after or equal (>=) the supplied value.
+  """
+  GTE: TooActivation
+
+  """
+  Matches if the property is ordered before or equal (<=) the supplied value.
+  """
+  LTE: TooActivation
+}
+
 input WhereTooTrigger {
   """A list of nested trigger filters that all must match."""
   AND: [WhereTooTrigger!]
@@ -12959,6 +14297,12 @@ input WhereTooTrigger {
 
   """Matches the trigger status."""
   status: WhereOrderTooTriggerStatus
+
+  """
+  Matches the activation the trigger was requested at.  Ordered, so
+  `EQ: INTERRUPTING` selects the requests that cannot wait for the ordinary queue.
+  """
+  tooActivation: WhereOrderTooActivation
 
   """Matches the request (creation) time."""
   requestedAt: WhereOrderTimestamp
@@ -12993,10 +14337,21 @@ type TooTriggerChronicleEntry {
   modProgramId: Boolean!
   modStatus: Boolean!
   modResolutionReason: Boolean!
+
+  """
+  Always false on an update -- a trigger's activation never changes -- so this is
+  true exactly on the row that recorded the trigger's creation.
+  """
+  modTooActivation: Boolean!
+
+  """As `modTooActivation`: only ever true on a creation."""
+  modSupersedes: Boolean!
   newObservationId: ObservationId
   newProgramId: ProgramId
   newStatus: TooTriggerStatus
   newResolutionReason: NonEmptyString
+  newTooActivation: TooActivation
+  newSupersedes: TooTriggerId
 }
 
 """
@@ -13033,6 +14388,8 @@ input WhereTooTriggerChronicleEntry {
   modProgramId: WhereBoolean
   modStatus: WhereBoolean
   modResolutionReason: WhereBoolean
+  modTooActivation: WhereBoolean
+  modSupersedes: WhereBoolean
 }
 
 """
@@ -13147,6 +14504,18 @@ enum ObservationValidationCode {
   program's accepted proposal.
   """
   TOO_ACTIVATION_UNAPPROVED
+
+  """
+  A non-fatal condition worth the submitter's attention.  It does not prevent
+  the observation from being executed.
+  """
+  GENERIC_WARNING
+
+  """Total signal to noise is below recommended threshold."""
+  LOW_TOTAL_SIGNAL_TO_NOISE
+
+  """Likelihood of observing conditions is below recommended percentage."""
+  CONDITIONS_UNLIKELY
 }
 
 """
@@ -13278,10 +14647,23 @@ type Program {
   active: DateInterval!
 
   """
-  Whether the program is currently active, i.e. whether the current UTC date
-  falls within the `active` period (inclusive of both bounds).
+  Effective program status: `explicitStatus` when set, otherwise
+  `defaultStatus`.
   """
-  isActive: Boolean!
+  status: ProgramStatus!
+
+  """
+  Explicitly declared program status, if any, masking the derived
+  `defaultStatus`.  May be set (and cleared) only by those with staff access
+  or better.
+  """
+  explicitStatus: ProgramStatus
+
+  """
+  Derived program status: ACTIVE when the current UTC date falls within the
+  `active` period (inclusive of both bounds), INACTIVE otherwise.
+  """
+  defaultStatus: ProgramStatus!
 
   """Proposal status of the program"""
   proposalStatus: ProposalStatus!
@@ -13376,6 +14758,9 @@ type Program {
   against `resourceLimit`.
   """
   resourceCount: NonNegInt!
+
+  """List of validation codes that have been dismissed for this program."""
+  dismissedWarnings: [ObservationValidationCode!]!
 }
 
 """ProgramId id formatted as `p-[1-9a-f][0-9a-f]*`"""
@@ -13518,6 +14903,24 @@ type ProgramSelectResult {
 
   """`true` when there were additional matches that were not returned."""
   hasMore: Boolean!
+}
+
+"""Program status."""
+enum ProgramStatus {
+  """The program is active and may be scheduled."""
+  ACTIVE
+
+  """The program is inactive and should not be scheduled."""
+  INACTIVE
+
+  """
+  The program is considered complete, even if it has not used all of its
+  allocated time.
+  """
+  COMPLETE
+
+  """The program is considered incomplete."""
+  INCOMPLETE
 }
 
 enum ProgramType {
@@ -14144,6 +15547,9 @@ type ObservingMode {
   """GHOST IFU mode"""
   ghostIfu: GhostIfu
 
+  """GMOS North IFU mode"""
+  gmosNorthIfu: GmosNorthIfu
+
   """GMOS North Imaging mode"""
   gmosNorthImaging: GmosNorthImaging
 
@@ -14152,6 +15558,9 @@ type ObservingMode {
 
   """GMOS North MOS mode"""
   gmosNorthMos: GmosNorthMos
+
+  """GMOS South IFU mode"""
+  gmosSouthIfu: GmosSouthIfu
 
   """GMOS South Imaging mode"""
   gmosSouthImaging: GmosSouthImaging
@@ -14162,11 +15571,17 @@ type ObservingMode {
   """GMOS South MOS mode"""
   gmosSouthMos: GmosSouthMos
 
+  """GNIRS IFU mode"""
+  gnirsIfu: GnirsIfu
+
   """GNIRS Imaging mode"""
   gnirsImaging: GnirsImaging
 
   """GNIRS Long Slit mode"""
-  gnirsSpectroscopy: GnirsSpectroscopy
+  gnirsLongSlit: GnirsLongSlit
+
+  """GNIRS spectroscopy mode, long slit and IFU combined."""
+  gnirsSpectroscopy: GnirsSpectroscopy @deprecated(reason: "Use 'gnirsLongSlit' or 'gnirsIfu' instead.")
 
   """IGRINS-2 Long Slit mode"""
   igrins2LongSlit: Igrins2LongSlit
@@ -16750,6 +18165,20 @@ input WhereEqProgramType {
 Filters on equality of the property.  All supplied
 criteria must match, but usually only one is selected.  E.g., 'EQ: "SUBMITTED'
 """
+input WhereEqProgramStatus {
+  """Matches if the property is exactly the supplied value."""
+  EQ: ProgramStatus
+
+  """Matches if the property is not the supplied value."""
+  NEQ: ProgramStatus
+
+  """Matches if the property value is any of the supplied options."""
+  IN: [ProgramStatus!]
+
+  """Matches if the property value is none of the supplied values."""
+  NIN: [ProgramStatus!]
+}
+
 input WhereEqProposalStatus {
   """Matches if the property is exactly the supplied value."""
   EQ: ProposalStatus
@@ -18420,11 +19849,10 @@ input WhereProgram {
   activeEnd: WhereOrderDate
 
   """
-  When true, matches programs whose active period `[activeStart, activeEnd]` contains the
-  current UTC date; when false, matches the complement. Evaluated in the database, so the
-  date is taken at transaction start.
+  Matches the effective program status. Evaluated in the database, so the
+  derived component is taken at transaction start.
   """
-  isActive: Boolean
+  status: WhereEqProgramStatus
 }
 
 input WhereProgramReference {
