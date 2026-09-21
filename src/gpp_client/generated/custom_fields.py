@@ -15,6 +15,7 @@ from .custom_typing_fields import (
     AllConfigChangeEstimatesGraphQLField,
     AllDetectorEstimatesGraphQLField,
     AllocationGraphQLField,
+    AltairGraphQLField,
     AngleGraphQLField,
     ArchiveDuplicationGraphQLField,
     ArchiveMatchGraphQLField,
@@ -300,6 +301,8 @@ from .custom_typing_fields import (
     ProperMotionRAGraphQLField,
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
+    ProposalSummaryFailureGraphQLField,
+    ProposalSummaryGenerationGraphQLField,
     ProposalSummaryPropertiesGraphQLField,
     QueueGraphQLField,
     RadialVelocityGraphQLField,
@@ -312,6 +315,7 @@ from .custom_typing_fields import (
     RecordVisitResultGraphQLField,
     RedeemUserInvitationResultGraphQLField,
     RefreshArchiveDuplicationResultGraphQLField,
+    RegenerateProposalSummariesResultGraphQLField,
     RegionGraphQLField,
     ReplaceFlamingos2SequenceResultGraphQLField,
     ReplaceGhostSequenceResultGraphQLField,
@@ -731,6 +735,29 @@ class AllocationFields(GraphQLField):
         return self
 
 
+class AltairFields(GraphQLField):
+    """Altair (Gemini North adaptive optics) configuration. Only GNIRS observations
+    may be configured to observe behind Altair."""
+
+    mode: "AltairGraphQLField" = AltairGraphQLField("mode")
+    "The Altair guiding mode."
+    explicit_field_lens: "AltairGraphQLField" = AltairGraphQLField("explicitFieldLens")
+    "The user's field lens override, or null for AUTO. When AUTO the field lens\nfollows the guide star separation. The LGS modes always use the field lens,\nso an explicit value of OUT is rejected for them."
+    cass_rotator: "AltairGraphQLField" = AltairGraphQLField("cassRotator")
+    "The cassegrain rotator tracking mode used while observing behind Altair."
+    nd_filter: "AltairGraphQLField" = AltairGraphQLField("ndFilter")
+    "The Altair neutral density filter position."
+
+    def fields(self, *subfields: AltairGraphQLField) -> "AltairFields":
+        """Subfields should come from the AltairFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "AltairFields":
+        self._alias = alias
+        return self
+
+
 class AngleFields(GraphQLField):
     """An angle in a variety of units.  Values are normalized to [0, 360°) unless
     the field documents a signed quantity, in which case negative values are
@@ -783,7 +810,7 @@ class ArchiveDuplicationFields(GraphQLField):
     state: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("state")
     "State of the stored snapshot.  Partly derived: an observation with no\nobserving mode reads NOT_APPLICABLE whatever was stored."
     stale: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField("stale")
-    "Whether the snapshot no longer describes the observation as it now stands:\nthe archive queries the search would run today differ from `queryUrls`.\nNever true when nothing was searched, when nothing can be searched now, or\nafter submission."
+    "Whether the snapshot no longer describes the observation as it now stands:\nthe archive queries the search would run today differ from `queryUrls`.\nNever true when nothing was searched, when nothing can be searched now, or\nwhen a refresh would be rejected: the proposal is submitted or was not\naccepted, or the observation is completed."
     match_count: "ArchiveDuplicationGraphQLField" = ArchiveDuplicationGraphQLField(
         "matchCount"
     )
@@ -4652,7 +4679,9 @@ class Flamingos2LongSlitFields(GraphQLField):
 
     @classmethod
     def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
-        """Default telescope configs."""
+        """Default telescope configs. For a telluric derived from a MOS observation
+        these are the MOS telluric offsets, so such a telluric normally has no
+        explicit override."""
         return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
@@ -5977,8 +6006,8 @@ class GmosNorthIfuFields(GraphQLField):
 
     @classmethod
     def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
-        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-        centre, which encloses only the element on the target."""
+        """Default IFU sampling: the single element on the field centre, which is where a
+        centred target sits."""
         return GmosIfuAnalysisFields("defaultIfuAnalysis")
 
     @classmethod
@@ -6975,8 +7004,8 @@ class GmosSouthIfuFields(GraphQLField):
 
     @classmethod
     def default_ifu_analysis(cls) -> "GmosIfuAnalysisFields":
-        """Default IFU sampling: sum within one lenslet pitch (0.2 arcsec) of the field
-        centre, which encloses only the element on the target."""
+        """Default IFU sampling: the single element on the field centre, which is where a
+        centred target sits."""
         return GmosIfuAnalysisFields("defaultIfuAnalysis")
 
     @classmethod
@@ -7976,9 +8005,11 @@ class GnirsIfuFields(GraphQLField):
 
     @classmethod
     def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
-        """The central wavelengths at which spectra are taken, in increasing wavelength
-        order.  Each one is a separate configuration with its own exposure time mode,
-        coadds, ITC calculation and calibrations."""
+        """The central wavelengths at which spectra are taken, in the order they were
+        specified and in which the sequence executes them.  Each entry is a separate
+        configuration with its own exposure time mode, coadds, ITC calculation and
+        calibrations; a wavelength may appear more than once, each occurrence being
+        independent."""
         return GnirsCentralWavelengthConfigFields("centralWavelengths")
 
     @classmethod
@@ -8202,9 +8233,11 @@ class GnirsLongSlitFields(GraphQLField):
 
     @classmethod
     def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
-        """The central wavelengths at which spectra are taken, in increasing wavelength
-        order.  Each one is a separate configuration with its own exposure time mode,
-        coadds, ITC calculation and calibrations."""
+        """The central wavelengths at which spectra are taken, in the order they were
+        specified and in which the sequence executes them.  Each entry is a separate
+        configuration with its own exposure time mode, coadds, ITC calculation and
+        calibrations; a wavelength may appear more than once, each occurrence being
+        independent."""
         return GnirsCentralWavelengthConfigFields("centralWavelengths")
 
     @classmethod
@@ -8227,6 +8260,9 @@ class GnirsLongSlitFields(GraphQLField):
 
     @classmethod
     def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs for the configuration. For a telluric calibration
+        these are the telluric offsets, so a telluric normally has no explicit
+        override."""
         return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
@@ -8306,9 +8342,11 @@ class GnirsSpectroscopyFields(GraphQLField):
 
     @classmethod
     def central_wavelengths(cls) -> "GnirsCentralWavelengthConfigFields":
-        """The central wavelengths at which spectra are taken, in increasing wavelength
-        order.  Each one is a separate configuration with its own exposure time mode,
-        coadds, ITC calculation and calibrations."""
+        """The central wavelengths at which spectra are taken, in the order they were
+        specified and in which the sequence executes them.  Each entry is a separate
+        configuration with its own exposure time mode, coadds, ITC calculation and
+        calibrations; a wavelength may appear more than once, each occurrence being
+        independent."""
         return GnirsCentralWavelengthConfigFields("centralWavelengths")
 
     @classmethod
@@ -8484,6 +8522,9 @@ class GnirsSpectroscopyLongSlitFields(GraphQLField):
 
     @classmethod
     def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs for the configuration. For a telluric calibration
+        these are the telluric offsets, so a telluric normally has no explicit
+        override."""
         return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
 
     @classmethod
@@ -9766,8 +9807,10 @@ class ItcGnirsImagingResultSetFields(GraphQLField):
 
 
 class ItcGnirsSpectroscopyFields(GraphQLField):
-    """GNIRS spectroscopy ITC results.  Each central wavelength is a separate
-    configuration and is paired with its own result set."""
+    """GNIRS spectroscopy ITC results: one result set per entry in the observation's
+    central wavelength list, in the same order, so the nth element here corresponds
+    to the nth `centralWavelengths` element.  Each entry is a separate configuration,
+    and a central wavelength may therefore appear more than once."""
 
     itc_type: "ItcGnirsSpectroscopyGraphQLField" = ItcGnirsSpectroscopyGraphQLField(
         "itcType"
@@ -9801,7 +9844,9 @@ class ItcGnirsSpectroscopyFields(GraphQLField):
 
 class ItcGnirsSpectroscopyResultSetFields(GraphQLField):
     """Combines a GNIRS spectroscopy central wavelength with an `ItcResultSet`. In
-    other words, ITC results for all targets but a single central wavelength."""
+    other words, ITC results for all targets but a single entry in the observation's
+    central wavelength list.  The wavelength does not identify the entry, since it
+    may be repeated; see `ItcGnirsSpectroscopy.gnirsSpectroscopyScience`."""
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
@@ -10465,6 +10510,8 @@ class ObservationFields(GraphQLField):
     "The Calibration role of this observation"
     observer_notes: "ObservationGraphQLField" = ObservationGraphQLField("observerNotes")
     "Notes for the observer"
+    priority: "ObservationGraphQLField" = ObservationGraphQLField("priority")
+    "The PI's declared priority for this observation, relative to the other\nobservations of the same program. Defaults to MEDIUM."
 
     @classmethod
     def configuration(cls) -> "ConfigurationFields":
@@ -11272,6 +11319,11 @@ class ProgramFields(GraphQLField):
         """Observatory archive properties related to this program."""
         return GoaPropertiesFields("goa")
 
+    @classmethod
+    def proposal_summary_generation(cls) -> "ProposalSummaryGenerationFields":
+        """State of this program's proposal summary regeneration."""
+        return ProposalSummaryGenerationFields("proposalSummaryGeneration")
+
     resource_limit: "ProgramGraphQLField" = ProgramGraphQLField("resourceLimit")
     "Maximum number of resources (observations, groups, targets, attachments, and\nprogram notes, combined) that may be associated with this program."
     resource_count: "ProgramGraphQLField" = ProgramGraphQLField("resourceCount")
@@ -11297,6 +11349,7 @@ class ProgramFields(GraphQLField):
             "ProgramReferenceInterface",
             "ProgramUserFields",
             "ProposalFields",
+            "ProposalSummaryGenerationFields",
             "UserInvitationFields",
         ],
     ) -> "ProgramFields":
@@ -11685,6 +11738,65 @@ class ProposalReferenceFields(GraphQLField):
         return self
 
 
+class ProposalSummaryFailureFields(GraphQLField):
+    """One failed render of a proposal summary regeneration."""
+
+    partner: "ProposalSummaryFailureGraphQLField" = ProposalSummaryFailureGraphQLField(
+        "partner"
+    )
+    "The partner whose render failed.  Null for the single render of a proposal\nwith no partner splits."
+    message: "ProposalSummaryFailureGraphQLField" = ProposalSummaryFailureGraphQLField(
+        "message"
+    )
+    "Why this render failed, in terms an investigator can act on."
+
+    def fields(
+        self, *subfields: ProposalSummaryFailureGraphQLField
+    ) -> "ProposalSummaryFailureFields":
+        """Subfields should come from the ProposalSummaryFailureFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProposalSummaryFailureFields":
+        self._alias = alias
+        return self
+
+
+class ProposalSummaryGenerationFields(GraphQLField):
+    """State of a program's proposal summary regeneration.
+
+    GENERATING is expected to terminate under normal operation (timeouts and retries), but may remain GENERATING if rendering is unavailable."""
+
+    state: "ProposalSummaryGenerationGraphQLField" = (
+        ProposalSummaryGenerationGraphQLField("state")
+    )
+    "The state of `ProposalSummaryGeneration`."
+    requested_at: "ProposalSummaryGenerationGraphQLField" = (
+        ProposalSummaryGenerationGraphQLField("requestedAt")
+    )
+    "When the oldest render still outstanding was requested. Null when state is IDLE."
+
+    @classmethod
+    def failures(cls) -> "ProposalSummaryFailureFields":
+        """The renders of the last regeneration that failed, one entry per partner.
+        Empty unless state is FAILED."""
+        return ProposalSummaryFailureFields("failures")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ProposalSummaryGenerationGraphQLField, "ProposalSummaryFailureFields"
+        ],
+    ) -> "ProposalSummaryGenerationFields":
+        """Subfields should come from the ProposalSummaryGenerationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProposalSummaryGenerationFields":
+        self._alias = alias
+        return self
+
+
 class ProposalSummaryPropertiesFields(GraphQLField):
     """Properties of an ODB-generated proposal summary PDF."""
 
@@ -11983,6 +12095,29 @@ class RefreshArchiveDuplicationResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "RefreshArchiveDuplicationResultFields":
+        self._alias = alias
+        return self
+
+
+class RegenerateProposalSummariesResultFields(GraphQLField):
+    """The result of requesting proposal summary regeneration."""
+
+    @classmethod
+    def program(cls) -> "ProgramFields":
+        """The program whose summaries were queued; the rendered PDFs appear as its SUMMARY attachments."""
+        return ProgramFields("program")
+
+    def fields(
+        self,
+        *subfields: Union[
+            RegenerateProposalSummariesResultGraphQLField, "ProgramFields"
+        ],
+    ) -> "RegenerateProposalSummariesResultFields":
+        """Subfields should come from the RegenerateProposalSummariesResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RegenerateProposalSummariesResultFields":
         self._alias = alias
         return self
 
@@ -13798,15 +13933,34 @@ class TargetEnvironmentFields(GraphQLField):
         "blindOffsetType"
     )
     "The type of blind offset (automatic or manual) if a blind offset exists."
+    guide_probe: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
+        "guideProbe"
+    )
+    "The guide probe the automatic guide star search uses: the explicit probe if\nset, otherwise the default. Null when no default can be determined."
+    default_guide_probe: "TargetEnvironmentGraphQLField" = (
+        TargetEnvironmentGraphQLField("defaultGuideProbe")
+    )
+    "The default guide probe for the observing mode and asterism track type. Null\nwhen the observation has no observing mode or targets, or when the mode does\nnot support guiding."
+    explicit_guide_probe: "TargetEnvironmentGraphQLField" = (
+        TargetEnvironmentGraphQLField("explicitGuideProbe")
+    )
+    "The user selected guide probe, if any, set via\n`TargetEnvironmentInput.explicitGuideProbe`."
     cass_rotator: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "cassRotator"
     )
-    "The cassegrain rotator tracking mode."
+    "The cassegrain rotator tracking mode: the value stored with the Altair\nconfiguration when the observation has one, otherwise derived from the\ninstrument."
+
+    @classmethod
+    def altair(cls) -> "AltairFields":
+        """Altair adaptive optics configuration, only for GNIRS observations. Null when
+        the observation does not observe behind Altair."""
+        return AltairFields("altair")
 
     def fields(
         self,
         *subfields: Union[
             TargetEnvironmentGraphQLField,
+            "AltairFields",
             "BasePositionFields",
             "CoordinatesFields",
             "GuideAvailabilityPeriodFields",

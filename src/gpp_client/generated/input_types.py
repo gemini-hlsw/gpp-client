@@ -4,6 +4,8 @@ from pydantic import Field
 
 from .base_model import BaseModel
 from .enums import (
+    AltairMode,
+    AltairNdFilter,
     ArcType,
     AttachmentType,
     Band,
@@ -13,6 +15,7 @@ from .enums import (
     BrightnessSurfaceUnits,
     CalculationState,
     CalibrationRole,
+    CassRotator,
     CatalogName,
     ChargeClass,
     CloudExtinctionPreset,
@@ -29,6 +32,7 @@ from .enums import (
     ExchangePartner,
     ExecutionEventType,
     Existence,
+    FieldLens,
     Flamingos2CustomSlitWidth,
     Flamingos2Decker,
     Flamingos2Disperser,
@@ -89,6 +93,7 @@ from .enums import (
     GnirsPrism,
     GnirsReadMode,
     GnirsWellDepth,
+    GuideProbe,
     GuideState,
     HiiRegionSpectrum,
     Ignore,
@@ -99,6 +104,7 @@ from .enums import (
     LineFluxIntegratedUnits,
     LineFluxSurfaceUnits,
     MosPreImaging,
+    ObservationPriority,
     ObservationValidationCode,
     ObservationWorkflowState,
     Observatory,
@@ -1505,6 +1511,8 @@ class ObservationPropertiesInput(BaseModel):
     "Index in enclosing group or at the top level if ungrouped. If left unspecified on creation, observation will be added last in its enclosing group or at the top level. Cannot be set to null."
     observer_notes: Optional[Any] = Field(alias=str("observerNotes"), default=None)
     "Set the notes for  thhe observer"
+    priority: Optional[ObservationPriority] = None
+    "The PI's declared priority for this observation. Defaults to MEDIUM on\ncreation. Cannot be set to null."
 
 
 class ObservationTimesInput(BaseModel):
@@ -1642,7 +1650,7 @@ class ProgramPropertiesInput(BaseModel):
     dismissed_warnings: Optional[list[ObservationValidationCode]] = Field(
         alias=str("dismissedWarnings"), default=None
     )
-    "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users. "
+    "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users."
 
 
 class ProgramNotePropertiesInput(BaseModel):
@@ -2275,6 +2283,12 @@ class SetProposalStatusInput(BaseModel):
     status: ProposalStatus
 
 
+class RegenerateProposalSummariesInput(BaseModel):
+    """Input for the `regenerateProposalSummaries` mutation."""
+
+    program_id: Any = Field(alias=str("programId"))
+
+
 class SiderealInput(BaseModel):
     """Sidereal target edit parameters"""
 
@@ -2564,6 +2578,12 @@ class TargetEnvironmentInput(BaseModel):
         alias=str("blindOffsetType"), default=None
     )
     "The type of blind offset (automatic or manual) if a blind offset exists.\nDefault = Manual"
+    explicit_guide_probe: Optional[GuideProbe] = Field(
+        alias=str("explicitGuideProbe"), default=None
+    )
+    "Overrides the guide probe that the automatic guide star search uses. The\nprobe must be usable by the observing mode. Assign null to clear the\noverride and fall back to the default probe for the mode and target type."
+    altair: Optional["AltairInput"] = None
+    "Altair adaptive optics configuration, only for GNIRS observations. On create,\nabsence means no Altair. On edit, absence leaves the configuration alone,\nnull clears it, and a value replaces it entirely."
 
 
 class TargetPropertiesInput(BaseModel):
@@ -3331,7 +3351,7 @@ class GnirsSpectroscopyInput(BaseModel):
     central_wavelengths: Optional[list["GnirsCentralWavelengthConfigInput"]] = Field(
         alias=str("centralWavelengths"), default=None
     )
-    "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
+    "The central wavelengths at which spectra are taken, in the order the sequence\nshould execute them.  Required on create, and must contain between 1 and 100\nentries; a wavelength may be repeated, each occurrence being an independent\nconfiguration.  When given on edit, it replaces the existing list wholesale."
     filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
     slit: Optional["GnirsSpectroscopyLongSlitInput"] = None
     "Long-slit configuration. On create, exactly one of `slit` / `ifu` is required."
@@ -3371,7 +3391,7 @@ class GnirsLongSlitInput(BaseModel):
     central_wavelengths: Optional[list["GnirsCentralWavelengthConfigInput"]] = Field(
         alias=str("centralWavelengths"), default=None
     )
-    "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
+    "The central wavelengths at which spectra are taken, in the order the sequence\nshould execute them.  Required on create, and must contain between 1 and 100\nentries; a wavelength may be repeated, each occurrence being an independent\nconfiguration.  When given on edit, it replaces the existing list wholesale."
     filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
     fpu: Optional[GnirsFpuSlit] = None
     "The FPU. Required on create."
@@ -3413,7 +3433,7 @@ class GnirsIfuInput(BaseModel):
     central_wavelengths: Optional[list["GnirsCentralWavelengthConfigInput"]] = Field(
         alias=str("centralWavelengths"), default=None
     )
-    "The central wavelengths at which spectra are taken.  Required on create, and\nmust contain at least one entry with no duplicated wavelength.  When given on\nedit, it replaces the existing list wholesale."
+    "The central wavelengths at which spectra are taken, in the order the sequence\nshould execute them.  Required on create, and must contain between 1 and 100\nentries; a wavelength may be repeated, each occurrence being an independent\nconfiguration.  When given on edit, it replaces the existing list wholesale."
     filter_: Optional[GnirsFilter] = Field(alias=str("filter"), default=None)
     fpu: Optional[GnirsFpuIfu] = None
     "The FPU. Required on create."
@@ -3592,6 +3612,24 @@ class CreateGroupInput(BaseModel):
         alias=str("initialContents"), default=None
     )
     "Group elements specified here, if any, will be moved into the created group in the specified order."
+
+
+class AltairInput(BaseModel):
+    """Altair configuration creation and editing parameters. The value replaces the
+    observation's entire Altair configuration."""
+
+    mode: AltairMode
+    "The Altair guiding mode."
+    field_lens: Optional[FieldLens] = Field(alias=str("fieldLens"), default=None)
+    "Overrides the automatic field lens choice. Omit (or assign null) for AUTO, in\nwhich case the field lens follows the guide star separation. The LGS modes\nalways use the field lens, so OUT is rejected for them."
+    cass_rotator: Optional[CassRotator] = Field(
+        alias=str("cassRotator"), default=CassRotator.FOLLOWING
+    )
+    "The cassegrain rotator tracking mode used while observing behind Altair."
+    nd_filter: Optional[AltairNdFilter] = Field(
+        alias=str("ndFilter"), default=AltairNdFilter.OUT
+    )
+    "The Altair neutral density filter position."
 
 
 class ImagingScienceRequirementsInput(BaseModel):
@@ -4376,6 +4414,8 @@ class WhereObservation(BaseModel):
         alias=str("scienceBand"), default=None
     )
     "Matches the observation science band."
+    priority: Optional["WhereOrderObservationPriority"] = None
+    "Matches the PI's declared observation priority."
     instrument: Optional["WhereOptionEqInstrument"] = None
     "Matches on the instrument in use, if any."
     observing_mode_type: Optional["WhereOptionEqObservingModeType"] = Field(
@@ -5143,6 +5183,28 @@ class WhereProposalReference(BaseModel):
         alias=str("semesterIndex"), default=None
     )
     "Matches the index in the proposal reference."
+
+
+class WhereOrderObservationPriority(BaseModel):
+    """Filters on equality or order comparisons of observation priorities.  All
+    supplied criteria must match, but usually only one is selected."""
+
+    eq: Optional[ObservationPriority] = Field(alias=str("EQ"), default=None)
+    "Matches if the priority is exactly the supplied value."
+    neq: Optional[ObservationPriority] = Field(alias=str("NEQ"), default=None)
+    "Matches if the priority is not the supplied value."
+    in_: Optional[list[ObservationPriority]] = Field(alias=str("IN"), default=None)
+    "Matches if the priority is any of the supplied options."
+    nin: Optional[list[ObservationPriority]] = Field(alias=str("NIN"), default=None)
+    "Matches if the priority is none of the supplied values."
+    gt: Optional[ObservationPriority] = Field(alias=str("GT"), default=None)
+    "Matches if the priority is ordered after (>) the supplied value."
+    lt: Optional[ObservationPriority] = Field(alias=str("LT"), default=None)
+    "Matches if the priority is ordered before (<) the supplied value."
+    gte: Optional[ObservationPriority] = Field(alias=str("GTE"), default=None)
+    "Matches if the priority is ordered after or equal (>=) the supplied value."
+    lte: Optional[ObservationPriority] = Field(alias=str("LTE"), default=None)
+    "Matches if the priority is ordered before or equal (<=) the supplied value."
 
 
 class WhereOptionOrderScienceBand(BaseModel):

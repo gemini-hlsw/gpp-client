@@ -3365,7 +3365,9 @@ type Mutation {
   Re-runs the Archive Duplication Search for an observation, replacing its
   stored result with what the Gemini Observatory Archive holds now.
   
-  Rejected once the observation's proposal has been submitted.
+  Rejected while the proposal is submitted or was not accepted, and for a
+  completed observation whatever the proposal status.  Allowed again once the
+  proposal is accepted, so newly added or changed targets can be checked.
   """
   refreshArchiveDuplication(input: RefreshArchiveDuplicationInput!): RefreshArchiveDuplicationResult!
 
@@ -3395,12 +3397,16 @@ type Mutation {
   setProgramResourceLimit(input: SetProgramResourceLimitInput!): SetProgramResourceLimitResult!
 
   """
-  Regenerate the proposal summary PDFs for a proposal: one per partner it
-  applies to, each in that partner's style, replacing the existing SUMMARY
-  attachments once rendered.
-  Rendering is asynchronous and completion shows up as the program's SUMMARY
-  attachments.
-  Requires write access to the program (staff, or membership as PI, CoI or support).
+  Regenerate the proposal summary PDFs: one per partner, in that partner's
+  style, replacing the SUMMARY attachments once rendered.
+  
+  Rendering is asynchronous, the new attachments and the flip back to IDLE
+  arrive in one programEdit event.
+  
+  A request while GENERATING is a no-op, or queues at most one more render if the
+  previous one is already rendering.  The state stays GENERATING either way.
+  
+  Requires write access to the program (staff, PI, CoI or support).
   """
   regenerateProposalSummaries(input: RegenerateProposalSummariesInput!): RegenerateProposalSummariesResult!
 
@@ -3766,6 +3772,12 @@ input ObservationPropertiesInput {
 
   """Set the notes for  thhe observer"""
   observerNotes: NonEmptyString
+
+  """
+  The PI's declared priority for this observation. Defaults to MEDIUM on
+  creation. Cannot be set to null.
+  """
+  priority: ObservationPriority
 }
 
 """Observation times properties"""
@@ -6160,6 +6172,20 @@ input TargetEnvironmentInput {
   Default = Manual
   """
   blindOffsetType: BlindOffsetType
+
+  """
+  Overrides the guide probe that the automatic guide star search uses. The
+  probe must be usable by the observing mode. Assign null to clear the
+  override and fall back to the default probe for the mode and target type.
+  """
+  explicitGuideProbe: GuideProbe
+
+  """
+  Altair adaptive optics configuration, only for GNIRS observations. On create,
+  absence means no Altair. On edit, absence leaves the configuration alone,
+  null clears it, and a value replaces it entirely.
+  """
+  altair: AltairInput
 }
 
 """Target properties"""
@@ -6912,6 +6938,53 @@ type ProposalSummaryProperties {
   accurate if the partner-to-style mapping changes later.
   """
   style: ProposalSummaryStyle!
+}
+
+"""
+State of a program's proposal summary regeneration.
+
+GENERATING is expected to terminate under normal operation (timeouts and retries), but may remain GENERATING if rendering is unavailable.
+"""
+type ProposalSummaryGeneration {
+  """The state of `ProposalSummaryGeneration`."""
+  state: ProposalSummaryGenerationState!
+
+  """
+  When the oldest render still outstanding was requested. Null when state is IDLE.
+  """
+  requestedAt: Timestamp
+
+  """
+  The renders of the last regeneration that failed, one entry per partner.
+  Empty unless state is FAILED.
+  """
+  failures: [ProposalSummaryFailure!]!
+}
+
+"""One failed render of a proposal summary regeneration."""
+type ProposalSummaryFailure {
+  """
+  The partner whose render failed.  Null for the single render of a proposal
+  with no partner splits.
+  """
+  partner: Partner
+
+  """Why this render failed, in terms an investigator can act on."""
+  message: String!
+}
+
+"""The states of `ProposalSummaryGeneration`."""
+enum ProposalSummaryGenerationState {
+  """No regeneration has been requested, or the last one finished."""
+  IDLE
+
+  """A regeneration is queued or rendering."""
+  GENERATING
+
+  """
+  Every render of the last regeneration stopped, and at least one failed.
+  """
+  FAILED
 }
 
 """The layouts a proposal summary PDF can be rendered in."""
@@ -8904,7 +8977,11 @@ type Flamingos2LongSlit {
   """
   telescopeConfigs: SlitTelescopeConfigs!
 
-  """Default telescope configs."""
+  """
+  Default telescope configs. For a telluric derived from a MOS observation
+  these are the MOS telluric offsets, so such a telluric normally has no
+  explicit override.
+  """
   defaultTelescopeConfigs: SlitTelescopeConfigs!
 
   """
@@ -10000,9 +10077,11 @@ type GnirsSpectroscopy {
   initialPrism: GnirsPrism!
 
   """
-  The central wavelengths at which spectra are taken, in increasing wavelength
-  order.  Each one is a separate configuration with its own exposure time mode,
-  coadds, ITC calculation and calibrations.
+  The central wavelengths at which spectra are taken, in the order they were
+  specified and in which the sequence executes them.  Each entry is a separate
+  configuration with its own exposure time mode, coadds, ITC calculation and
+  calibrations; a wavelength may appear more than once, each occurrence being
+  independent.
   """
   centralWavelengths: [GnirsCentralWavelengthConfig!]!
 
@@ -10054,6 +10133,12 @@ type GnirsSpectroscopyLongSlit {
   Effective telescope configs (explicit override coalesced with the default).
   """
   telescopeConfigs: SlitTelescopeConfigs!
+
+  """
+  Default telescope configs for the configuration. For a telluric calibration
+  these are the telluric offsets, so a telluric normally has no explicit
+  override.
+  """
   defaultTelescopeConfigs: SlitTelescopeConfigs!
   explicitTelescopeConfigs: SlitTelescopeConfigs
 }
@@ -10084,9 +10169,11 @@ type GnirsLongSlit {
   initialPrism: GnirsPrism!
 
   """
-  The central wavelengths at which spectra are taken, in increasing wavelength
-  order.  Each one is a separate configuration with its own exposure time mode,
-  coadds, ITC calculation and calibrations.
+  The central wavelengths at which spectra are taken, in the order they were
+  specified and in which the sequence executes them.  Each entry is a separate
+  configuration with its own exposure time mode, coadds, ITC calculation and
+  calibrations; a wavelength may appear more than once, each occurrence being
+  independent.
   """
   centralWavelengths: [GnirsCentralWavelengthConfig!]!
 
@@ -10104,6 +10191,12 @@ type GnirsLongSlit {
   Effective telescope configs (explicit override coalesced with the default).
   """
   telescopeConfigs: SlitTelescopeConfigs!
+
+  """
+  Default telescope configs for the configuration. For a telluric calibration
+  these are the telluric offsets, so a telluric normally has no explicit
+  override.
+  """
   defaultTelescopeConfigs: SlitTelescopeConfigs!
   explicitTelescopeConfigs: SlitTelescopeConfigs
   filter: GnirsFilter!
@@ -10132,9 +10225,11 @@ type GnirsIfu {
   initialPrism: GnirsPrism!
 
   """
-  The central wavelengths at which spectra are taken, in increasing wavelength
-  order.  Each one is a separate configuration with its own exposure time mode,
-  coadds, ITC calculation and calibrations.
+  The central wavelengths at which spectra are taken, in the order they were
+  specified and in which the sequence executes them.  Each entry is a separate
+  configuration with its own exposure time mode, coadds, ITC calculation and
+  calibrations; a wavelength may appear more than once, each occurrence being
+  independent.
   """
   centralWavelengths: [GnirsCentralWavelengthConfig!]!
 
@@ -10235,9 +10330,10 @@ input GnirsSpectroscopyIfuInput {
 """Edit or create GNIRS Spectroscopy configuration (long slit or IFU)."""
 input GnirsSpectroscopyInput {
   """
-  The central wavelengths at which spectra are taken.  Required on create, and
-  must contain at least one entry with no duplicated wavelength.  When given on
-  edit, it replaces the existing list wholesale.
+  The central wavelengths at which spectra are taken, in the order the sequence
+  should execute them.  Required on create, and must contain between 1 and 100
+  entries; a wavelength may be repeated, each occurrence being an independent
+  configuration.  When given on edit, it replaces the existing list wholesale.
   """
   centralWavelengths: [GnirsCentralWavelengthConfigInput!]
   filter: GnirsFilter
@@ -10272,9 +10368,10 @@ input GnirsSpectroscopyInput {
 """Edit or create GNIRS Long Slit configuration."""
 input GnirsLongSlitInput {
   """
-  The central wavelengths at which spectra are taken.  Required on create, and
-  must contain at least one entry with no duplicated wavelength.  When given on
-  edit, it replaces the existing list wholesale.
+  The central wavelengths at which spectra are taken, in the order the sequence
+  should execute them.  Required on create, and must contain between 1 and 100
+  entries; a wavelength may be repeated, each occurrence being an independent
+  configuration.  When given on edit, it replaces the existing list wholesale.
   """
   centralWavelengths: [GnirsCentralWavelengthConfigInput!]
   filter: GnirsFilter
@@ -10307,9 +10404,10 @@ input GnirsLongSlitInput {
 """Edit or create GNIRS IFU configuration."""
 input GnirsIfuInput {
   """
-  The central wavelengths at which spectra are taken.  Required on create, and
-  must contain at least one entry with no duplicated wavelength.  When given on
-  edit, it replaces the existing list wholesale.
+  The central wavelengths at which spectra are taken, in the order the sequence
+  should execute them.  Required on create, and must contain between 1 and 100
+  entries; a wavelength may be repeated, each occurrence being an independent
+  configuration.  When given on edit, it replaces the existing list wholesale.
   """
   centralWavelengths: [GnirsCentralWavelengthConfigInput!]
   filter: GnirsFilter
@@ -12739,12 +12837,93 @@ type GuideEnvironment {
   guideTargets: [GuideTarget!]!
 }
 
+"""Altair (Gemini North adaptive optics) guiding mode."""
+enum AltairMode {
+  """Natural guide star drives both high order correction and tip/tilt."""
+  NGS
+
+  """
+  Laser drives high order correction, a natural star on the Altair WFS provides tip/tilt/focus.
+  """
+  LGS
+
+  """
+  Laser drives high order correction, a natural star on PWFS1 provides tip/tilt/focus.
+  """
+  LGS_P1
+}
+
+"""Altair field lens position."""
+enum FieldLens {
+  IN
+  OUT
+}
+
+"""
+Altair neutral density filter position. The filter attenuates only the Altair
+wavefront sensor path, never the science beam, and is used for very bright
+natural guide stars.
+"""
+enum AltairNdFilter {
+  IN
+  OUT
+}
+
+"""
+Altair (Gemini North adaptive optics) configuration. Only GNIRS observations
+may be configured to observe behind Altair.
+"""
+type Altair {
+  """The Altair guiding mode."""
+  mode: AltairMode!
+
+  """
+  The user's field lens override, or null for AUTO. When AUTO the field lens
+  follows the guide star separation. The LGS modes always use the field lens,
+  so an explicit value of OUT is rejected for them.
+  """
+  explicitFieldLens: FieldLens
+
+  """
+  The cassegrain rotator tracking mode used while observing behind Altair.
+  """
+  cassRotator: CassRotator!
+
+  """The Altair neutral density filter position."""
+  ndFilter: AltairNdFilter!
+}
+
+"""
+Altair configuration creation and editing parameters. The value replaces the
+observation's entire Altair configuration.
+"""
+input AltairInput {
+  """The Altair guiding mode."""
+  mode: AltairMode!
+
+  """
+  Overrides the automatic field lens choice. Omit (or assign null) for AUTO, in
+  which case the field lens follows the guide star separation. The LGS modes
+  always use the field lens, so OUT is rejected for them.
+  """
+  fieldLens: FieldLens
+
+  """
+  The cassegrain rotator tracking mode used while observing behind Altair.
+  """
+  cassRotator: CassRotator = FOLLOWING
+
+  """The Altair neutral density filter position."""
+  ndFilter: AltairNdFilter = OUT
+}
+
 """Enumeration for Guide Probes"""
 enum GuideProbe {
   PWFS1
   PWFS2
   GMOS_OIWFS
   FLAMINGOS2_OIWFS
+  ALTAIR_AOWFS
 }
 
 """
@@ -13319,7 +13498,9 @@ type ItcGnirsImagingResultSet {
 
 """
 Combines a GNIRS spectroscopy central wavelength with an `ItcResultSet`. In
-other words, ITC results for all targets but a single central wavelength.
+other words, ITC results for all targets but a single entry in the observation's
+central wavelength list.  The wavelength does not identify the entry, since it
+may be repeated; see `ItcGnirsSpectroscopy.gnirsSpectroscopyScience`.
 """
 type ItcGnirsSpectroscopyResultSet {
   centralWavelength: Wavelength!
@@ -13378,8 +13559,10 @@ type ItcGnirsImaging implements Itc {
 }
 
 """
-GNIRS spectroscopy ITC results.  Each central wavelength is a separate
-configuration and is paired with its own result set.
+GNIRS spectroscopy ITC results: one result set per entry in the observation's
+central wavelength list, in the same order, so the nth element here corresponds
+to the nth `centralWavelengths` element.  Each entry is a separate configuration,
+and a central wavelength may therefore appear more than once.
 """
 type ItcGnirsSpectroscopy implements Itc {
   itcType: ItcType!
@@ -13652,6 +13835,12 @@ type Observation {
   """Notes for the observer"""
   observerNotes: NonEmptyString
 
+  """
+  The PI's declared priority for this observation, relative to the other
+  observations of the same program. Defaults to MEDIUM.
+  """
+  priority: ObservationPriority!
+
   """Parameters relevant to approved configurations."""
   configuration: Configuration!
 
@@ -13843,7 +14032,8 @@ type ArchiveDuplication {
   Whether the snapshot no longer describes the observation as it now stands:
   the archive queries the search would run today differ from `queryUrls`.
   Never true when nothing was searched, when nothing can be searched now, or
-  after submission.
+  when a refresh would be rejected: the proposal is submitted or was not
+  accepted, or the observation is completed.
   """
   stale: Boolean!
 
@@ -14505,6 +14695,17 @@ type ObservationValidation {
   messages: [String!]!
 }
 
+"""
+The PI's statement of which of their observations matter more. Advisory: the
+scheduler may weigh it when choosing among a program's observations. Meaningful
+only relative to the other observations of the same program.
+"""
+enum ObservationPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 """Types of observation validations"""
 enum ObservationValidationCode {
   """The observation is not configured correctly and cannot be executed"""
@@ -14539,6 +14740,9 @@ enum ObservationValidationCode {
 
   """Likelihood of observing conditions is below recommended percentage."""
   CONDITIONS_UNLIKELY
+
+  """The observation configuration is unusual and should be reviewed."""
+  CONFIGURATION_WARNING
 }
 
 """
@@ -14768,6 +14972,9 @@ type Program {
 
   """Observatory archive properties related to this program."""
   goa: GoaProperties!
+
+  """State of this program's proposal summary regeneration."""
+  proposalSummaryGeneration: ProposalSummaryGeneration!
 
   """
   Maximum number of resources (observations, groups, targets, attachments, and
@@ -15655,7 +15862,7 @@ enum ScienceMode {
   SPECTROSCOPY
 }
 
-"""Science observation priorities."""
+"""Science bands, ranking a program's time allocation."""
 enum ScienceBand {
   BAND1
   BAND2
@@ -17150,8 +17357,37 @@ type TargetEnvironment {
   """
   blindOffsetType: BlindOffsetType!
 
-  """The cassegrain rotator tracking mode."""
+  """
+  The guide probe the automatic guide star search uses: the explicit probe if
+  set, otherwise the default. Null when no default can be determined.
+  """
+  guideProbe: GuideProbe
+
+  """
+  The default guide probe for the observing mode and asterism track type. Null
+  when the observation has no observing mode or targets, or when the mode does
+  not support guiding.
+  """
+  defaultGuideProbe: GuideProbe
+
+  """
+  The user selected guide probe, if any, set via
+  `TargetEnvironmentInput.explicitGuideProbe`.
+  """
+  explicitGuideProbe: GuideProbe
+
+  """
+  The cassegrain rotator tracking mode: the value stored with the Altair
+  configuration when the observation has one, otherwise derived from the
+  instrument.
+  """
   cassRotator: CassRotator!
+
+  """
+  Altair adaptive optics configuration, only for GNIRS observations. Null when
+  the observation does not observe behind Altair.
+  """
+  altair: Altair
 }
 
 type TargetGroup {
@@ -18419,6 +18655,9 @@ input WhereObservation {
   """Matches the observation science band."""
   scienceBand: WhereOptionOrderScienceBand
 
+  """Matches the PI's declared observation priority."""
+  priority: WhereOrderObservationPriority
+
   """Matches on the instrument in use, if any."""
   instrument: WhereOptionEqInstrument
 
@@ -19554,6 +19793,40 @@ input WhereProposalReference {
 
   """Matches the index in the proposal reference."""
   semesterIndex: WhereOrderPosInt
+}
+
+"""
+Filters on equality or order comparisons of observation priorities.  All
+supplied criteria must match, but usually only one is selected.
+"""
+input WhereOrderObservationPriority {
+  """Matches if the priority is exactly the supplied value."""
+  EQ: ObservationPriority
+
+  """Matches if the priority is not the supplied value."""
+  NEQ: ObservationPriority
+
+  """Matches if the priority is any of the supplied options."""
+  IN: [ObservationPriority!]
+
+  """Matches if the priority is none of the supplied values."""
+  NIN: [ObservationPriority!]
+
+  """Matches if the priority is ordered after (>) the supplied value."""
+  GT: ObservationPriority
+
+  """Matches if the priority is ordered before (<) the supplied value."""
+  LT: ObservationPriority
+
+  """
+  Matches if the priority is ordered after or equal (>=) the supplied value.
+  """
+  GTE: ObservationPriority
+
+  """
+  Matches if the priority is ordered before or equal (<=) the supplied value.
+  """
+  LTE: ObservationPriority
 }
 
 """
