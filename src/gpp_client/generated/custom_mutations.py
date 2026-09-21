@@ -37,6 +37,7 @@ from .custom_fields import (
     RecordVisitResultFields,
     RedeemUserInvitationResultFields,
     RefreshArchiveDuplicationResultFields,
+    RegenerateProposalSummariesResultFields,
     ReplaceFlamingos2SequenceResultFields,
     ReplaceGhostSequenceResultFields,
     ReplaceGmosNorthSequenceResultFields,
@@ -100,6 +101,7 @@ from .input_types import (
     RecordVisitInput,
     RedeemUserInvitationInput,
     RefreshArchiveDuplicationInput,
+    RegenerateProposalSummariesInput,
     ReplaceFlamingos2SequenceInput,
     ReplaceGhostSequenceInput,
     ReplaceGmosNorthSequenceInput,
@@ -702,7 +704,9 @@ class Mutation:
         """Re-runs the Archive Duplication Search for an observation, replacing its
         stored result with what the Gemini Observatory Archive holds now.
 
-        Rejected once the observation's proposal has been submitted."""
+        Rejected while the proposal is submitted or was not accepted, and for a
+        completed observation whatever the proposal status.  Allowed again once the
+        proposal is accepted, so newly added or changed targets can be checked."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "RefreshArchiveDuplicationInput!", "value": input}
         }
@@ -790,6 +794,30 @@ class Mutation:
         }
         return SetProgramResourceLimitResultFields(
             field_name="setProgramResourceLimit", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def regenerate_proposal_summaries(
+        cls, input: RegenerateProposalSummariesInput
+    ) -> RegenerateProposalSummariesResultFields:
+        """Regenerate the proposal summary PDFs: one per partner, in that partner's
+        style, replacing the SUMMARY attachments once rendered.
+
+        Rendering is asynchronous, the new attachments and the flip back to IDLE
+        arrive in one programEdit event.
+
+        A request while GENERATING is a no-op, or queues at most one more render if the
+        previous one is already rendering.  The state stays GENERATING either way.
+
+        Requires write access to the program (staff, PI, CoI or support)."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RegenerateProposalSummariesInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RegenerateProposalSummariesResultFields(
+            field_name="regenerateProposalSummaries", arguments=cleared_arguments
         )
 
     @classmethod

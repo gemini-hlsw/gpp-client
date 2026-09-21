@@ -363,6 +363,12 @@ class AttachmentType(str, Enum):
     SUMMARY = "SUMMARY"
 
 
+class ProposalSummaryGenerationState(str, Enum):
+    IDLE = "IDLE"
+    GENERATING = "GENERATING"
+    FAILED = "FAILED"
+
+
 class ProposalSummaryStyle(str, Enum):
     GEMINI_STANDARD = "GEMINI_STANDARD"
     GEMINI_DARP = "GEMINI_DARP"
@@ -889,11 +895,28 @@ class GmosBinning(str, Enum):
     FOUR = "FOUR"
 
 
+class AltairMode(str, Enum):
+    NGS = "NGS"
+    LGS = "LGS"
+    LGS_P1 = "LGS_P1"
+
+
+class FieldLens(str, Enum):
+    IN = "IN"
+    OUT = "OUT"
+
+
+class AltairNdFilter(str, Enum):
+    IN = "IN"
+    OUT = "OUT"
+
+
 class GuideProbe(str, Enum):
     PWFS1 = "PWFS1"
     PWFS2 = "PWFS2"
     GMOS_OIWFS = "GMOS_OIWFS"
     FLAMINGOS2_OIWFS = "FLAMINGOS2_OIWFS"
+    ALTAIR_AOWFS = "ALTAIR_AOWFS"
 
 
 class HiiRegionSpectrum(str, Enum):
@@ -1099,6 +1122,12 @@ class TooTriggerStatus(str, Enum):
     SUPERSEDED = "SUPERSEDED"
 
 
+class ObservationPriority(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
 class ObservationValidationCode(str, Enum):
     CONFIGURATION_ERROR = "CONFIGURATION_ERROR"
     CFP_ERROR = "CFP_ERROR"
@@ -1111,6 +1140,7 @@ class ObservationValidationCode(str, Enum):
     GENERIC_WARNING = "GENERIC_WARNING"
     LOW_TOTAL_SIGNAL_TO_NOISE = "LOW_TOTAL_SIGNAL_TO_NOISE"
     CONDITIONS_UNLIKELY = "CONDITIONS_UNLIKELY"
+    CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
 
 
 class ObserveClass(str, Enum):

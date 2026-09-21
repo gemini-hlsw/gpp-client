@@ -709,6 +709,12 @@ class SetProgramResourceLimitResultGraphQLField(GraphQLField):
         return self
 
 
+class RegenerateProposalSummariesResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RegenerateProposalSummariesResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class SetProposalStatusResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SetProposalStatusResultGraphQLField":
         self._alias = alias
@@ -867,6 +873,18 @@ class AttachmentGraphQLField(GraphQLField):
 
 class ProposalSummaryPropertiesGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ProposalSummaryPropertiesGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ProposalSummaryGenerationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ProposalSummaryGenerationGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ProposalSummaryFailureGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ProposalSummaryFailureGraphQLField":
         self._alias = alias
         return self
 
@@ -1593,6 +1611,12 @@ class GuideAvailabilityPeriodGraphQLField(GraphQLField):
 
 class GuideEnvironmentGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GuideEnvironmentGraphQLField":
+        self._alias = alias
+        return self
+
+
+class AltairGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "AltairGraphQLField":
         self._alias = alias
         return self
 
