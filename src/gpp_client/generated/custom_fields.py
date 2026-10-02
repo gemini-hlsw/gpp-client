@@ -301,6 +301,7 @@ from .custom_typing_fields import (
     ProperMotionRAGraphQLField,
     ProposalGraphQLField,
     ProposalReferenceGraphQLField,
+    ProposalStatusChangeGraphQLField,
     ProposalSummaryFailureGraphQLField,
     ProposalSummaryGenerationGraphQLField,
     ProposalSummaryPropertiesGraphQLField,
@@ -358,6 +359,8 @@ from .custom_typing_fields import (
     SpectroscopyScienceRequirementsGraphQLField,
     SpiralTelescopeConfigGeneratorGraphQLField,
     StepConfigGraphQLField,
+    StepDigestGraphQLField,
+    StepDigestsGraphQLField,
     StepEstimateGraphQLField,
     StepEventGraphQLField,
     StepRecordGraphQLField,
@@ -371,7 +374,6 @@ from .custom_typing_fields import (
     TargetGraphQLField,
     TargetGroupGraphQLField,
     TargetGroupSelectResultGraphQLField,
-    TargetResolutionGraphQLField,
     TargetSelectResultGraphQLField,
     TelescopeConfigAlongSlitGraphQLField,
     TelescopeConfigGeneratorGraphQLField,
@@ -743,6 +745,10 @@ class AltairFields(GraphQLField):
     "The Altair guiding mode."
     explicit_field_lens: "AltairGraphQLField" = AltairGraphQLField("explicitFieldLens")
     "The user's field lens override, or null for AUTO. When AUTO the field lens\nfollows the guide star separation. The LGS modes always use the field lens,\nso an explicit value of OUT is rejected for them."
+    default_field_lens: "AltairGraphQLField" = AltairGraphQLField("defaultFieldLens")
+    "The AUTO field lens resolution: IN for the LGS modes; for NGS, IN when the\nselected guide star is more than 1 arcsecond from the base, OUT otherwise.\nNull when no guide star is selected yet."
+    field_lens: "AltairGraphQLField" = AltairGraphQLField("fieldLens")
+    "The field lens that will be used: explicitFieldLens when set, otherwise\ndefaultFieldLens."
     cass_rotator: "AltairGraphQLField" = AltairGraphQLField("cassRotator")
     "The cassegrain rotator tracking mode used while observing behind Altair."
     nd_filter: "AltairGraphQLField" = AltairGraphQLField("ndFilter")
@@ -2185,6 +2191,12 @@ class ConfigurationFields(GraphQLField):
     def observing_mode(cls) -> "ConfigurationObservingModeFields":
         return ConfigurationObservingModeFields("observingMode")
 
+    altair_mode: "ConfigurationGraphQLField" = ConfigurationGraphQLField("altairMode")
+    scheduling_mode: "ConfigurationGraphQLField" = ConfigurationGraphQLField(
+        "schedulingMode"
+    )
+    "What the Scheduler may do to the observation.  Part of the configuration, and so\napproved with it: an approved mode covers itself and every looser one.  The\nTarget of Opportunity activation is not part of the configuration; it is\napproved program-wide, as the program's `tooActivationCeiling`."
+
     def fields(
         self,
         *subfields: Union[
@@ -3560,18 +3572,6 @@ class DemoScienceFields(GraphQLField):
         "scienceSubtype"
     )
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
-        "tooActivationCeiling"
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
-        "defaultTooActivationCeiling"
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "DemoScienceGraphQLField" = (
-        DemoScienceGraphQLField("explicitTooActivationCeiling")
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "DemoScienceGraphQLField" = DemoScienceGraphQLField(
         "minPercentTime"
     )
@@ -3634,18 +3634,6 @@ class DirectorsTimeFields(GraphQLField):
         "scienceSubtype"
     )
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
-        "tooActivationCeiling"
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "DirectorsTimeGraphQLField" = (
-        DirectorsTimeGraphQLField("defaultTooActivationCeiling")
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "DirectorsTimeGraphQLField" = (
-        DirectorsTimeGraphQLField("explicitTooActivationCeiling")
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "DirectorsTimeGraphQLField" = DirectorsTimeGraphQLField(
         "minPercentTime"
     )
@@ -4016,6 +4004,14 @@ class ExecutionFields(GraphQLField):
         ExecutionGraphQLField("acquisitionSequenceIsMaterialized")
     )
     "Whether the acquisition sequence has been materialized.\nThis will happen when the sequence is executed or if it is manually edited."
+    science_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
+        "scienceSequenceIsCustomized"
+    )
+    "Whether the science sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence`."
+    acquisition_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
+        "acquisitionSequenceIsCustomized"
+    )
+    "Whether the acquisition sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence` or by resetting the acquisition."
 
     def fields(
         self,
@@ -4133,7 +4129,7 @@ class ExecutionDigestFields(GraphQLField):
 
     @classmethod
     def full_time_estimate(cls) -> "CategorizedTimeFields":
-        """Full time estimate: science time plus full setup time for every setup."""
+        """Full time estimate: science time plus setup time for every setup and reacquisition."""
         return CategorizedTimeFields("fullTimeEstimate")
 
     def fields(
@@ -4274,18 +4270,6 @@ class FastTurnaroundFields(GraphQLField):
         "scienceSubtype"
     )
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
-        "tooActivationCeiling"
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "FastTurnaroundGraphQLField" = (
-        FastTurnaroundGraphQLField("defaultTooActivationCeiling")
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "FastTurnaroundGraphQLField" = (
-        FastTurnaroundGraphQLField("explicitTooActivationCeiling")
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "FastTurnaroundGraphQLField" = FastTurnaroundGraphQLField(
         "minPercentTime"
     )
@@ -7841,6 +7825,7 @@ class GnirsCentralWavelengthConfigFields(GraphQLField):
     coadds: "GnirsCentralWavelengthConfigGraphQLField" = (
         GnirsCentralWavelengthConfigGraphQLField("coadds")
     )
+    "Coadds per frame in time-and-count mode.  Always 1 in signal-to-noise mode,\nwhere the ITC chooses the coadds instead."
 
     def fields(
         self,
@@ -8198,7 +8183,7 @@ class GnirsImagingFilterFields(GraphQLField):
         return ExposureTimeModeFields("exposureTimeMode")
 
     coadds: "GnirsImagingFilterGraphQLField" = GnirsImagingFilterGraphQLField("coadds")
-    "Coadds per exposure for this filter.  Always 1 when the exposure time mode is\nsignal-to-noise, which does not support coadds."
+    "Coadds per frame for this filter in time-and-count mode.  Always 1 in\nsignal-to-noise mode, where the ITC chooses the coadds instead."
 
     def fields(
         self,
@@ -9898,8 +9883,13 @@ class ItcResultFields(GraphQLField):
 
     @classmethod
     def exposure_time(cls) -> "TimeSpanFields":
+        """Exposure time of a single exposure (per coadd, for instruments with coadds)."""
         return TimeSpanFields("exposureTime")
 
+    frame_count: "ItcResultGraphQLField" = ItcResultGraphQLField("frameCount")
+    "Number of frames to take. A frame is what the detector delivers: `coadds`\nexposures summed on chip. Without coadds a frame is one exposure."
+    coadds: "ItcResultGraphQLField" = ItcResultGraphQLField("coadds")
+    "Coadds per frame.  Chosen by the ITC in signal-to-noise mode, the requested\nvalue in time-and-count mode, and 1 for instruments without coadds."
     exposure_count: "ItcResultGraphQLField" = ItcResultGraphQLField("exposureCount")
 
     @classmethod
@@ -10105,18 +10095,6 @@ class LargeProgramFields(GraphQLField):
         "scienceSubtype"
     )
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
-        "tooActivationCeiling"
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "LargeProgramGraphQLField" = (
-        LargeProgramGraphQLField("defaultTooActivationCeiling")
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "LargeProgramGraphQLField" = (
-        LargeProgramGraphQLField("explicitTooActivationCeiling")
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "LargeProgramGraphQLField" = LargeProgramGraphQLField(
         "minPercentTime"
     )
@@ -10646,6 +10624,14 @@ class ObservationTimeEstimateFields(GraphQLField):
         ObservationTimeEstimateGraphQLField("setupCount")
     )
     "Expected number of setups."
+    reacquisition_count: "ObservationTimeEstimateGraphQLField" = (
+        ObservationTimeEstimateGraphQLField("reacquisitionCount")
+    )
+    "Expected number of reacquisitions: recentering on the target between full\nsetups.  Only spectroscopy guided by a PWFS is expected to need them."
+    calibration_count: "ObservationTimeEstimateGraphQLField" = (
+        ObservationTimeEstimateGraphQLField("calibrationCount")
+    )
+    "Expected number of calibration over the remaining science time.\nZero for calibration observations and for modes that take no callibrations per observation."
 
     @classmethod
     def science(cls) -> "CategorizedTimeFields":
@@ -10654,7 +10640,8 @@ class ObservationTimeEstimateFields(GraphQLField):
 
     @classmethod
     def total(cls) -> "CategorizedTimeFields":
-        """Total time estimate: science time plus full setup time for every setup."""
+        """Total time estimate: science time plus full setup time for every setup and
+        reacquisition time for every reacquisition."""
         return CategorizedTimeFields("total")
 
     def fields(
@@ -10997,26 +10984,17 @@ class OffsetQFields(GraphQLField):
 
 
 class OpportunityFields(GraphQLField):
+    """A Target of Opportunity: a placeholder standing in an asterism for an object not
+    yet identified.  It carries the patch of sky the object may appear in, and no
+    coordinates -- when the alert arrives, an ordinary sidereal or nonsidereal
+    target takes its place in the asterism."""
+
     @classmethod
     def region(cls) -> "RegionFields":
         return RegionFields("region")
 
-    @classmethod
-    def resolution(cls) -> "TargetResolutionFields":
-        """How this Target of Opportunity is tracked, once the alert has arrived and
-        identified it -- or null while it is still unresolved.
-
-        A Target of Opportunity does not stop being one when it is resolved.  It keeps
-        its `region` (which is what the accepted proposal authorized) and continues to
-        appear here rather than moving to the top-level `sidereal` or `nonsidereal`
-        field, so exactly one of those three remains non-null for any target."""
-        return TargetResolutionFields("resolution")
-
     def fields(
-        self,
-        *subfields: Union[
-            OpportunityGraphQLField, "RegionFields", "TargetResolutionFields"
-        ],
+        self, *subfields: Union[OpportunityGraphQLField, "RegionFields"]
     ) -> "OpportunityFields":
         """Subfields should come from the OpportunityFields class"""
         self._subfields.extend(subfields)
@@ -11330,6 +11308,16 @@ class ProgramFields(GraphQLField):
     "Current number of resources (present, non-system observations, groups,\ntargets, attachments, and program notes) associated with this program, counted\nagainst `resourceLimit`."
     dismissed_warnings: "ProgramGraphQLField" = ProgramGraphQLField("dismissedWarnings")
     "List of validation codes that have been dismissed for this program."
+    too_activation_ceiling: "ProgramGraphQLField" = ProgramGraphQLField(
+        "tooActivationCeiling"
+    )
+    "The most disruptive Target of Opportunity activation the program's observations\nmay declare; one above it is flagged and cannot become ready.  Null when the\nprogram has no ceiling, which means no restriction.  Accepting a proposal sets\nit if it is not already set: to `NONE` for classical, poor weather and Keck\nproposals, and otherwise to `maxTooActivation`.  Staff may set or clear it on\nany program through `ProgramPropertiesInput.tooActivationCeiling`."
+    max_too_activation: "ProgramGraphQLField" = ProgramGraphQLField("maxTooActivation")
+    "The most disruptive Target of Opportunity activation among the program's\nobservations, or `NONE` if it has none.  A summary of what the observations\nask for; nothing is enforced against it."
+    max_scheduling_mode: "ProgramGraphQLField" = ProgramGraphQLField(
+        "maxSchedulingMode"
+    )
+    "The most restrictive scheduling mode among the program's observations, or\n`UNCONSTRAINED` if it has none.  A summary of what the observations ask for."
 
     def fields(
         self,
@@ -11695,6 +11683,12 @@ class ProposalFields(GraphQLField):
         exchange proposals; null otherwise."""
         return SubaruProposalTypeFields("subaru")
 
+    @classmethod
+    def submission_history(cls) -> "ProposalStatusChangeFields":
+        """Every submission (SUBMITTED) and retraction (NOT_SUBMITTED) of the proposal,
+        oldest first.  Empty if it was never submitted."""
+        return ProposalStatusChangeFields("submissionHistory")
+
     def fields(
         self,
         *subfields: Union[
@@ -11704,6 +11698,7 @@ class ProposalFields(GraphQLField):
             "GeminiProposalTypeInterface",
             "KeckProposalTypeFields",
             "ProposalReferenceFields",
+            "ProposalStatusChangeFields",
             "SubaruProposalTypeFields",
             "TimeSpanFields",
         ],
@@ -11734,6 +11729,30 @@ class ProposalReferenceFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ProposalReferenceFields":
+        self._alias = alias
+        return self
+
+
+class ProposalStatusChangeFields(GraphQLField):
+    """A single submission or retraction of a proposal."""
+
+    timestamp: "ProposalStatusChangeGraphQLField" = ProposalStatusChangeGraphQLField(
+        "timestamp"
+    )
+    "When the status changed."
+    status: "ProposalStatusChangeGraphQLField" = ProposalStatusChangeGraphQLField(
+        "status"
+    )
+    "SUBMITTED for a submission, NOT_SUBMITTED for a retraction."
+
+    def fields(
+        self, *subfields: ProposalStatusChangeGraphQLField
+    ) -> "ProposalStatusChangeFields":
+        """Subfields should come from the ProposalStatusChangeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ProposalStatusChangeFields":
         self._alias = alias
         return self
 
@@ -11826,18 +11845,6 @@ class QueueFields(GraphQLField):
 
     science_subtype: "QueueGraphQLField" = QueueGraphQLField("scienceSubtype")
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
-        "tooActivationCeiling"
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
-        "defaultTooActivationCeiling"
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "QueueGraphQLField" = QueueGraphQLField(
-        "explicitTooActivationCeiling"
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "QueueGraphQLField" = QueueGraphQLField("minPercentTime")
     "Minimum percentage of observing time required to consider this proposal\nsuccessful."
 
@@ -12374,15 +12381,11 @@ class SchedulingConstraintsFields(GraphQLField):
     too_activation: "SchedulingConstraintsGraphQLField" = (
         SchedulingConstraintsGraphQLField("tooActivation")
     )
-    "Whether this observation is a Target of Opportunity, and how disruptive its\nexecution may be.  Derived, not set: an observation is a Target of Opportunity\nexactly when its asterism holds an opportunity target, and how disruptive it\nmay be follows from its `schedulingMode`.  May not exceed the ceiling\nestablished by the program's accepted proposal; an observation that exceeds it\nis flagged and cannot become ready to execute."
+    "Whether this observation is a Target of Opportunity, and how disruptive its\nexecution may be.  Declared, not derived: an observation is a Target of\nOpportunity exactly when this is above `NONE`, whatever its asterism holds.\nAn observation above its program's `tooActivationCeiling`, when the program\nhas one, is flagged and cannot become ready to execute."
     scheduling_mode: "SchedulingConstraintsGraphQLField" = (
         SchedulingConstraintsGraphQLField("schedulingMode")
     )
-    "What the Scheduler may do with this observation."
-    is_splittable: "SchedulingConstraintsGraphQLField" = (
-        SchedulingConstraintsGraphQLField("isSplittable")
-    )
-    'Controls whether the observation may be split across multiple visits. When\ntrue, the scheduler may divide the science sequence into discrete segments\n(i.e. "atoms") scheduled in order across separate visits. When false, the\nentire science sequence must complete within a single uninterrupted visit.'
+    "What the Scheduler may do to this observation."
 
     @classmethod
     def timing_windows(cls) -> "TimingWindowFields":
@@ -12502,6 +12505,14 @@ class SequenceDigestFields(GraphQLField):
 
     atom_count: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField("atomCount")
     "Total count of anticipated atoms, including the 'nextAtom', 'possibleFuture'\nand any remaining atoms not included in 'possibleFuture'."
+    gcal_sets: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField("gcalSets")
+    "Number of GCAL sets: atoms that contain at least one GCAL step.  A set may\nhold only a flat or only an arc, so this cannot be derived from the step\ncounts in 'steps'."
+
+    @classmethod
+    def steps(cls) -> "StepDigestsFields":
+        """Steps in the sequence by kind, with their counts and times."""
+        return StepDigestsFields("steps")
+
     execution_state: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField(
         "executionState"
     )
@@ -12510,7 +12521,10 @@ class SequenceDigestFields(GraphQLField):
     def fields(
         self,
         *subfields: Union[
-            SequenceDigestGraphQLField, "CategorizedTimeFields", "TelescopeConfigFields"
+            SequenceDigestGraphQLField,
+            "CategorizedTimeFields",
+            "StepDigestsFields",
+            "TelescopeConfigFields",
         ],
     ) -> "SequenceDigestFields":
         """Subfields should come from the SequenceDigestFields class"""
@@ -13367,6 +13381,71 @@ class StepConfigInterface(GraphQLField):
         return self
 
 
+class StepDigestFields(GraphQLField):
+    """Summary of the steps of one kind (bias, dark, arc, flat or science) in a sequence."""
+
+    count: "StepDigestGraphQLField" = StepDigestGraphQLField("count")
+    "Number of steps."
+
+    @classmethod
+    def time(cls) -> "CategorizedTimeFields":
+        """Time estimate for these steps, including any configuration change that precedes them."""
+        return CategorizedTimeFields("time")
+
+    def fields(
+        self, *subfields: Union[StepDigestGraphQLField, "CategorizedTimeFields"]
+    ) -> "StepDigestFields":
+        """Subfields should come from the StepDigestFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "StepDigestFields":
+        self._alias = alias
+        return self
+
+
+class StepDigestsFields(GraphQLField):
+    """The steps of a sequence by step type, with GCAL steps split into arcs and
+    flats.  The five digests partition the sequence, so their times sum to the
+    sequence timeEstimate."""
+
+    @classmethod
+    def bias(cls) -> "StepDigestFields":
+        """Steps of type BIAS."""
+        return StepDigestFields("bias")
+
+    @classmethod
+    def dark(cls) -> "StepDigestFields":
+        """Steps of type DARK."""
+        return StepDigestFields("dark")
+
+    @classmethod
+    def arc(cls) -> "StepDigestFields":
+        """GCAL and SmartGCAL arc steps."""
+        return StepDigestFields("arc")
+
+    @classmethod
+    def flat(cls) -> "StepDigestFields":
+        """GCAL and SmartGCAL flat steps, including any whose lamp is not an arc."""
+        return StepDigestFields("flat")
+
+    @classmethod
+    def science(cls) -> "StepDigestFields":
+        """Steps of type SCIENCE, which includes acquisition exposures."""
+        return StepDigestFields("science")
+
+    def fields(
+        self, *subfields: Union[StepDigestsGraphQLField, "StepDigestFields"]
+    ) -> "StepDigestsFields":
+        """Subfields should come from the StepDigestsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "StepDigestsFields":
+        self._alias = alias
+        return self
+
+
 class StepEstimateFields(GraphQLField):
     """Time estimate for an individual step, including configuration changes and
     dataset production."""
@@ -13746,18 +13825,6 @@ class SystemVerificationFields(GraphQLField):
         "scienceSubtype"
     )
     "The science type of this Call for Proposals."
-    too_activation_ceiling: "SystemVerificationGraphQLField" = (
-        SystemVerificationGraphQLField("tooActivationCeiling")
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare: `explicitTooActivationCeiling` if set, otherwise\n`defaultTooActivationCeiling`.  An observation exceeding it is flagged and\ncannot become ready to execute."
-    default_too_activation_ceiling: "SystemVerificationGraphQLField" = (
-        SystemVerificationGraphQLField("defaultTooActivationCeiling")
-    )
-    "The ceiling that applies when none is explicitly set: the most disruptive\nactivation among the program's own observations, capped by what this proposal\ntype permits.\n\nNote this continues to track the observations after the proposal is accepted,\nat which point it no longer has any effect -- acceptance freezes the ceiling\ninto `explicitTooActivationCeiling`, so that adding a more disruptive\nobservation can no longer raise the ceiling it is checked against."
-    explicit_too_activation_ceiling: "SystemVerificationGraphQLField" = (
-        SystemVerificationGraphQLField("explicitTooActivationCeiling")
-    )
-    "The ceiling explicitly chosen for this proposal, if any: by the PI before\nsubmission, or by staff during review.  Always set once the proposal has been\naccepted, since acceptance freezes the effective ceiling into this field."
     min_percent_time: "SystemVerificationGraphQLField" = SystemVerificationGraphQLField(
         "minPercentTime"
     )
@@ -14053,36 +14120,6 @@ class TargetGroupSelectResultFields(GraphQLField):
         return self
 
 
-class TargetResolutionFields(GraphQLField):
-    """What a Target of Opportunity turned out to be.  Exactly one field is non-null.
-    The types are the same ones an ordinary target uses, since a resolution differs
-    from a plain target only in that its name and source profile live on the Target."""
-
-    @classmethod
-    def sidereal(cls) -> "SiderealFields":
-        """Sidereal tracking information, if the target resolved to a sidereal target."""
-        return SiderealFields("sidereal")
-
-    @classmethod
-    def nonsidereal(cls) -> "NonsiderealFields":
-        """Nonsidereal tracking information, if the target resolved to a nonsidereal target."""
-        return NonsiderealFields("nonsidereal")
-
-    def fields(
-        self,
-        *subfields: Union[
-            TargetResolutionGraphQLField, "NonsiderealFields", "SiderealFields"
-        ],
-    ) -> "TargetResolutionFields":
-        """Subfields should come from the TargetResolutionFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "TargetResolutionFields":
-        self._alias = alias
-        return self
-
-
 class TargetSelectResultFields(GraphQLField):
     """The matching target results, limited to a maximum of 1000 entries."""
 
@@ -14219,13 +14256,13 @@ class TimeAndCountExposureTimeModeFields(GraphQLField):
 
     @classmethod
     def time(cls) -> "TimeSpanFields":
-        """Exposure time."""
+        """Exposure time of a single exposure (per coadd, for instruments with coadds)."""
         return TimeSpanFields("time")
 
     count: "TimeAndCountExposureTimeModeGraphQLField" = (
         TimeAndCountExposureTimeModeGraphQLField("count")
     )
-    "Exposure count."
+    "Number of frames.  A frame is what the detector delivers: `coadds` exposures summed on chip."
 
     @classmethod
     def at(cls) -> "WavelengthFields":

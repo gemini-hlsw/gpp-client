@@ -18,6 +18,7 @@ from .enums import (
     CassRotator,
     CatalogName,
     ChargeClass,
+    CloneSequenceMode,
     CloudExtinctionPreset,
     ConditionsExpectationType,
     ConditionsMeasurementSource,
@@ -458,6 +459,8 @@ class CloneObservationInput(BaseModel):
         alias=str("observationReference"), default=None
     )
     set_: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
+    sequence: CloneSequenceMode = CloneSequenceMode.NONE
+    "Which steps, if any, of the source's materialized sequences to copy into the\nclone.  Any mode other than NONE cannot be combined with an observing mode or\nscience requirements edit in SET.  When SET edits the asterism, only the\nscience sequence is copied and the acquisition is generated for the new\ntargets; copied science steps keep their exposure times regardless."
 
 
 class CloneTargetInput(BaseModel):
@@ -686,9 +689,9 @@ class TimeAndCountExposureTimeModeInput(BaseModel):
     """Time And Count exposure time mode parameters"""
 
     time: "TimeSpanInput"
-    "Exposure time, which must be greater than zero."
+    "Exposure time of a single exposure (per coadd, for instruments with coadds), which must be greater than zero."
     count: Any
-    "Exposure count, which must be greater than zero."
+    "Number of frames, which must be greater than zero.  A frame is what the detector delivers: `coadds` exposures summed on chip."
     at: "WavelengthInput"
     "S/N at wavelength."
 
@@ -1454,12 +1457,14 @@ class SchedulingConstraintsInput(BaseModel):
     observation, including whether it can be split across multiple visits and any
     timing constraints."""
 
+    too_activation: Optional[TooActivation] = Field(
+        alias=str("tooActivation"), default=None
+    )
+    "Whether this observation is a Target of Opportunity, and how disruptive its\nexecution may be.  Declared, not derived: an observation is a Target of\nOpportunity exactly when this is above `NONE`, whatever its asterism holds.\n\nA new observation is born `NONE`.  `RAPID` and `INTERRUPTING` fix the\n`schedulingMode` at `UNINTERRUPTIBLE`: raising the activation sets it, and\nwhile the observation stays at either level a different mode is rejected.\nLowering the activation back to `NONE` leaves the mode alone.\n\nAn observation above its program's `tooActivationCeiling`, when the program\nhas one, cannot become ready, and one that is already ready may not be raised\nabove it.  In a proposal type that ordinarily has no Targets of Opportunity,\nanything above `NONE` is flagged with a warning until a ceiling is set."
     scheduling_mode: Optional[SchedulingMode] = Field(
         alias=str("schedulingMode"), default=None
     )
-    "What the Scheduler may do with this observation.  Defaults to `UNCONSTRAINED`;\nskipping it altogether leaves the current value alone.  This field is mutually\nexclusive with the deprecated `isSplittable`; supplying both is an error."
-    is_splittable: Optional[bool] = Field(alias=str("isSplittable"), default=None)
-    'Controls whether the observation may be split across multiple visits. When\ntrue, the scheduler may divide the science sequence into discrete segments\n(i.e. "atoms") scheduled in order across separate visits. When false, the\nentire science sequence must complete within a single uninterrupted visit.'
+    "What the Scheduler may do to this observation.  Defaults to `UNCONSTRAINED`;\nskipping it altogether leaves the current value alone.  Fixed at\n`UNINTERRUPTIBLE` while `tooActivation` is `RAPID` or `INTERRUPTING`."
     timing_windows: Optional[list["TimingWindowInput"]] = Field(
         alias=str("timingWindows"), default=None
     )
@@ -1651,6 +1656,10 @@ class ProgramPropertiesInput(BaseModel):
         alias=str("dismissedWarnings"), default=None
     )
     "List of validation codes to treat as 'dismissed' by the workflow computation. This\nfield can only be set by staff users."
+    too_activation_ceiling: Optional[TooActivation] = Field(
+        alias=str("tooActivationCeiling"), default=None
+    )
+    "The most disruptive Target of Opportunity activation the program's observations\nmay declare (see `Program.tooActivationCeiling`).  Set to null to lift the\nrestriction.  Lowering it withdraws any outstanding ToO trigger above the new\nceiling.  May be set or cleared only by those with staff access or better."
 
 
 class ProgramNotePropertiesInput(BaseModel):
@@ -1792,28 +1801,16 @@ class ClassicalInput(BaseModel):
 
 
 class DemoScienceInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
 
 class DirectorsTimeInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
 
 class FastTurnaroundInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     reviewer_id: Optional[Any] = Field(alias=str("reviewerId"), default=None)
@@ -1823,10 +1820,6 @@ class FastTurnaroundInput(BaseModel):
 
 
 class LargeProgramInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required (first semester) to consider this\nproposal a success. If not set, 100% is assumed."
     min_percent_total_time: Optional[Any] = Field(
@@ -1863,10 +1856,6 @@ class PoorWeatherInput(BaseModel):
 
 
 class QueueInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
     partner_splits: Optional[list["PartnerSplitInput"]] = Field(
@@ -1892,10 +1881,6 @@ class QueueInput(BaseModel):
 
 
 class SystemVerificationInput(BaseModel):
-    explicit_too_activation_ceiling: Optional[TooActivation] = Field(
-        alias=str("explicitTooActivationCeiling"), default=None
-    )
-    "The most disruptive Target of Opportunity activation any observation in this\nprogram may declare.  Optional: when unspecified the ceiling is derived from\nthe program's own observations (the most disruptive among them, capped by what\nthis proposal type permits).  May be unset by assigning a null value, which\nreturns it to that derived ceiling."
     min_percent_time: Optional[Any] = Field(alias=str("minPercentTime"), default=None)
     "The minimum percentage of time required to consider this proposal a success.\nIf not set, 100% is assumed."
 
@@ -2316,17 +2301,7 @@ class SiderealInput(BaseModel):
 
 class OpportunityInput(BaseModel):
     region: Optional["RegionInput"] = None
-    "The patch of sky this Target of Opportunity is approved for.  Optional in both\ncreation and editing, but meaning different things: omitting it when creating\napproves the whole sky, while omitting it when editing leaves the existing\nregion alone.\n\nIt may not be set to null.  Every opportunity target has a region, so unlike\n`resolution` there is nothing for null to mean.  Note in particular that\nresolving a target does not require restating its region; supplying one here\nalways redraws it."
-    resolution: Optional["TargetResolutionInput"] = None
-    "How this Target of Opportunity is tracked.  Supplying it resolves the target,\nwhich keeps the region intact; assigning null unsets it, returning the target\nto the unresolved state.  Omit it to leave the resolution unchanged.\n\nTo stop being a Target of Opportunity altogether, supply the top-level\n`sidereal` or `nonsidereal` field instead -- that changes the target's subtype\nand discards the region."
-
-
-class TargetResolutionInput(BaseModel):
-    """What a Target of Opportunity turned out to be.  Exactly one field must be
-    specified."""
-
-    sidereal: Optional["SiderealInput"] = None
-    nonsidereal: Optional["NonsiderealInput"] = None
+    "The patch of sky this Target of Opportunity is approved for.  Optional in both\ncreation and editing, but meaning different things: omitting it when creating\napproves the whole sky, while omitting it when editing leaves the existing\nregion alone.\n\nIt may not be set to null.  Every opportunity target has a region, so there is\nnothing for null to mean."
 
 
 class RegionInput(BaseModel):
@@ -3242,7 +3217,7 @@ class GnirsImagingFilterInput(BaseModel):
     )
     "Exposure time mode for this filter.\nIf not specified, it is taken from the observation's requirements."
     coadds: Optional[Any] = None
-    "Coadds per exposure for this filter.  If not specified, defaults to 1.\nForced to 1 when the exposure time mode is signal-to-noise, which does not\nsupport coadds."
+    "Coadds per frame for this filter in time-and-count mode.  If not specified,\ndefaults to 1.  Forced to 1 in signal-to-noise mode, where the ITC chooses the\ncoadds instead."
 
 
 class GnirsImagingAcquisitionInput(BaseModel):
@@ -3293,7 +3268,7 @@ class GnirsCentralWavelengthConfigInput(BaseModel):
     )
     "Exposure time mode for this central wavelength.\nIf not specified, it is taken from the observation's requirements."
     coadds: Optional[Any] = None
-    "Coadds for this central wavelength.  Defaults to 1 when not specified."
+    "Coadds per frame for this central wavelength in time-and-count mode.  Defaults\nto 1 when not specified.  Forced to 1 in signal-to-noise mode, where the ITC\nchooses the coadds instead."
 
 
 class GnirsSpectroscopyAcquisitionInput(BaseModel):
@@ -3713,8 +3688,8 @@ class WhereOrderTooTriggerStatus(BaseModel):
 
 class WhereOrderTooActivation(BaseModel):
     """Filters on equality or order comparisons of the TooActivation property.  Order
-    follows the declaration NONE < STANDARD < RAPID < INTERRUPTING, so `GTE: RAPID`
-    matches the activations that cannot wait for the ordinary queue.  Note that only
+    follows the declaration NONE < RAPID < INTERRUPTING, so `GTE: RAPID` matches the
+    activations that cannot wait for the ordinary queue.  Note that only
     INTERRUPTING may displace work already under way; RAPID is observed as soon as
     possible but takes its turn."""
 
@@ -6067,7 +6042,6 @@ SetProgramReferenceInput.model_rebuild()
 ProgramReferencePropertiesInput.model_rebuild()
 SiderealInput.model_rebuild()
 OpportunityInput.model_rebuild()
-TargetResolutionInput.model_rebuild()
 RegionInput.model_rebuild()
 RightAscensionArcInput.model_rebuild()
 DeclinationArcInput.model_rebuild()
