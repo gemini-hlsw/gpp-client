@@ -18,6 +18,7 @@ class GetSchedulerPrograms(BaseModel):
 
 
 class GetSchedulerProgramsPrograms(BaseModel):
+    has_more: bool = Field(alias="hasMore")
     matches: list["GetSchedulerProgramsProgramsMatches"]
 
 
