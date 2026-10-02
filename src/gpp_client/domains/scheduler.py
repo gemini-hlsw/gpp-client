@@ -318,9 +318,6 @@ class SchedulerDomain(BaseDomain):
                     pass
             program["root"] = root
 
-        # If it belongs to the fetched programs and status is Ready or OnGoing.
-        # Filtering by program keeps every page's request small; the group trees
-        # already list every observation of those programs.
         where_observation = WhereObservation(
             program=WhereProgram(
                 id=WhereOrderProgramId(in_=[p["id"] for p in programs])
@@ -353,8 +350,7 @@ class SchedulerDomain(BaseDomain):
         )
         obs_mapping = {o.id: o.model_dump() for o in obs_matches}
 
-        # Get sequence, only for observations that passed the filter above since
-        # the rest are dropped from the tree anyway.
+        # Get sequence for filtered observations (READY/ONGOING)
         if obs_mapping:
             atom_digest_response = (
                 await self._rest.get_atom_digests(list(obs_mapping))
