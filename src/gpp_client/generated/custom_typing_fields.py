@@ -2189,6 +2189,12 @@ class ProposalGraphQLField(GraphQLField):
         return self
 
 
+class ProposalStatusChangeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ProposalStatusChangeGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ProposalReferenceGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ProposalReferenceGraphQLField":
         self._alias = alias
@@ -2239,6 +2245,18 @@ class ScienceRequirementsGroupGraphQLField(GraphQLField):
 
 class ScienceRequirementsGroupSelectResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ScienceRequirementsGroupSelectResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class StepDigestGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "StepDigestGraphQLField":
+        self._alias = alias
+        return self
+
+
+class StepDigestsGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "StepDigestsGraphQLField":
         self._alias = alias
         return self
 
@@ -2365,12 +2383,6 @@ class TargetGraphQLField(GraphQLField):
 
 class OpportunityGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "OpportunityGraphQLField":
-        self._alias = alias
-        return self
-
-
-class TargetResolutionGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "TargetResolutionGraphQLField":
         self._alias = alias
         return self
 

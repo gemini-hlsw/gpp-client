@@ -64,6 +64,12 @@ class GeminiCallForProposalsType(str, Enum):
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
 
 
+class CloneSequenceMode(str, Enum):
+    NONE = "NONE"
+    ALL_STEPS = "ALL_STEPS"
+    PENDING_STEPS = "PENDING_STEPS"
+
+
 class ConditionsMeasurementSource(str, Enum):
     OBSERVER = "OBSERVER"
 
@@ -255,7 +261,6 @@ class SchedulingMode(str, Enum):
     UNCONSTRAINED = "UNCONSTRAINED"
     NO_SPLITTING = "NO_SPLITTING"
     UNINTERRUPTIBLE = "UNINTERRUPTIBLE"
-    INTERRUPTING = "INTERRUPTING"
 
 
 class TelescopeConfigGeneratorType(str, Enum):
@@ -1141,6 +1146,8 @@ class ObservationValidationCode(str, Enum):
     LOW_TOTAL_SIGNAL_TO_NOISE = "LOW_TOTAL_SIGNAL_TO_NOISE"
     CONDITIONS_UNLIKELY = "CONDITIONS_UNLIKELY"
     CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
+    TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
+    CFP_WARNING = "CFP_WARNING"
 
 
 class ObserveClass(str, Enum):
@@ -1504,7 +1511,6 @@ class ConsiderForBand3(str, Enum):
 
 class TooActivation(str, Enum):
     NONE = "NONE"
-    STANDARD = "STANDARD"
     RAPID = "RAPID"
     INTERRUPTING = "INTERRUPTING"
 
