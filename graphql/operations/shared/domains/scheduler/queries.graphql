@@ -1,5 +1,14 @@
-query GetSchedulerPrograms($programsList: [ProgramId!]) {
-  programs(WHERE: { id: { IN: $programsList } }) {
+query GetSchedulerPrograms(
+  $programsList: [ProgramId!]
+  $offset: ProgramId
+  $limit: NonNegInt
+) {
+  programs(
+    WHERE: { id: { IN: $programsList } }
+    OFFSET: $offset
+    LIMIT: $limit
+  ) {
+    hasMore
     matches {
       id
       name

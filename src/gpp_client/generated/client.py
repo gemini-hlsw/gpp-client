@@ -14254,11 +14254,14 @@ class GraphQLClient(AsyncBaseClient):
     async def get_scheduler_programs(
         self,
         programs_list: Union[Optional[list[Any]], UnsetType] = UNSET,
+        offset: Union[Optional[Any], UnsetType] = UNSET,
+        limit: Union[Optional[Any], UnsetType] = UNSET,
         **kwargs: Any,
     ) -> GetSchedulerPrograms:
         query = gql("""
-            query GetSchedulerPrograms($programsList: [ProgramId!]) {
-              programs(WHERE: {id: {IN: $programsList}}) {
+            query GetSchedulerPrograms($programsList: [ProgramId!], $offset: ProgramId, $limit: NonNegInt) {
+              programs(WHERE: {id: {IN: $programsList}}, OFFSET: $offset, LIMIT: $limit) {
+                hasMore
                 matches {
                   id
                   name
@@ -14351,7 +14354,11 @@ class GraphQLClient(AsyncBaseClient):
               }
             }
             """)
-        variables: dict[str, object] = {"programsList": programs_list}
+        variables: dict[str, object] = {
+            "programsList": programs_list,
+            "offset": offset,
+            "limit": limit,
+        }
         response = await self.execute(
             query=query,
             operation_name="GetSchedulerPrograms",
