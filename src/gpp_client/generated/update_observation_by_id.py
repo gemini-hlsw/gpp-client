@@ -15,9 +15,6 @@ class UpdateObservationByIdUpdateObservations(BaseModel):
     observations: list["UpdateObservationByIdUpdateObservationsObservations"]
 
 
-class UpdateObservationByIdUpdateObservationsObservations(ObservationDetails):
-    pass
-
-
+UpdateObservationByIdUpdateObservationsObservations = ObservationDetails
 UpdateObservationById.model_rebuild()
 UpdateObservationByIdUpdateObservations.model_rebuild()

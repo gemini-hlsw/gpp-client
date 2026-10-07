@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from gpp_client.cli import output
 
+from gpp_client.cli import output
 
 app = typer.Typer(
     help="Compare GraphQL schemas.",

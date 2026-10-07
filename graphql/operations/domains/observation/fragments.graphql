@@ -1,0 +1,98 @@
+fragment ObservationCore on Observation {
+  id
+  existence
+  reference {
+    label
+  }
+  title
+  instrument
+  calibrationRole
+}
+
+fragment TargetEnvironmentDetails on TargetEnvironment {
+  asterism {
+    name
+    sidereal {
+      ...SiderealTargetDetails
+    }
+    nonsidereal {
+      ...NonsiderealTargetDetails
+    }
+  }
+  explicitBase {
+    ra {
+      hms
+    }
+    dec {
+      dms
+    }
+  }
+}
+
+fragment ObservationDetails on Observation {
+  ...ObservationCore
+  observerNotes
+  subtitle
+  program {
+    ...ProgramCore
+  }
+  scienceRequirements {
+    ...ScienceRequirementsDetails
+  }
+  scienceBand
+  workflow {
+    ...WorkflowDetails
+  }
+  observingMode {
+    ...ObservingModeDetails
+  }
+  constraintSet {
+    ...ConstraintSetDetails
+  }
+  timingWindows {
+    ...TimingWindowDetails
+  }
+  targetEnvironment {
+    ...TargetEnvironmentDetails
+  }
+  execution {
+      digest {
+        value {
+          acquisition {
+            timeEstimate {
+              total {
+                seconds
+              }
+              program {
+                seconds
+              }
+              nonCharged {
+                seconds
+              }
+            }
+          }
+          setup {
+            full {
+              seconds
+            }
+            reacquisition {
+              seconds
+            }
+          }
+        }
+      }
+  }
+  attachments {
+    id
+    fileName
+    attachmentType
+    mask {
+      name
+      instrument
+      pixelScale
+      dispersionDirection
+      scienceSlitCount
+      acquisitionSlitCount
+    }
+  }
+}

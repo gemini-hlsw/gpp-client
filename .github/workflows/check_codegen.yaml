@@ -3,13 +3,6 @@ name: Codegen Check
 on:
   pull_request:
     branches: [main]
-    paths:
-      - "graphql/**"
-      - "scripts/run_codegen.py"
-      - "src/custom_plugins/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/check_codegen.yaml"
 
   push:
     branches: [main]
@@ -37,11 +30,13 @@ jobs:
       - name: Install the project with codegen dependencies
         run: uv sync --locked --group codegen
 
-      - name: Run development codegen
-        run: uv run --group codegen python scripts/run_codegen.py DEVELOPMENT
+      - name: Build the client from the committed schemas
+        run: uv run --group codegen python -m scripts.build_client
 
-      - name: Run production codegen
-        run: uv run --group codegen python scripts/run_codegen.py PRODUCTION
+      - name: Fail if the committed generated code differs from the build
+        run: |
+          git add --intent-to-add -- graphql src/gpp_client/generated llms.txt
+          git diff --exit-code --stat -- graphql src/gpp_client/generated llms.txt
 
       - name: Minimize uv cache
         run: uv cache prune --ci

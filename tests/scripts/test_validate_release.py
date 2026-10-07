@@ -1,238 +1,187 @@
 """
-Tests for the release validation script.
+Tests for release validation, driven through ``validate_release``.
 """
 
+import shutil
+import sys
 from pathlib import Path
 
 import pytest
 
-from scripts import validate_release as release
-from scripts.validate_release import ReleaseValidationError
+from scripts.build_client import BuildPaths, build
+from scripts.validate_release import ReleaseValidationError, main, validate_release
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+_SCHEMA = "type Query { program: Program }\ntype Program { id: ID! name: String }\n"
+_OPERATION = "query getProgram { program { id name } }\n"
 
 
-@pytest.fixture()
-def env_file(tmp_path: Path) -> Path:
+def _committed_build(root: Path) -> BuildPaths:
     """
-    Return a temporary package environment file path.
+    Return a checkout whose generated code is a fresh build of its schemas.
     """
-    return tmp_path / "src" / "gpp_client" / "generated" / "package_environment.py"
-
-
-def write_env_file(path: Path, environment: str) -> None:
-    """
-    Write a generated package environment file.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        '"""\n'
-        "Package-level environment constant for generated client code.\n"
-        '"""\n\n'
-        f'PACKAGE_ENVIRONMENT = "{environment}"\n',
-        encoding="utf-8",
+    schemas_dir = root / "graphql" / "schemas"
+    schemas_dir.mkdir(parents=True)
+    for environment in ("development", "production"):
+        (schemas_dir / f"{environment}.graphql").write_text(_SCHEMA)
+    operations_dir = root / "graphql" / "operations"
+    operations_dir.mkdir(parents=True)
+    (operations_dir / "operations.graphql").write_text(_OPERATION)
+    shutil.copyfile(
+        REPO_ROOT / "graphql" / "codegen.toml", root / "graphql" / "codegen.toml"
     )
+    paths = BuildPaths.for_repo(root)
+    build(paths)
+    return paths
 
 
-@pytest.mark.parametrize(
-    ("tag", "expected"),
-    [
-        ("v26.5.0.dev1", "DEVELOPMENT"),
-        ("v26.5.0.dev12", "DEVELOPMENT"),
-        ("v26.5.0", "PRODUCTION"),
-        ("v26.12.3", "PRODUCTION"),
-    ],
-)
-def test_expected_environment(tag: str, expected: str) -> None:
-    """
-    Expected environment is inferred from the release tag.
-    """
-    assert release._expected_environment(tag) == expected
+def test_accepts_a_tag_when_generated_code_matches_a_fresh_build(tmp_path):
+    paths = _committed_build(tmp_path)
+
+    validate_release("v26.5.0", paths)
 
 
-@pytest.mark.parametrize("environment", ["DEVELOPMENT", "PRODUCTION"])
-def test_parse_environment_returns_environment(
-    env_file: Path,
-    environment: str,
-) -> None:
-    """
-    Environment is parsed from the generated environment file.
-    """
-    write_env_file(env_file, environment)
+def test_refuses_a_tag_when_generated_code_differs_from_a_fresh_build(tmp_path):
+    paths = _committed_build(tmp_path)
+    client = paths.package_dir / "client.py"
+    client.write_text(client.read_text() + "\n# edited by hand\n")
 
-    assert release._parse_environment(env_file) == environment
+    with pytest.raises(ReleaseValidationError) as exc_info:
+        validate_release("v26.5.0", paths)
+
+    assert "client.py" in str(exc_info.value)
 
 
-def test_parse_environment_raises_for_missing_file(env_file: Path) -> None:
-    """
-    Missing environment file raises a release validation error.
-    """
-    with pytest.raises(ReleaseValidationError, match="Missing environment file"):
-        release._parse_environment(env_file)
+@pytest.mark.parametrize("tag", ["v26.5.0.dev1", "v26.12.3.dev12"])
+def test_refuses_a_dev_tag_explaining_the_single_stream(tmp_path, tag):
+    paths = _committed_build(tmp_path)
 
-
-@pytest.mark.parametrize(
-    "content",
-    [
-        "",
-        'PACKAGE_ENVIRONMENT = "STAGING"\n',
-        "PACKAGE_ENVIRONMENT = DEVELOPMENT\n",
-        'OTHER_ENVIRONMENT = "PRODUCTION"\n',
-        'PACKAGE_ENVIRONMENT: str = "PRODUCTION"\n',
-    ],
-)
-def test_parse_environment_raises_for_invalid_file_content(
-    env_file: Path,
-    content: str,
-) -> None:
-    """
-    Invalid environment file content raises a release validation error.
-    """
-    env_file.parent.mkdir(parents=True, exist_ok=True)
-    env_file.write_text(content, encoding="utf-8")
-
-    with pytest.raises(
-        ReleaseValidationError,
-        match="Could not find a valid PACKAGE_ENVIRONMENT",
-    ):
-        release._parse_environment(env_file)
-
-
-@pytest.mark.parametrize(
-    ("tag", "environment"),
-    [
-        ("v26.5.0.dev1", "DEVELOPMENT"),
-        ("v26.5.0.dev10", "DEVELOPMENT"),
-        ("v26.5.0", "PRODUCTION"),
-        ("v26.12.2", "PRODUCTION"),
-    ],
-)
-def test_validate_release_accepts_valid_tag_and_matching_environment(
-    env_file: Path,
-    tag: str,
-    environment: str,
-) -> None:
-    """
-    Valid release tags pass when the package environment matches.
-    """
-    write_env_file(env_file, environment)
-
-    release.validate_release(tag, env_file)
+    with pytest.raises(ReleaseValidationError, match="one stream"):
+        validate_release(tag, paths)
 
 
 @pytest.mark.parametrize(
     "tag",
     [
+        "",
         "26.5.0",
         "v2026.5.0",
         "v26.05.0",
+        "v26.13.0",
         "v26.5",
         "v26.5.0.1",
         "v26.5.0-dev.1",
         "v26.5.0.dev",
-        "v26.5.0.dev0.dev1",
         "v26.5.0rc1",
         "release-v26.5.0",
-        "",
     ],
 )
-def test_validate_release_raises_for_invalid_tag(
-    env_file: Path,
-    tag: str,
-) -> None:
-    """
-    Invalid release tag formats raise a release validation error.
-    """
-    write_env_file(env_file, "PRODUCTION")
+def test_refuses_a_tag_that_is_not_calver(tmp_path, tag):
+    paths = _committed_build(tmp_path)
 
     with pytest.raises(ReleaseValidationError, match="Invalid release tag"):
-        release.validate_release(tag, env_file)
+        validate_release(tag, paths)
 
 
-@pytest.mark.parametrize(
-    ("tag", "environment", "expected"),
-    [
-        ("v26.5.0.dev1", "PRODUCTION", "DEVELOPMENT"),
-        ("v26.5.0", "DEVELOPMENT", "PRODUCTION"),
-    ],
-)
-def test_validate_release_raises_for_environment_mismatch(
-    env_file: Path,
-    tag: str,
-    environment: str,
-    expected: str,
-) -> None:
-    """
-    Release validation fails when tag type and package environment mismatch.
-    """
-    write_env_file(env_file, environment)
+def test_refuses_when_a_schema_changed_without_rebuilding(tmp_path):
+    paths = _committed_build(tmp_path)
+    paths.schema_path("production").write_text(_SCHEMA + "type Extra { id: ID! }\n")
 
     with pytest.raises(ReleaseValidationError) as exc_info:
-        release.validate_release(tag, env_file)
+        validate_release("v26.5.0", paths)
 
-    message = str(exc_info.value)
-
-    assert "Package environment does not match release tag." in message
-    assert f"Tag: {tag}" in message
-    assert f"Expected PACKAGE_ENVIRONMENT: {expected}" in message
-    assert f"Actual PACKAGE_ENVIRONMENT: {environment}" in message
+    assert "merged.graphql" in str(exc_info.value)
 
 
-def test_validate_release_uses_default_environment_file(
-    env_file: Path,
-    mocker,
-) -> None:
-    """
-    Default environment file is used when no path is provided.
-    """
-    write_env_file(env_file, "PRODUCTION")
-    mocker.patch.object(release, "ENV_FILE", env_file)
-
-    release.validate_release("v26.5.0", env_file=release.ENV_FILE)
-
-
-def test_main_exits_with_usage_when_tag_is_missing(mocker) -> None:
-    """
-    CLI exits with usage text when no tag is provided.
-    """
-    mocker.patch.object(release.sys, "argv", ["validate_release.py"])
-
-    with pytest.raises(SystemExit, match="Usage: validate_release.py <tag>"):
-        release.main()
-
-
-def test_main_exits_with_error_for_invalid_release(
-    env_file: Path,
-    mocker,
-    capsys,
-) -> None:
-    """
-    CLI exits with code 1 and writes validation errors to stderr.
-    """
-    write_env_file(env_file, "PRODUCTION")
-
-    mocker.patch.object(release, "ENV_FILE", env_file)
-    mocker.patch.object(release.sys, "argv", ["validate_release.py", "v26.5.0.dev1"])
-    mocker.patch.object(
-        release,
-        "validate_release",
-        side_effect=ReleaseValidationError("validation failed"),
+def test_refuses_when_an_operation_changed_without_rebuilding(tmp_path):
+    paths = _committed_build(tmp_path)
+    (paths.operations_dir / "operations.graphql").write_text(
+        "query getProgram { program { id } }\n"
     )
 
-    with pytest.raises(SystemExit) as exc_info:
-        release.main()
+    with pytest.raises(ReleaseValidationError, match="get_program.py"):
+        validate_release("v26.5.0", paths)
 
-    captured = capsys.readouterr()
+
+def test_refuses_when_llms_txt_differs_from_a_fresh_build(tmp_path):
+    paths = _committed_build(tmp_path)
+    paths.llms_txt.write_text(paths.llms_txt.read_text() + "\nedited by hand\n")
+
+    with pytest.raises(ReleaseValidationError, match="differs: .*llms.txt"):
+        validate_release("v26.5.0", paths)
+
+
+def test_refuses_when_llms_txt_is_missing(tmp_path):
+    paths = _committed_build(tmp_path)
+    paths.llms_txt.unlink()
+
+    with pytest.raises(ReleaseValidationError, match="missing: .*llms.txt"):
+        validate_release("v26.5.0", paths)
+
+
+def test_refuses_a_stray_file_in_the_generated_package(tmp_path):
+    paths = _committed_build(tmp_path)
+    (paths.package_dir / "stale_operation.py").write_text("")
+
+    with pytest.raises(ReleaseValidationError, match="stale_operation.py"):
+        validate_release("v26.5.0", paths)
+
+
+def test_refuses_a_generated_file_that_is_missing(tmp_path):
+    paths = _committed_build(tmp_path)
+    (paths.package_dir / "client.py").unlink()
+
+    with pytest.raises(ReleaseValidationError, match="missing: .*client.py"):
+        validate_release("v26.5.0", paths)
+
+
+def test_ignores_bytecode_caches(tmp_path):
+    paths = _committed_build(tmp_path)
+    cache = paths.package_dir / "__pycache__"
+    cache.mkdir()
+    (cache / "client.cpython-311.pyc").write_bytes(b"\0")
+
+    validate_release("v26.5.0", paths)
+
+
+def test_refuses_when_the_build_fails(tmp_path):
+    paths = _committed_build(tmp_path)
+    paths.schema_path("production").unlink()
+
+    with pytest.raises(ReleaseValidationError, match="production.graphql"):
+        validate_release("v26.5.0", paths)
+
+
+def test_leaves_the_checkout_unchanged(tmp_path):
+    paths = _committed_build(tmp_path)
+    client = paths.package_dir / "client.py"
+    edited = client.read_text() + "\n# edited by hand\n"
+    client.write_text(edited)
+
+    with pytest.raises(ReleaseValidationError):
+        validate_release("v26.5.0", paths)
+
+    assert client.read_text() == edited
+
+
+def test_command_validates_the_checkout_in_the_current_directory(
+    tmp_path, monkeypatch, capsys
+):
+    _committed_build(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["validate_release", "v26.5.0.dev1"])
+
+    with pytest.raises(SystemExit) as exc_info:
+        main()
 
     assert exc_info.value.code == 1
-    assert "validation failed" in captured.err
+    assert "one stream" in capsys.readouterr().err
 
 
-def test_main_validates_tag_from_argv(mocker) -> None:
-    """
-    CLI passes the provided tag to release validation.
-    """
-    validate_release = mocker.patch.object(release, "validate_release")
-    mocker.patch.object(release.sys, "argv", ["validate_release.py", "v26.5.0"])
+def test_command_accepts_a_matching_checkout(tmp_path, monkeypatch):
+    _committed_build(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["validate_release", "v26.5.0"])
 
-    release.main()
-
-    validate_release.assert_called_once_with("v26.5.0")
+    main()

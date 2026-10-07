@@ -15,9 +15,6 @@ class UpdateObservationByReferenceUpdateObservations(BaseModel):
     observations: list["UpdateObservationByReferenceUpdateObservationsObservations"]
 
 
-class UpdateObservationByReferenceUpdateObservationsObservations(ObservationDetails):
-    pass
-
-
+UpdateObservationByReferenceUpdateObservationsObservations = ObservationDetails
 UpdateObservationByReference.model_rebuild()
 UpdateObservationByReferenceUpdateObservations.model_rebuild()

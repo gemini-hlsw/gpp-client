@@ -3,7 +3,12 @@ from typing import Any, Optional
 from pydantic import Field
 
 from .base_model import BaseModel
-from .fragments import ProgramDetail
+from .fragments import (  # noqa: F401
+    ProgramDetail,
+    ProgramDetailActive,
+    ProgramDetailPi,
+    ProgramDetailProposal,
+)
 
 
 class DeleteProgramById(BaseModel):

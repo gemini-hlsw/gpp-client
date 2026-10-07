@@ -1,45 +1,59 @@
 from enum import Enum
 
 
-class AtomExecutionState(str, Enum):
+class _TolerantEnum(str, Enum):
+    """Keep a value this build does not know as a member carrying the raw value."""
+
+    @classmethod
+    def _missing_(cls, value: object) -> "_TolerantEnum | None":
+        if not isinstance(value, str):
+            return None
+        member = str.__new__(cls, value)
+        member._name_ = value
+        member._value_ = value
+        known = cls._value2member_map_.setdefault(value, member)
+        return known if isinstance(known, cls) else None
+
+
+class AtomExecutionState(_TolerantEnum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
     COMPLETED = "COMPLETED"
     ABANDONED = "ABANDONED"
 
 
-class AtomStage(str, Enum):
+class AtomStage(_TolerantEnum):
     END_ATOM = "END_ATOM"
     START_ATOM = "START_ATOM"
 
 
-class BlindOffsetType(str, Enum):
+class BlindOffsetType(_TolerantEnum):
     AUTOMATIC = "AUTOMATIC"
     MANUAL = "MANUAL"
 
 
-class Breakpoint(str, Enum):
+class Breakpoint(_TolerantEnum):
     ENABLED = "ENABLED"
     DISABLED = "DISABLED"
 
 
-class Observatory(str, Enum):
+class Observatory(_TolerantEnum):
     GEMINI = "GEMINI"
     KECK = "KECK"
     SUBARU = "SUBARU"
 
 
-class ExchangePartner(str, Enum):
+class ExchangePartner(_TolerantEnum):
     KECK = "KECK"
     SUBARU = "SUBARU"
 
 
-class KeckInstrument(str, Enum):
+class KeckInstrument(_TolerantEnum):
     HIRES = "HIRES"
     OTHER = "OTHER"
 
 
-class SubaruInstrument(str, Enum):
+class SubaruInstrument(_TolerantEnum):
     FOCAS = "FOCAS"
     HDS = "HDS"
     HSC = "HSC"
@@ -49,12 +63,12 @@ class SubaruInstrument(str, Enum):
     VISITOR = "VISITOR"
 
 
-class SubaruCallForProposalsType(str, Enum):
+class SubaruCallForProposalsType(_TolerantEnum):
     NORMAL = "NORMAL"
     INTENSIVE = "INTENSIVE"
 
 
-class GeminiCallForProposalsType(str, Enum):
+class GeminiCallForProposalsType(_TolerantEnum):
     DEMO_SCIENCE = "DEMO_SCIENCE"
     DIRECTORS_TIME = "DIRECTORS_TIME"
     FAST_TURNAROUND = "FAST_TURNAROUND"
@@ -64,37 +78,39 @@ class GeminiCallForProposalsType(str, Enum):
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
 
 
-class CloneSequenceMode(str, Enum):
+class CloneSequenceMode(_TolerantEnum):
+    """Available on: development."""
+
     NONE = "NONE"
     ALL_STEPS = "ALL_STEPS"
     PENDING_STEPS = "PENDING_STEPS"
 
 
-class ConditionsMeasurementSource(str, Enum):
+class ConditionsMeasurementSource(_TolerantEnum):
     OBSERVER = "OBSERVER"
 
 
-class SeeingTrend(str, Enum):
+class SeeingTrend(_TolerantEnum):
     GETTING_BETTER = "GETTING_BETTER"
     GETTING_WORSE = "GETTING_WORSE"
     STAYING_THE_SAME = "STAYING_THE_SAME"
     VARIABLE = "VARIABLE"
 
 
-class ConditionsExpectationType(str, Enum):
+class ConditionsExpectationType(_TolerantEnum):
     CLEAR_SKIES = "CLEAR_SKIES"
     FOG = "FOG"
     THICK_CLOUDS = "THICK_CLOUDS"
     THIN_CLOUDS = "THIN_CLOUDS"
 
 
-class EditType(str, Enum):
+class EditType(_TolerantEnum):
     CREATED = "CREATED"
     UPDATED = "UPDATED"
     HARD_DELETE = "HARD_DELETE"
 
 
-class EmailStatus(str, Enum):
+class EmailStatus(_TolerantEnum):
     QUEUED = "QUEUED"
     REJECTED = "REJECTED"
     ACCEPTED = "ACCEPTED"
@@ -103,7 +119,7 @@ class EmailStatus(str, Enum):
     TEMPORARY_FAILURE = "TEMPORARY_FAILURE"
 
 
-class ExecutionEventType(str, Enum):
+class ExecutionEventType(_TolerantEnum):
     SEQUENCE = "SEQUENCE"
     SLEW = "SLEW"
     ATOM = "ATOM"
@@ -111,26 +127,26 @@ class ExecutionEventType(str, Enum):
     DATASET = "DATASET"
 
 
-class GcalArc(str, Enum):
+class GcalArc(_TolerantEnum):
     AR_ARC = "AR_ARC"
     TH_AR_ARC = "TH_AR_ARC"
     CU_AR_ARC = "CU_AR_ARC"
     XE_ARC = "XE_ARC"
 
 
-class GcalContinuum(str, Enum):
+class GcalContinuum(_TolerantEnum):
     IR_GREY_BODY_LOW = "IR_GREY_BODY_LOW"
     IR_GREY_BODY_HIGH = "IR_GREY_BODY_HIGH"
     QUARTZ_HALOGEN5 = "QUARTZ_HALOGEN5"
     QUARTZ_HALOGEN100 = "QUARTZ_HALOGEN100"
 
 
-class GcalDiffuser(str, Enum):
+class GcalDiffuser(_TolerantEnum):
     IR = "IR"
     VISIBLE = "VISIBLE"
 
 
-class GcalFilter(str, Enum):
+class GcalFilter(_TolerantEnum):
     NONE = "NONE"
     GMOS = "GMOS"
     HROS = "HROS"
@@ -144,17 +160,17 @@ class GcalFilter(str, Enum):
     ND50 = "ND50"
 
 
-class GcalShutter(str, Enum):
+class GcalShutter(_TolerantEnum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
 
 
-class GhostResolutionMode(str, Enum):
+class GhostResolutionMode(_TolerantEnum):
     STANDARD = "STANDARD"
     HIGH = "HIGH"
 
 
-class GhostBinning(str, Enum):
+class GhostBinning(_TolerantEnum):
     ONE_BY_ONE = "ONE_BY_ONE"
     ONE_BY_TWO = "ONE_BY_TWO"
     ONE_BY_FOUR = "ONE_BY_FOUR"
@@ -165,19 +181,19 @@ class GhostBinning(str, Enum):
     FOUR_BY_FOUR = "FOUR_BY_FOUR"
 
 
-class GhostReadMode(str, Enum):
+class GhostReadMode(_TolerantEnum):
     SLOW = "SLOW"
     MEDIUM = "MEDIUM"
     FAST = "FAST"
 
 
-class GmosAmpCount(str, Enum):
+class GmosAmpCount(_TolerantEnum):
     THREE = "THREE"
     SIX = "SIX"
     TWELVE = "TWELVE"
 
 
-class GmosCustomSlitWidth(str, Enum):
+class GmosCustomSlitWidth(_TolerantEnum):
     CUSTOM_WIDTH_0_25 = "CUSTOM_WIDTH_0_25"
     CUSTOM_WIDTH_0_50 = "CUSTOM_WIDTH_0_50"
     CUSTOM_WIDTH_0_75 = "CUSTOM_WIDTH_0_75"
@@ -187,12 +203,12 @@ class GmosCustomSlitWidth(str, Enum):
     CUSTOM_WIDTH_5_00 = "CUSTOM_WIDTH_5_00"
 
 
-class GmosMosAcquisitionType(str, Enum):
+class GmosMosAcquisitionType(_TolerantEnum):
     MASK_IN = "MASK_IN"
     MASK_OUT = "MASK_OUT"
 
 
-class GmosDtax(str, Enum):
+class GmosDtax(_TolerantEnum):
     MINUS_SIX = "MINUS_SIX"
     MINUS_FIVE = "MINUS_FIVE"
     MINUS_FOUR = "MINUS_FOUR"
@@ -208,62 +224,62 @@ class GmosDtax(str, Enum):
     SIX = "SIX"
 
 
-class GmosEOffsetting(str, Enum):
+class GmosEOffsetting(_TolerantEnum):
     ON = "ON"
     OFF = "OFF"
 
 
-class GmosGratingOrder(str, Enum):
+class GmosGratingOrder(_TolerantEnum):
     ZERO = "ZERO"
     ONE = "ONE"
     TWO = "TWO"
 
 
-class GmosNorthDetector(str, Enum):
+class GmosNorthDetector(_TolerantEnum):
     E2_V = "E2_V"
     HAMAMATSU = "HAMAMATSU"
 
 
-class GmosNorthStageMode(str, Enum):
+class GmosNorthStageMode(_TolerantEnum):
     NO_FOLLOW = "NO_FOLLOW"
     FOLLOW_XY = "FOLLOW_XY"
 
 
-class GmosSouthDetector(str, Enum):
+class GmosSouthDetector(_TolerantEnum):
     E2_V = "E2_V"
     HAMAMATSU = "HAMAMATSU"
 
 
-class GmosSouthStageMode(str, Enum):
+class GmosSouthStageMode(_TolerantEnum):
     NO_FOLLOW = "NO_FOLLOW"
     FOLLOW_XYZ = "FOLLOW_XYZ"
     FOLLOW_Z = "FOLLOW_Z"
 
 
-class GuideState(str, Enum):
+class GuideState(_TolerantEnum):
     ENABLED = "ENABLED"
     DISABLED = "DISABLED"
 
 
-class UserInvitationStatus(str, Enum):
+class UserInvitationStatus(_TolerantEnum):
     PENDING = "PENDING"
     REDEEMED = "REDEEMED"
     DECLINED = "DECLINED"
     REVOKED = "REVOKED"
 
 
-class MosPreImaging(str, Enum):
+class MosPreImaging(_TolerantEnum):
     IS_MOS_PRE_IMAGING = "IS_MOS_PRE_IMAGING"
     IS_NOT_MOS_PRE_IMAGING = "IS_NOT_MOS_PRE_IMAGING"
 
 
-class SchedulingMode(str, Enum):
+class SchedulingMode(_TolerantEnum):
     UNCONSTRAINED = "UNCONSTRAINED"
     NO_SPLITTING = "NO_SPLITTING"
     UNINTERRUPTIBLE = "UNINTERRUPTIBLE"
 
 
-class TelescopeConfigGeneratorType(str, Enum):
+class TelescopeConfigGeneratorType(_TolerantEnum):
     NONE = "NONE"
     ENUMERATED = "ENUMERATED"
     RANDOM = "RANDOM"
@@ -271,7 +287,7 @@ class TelescopeConfigGeneratorType(str, Enum):
     UNIFORM = "UNIFORM"
 
 
-class Partner(str, Enum):
+class Partner(_TolerantEnum):
     AR = "AR"
     BR = "BR"
     CA = "CA"
@@ -281,14 +297,14 @@ class Partner(str, Enum):
     US = "US"
 
 
-class PartnerLinkType(str, Enum):
+class PartnerLinkType(_TolerantEnum):
     HAS_GEMINI_PARTNER = "HAS_GEMINI_PARTNER"
     HAS_EXCHANGE_PARTNER = "HAS_EXCHANGE_PARTNER"
     HAS_NON_PARTNER = "HAS_NON_PARTNER"
     HAS_UNSPECIFIED_PARTNER = "HAS_UNSPECIFIED_PARTNER"
 
 
-class ProgramUserRole(str, Enum):
+class ProgramUserRole(_TolerantEnum):
     PI = "PI"
     COI = "COI"
     COI_RO = "COI_RO"
@@ -297,23 +313,23 @@ class ProgramUserRole(str, Enum):
     SUPPORT_SECONDARY = "SUPPORT_SECONDARY"
 
 
-class ProgramUserSupportRoleType(str, Enum):
+class ProgramUserSupportRoleType(_TolerantEnum):
     STAFF = "STAFF"
     PARTNER = "PARTNER"
 
 
-class Ignore(str, Enum):
+class Ignore(_TolerantEnum):
     IGNORE = "IGNORE"
 
 
-class SmartGcalType(str, Enum):
+class SmartGcalType(_TolerantEnum):
     ARC = "ARC"
     FLAT = "FLAT"
     DAY_BASELINE = "DAY_BASELINE"
     NIGHT_BASELINE = "NIGHT_BASELINE"
 
 
-class StepExecutionState(str, Enum):
+class StepExecutionState(_TolerantEnum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
     ABORTED = "ABORTED"
@@ -322,7 +338,7 @@ class StepExecutionState(str, Enum):
     ABANDONED = "ABANDONED"
 
 
-class StepType(str, Enum):
+class StepType(_TolerantEnum):
     BIAS = "BIAS"
     DARK = "DARK"
     GCAL = "GCAL"
@@ -330,14 +346,14 @@ class StepType(str, Enum):
     SMART_GCAL = "SMART_GCAL"
 
 
-class CalculationState(str, Enum):
+class CalculationState(_TolerantEnum):
     RETRY = "RETRY"
     PENDING = "PENDING"
     CALCULATING = "CALCULATING"
     READY = "READY"
 
 
-class TimeAccountingCategory(str, Enum):
+class TimeAccountingCategory(_TolerantEnum):
     AR = "AR"
     BR = "BR"
     CA = "CA"
@@ -358,7 +374,7 @@ class TimeAccountingCategory(str, Enum):
     US = "US"
 
 
-class AttachmentType(str, Enum):
+class AttachmentType(_TolerantEnum):
     SCIENCE = "SCIENCE"
     TEAM = "TEAM"
     FINDER = "FINDER"
@@ -368,13 +384,13 @@ class AttachmentType(str, Enum):
     SUMMARY = "SUMMARY"
 
 
-class ProposalSummaryGenerationState(str, Enum):
+class ProposalSummaryGenerationState(_TolerantEnum):
     IDLE = "IDLE"
     GENERATING = "GENERATING"
     FAILED = "FAILED"
 
 
-class ProposalSummaryStyle(str, Enum):
+class ProposalSummaryStyle(_TolerantEnum):
     GEMINI_STANDARD = "GEMINI_STANDARD"
     GEMINI_DARP = "GEMINI_DARP"
     GEMINI_NO_INVESTIGATORS = "GEMINI_NO_INVESTIGATORS"
@@ -383,12 +399,12 @@ class ProposalSummaryStyle(str, Enum):
     NOIRLAB_DARP = "NOIRLAB_DARP"
 
 
-class MosDispersionDirection(str, Enum):
+class MosDispersionDirection(_TolerantEnum):
     HORIZONTAL = "HORIZONTAL"
     VERTICAL = "VERTICAL"
 
 
-class MosSlitPriority(str, Enum):
+class MosSlitPriority(_TolerantEnum):
     ACQUISITION = "ACQUISITION"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
@@ -396,7 +412,7 @@ class MosSlitPriority(str, Enum):
     IGNORE = "IGNORE"
 
 
-class Band(str, Enum):
+class Band(_TolerantEnum):
     SLOAN_U = "SLOAN_U"
     SLOAN_G = "SLOAN_G"
     SLOAN_R = "SLOAN_R"
@@ -421,7 +437,7 @@ class Band(str, Enum):
     GAIA_RP = "GAIA_RP"
 
 
-class BrightnessIntegratedUnits(str, Enum):
+class BrightnessIntegratedUnits(_TolerantEnum):
     VEGA_MAGNITUDE = "VEGA_MAGNITUDE"
     AB_MAGNITUDE = "AB_MAGNITUDE"
     JANSKY = "JANSKY"
@@ -430,7 +446,7 @@ class BrightnessIntegratedUnits(str, Enum):
     ERG_PER_S_PER_CM_SQUARED_PER_HZ = "ERG_PER_S_PER_CM_SQUARED_PER_HZ"
 
 
-class BrightnessSurfaceUnits(str, Enum):
+class BrightnessSurfaceUnits(_TolerantEnum):
     VEGA_MAG_PER_ARCSEC_SQUARED = "VEGA_MAG_PER_ARCSEC_SQUARED"
     AB_MAG_PER_ARCSEC_SQUARED = "AB_MAG_PER_ARCSEC_SQUARED"
     JY_PER_ARCSEC_SQUARED = "JY_PER_ARCSEC_SQUARED"
@@ -445,24 +461,24 @@ class BrightnessSurfaceUnits(str, Enum):
     )
 
 
-class CassRotator(str, Enum):
+class CassRotator(_TolerantEnum):
     FIXED = "FIXED"
     FOLLOWING = "FOLLOWING"
 
 
-class CatalogName(str, Enum):
+class CatalogName(_TolerantEnum):
     SIMBAD = "SIMBAD"
     IMPORT = "IMPORT"
     GAIA = "GAIA"
     TELLURIC = "TELLURIC"
 
 
-class ChargeClass(str, Enum):
+class ChargeClass(_TolerantEnum):
     NON_CHARGED = "NON_CHARGED"
     PROGRAM = "PROGRAM"
 
 
-class CloudExtinctionPreset(str, Enum):
+class CloudExtinctionPreset(_TolerantEnum):
     ZERO = "ZERO"
     POINT_ONE = "POINT_ONE"
     POINT_THREE = "POINT_THREE"
@@ -472,7 +488,7 @@ class CloudExtinctionPreset(str, Enum):
     THREE_POINT_ZERO = "THREE_POINT_ZERO"
 
 
-class ObservingModeType(str, Enum):
+class ObservingModeType(_TolerantEnum):
     ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
     ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
     EXCHANGE_KECK = "EXCHANGE_KECK"
@@ -500,7 +516,7 @@ class ObservingModeType(str, Enum):
     ZORRO_WIDE_FIELD = "ZORRO_WIDE_FIELD"
 
 
-class VisitorObservingModeType(str, Enum):
+class VisitorObservingModeType(_TolerantEnum):
     ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
     ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
     MAROON_X = "MAROON_X"
@@ -510,12 +526,12 @@ class VisitorObservingModeType(str, Enum):
     ZORRO_WIDE_FIELD = "ZORRO_WIDE_FIELD"
 
 
-class ExchangeObservingModeType(str, Enum):
+class ExchangeObservingModeType(_TolerantEnum):
     EXCHANGE_KECK = "EXCHANGE_KECK"
     EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
 
 
-class CoolStarTemperature(str, Enum):
+class CoolStarTemperature(_TolerantEnum):
     T400_K = "T400_K"
     T600_K = "T600_K"
     T800_K = "T800_K"
@@ -532,20 +548,20 @@ class CoolStarTemperature(str, Enum):
     T2800_K = "T2800_K"
 
 
-class DatabaseOperation(str, Enum):
+class DatabaseOperation(_TolerantEnum):
     INSERT = "INSERT"
     UPDATE = "UPDATE"
     DELETE = "DELETE"
     TRUNCATE = "TRUNCATE"
 
 
-class DatasetQaState(str, Enum):
+class DatasetQaState(_TolerantEnum):
     PASS = "PASS"
     USABLE = "USABLE"
     FAIL = "FAIL"
 
 
-class DatasetStage(str, Enum):
+class DatasetStage(_TolerantEnum):
     END_EXPOSE = "END_EXPOSE"
     END_READOUT = "END_READOUT"
     END_WRITE = "END_WRITE"
@@ -554,14 +570,14 @@ class DatasetStage(str, Enum):
     START_WRITE = "START_WRITE"
 
 
-class EducationalStatus(str, Enum):
+class EducationalStatus(_TolerantEnum):
     PHD = "PHD"
     GRAD_STUDENT = "GRAD_STUDENT"
     UNDERGRAD_STUDENT = "UNDERGRAD_STUDENT"
     OTHER = "OTHER"
 
 
-class EphemerisKeyType(str, Enum):
+class EphemerisKeyType(_TolerantEnum):
     COMET = "COMET"
     ASTEROID_NEW = "ASTEROID_NEW"
     ASTEROID_OLD = "ASTEROID_OLD"
@@ -569,12 +585,12 @@ class EphemerisKeyType(str, Enum):
     USER_SUPPLIED = "USER_SUPPLIED"
 
 
-class Existence(str, Enum):
+class Existence(_TolerantEnum):
     PRESENT = "PRESENT"
     DELETED = "DELETED"
 
 
-class Flamingos2CustomSlitWidth(str, Enum):
+class Flamingos2CustomSlitWidth(_TolerantEnum):
     CUSTOM_WIDTH_1_PIX = "CUSTOM_WIDTH_1_PIX"
     CUSTOM_WIDTH_2_PIX = "CUSTOM_WIDTH_2_PIX"
     CUSTOM_WIDTH_3_PIX = "CUSTOM_WIDTH_3_PIX"
@@ -584,7 +600,7 @@ class Flamingos2CustomSlitWidth(str, Enum):
     OTHER = "OTHER"
 
 
-class Flamingos2LyotWheel(str, Enum):
+class Flamingos2LyotWheel(_TolerantEnum):
     F16 = "F16"
     GEMS_UNDER = "GEMS_UNDER"
     GEMS_OVER = "GEMS_OVER"
@@ -592,13 +608,13 @@ class Flamingos2LyotWheel(str, Enum):
     HARTMANN_B = "HARTMANN_B"
 
 
-class Flamingos2Disperser(str, Enum):
+class Flamingos2Disperser(_TolerantEnum):
     R1200_JH = "R1200_JH"
     R1200_HK = "R1200_HK"
     R3000 = "R3000"
 
 
-class Flamingos2Filter(str, Enum):
+class Flamingos2Filter(_TolerantEnum):
     Y = "Y"
     J = "J"
     H = "H"
@@ -611,7 +627,7 @@ class Flamingos2Filter(str, Enum):
     K_RED = "K_RED"
 
 
-class Flamingos2Fpu(str, Enum):
+class Flamingos2Fpu(_TolerantEnum):
     PINHOLE = "PINHOLE"
     SUB_PIX_PINHOLE = "SUB_PIX_PINHOLE"
     LONG_SLIT_1 = "LONG_SLIT_1"
@@ -622,24 +638,24 @@ class Flamingos2Fpu(str, Enum):
     LONG_SLIT_8 = "LONG_SLIT_8"
 
 
-class Flamingos2ReadMode(str, Enum):
+class Flamingos2ReadMode(_TolerantEnum):
     BRIGHT = "BRIGHT"
     MEDIUM = "MEDIUM"
     FAINT = "FAINT"
 
 
-class Flamingos2Decker(str, Enum):
+class Flamingos2Decker(_TolerantEnum):
     IMAGING = "IMAGING"
     LONG_SLIT = "LONG_SLIT"
     MOS = "MOS"
 
 
-class Flamingos2ReadoutMode(str, Enum):
+class Flamingos2ReadoutMode(_TolerantEnum):
     SCIENCE = "SCIENCE"
     ENGINEERING = "ENGINEERING"
 
 
-class Flamingos2Reads(str, Enum):
+class Flamingos2Reads(_TolerantEnum):
     READS_1 = "READS_1"
     READS_3 = "READS_3"
     READS_4 = "READS_4"
@@ -657,7 +673,7 @@ class Flamingos2Reads(str, Enum):
     READS_16 = "READS_16"
 
 
-class TelluricTag(str, Enum):
+class TelluricTag(_TolerantEnum):
     HOT = "HOT"
     A0V = "A0V"
     SOLAR = "SOLAR"
@@ -665,34 +681,34 @@ class TelluricTag(str, Enum):
     NO_TELLURIC = "NO_TELLURIC"
 
 
-class GhostIfu1FiberAgitator(str, Enum):
+class GhostIfu1FiberAgitator(_TolerantEnum):
     DISABLED = "DISABLED"
     ENABLED = "ENABLED"
 
 
-class GhostIfu2FiberAgitator(str, Enum):
+class GhostIfu2FiberAgitator(_TolerantEnum):
     DISABLED = "DISABLED"
     ENABLED = "ENABLED"
 
 
-class GhostIfuMappingType(str, Enum):
+class GhostIfuMappingType(_TolerantEnum):
     SINGLE_TARGET = "SINGLE_TARGET"
     TARGET_PLUS_SKY = "TARGET_PLUS_SKY"
     SKY_PLUS_TARGET = "SKY_PLUS_TARGET"
     DUAL_TARGET = "DUAL_TARGET"
 
 
-class SlitOffsetMode(str, Enum):
+class SlitOffsetMode(_TolerantEnum):
     NOD_ALONG_SLIT = "NOD_ALONG_SLIT"
     NOD_TO_SKY = "NOD_TO_SKY"
 
 
-class FluxDensityContinuumIntegratedUnits(str, Enum):
+class FluxDensityContinuumIntegratedUnits(_TolerantEnum):
     W_PER_M_SQUARED_PER_UM = "W_PER_M_SQUARED_PER_UM"
     ERG_PER_S_PER_CM_SQUARED_PER_A = "ERG_PER_S_PER_CM_SQUARED_PER_A"
 
 
-class FluxDensityContinuumSurfaceUnits(str, Enum):
+class FluxDensityContinuumSurfaceUnits(_TolerantEnum):
     W_PER_M_SQUARED_PER_UM_PER_ARCSEC_SQUARED = (
         "W_PER_M_SQUARED_PER_UM_PER_ARCSEC_SQUARED"
     )
@@ -701,60 +717,60 @@ class FluxDensityContinuumSurfaceUnits(str, Enum):
     )
 
 
-class FocalPlane(str, Enum):
+class FocalPlane(_TolerantEnum):
     SINGLE_SLIT = "SINGLE_SLIT"
     MULTIPLE_SLIT = "MULTIPLE_SLIT"
     IFU = "IFU"
 
 
-class GalaxySpectrum(str, Enum):
+class GalaxySpectrum(_TolerantEnum):
     ELLIPTICAL = "ELLIPTICAL"
     SPIRAL = "SPIRAL"
 
 
-class Gender(str, Enum):
+class Gender(_TolerantEnum):
     MALE = "MALE"
     FEMALE = "FEMALE"
     OTHER = "OTHER"
     NOT_SPECIFIED = "NOT_SPECIFIED"
 
 
-class GmosAmpGain(str, Enum):
+class GmosAmpGain(_TolerantEnum):
     LOW = "LOW"
     HIGH = "HIGH"
 
 
-class GmosAmpReadMode(str, Enum):
+class GmosAmpReadMode(_TolerantEnum):
     SLOW = "SLOW"
     FAST = "FAST"
 
 
-class GmosIfuAcquisitionRoi(str, Enum):
+class GmosIfuAcquisitionRoi(_TolerantEnum):
     CCD2_FULL_FRAME = "CCD2_FULL_FRAME"
     STAMP_FULL_FRAME = "STAMP_FULL_FRAME"
     FULL_FRAME = "FULL_FRAME"
 
 
-class GmosLongSlitAcquisitionRoi(str, Enum):
+class GmosLongSlitAcquisitionRoi(_TolerantEnum):
     CCD2_STAMP = "CCD2_STAMP"
     CCD2 = "CCD2"
     STAMP = "STAMP"
     FULL_CCD2 = "FULL_CCD2"
 
 
-class GmosNorthIfuFpu(str, Enum):
+class GmosNorthIfuFpu(_TolerantEnum):
     TWO_SLITS = "TWO_SLITS"
     ONE_SLIT_BLUE = "ONE_SLIT_BLUE"
     ONE_SLIT_RED = "ONE_SLIT_RED"
 
 
-class GmosSouthIfuFpu(str, Enum):
+class GmosSouthIfuFpu(_TolerantEnum):
     TWO_SLITS = "TWO_SLITS"
     ONE_SLIT_BLUE = "ONE_SLIT_BLUE"
     ONE_SLIT_RED = "ONE_SLIT_RED"
 
 
-class GmosNorthBuiltinFpu(str, Enum):
+class GmosNorthBuiltinFpu(_TolerantEnum):
     NS0 = "NS0"
     NS1 = "NS1"
     NS2 = "NS2"
@@ -773,7 +789,7 @@ class GmosNorthBuiltinFpu(str, Enum):
     IFU_RED = "IFU_RED"
 
 
-class GmosNorthFilter(str, Enum):
+class GmosNorthFilter(_TolerantEnum):
     G_PRIME = "G_PRIME"
     R_PRIME = "R_PRIME"
     I_PRIME = "I_PRIME"
@@ -804,7 +820,7 @@ class GmosNorthFilter(str, Enum):
     Z_PRIME_CA_T = "Z_PRIME_CA_T"
 
 
-class GmosNorthGrating(str, Enum):
+class GmosNorthGrating(_TolerantEnum):
     B1200_G5301 = "B1200_G5301"
     R831_G5302 = "R831_G5302"
     R600_G5304 = "R600_G5304"
@@ -813,18 +829,18 @@ class GmosNorthGrating(str, Enum):
     R150_G5308 = "R150_G5308"
 
 
-class WavelengthOrder(str, Enum):
+class WavelengthOrder(_TolerantEnum):
     DECREASING = "DECREASING"
     INCREASING = "INCREASING"
 
 
-class ImagingVariantType(str, Enum):
+class ImagingVariantType(_TolerantEnum):
     GROUPED = "GROUPED"
     INTERLEAVED = "INTERLEAVED"
     PRE_IMAGING = "PRE_IMAGING"
 
 
-class GmosRoi(str, Enum):
+class GmosRoi(_TolerantEnum):
     FULL_FRAME = "FULL_FRAME"
     CCD2 = "CCD2"
     CENTRAL_SPECTRUM = "CENTRAL_SPECTRUM"
@@ -832,7 +848,7 @@ class GmosRoi(str, Enum):
     CUSTOM = "CUSTOM"
 
 
-class GmosSouthBuiltinFpu(str, Enum):
+class GmosSouthBuiltinFpu(_TolerantEnum):
     NS1 = "NS1"
     NS2 = "NS2"
     NS3 = "NS3"
@@ -853,7 +869,7 @@ class GmosSouthBuiltinFpu(str, Enum):
     IFU_NS_RED = "IFU_NS_RED"
 
 
-class GmosSouthFilter(str, Enum):
+class GmosSouthFilter(_TolerantEnum):
     U_PRIME = "U_PRIME"
     G_PRIME = "G_PRIME"
     R_PRIME = "R_PRIME"
@@ -885,7 +901,7 @@ class GmosSouthFilter(str, Enum):
     HE_IIC = "HE_IIC"
 
 
-class GmosSouthGrating(str, Enum):
+class GmosSouthGrating(_TolerantEnum):
     B1200_G5321 = "B1200_G5321"
     R831_G5322 = "R831_G5322"
     R600_G5324 = "R600_G5324"
@@ -894,29 +910,29 @@ class GmosSouthGrating(str, Enum):
     R150_G5326 = "R150_G5326"
 
 
-class GmosBinning(str, Enum):
+class GmosBinning(_TolerantEnum):
     ONE = "ONE"
     TWO = "TWO"
     FOUR = "FOUR"
 
 
-class AltairMode(str, Enum):
+class AltairMode(_TolerantEnum):
     NGS = "NGS"
     LGS = "LGS"
     LGS_P1 = "LGS_P1"
 
 
-class FieldLens(str, Enum):
+class FieldLens(_TolerantEnum):
     IN = "IN"
     OUT = "OUT"
 
 
-class AltairNdFilter(str, Enum):
+class AltairNdFilter(_TolerantEnum):
     IN = "IN"
     OUT = "OUT"
 
 
-class GuideProbe(str, Enum):
+class GuideProbe(_TolerantEnum):
     PWFS1 = "PWFS1"
     PWFS2 = "PWFS2"
     GMOS_OIWFS = "GMOS_OIWFS"
@@ -924,11 +940,11 @@ class GuideProbe(str, Enum):
     ALTAIR_AOWFS = "ALTAIR_AOWFS"
 
 
-class HiiRegionSpectrum(str, Enum):
+class HiiRegionSpectrum(_TolerantEnum):
     ORION_NEBULA = "ORION_NEBULA"
 
 
-class ImageQualityPreset(str, Enum):
+class ImageQualityPreset(_TolerantEnum):
     POINT_ONE = "POINT_ONE"
     POINT_TWO = "POINT_TWO"
     POINT_THREE = "POINT_THREE"
@@ -941,12 +957,12 @@ class ImageQualityPreset(str, Enum):
     TWO_POINT_ZERO = "TWO_POINT_ZERO"
 
 
-class PortDisposition(str, Enum):
+class PortDisposition(_TolerantEnum):
     SIDE = "SIDE"
     BOTTOM = "BOTTOM"
 
 
-class Instrument(str, Enum):
+class Instrument(_TolerantEnum):
     ACQ_CAM_NORTH = "ACQ_CAM_NORTH"
     ACQ_CAM_SOUTH = "ACQ_CAM_SOUTH"
     FLAMINGOS2 = "FLAMINGOS2"
@@ -966,26 +982,26 @@ class Instrument(str, Enum):
     MAROON_X = "MAROON_X"
 
 
-class GnirsPrism(str, Enum):
+class GnirsPrism(_TolerantEnum):
     MIRROR = "MIRROR"
     SXD = "SXD"
     LXD = "LXD"
 
 
-class GnirsCamera(str, Enum):
+class GnirsCamera(_TolerantEnum):
     LONG_BLUE = "LONG_BLUE"
     LONG_RED = "LONG_RED"
     SHORT_BLUE = "SHORT_BLUE"
     SHORT_RED = "SHORT_RED"
 
 
-class GnirsGrating(str, Enum):
+class GnirsGrating(_TolerantEnum):
     D10 = "D10"
     D32 = "D32"
     D111 = "D111"
 
 
-class GnirsFilter(str, Enum):
+class GnirsFilter(_TolerantEnum):
     CROSS_DISPERSED = "CROSS_DISPERSED"
     ORDER6 = "ORDER6"
     ORDER5 = "ORDER5"
@@ -1002,7 +1018,7 @@ class GnirsFilter(str, Enum):
     K = "K"
 
 
-class GnirsFpuSlit(str, Enum):
+class GnirsFpuSlit(_TolerantEnum):
     LONG_SLIT_0_10 = "LONG_SLIT_0_10"
     LONG_SLIT_0_15 = "LONG_SLIT_0_15"
     LONG_SLIT_0_20 = "LONG_SLIT_0_20"
@@ -1012,37 +1028,37 @@ class GnirsFpuSlit(str, Enum):
     LONG_SLIT_1_00 = "LONG_SLIT_1_00"
 
 
-class GnirsFpuIfu(str, Enum):
+class GnirsFpuIfu(_TolerantEnum):
     LOW_RESOLUTION = "LOW_RESOLUTION"
     HIGH_RESOLUTION = "HIGH_RESOLUTION"
 
 
-class GnirsFpuOther(str, Enum):
+class GnirsFpuOther(_TolerantEnum):
     ACQUISITION = "ACQUISITION"
     PUPIL_VIEWER = "PUPIL_VIEWER"
     PINHOLE1 = "PINHOLE1"
     PINHOLE3 = "PINHOLE3"
 
 
-class GnirsReadMode(str, Enum):
+class GnirsReadMode(_TolerantEnum):
     VERY_BRIGHT = "VERY_BRIGHT"
     BRIGHT = "BRIGHT"
     FAINT = "FAINT"
     VERY_FAINT = "VERY_FAINT"
 
 
-class GnirsWellDepth(str, Enum):
+class GnirsWellDepth(_TolerantEnum):
     SHALLOW = "SHALLOW"
     DEEP = "DEEP"
 
 
-class GnirsAcquisitionType(str, Enum):
+class GnirsAcquisitionType(_TolerantEnum):
     VERY_BRIGHT = "VERY_BRIGHT"
     BRIGHT = "BRIGHT"
     FAINT = "FAINT"
 
 
-class GnirsDecker(str, Enum):
+class GnirsDecker(_TolerantEnum):
     ACQUISITION = "ACQUISITION"
     PUPIL_VIEWER = "PUPIL_VIEWER"
     SHORT_CAM_CROSS_DISPERSED = "SHORT_CAM_CROSS_DISPERSED"
@@ -1053,7 +1069,7 @@ class GnirsDecker(str, Enum):
     HIGH_RESOLUTION_IFU = "HIGH_RESOLUTION_IFU"
 
 
-class ItcType(str, Enum):
+class ItcType(_TolerantEnum):
     FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
     GHOST_IFU = "GHOST_IFU"
     GMOS_NORTH_IMAGING = "GMOS_NORTH_IMAGING"
@@ -1064,24 +1080,24 @@ class ItcType(str, Enum):
     SPECTROSCOPY = "SPECTROSCOPY"
 
 
-class LineFluxIntegratedUnits(str, Enum):
+class LineFluxIntegratedUnits(_TolerantEnum):
     W_PER_M_SQUARED = "W_PER_M_SQUARED"
     ERG_PER_S_PER_CM_SQUARED = "ERG_PER_S_PER_CM_SQUARED"
 
 
-class LineFluxSurfaceUnits(str, Enum):
+class LineFluxSurfaceUnits(_TolerantEnum):
     W_PER_M_SQUARED_PER_ARCSEC_SQUARED = "W_PER_M_SQUARED_PER_ARCSEC_SQUARED"
     ERG_PER_S_PER_CM_SQUARED_PER_ARCSEC_SQUARED = (
         "ERG_PER_S_PER_CM_SQUARED_PER_ARCSEC_SQUARED"
     )
 
 
-class ObsActiveStatus(str, Enum):
+class ObsActiveStatus(_TolerantEnum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
 
 
-class ObsStatus(str, Enum):
+class ObsStatus(_TolerantEnum):
     NEW = "NEW"
     INCLUDED = "INCLUDED"
     PROPOSED = "PROPOSED"
@@ -1091,19 +1107,19 @@ class ObsStatus(str, Enum):
     OBSERVED = "OBSERVED"
 
 
-class TimingWindowInclusion(str, Enum):
+class TimingWindowInclusion(_TolerantEnum):
     INCLUDE = "INCLUDE"
     EXCLUDE = "EXCLUDE"
 
 
-class ArchiveDuplicationState(str, Enum):
+class ArchiveDuplicationState(_TolerantEnum):
     NOT_CHECKED = "NOT_CHECKED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
     CHECKED = "CHECKED"
     ERROR = "ERROR"
 
 
-class ExecutionState(str, Enum):
+class ExecutionState(_TolerantEnum):
     NOT_DEFINED = "NOT_DEFINED"
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -1112,14 +1128,14 @@ class ExecutionState(str, Enum):
     DECLARED_ONGOING = "DECLARED_ONGOING"
 
 
-class ConfigurationRequestStatus(str, Enum):
+class ConfigurationRequestStatus(_TolerantEnum):
     REQUESTED = "REQUESTED"
     APPROVED = "APPROVED"
     DENIED = "DENIED"
     WITHDRAWN = "WITHDRAWN"
 
 
-class TooTriggerStatus(str, Enum):
+class TooTriggerStatus(_TolerantEnum):
     REQUESTED = "REQUESTED"
     ACCEPTED = "ACCEPTED"
     DECLINED = "DECLINED"
@@ -1127,13 +1143,13 @@ class TooTriggerStatus(str, Enum):
     SUPERSEDED = "SUPERSEDED"
 
 
-class ObservationPriority(str, Enum):
+class ObservationPriority(_TolerantEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
 
 
-class ObservationValidationCode(str, Enum):
+class ObservationValidationCode(_TolerantEnum):
     CONFIGURATION_ERROR = "CONFIGURATION_ERROR"
     CFP_ERROR = "CFP_ERROR"
     ITC_ERROR = "ITC_ERROR"
@@ -1148,16 +1164,17 @@ class ObservationValidationCode(str, Enum):
     CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
     CFP_WARNING = "CFP_WARNING"
+    "Available on: development."
 
 
-class ObserveClass(str, Enum):
+class ObserveClass(_TolerantEnum):
     SCIENCE = "SCIENCE"
     NIGHT_CAL = "NIGHT_CAL"
     ACQUISITION = "ACQUISITION"
     DAY_CAL = "DAY_CAL"
 
 
-class PlanetSpectrum(str, Enum):
+class PlanetSpectrum(_TolerantEnum):
     MARS = "MARS"
     JUPITER = "JUPITER"
     SATURN = "SATURN"
@@ -1165,12 +1182,12 @@ class PlanetSpectrum(str, Enum):
     NEPTUNE = "NEPTUNE"
 
 
-class PlanetaryNebulaSpectrum(str, Enum):
+class PlanetaryNebulaSpectrum(_TolerantEnum):
     NGC7009 = "NGC7009"
     IC5117 = "IC5117"
 
 
-class PosAngleConstraintMode(str, Enum):
+class PosAngleConstraintMode(_TolerantEnum):
     UNBOUNDED = "UNBOUNDED"
     FIXED = "FIXED"
     ALLOW_FLIP = "ALLOW_FLIP"
@@ -1178,14 +1195,14 @@ class PosAngleConstraintMode(str, Enum):
     PARALLACTIC_OVERRIDE = "PARALLACTIC_OVERRIDE"
 
 
-class ProgramStatus(str, Enum):
+class ProgramStatus(_TolerantEnum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
     COMPLETE = "COMPLETE"
     INCOMPLETE = "INCOMPLETE"
 
 
-class ProgramType(str, Enum):
+class ProgramType(_TolerantEnum):
     CALIBRATION = "CALIBRATION"
     COMMISSIONING = "COMMISSIONING"
     ENGINEERING = "ENGINEERING"
@@ -1198,31 +1215,31 @@ class ProgramType(str, Enum):
     SYSTEM = "SYSTEM"
 
 
-class ProposalStatus(str, Enum):
+class ProposalStatus(_TolerantEnum):
     NOT_SUBMITTED = "NOT_SUBMITTED"
     SUBMITTED = "SUBMITTED"
     ACCEPTED = "ACCEPTED"
     NOT_ACCEPTED = "NOT_ACCEPTED"
 
 
-class QuasarSpectrum(str, Enum):
+class QuasarSpectrum(_TolerantEnum):
     QS0 = "QS0"
     QS02 = "QS02"
 
 
-class ScienceMode(str, Enum):
+class ScienceMode(_TolerantEnum):
     IMAGING = "IMAGING"
     SPECTROSCOPY = "SPECTROSCOPY"
 
 
-class ScienceBand(str, Enum):
+class ScienceBand(_TolerantEnum):
     BAND1 = "BAND1"
     BAND2 = "BAND2"
     BAND3 = "BAND3"
     BAND4 = "BAND4"
 
 
-class ScienceSubtype(str, Enum):
+class ScienceSubtype(_TolerantEnum):
     CLASSICAL = "CLASSICAL"
     DIRECTORS_TIME = "DIRECTORS_TIME"
     FAST_TURNAROUND = "FAST_TURNAROUND"
@@ -1233,7 +1250,7 @@ class ScienceSubtype(str, Enum):
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
 
 
-class SequenceCommand(str, Enum):
+class SequenceCommand(_TolerantEnum):
     ABORT = "ABORT"
     CONTINUE = "CONTINUE"
     PAUSE = "PAUSE"
@@ -1241,40 +1258,40 @@ class SequenceCommand(str, Enum):
     STOP = "STOP"
 
 
-class SequenceType(str, Enum):
+class SequenceType(_TolerantEnum):
     ACQUISITION = "ACQUISITION"
     SCIENCE = "SCIENCE"
 
 
-class Site(str, Enum):
+class Site(_TolerantEnum):
     GN = "GN"
     GS = "GS"
 
 
-class SkyBackground(str, Enum):
+class SkyBackground(_TolerantEnum):
     DARKEST = "DARKEST"
     DARK = "DARK"
     GRAY = "GRAY"
     BRIGHT = "BRIGHT"
 
 
-class SlewStage(str, Enum):
+class SlewStage(_TolerantEnum):
     START_SLEW = "START_SLEW"
     END_SLEW = "END_SLEW"
 
 
-class ImagingCapability(str, Enum):
+class ImagingCapability(_TolerantEnum):
     SPECKLE = "SPECKLE"
     WIDE_FIELD = "WIDE_FIELD"
 
 
-class SpectroscopyCapability(str, Enum):
+class SpectroscopyCapability(_TolerantEnum):
     NOD_AND_SHUFFLE = "NOD_AND_SHUFFLE"
     POLARIMETRY = "POLARIMETRY"
     CORONAGRAPHY = "CORONAGRAPHY"
 
 
-class StellarLibrarySpectrum(str, Enum):
+class StellarLibrarySpectrum(_TolerantEnum):
     O5_V = "O5_V"
     O8_III = "O8_III"
     O9_V_CALSPEC = "O9_V_CALSPEC"
@@ -1435,7 +1452,7 @@ class StellarLibrarySpectrum(str, Enum):
     T0400_K = "T0400_K"
 
 
-class StepStage(str, Enum):
+class StepStage(_TolerantEnum):
     ABORT = "ABORT"
     CONTINUE = "CONTINUE"
     END_CONFIGURE = "END_CONFIGURE"
@@ -1448,7 +1465,7 @@ class StepStage(str, Enum):
     STOP = "STOP"
 
 
-class TacCategory(str, Enum):
+class TacCategory(_TolerantEnum):
     SMALL_BODIES = "SMALL_BODIES"
     PLANETARY_ATMOSPHERES = "PLANETARY_ATMOSPHERES"
     PLANETARY_SURFACES = "PLANETARY_SURFACES"
@@ -1472,13 +1489,13 @@ class TacCategory(str, Enum):
     EXTRAGALACTIC_OTHER = "EXTRAGALACTIC_OTHER"
 
 
-class TargetDisposition(str, Enum):
+class TargetDisposition(_TolerantEnum):
     SCIENCE = "SCIENCE"
     CALIBRATION = "CALIBRATION"
     BLIND_OFFSET = "BLIND_OFFSET"
 
 
-class CalibrationRole(str, Enum):
+class CalibrationRole(_TolerantEnum):
     TWILIGHT = "TWILIGHT"
     PHOTOMETRIC = "PHOTOMETRIC"
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
@@ -1486,49 +1503,49 @@ class CalibrationRole(str, Enum):
     DAYTIME_PINHOLE = "DAYTIME_PINHOLE"
 
 
-class ArcType(str, Enum):
+class ArcType(_TolerantEnum):
     EMPTY = "EMPTY"
     FULL = "FULL"
     PARTIAL = "PARTIAL"
 
 
-class BasePositionType(str, Enum):
+class BasePositionType(_TolerantEnum):
     SINGLE_TARGET = "SINGLE_TARGET"
     ASTERISM = "ASTERISM"
     EXPLICIT_BASE = "EXPLICIT_BASE"
 
 
-class TimeChargeCorrectionOp(str, Enum):
+class TimeChargeCorrectionOp(_TolerantEnum):
     ADD = "ADD"
     SUBTRACT = "SUBTRACT"
 
 
-class ConsiderForBand3(str, Enum):
+class ConsiderForBand3(_TolerantEnum):
     UNSET = "UNSET"
     CONSIDER = "CONSIDER"
     DO_NOT_CONSIDER = "DO_NOT_CONSIDER"
 
 
-class TooActivation(str, Enum):
+class TooActivation(_TolerantEnum):
     NONE = "NONE"
     RAPID = "RAPID"
     INTERRUPTING = "INTERRUPTING"
 
 
-class UserType(str, Enum):
+class UserType(_TolerantEnum):
     GUEST = "GUEST"
     STANDARD = "STANDARD"
     SERVICE = "SERVICE"
 
 
-class WaterVapor(str, Enum):
+class WaterVapor(_TolerantEnum):
     VERY_DRY = "VERY_DRY"
     DRY = "DRY"
     MEDIAN = "MEDIAN"
     WET = "WET"
 
 
-class ObservationWorkflowState(str, Enum):
+class ObservationWorkflowState(_TolerantEnum):
     INACTIVE = "INACTIVE"
     UNDEFINED = "UNDEFINED"
     UNAPPROVED = "UNAPPROVED"

@@ -2,24 +2,31 @@
 Module for managing observation workflow states in the GPP client.
 """
 
+from __future__ import annotations
+
 __all__ = ["WorkflowStateDomain"]
 
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
 from gpp_client.domains.base import BaseDomain
 from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
-from gpp_client.generated.enums import CalculationState, ObservationWorkflowState
-from gpp_client.generated.get_observation_workflow_state_by_id import (
-    GetObservationWorkflowStateById,
-    GetObservationWorkflowStateByIdObservationWorkflow,
-)
-from gpp_client.generated.get_observation_workflow_state_by_reference import (
-    GetObservationWorkflowStateByReference,
-)
-from gpp_client.generated.set_observation_workflow_state import (
-    SetObservationWorkflowStateSetObservationWorkflowState,
-)
+from gpp_client.generated.enums import CalculationState
+
+if TYPE_CHECKING:
+    from gpp_client.generated.enums import ObservationWorkflowState
+    from gpp_client.generated.get_observation_workflow_state_by_id import (
+        GetObservationWorkflowStateById,
+        GetObservationWorkflowStateByIdObservationWorkflow,
+    )
+    from gpp_client.generated.get_observation_workflow_state_by_reference import (
+        GetObservationWorkflowStateByReference,
+    )
+    from gpp_client.generated.set_observation_workflow_state import (
+        SetObservationWorkflowStateSetObservationWorkflowState,
+    )
+
 
 logger = logging.getLogger(__name__)
 
@@ -104,9 +111,10 @@ class WorkflowStateDomain(BaseDomain):
         Raises
         ------
         GPPClientError
-            If there are general client-side errors.
+            If there are general client-side errors, or GPP returns no workflow.
         GPPValidationError
-            If the requested workflow state transition is invalid.
+            If the observation does not exist, or the requested workflow state
+            transition is invalid.
         GPPRetryableError
             If the observation calculation is not ``READY``.
         """
@@ -116,7 +124,13 @@ class WorkflowStateDomain(BaseDomain):
             workflow_state.value,
         )
         result = await self.get_by_id(observation_id=observation_id)
+        if result.observation is None:
+            raise GPPValidationError(f"Observation not found: {observation_id}")
         workflow = result.observation.workflow
+        if workflow is None:
+            raise GPPClientError(
+                f"GPP returned no workflow for observation {observation_id}."
+            )
 
         # If calculation is not 'READY', raise an error to retry later.
         try:
@@ -127,6 +141,10 @@ class WorkflowStateDomain(BaseDomain):
         # If the desired state is already set, return the current workflow
         # rebuilt as the mutation response model.
         if _check_already_set(workflow, workflow_state):
+            from gpp_client.generated.set_observation_workflow_state import (
+                SetObservationWorkflowStateSetObservationWorkflowState,
+            )
+
             logger.debug(
                 "Workflow state for observation ID %s is already %s; no update needed.",
                 observation_id,

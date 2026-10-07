@@ -21,7 +21,7 @@ def test_list_scheduler_programs_without_filters(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.scheduler.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(scheduler=scheduler),
     )
     json_pydantic_mock = mocker.patch(
@@ -51,7 +51,7 @@ def test_list_scheduler_programs_with_filters(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.scheduler.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(scheduler=scheduler),
     )
     json_pydantic_mock = mocker.patch(
@@ -91,7 +91,7 @@ def test_list_scheduler_program_ids(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.scheduler.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(scheduler=scheduler),
     )
     json_pydantic_mock = mocker.patch(

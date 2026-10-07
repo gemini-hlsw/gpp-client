@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client
 
 goats_app = typer.Typer(
     name="goats",
@@ -25,7 +24,7 @@ async def list_programs() -> None:
     List GOATS programs.
     """
     with output.status("Fetching GOATS programs..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.goats.get_programs()
 
     output.json_pydantic(result)
@@ -48,7 +47,7 @@ async def list_observations(
         Program ID.
     """
     with output.status("Fetching GOATS observations..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.goats.get_observations_by_program_id(
                 program_id=program_id
             )

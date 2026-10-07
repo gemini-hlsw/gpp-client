@@ -1,0 +1,4 @@
+# Collapsed in GitHub PR diffs: written by the schema download and codegen scripts, never by hand.
+src/gpp_client/generated/** linguist-generated=true
+graphql/schemas/*.graphql linguist-generated=true
+llms.txt linguist-generated=true

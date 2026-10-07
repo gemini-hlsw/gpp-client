@@ -43,7 +43,7 @@ def test_get_observation_dispatches_correctly(
     getattr(observation, method_name).return_value = result_model
 
     mocker.patch(
-        "gpp_client.cli.commands.observation.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(observation=observation),
     )
     json_pydantic_mock = mocker.patch(
@@ -103,7 +103,7 @@ def test_list_observations_dispatches_correctly(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.observation.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(observation=observation),
     )
     json_pydantic_mock = mocker.patch(

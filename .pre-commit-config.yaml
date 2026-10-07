@@ -1,42 +1,62 @@
-exclude: ^(tests/|src/gpp_client/generated/|docs/|graphql/|LICENSE)
+exclude: ^(src/gpp_client/generated/|graphql/|LICENSE)
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: "v6.0.0"
     hooks:
       - id: check-yaml
+        exclude: &docs ^docs/
       - id: check-json
+        exclude: *docs
       - id: check-toml
+        exclude: *docs
       # - id: check-docstring-first
       - id: check-case-conflict
+        exclude: *docs
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: debug-statements
+        exclude: *docs
       - id: detect-private-key
+        exclude: *docs
       - id: forbid-submodules
+        exclude: *docs
       - id: no-commit-to-branch
         args:
           - --branch=main
       - id: name-tests-test
+        exclude: ^tests/gpp_client/(fixture_build|schema_transport|subscription_server|domains/helpers)\.py$
         args:
           - --pytest-test-first
       - id: pretty-format-json
+        exclude: *docs
         args:
           - --autofix
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.10"
+  # Local hooks use the ruff locked in uv.lock and the uv on PATH, so they never
+  # drift from CI behind a pinned copy. Ruff covers the same files as CI's step.
+  - repo: local
     hooks:
       - id: ruff-check
-        args: [--fix]
+        name: ruff check
+        entry: uv run --locked ruff check --fix --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
       - id: ruff-format
+        name: ruff format
+        entry: uv run --locked ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: uv-lock
+        name: uv lock --check
+        entry: uv lock --check
+        language: system
+        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
+        pass_filenames: false
 
   - repo: https://github.com/numpy/numpydoc
     rev: "v1.10.0"
     hooks:
       - id: numpydoc-validation
-        exclude: ^(src/gpp_client/cli/|src/custom_plugins/|scripts/)
-
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.6
-    hooks:
-      - id: uv-lock
+        exclude: ^(docs/|tests/|src/gpp_client/cli/|src/custom_plugins/|scripts/)

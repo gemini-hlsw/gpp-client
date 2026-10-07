@@ -1,11 +1,14 @@
 """Shared pytest fixtures for CLI tests."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from typer.testing import CliRunner
 
 from gpp_client.cli.cli import app
+from gpp_client.environment import GPPEnvironment
 
 
 class DummyAsyncClient:
@@ -22,6 +25,7 @@ class DummyAsyncClient:
         **services : Any
             Attributes to attach to the client.
         """
+        self.settings = SimpleNamespace(environment=GPPEnvironment.PRODUCTION)
         for name, value in services.items():
             setattr(self, name, value)
 

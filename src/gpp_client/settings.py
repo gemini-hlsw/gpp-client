@@ -2,10 +2,12 @@
 Runtime settings for the installed GPP client package.
 """
 
+import re
+import tomllib
 from pathlib import Path
 
 import typer
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -17,6 +19,15 @@ from gpp_client.constants import APP_NAME, CONFIG_FILE_NAME
 from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import GPPAuthError, GPPClientError
 
+_ENV_PREFIX = "GPP_"
+
+
+def _token_setting(environment: GPPEnvironment) -> str:
+    """
+    Return the setting holding an environment's token, read from its variable.
+    """
+    return environment.token_variable.removeprefix(_ENV_PREFIX).lower()
+
 
 class GPPSettings(BaseSettings):
     """
@@ -25,19 +36,23 @@ class GPPSettings(BaseSettings):
     Notes
     -----
     Supported environment variables:
-      - ``GPP_TOKEN``
+      - ``GPP_ENVIRONMENT``
+      - ``GPP_TOKEN`` (production)
       - ``GPP_DEVELOPMENT_TOKEN``
       - ``GPP_DEBUG``
 
-    Token resolution behavior:
-      - Production package uses ``token``.
-      - Development package uses ``development_token``.
+    An empty value counts as unset.
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="GPP_",
+        env_prefix=_ENV_PREFIX,
         env_file=".env",
+        env_ignore_empty=True,
         extra="ignore",
+    )
+    environment: GPPEnvironment = Field(
+        default=GPPEnvironment.PRODUCTION,
+        description="The GPP environment to connect to.",
     )
     token: SecretStr | None = Field(
         default=None,
@@ -50,16 +65,30 @@ class GPPSettings(BaseSettings):
     debug: bool = Field(
         default=False, description="Whether to enable debug logging for the client."
     )
-    environment_override: GPPEnvironment | None = Field(
-        default=None,
-        exclude=True,
-        description="Explicit environment override for tooling and codegen.",
-    )
+
+    @field_validator("environment", mode="before")
+    @classmethod
+    def _parse_environment(cls, value: object) -> object:
+        """
+        Read an environment name in any case, and an empty one as production.
+        """
+        if isinstance(value, GPPEnvironment):
+            return value
+        if isinstance(value, str) and not value.strip():
+            return GPPEnvironment.PRODUCTION
+        try:
+            return GPPEnvironment(value)
+        except ValueError:
+            valid = ", ".join(env.label for env in GPPEnvironment)
+            # Not a ValueError, so pydantic raises it as is instead of wrapping it.
+            raise GPPClientError(
+                f"Unknown GPP environment {value!r}. Valid names: {valid}."
+            ) from None
 
     @property
     def resolved_token(self) -> str:
         """
-        Return the token appropriate for the installed package environment.
+        Return the token for the selected environment.
 
         Returns
         -------
@@ -69,28 +98,33 @@ class GPPSettings(BaseSettings):
         Raises
         ------
         GPPAuthError
-            If no valid token is available for the active environment.
+            If the selected environment has no token.
         """
-        return _resolve_token(
-            environment=self.environment,
-            token=self.token,
-            development_token=self.development_token,
+        token = _unwrap(getattr(self, _token_setting(self.environment)))
+        if token:
+            return token
+        raise GPPAuthError(
+            f"A token is required for the {self.environment.label} "
+            f"environment. Set '{self.environment.token_variable}'."
         )
 
-    @property
-    def environment(self) -> GPPEnvironment:
+    def with_token(self, token: str) -> "GPPSettings":
         """
-        Determine the effective package environment.
+        Return a copy whose selected environment uses ``token``.
+
+        Parameters
+        ----------
+        token : str
+            The API token.
 
         Returns
         -------
-        GPPEnvironment
-            Effective package environment, either from the override or the generated
-            constant.
+        GPPSettings
+            The settings with the token in the selected environment's slot.
         """
-        if self.environment_override is not None:
-            return self.environment_override
-        return _get_packaged_environment()
+        return self.model_copy(
+            update={_token_setting(self.environment): SecretStr(token)}
+        )
 
     @classmethod
     def settings_customise_sources(
@@ -147,22 +181,6 @@ class GPPSettings(BaseSettings):
             file_secret_settings,
         )
 
-    # @model_validator(mode="after")
-    # def validate_tokens(self) -> Self:
-    #     """
-    #     Ensure a valid token exists for the active environment.
-
-    #     Returns
-    #     -------
-    #     Self
-    #         Validated settings instance.
-    #     """
-    #     try:
-    #         _ = self.resolved_token
-    #     except GPPAuthError as exc:
-    #         raise ValueError(str(exc)) from exc
-    #     return self
-
 
 def get_config_path() -> Path:
     """
@@ -176,50 +194,83 @@ def get_config_path() -> Path:
     return Path(typer.get_app_dir(APP_NAME)) / CONFIG_FILE_NAME
 
 
+_ENVIRONMENT_KEY = re.compile(r"""^\s*["']?environment["']?\s*=""")
+
+
+def set_default_environment(environment: GPPEnvironment | str) -> Path:
+    """
+    Store the default environment in the configuration file.
+
+    The file and its folder are created if missing. Every other line of an
+    existing file is kept as it is.
+
+    Parameters
+    ----------
+    environment : GPPEnvironment | str
+        The environment to store.
+
+    Returns
+    -------
+    Path
+        The configuration file written.
+
+    Raises
+    ------
+    GPPClientError
+        If the existing file is not valid TOML, or the edit would change more
+        than the environment.
+    """
+    environment = GPPEnvironment(environment)
+    path = get_config_path()
+    text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    try:
+        tomllib.loads(text)
+    except tomllib.TOMLDecodeError as exc:
+        raise GPPClientError(
+            f"Cannot update {path}: it is not valid TOML ({exc})."
+        ) from None
+
+    entry = f'environment = "{environment.label}"\n'
+    lines = text.splitlines(keepends=True)
+    existing = _top_level_environment_line(lines)
+    if existing is None:
+        lines.insert(0, entry)
+    else:
+        lines[existing] = entry
+    updated = "".join(lines)
+
+    # A line-based edit can misread multi-line values; never write a file
+    # whose meaning is not exactly the old one plus the new environment.
+    expected = {**tomllib.loads(text), "environment": environment.label}
+    try:
+        written = tomllib.loads(updated)
+    except tomllib.TOMLDecodeError:
+        written = None
+    if written != expected:
+        raise GPPClientError(
+            f"Cannot update {path} safely. Set environment = "
+            f'"{environment.label}" at the top of the file by hand.'
+        )
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(updated, encoding="utf-8")
+    return path
+
+
+def _top_level_environment_line(lines: list[str]) -> int | None:
+    """
+    Return the index of the ``environment`` key before any table, if present.
+    """
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith("["):
+            return None
+        if _ENVIRONMENT_KEY.match(line):
+            return index
+    return None
+
+
 def _unwrap(secret: SecretStr | None) -> str | None:
     """
     Helper function to unwrap a ``SecretStr`` or return ``None`` if not provided.
     """
     return secret.get_secret_value() if secret else None
-
-
-def _get_packaged_environment() -> GPPEnvironment:
-    """
-    Helper function to get the package environment from the generated constant.
-    """
-    try:
-        from gpp_client.generated.package_environment import PACKAGE_ENVIRONMENT
-    except ModuleNotFoundError as exc:
-        raise GPPClientError(
-            "Generated package environment is unavailable. Pass 'environment_override'"
-            " to GPPSettings or ensure the client is properly installed."
-        ) from exc
-    return GPPEnvironment(PACKAGE_ENVIRONMENT)
-
-
-def _resolve_token(
-    *,
-    environment: GPPEnvironment,
-    token: SecretStr | None,
-    development_token: SecretStr | None,
-) -> str:
-    """
-    Resolve the correct token for the given environment.
-    """
-    resolved_token = _unwrap(token)
-    resolved_development_token = _unwrap(development_token)
-
-    if environment is GPPEnvironment.DEVELOPMENT:
-        if resolved_development_token:
-            return resolved_development_token
-        raise GPPAuthError(
-            "A token is required for the development environment. "
-            "Set 'GPP_DEVELOPMENT_TOKEN'."
-        )
-
-    if resolved_token:
-        return resolved_token
-
-    raise GPPAuthError(
-        "A token is required for the production environment. Set 'GPP_TOKEN'."
-    )

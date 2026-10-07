@@ -1,5 +1,5 @@
 from collections.abc import AsyncIterator
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from graphql import (
     DocumentNode,
@@ -15,85 +15,88 @@ from graphql import (
 )
 
 from .async_base_client import AsyncBaseClient
-from .base_model import UNSET, UnsetType
-from .base_operation import GraphQLField
-from .clone_observation import CloneObservation
-from .clone_target import CloneTarget
-from .create_call_for_proposals import CreateCallForProposals
-from .create_observation import CreateObservation
-from .create_program import CreateProgram
-from .create_target_by_program_id import CreateTargetByProgramId
-from .create_target_by_program_reference import CreateTargetByProgramReference
-from .create_target_by_proposal_reference import CreateTargetByProposalReference
-from .delete_call_for_proposals_by_id import DeleteCallForProposalsById
-from .delete_observation_by_id import DeleteObservationById
-from .delete_observation_by_reference import DeleteObservationByReference
-from .delete_program_by_id import DeleteProgramById
-from .delete_target_by_id import DeleteTargetById
-from .enums import Instrument, ObservationWorkflowState
-from .get_call_for_proposals import GetCallForProposals
-from .get_calls_for_proposals import GetCallsForProposals
-from .get_goats_config_options import GetGOATSConfigOptions
-from .get_goats_configuration_requests import GetGOATSConfigurationRequests
-from .get_goats_observations import GetGOATSObservations
-from .get_goats_programs import GetGOATSPrograms
-from .get_observation import GetObservation
-from .get_observation_attachments_by_id import GetObservationAttachmentsById
-from .get_observation_attachments_by_reference import (
-    GetObservationAttachmentsByReference,
-)
-from .get_observation_workflow_state_by_id import GetObservationWorkflowStateById
-from .get_observation_workflow_state_by_reference import (
-    GetObservationWorkflowStateByReference,
-)
-from .get_observations import GetObservations
-from .get_program_attachments_by_id import GetProgramAttachmentsById
-from .get_program_attachments_by_proposal_reference import (
-    GetProgramAttachmentsByProposalReference,
-)
-from .get_program_attachments_by_reference import GetProgramAttachmentsByReference
-from .get_program_by_id import GetProgramById
-from .get_program_by_proposal_reference import GetProgramByProposalReference
-from .get_program_by_reference import GetProgramByReference
-from .get_programs import GetPrograms
-from .get_scheduler_all_programs_id import GetSchedulerAllProgramsId
-from .get_scheduler_programs import GetSchedulerPrograms
-from .get_target_by_id import GetTargetById
-from .get_targets import GetTargets
-from .input_types import (
-    CallForProposalsPropertiesInput,
-    CloneObservationInput,
-    CreateObservationInput,
-    ObservationPropertiesInput,
-    ProgramPropertiesInput,
-    TargetPropertiesInput,
-    UpdateObservationsInput,
-    WhereCallForProposals,
-    WhereObservation,
-    WhereProgram,
-    WhereTarget,
-)
-from .obs_calculation_update import ObsCalculationUpdate
-from .observation_edit import ObservationEdit
-from .ping import Ping
-from .program_edit import ProgramEdit
-from .restore_call_for_proposals_by_id import RestoreCallForProposalsById
-from .restore_observation_by_id import RestoreObservationById
-from .restore_observation_by_reference import RestoreObservationByReference
-from .restore_program_by_id import RestoreProgramById
-from .restore_target_by_id import RestoreTargetById
-from .scheduler_observations_updates import SchedulerObservationsUpdates
-from .set_observation_workflow_state import SetObservationWorkflowState
-from .target_edit import TargetEdit
-from .update_call_for_proposals_by_id import UpdateCallForProposalsById
-from .update_calls_for_proposals import UpdateCallsForProposals
-from .update_observation_by_id import UpdateObservationById
-from .update_observation_by_reference import UpdateObservationByReference
-from .update_observations import UpdateObservations
-from .update_program_by_id import UpdateProgramById
-from .update_programs import UpdatePrograms
-from .update_target_by_id import UpdateTargetById
-from .update_targets import UpdateTargets
+from .base_model import UNSET
+
+if TYPE_CHECKING:
+    from .base_model import UnsetType
+    from .base_operation import GraphQLField
+    from .clone_observation import CloneObservation
+    from .clone_target import CloneTarget
+    from .create_call_for_proposals import CreateCallForProposals
+    from .create_observation import CreateObservation
+    from .create_program import CreateProgram
+    from .create_target_by_program_id import CreateTargetByProgramId
+    from .create_target_by_program_reference import CreateTargetByProgramReference
+    from .create_target_by_proposal_reference import CreateTargetByProposalReference
+    from .delete_call_for_proposals_by_id import DeleteCallForProposalsById
+    from .delete_observation_by_id import DeleteObservationById
+    from .delete_observation_by_reference import DeleteObservationByReference
+    from .delete_program_by_id import DeleteProgramById
+    from .delete_target_by_id import DeleteTargetById
+    from .enums import Instrument, ObservationWorkflowState
+    from .get_call_for_proposals import GetCallForProposals
+    from .get_calls_for_proposals import GetCallsForProposals
+    from .get_goats_config_options import GetGOATSConfigOptions
+    from .get_goats_configuration_requests import GetGOATSConfigurationRequests
+    from .get_goats_observations import GetGOATSObservations
+    from .get_goats_programs import GetGOATSPrograms
+    from .get_observation import GetObservation
+    from .get_observation_attachments_by_id import GetObservationAttachmentsById
+    from .get_observation_attachments_by_reference import (
+        GetObservationAttachmentsByReference,
+    )
+    from .get_observation_workflow_state_by_id import GetObservationWorkflowStateById
+    from .get_observation_workflow_state_by_reference import (
+        GetObservationWorkflowStateByReference,
+    )
+    from .get_observations import GetObservations
+    from .get_program_attachments_by_id import GetProgramAttachmentsById
+    from .get_program_attachments_by_proposal_reference import (
+        GetProgramAttachmentsByProposalReference,
+    )
+    from .get_program_attachments_by_reference import GetProgramAttachmentsByReference
+    from .get_program_by_id import GetProgramById
+    from .get_program_by_proposal_reference import GetProgramByProposalReference
+    from .get_program_by_reference import GetProgramByReference
+    from .get_programs import GetPrograms
+    from .get_scheduler_all_programs_id import GetSchedulerAllProgramsId
+    from .get_scheduler_programs import GetSchedulerPrograms
+    from .get_target_by_id import GetTargetById
+    from .get_targets import GetTargets
+    from .input_types import (
+        CallForProposalsPropertiesInput,
+        CloneObservationInput,
+        CreateObservationInput,
+        ObservationPropertiesInput,
+        ProgramPropertiesInput,
+        TargetPropertiesInput,
+        UpdateObservationsInput,
+        WhereCallForProposals,
+        WhereObservation,
+        WhereProgram,
+        WhereTarget,
+    )
+    from .obs_calculation_update import ObsCalculationUpdate
+    from .observation_edit import ObservationEdit
+    from .ping import Ping
+    from .program_edit import ProgramEdit
+    from .restore_call_for_proposals_by_id import RestoreCallForProposalsById
+    from .restore_observation_by_id import RestoreObservationById
+    from .restore_observation_by_reference import RestoreObservationByReference
+    from .restore_program_by_id import RestoreProgramById
+    from .restore_target_by_id import RestoreTargetById
+    from .scheduler_observations_updates import SchedulerObservationsUpdates
+    from .set_observation_workflow_state import SetObservationWorkflowState
+    from .target_edit import TargetEdit
+    from .update_call_for_proposals_by_id import UpdateCallForProposalsById
+    from .update_calls_for_proposals import UpdateCallsForProposals
+    from .update_observation_by_id import UpdateObservationById
+    from .update_observation_by_reference import UpdateObservationByReference
+    from .update_observations import UpdateObservations
+    from .update_program_by_id import UpdateProgramById
+    from .update_programs import UpdatePrograms
+    from .update_target_by_id import UpdateTargetById
+    from .update_targets import UpdateTargets
 
 
 def gql(q: str) -> str:
@@ -103,7 +106,9 @@ def gql(q: str) -> str:
 class GraphQLClient(AsyncBaseClient):
     async def get_observation_attachments_by_id(
         self, observation_id: Any, **kwargs: Any
-    ) -> GetObservationAttachmentsById:
+    ) -> "GetObservationAttachmentsById":
+        from .get_observation_attachments_by_id import GetObservationAttachmentsById
+
         query = gql("""
             query GetObservationAttachmentsById($observationId: ObservationId!) {
               observation(observationId: $observationId) {
@@ -135,7 +140,11 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_observation_attachments_by_reference(
         self, observation_reference: Any, **kwargs: Any
-    ) -> GetObservationAttachmentsByReference:
+    ) -> "GetObservationAttachmentsByReference":
+        from .get_observation_attachments_by_reference import (
+            GetObservationAttachmentsByReference,
+        )
+
         query = gql("""
             query GetObservationAttachmentsByReference($observationReference: ObservationReferenceLabel!) {
               observation(observationReference: $observationReference) {
@@ -167,7 +176,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_attachments_by_id(
         self, program_id: Any, **kwargs: Any
-    ) -> GetProgramAttachmentsById:
+    ) -> "GetProgramAttachmentsById":
+        from .get_program_attachments_by_id import GetProgramAttachmentsById
+
         query = gql("""
             query GetProgramAttachmentsById($programId: ProgramId!) {
               program(programId: $programId) {
@@ -199,7 +210,11 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_attachments_by_reference(
         self, program_reference: Any, **kwargs: Any
-    ) -> GetProgramAttachmentsByReference:
+    ) -> "GetProgramAttachmentsByReference":
+        from .get_program_attachments_by_reference import (
+            GetProgramAttachmentsByReference,
+        )
+
         query = gql("""
             query GetProgramAttachmentsByReference($programReference: ProgramReferenceLabel!) {
               program(programReference: $programReference) {
@@ -231,7 +246,11 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_attachments_by_proposal_reference(
         self, proposal_reference: Any, **kwargs: Any
-    ) -> GetProgramAttachmentsByProposalReference:
+    ) -> "GetProgramAttachmentsByProposalReference":
+        from .get_program_attachments_by_proposal_reference import (
+            GetProgramAttachmentsByProposalReference,
+        )
+
         query = gql("""
             query GetProgramAttachmentsByProposalReference($proposalReference: ProposalReferenceLabel!) {
               program(proposalReference: $proposalReference) {
@@ -263,9 +282,13 @@ class GraphQLClient(AsyncBaseClient):
 
     async def create_call_for_proposals(
         self,
-        properties: Union[Optional[CallForProposalsPropertiesInput], UnsetType] = UNSET,
+        properties: Union[
+            Optional["CallForProposalsPropertiesInput"], "UnsetType"
+        ] = UNSET,
         **kwargs: Any,
-    ) -> CreateCallForProposals:
+    ) -> "CreateCallForProposals":
+        from .create_call_for_proposals import CreateCallForProposals
+
         query = gql("""
             mutation createCallForProposals($properties: CallForProposalsPropertiesInput) {
               createCallForProposals(input: {SET: $properties}) {
@@ -315,12 +338,14 @@ class GraphQLClient(AsyncBaseClient):
 
     async def update_calls_for_proposals(
         self,
-        properties: CallForProposalsPropertiesInput,
+        properties: "CallForProposalsPropertiesInput",
         include_deleted: bool,
-        where: Union[Optional[WhereCallForProposals], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereCallForProposals"], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> UpdateCallsForProposals:
+    ) -> "UpdateCallsForProposals":
+        from .update_calls_for_proposals import UpdateCallsForProposals
+
         query = gql("""
             mutation updateCallsForProposals($properties: CallForProposalsPropertiesInput!, $where: WhereCallForProposals, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               updateCallsForProposals(
@@ -379,10 +404,12 @@ class GraphQLClient(AsyncBaseClient):
     async def update_call_for_proposals_by_id(
         self,
         call_for_proposals_id: Any,
-        properties: CallForProposalsPropertiesInput,
+        properties: "CallForProposalsPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> UpdateCallForProposalsById:
+    ) -> "UpdateCallForProposalsById":
+        from .update_call_for_proposals_by_id import UpdateCallForProposalsById
+
         query = gql("""
             mutation updateCallForProposalsById($callForProposalsId: CallForProposalsId!, $properties: CallForProposalsPropertiesInput!, $includeDeleted: Boolean! = false) {
               updateCallsForProposals(
@@ -439,7 +466,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def restore_call_for_proposals_by_id(
         self, call_for_proposals_id: Any, **kwargs: Any
-    ) -> RestoreCallForProposalsById:
+    ) -> "RestoreCallForProposalsById":
+        from .restore_call_for_proposals_by_id import RestoreCallForProposalsById
+
         query = gql("""
             mutation restoreCallForProposalsById($callForProposalsId: CallForProposalsId!) {
               updateCallsForProposals(
@@ -492,7 +521,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def delete_call_for_proposals_by_id(
         self, call_for_proposals_id: Any, **kwargs: Any
-    ) -> DeleteCallForProposalsById:
+    ) -> "DeleteCallForProposalsById":
+        from .delete_call_for_proposals_by_id import DeleteCallForProposalsById
+
         query = gql("""
             mutation deleteCallForProposalsById($callForProposalsId: CallForProposalsId!) {
               updateCallsForProposals(
@@ -545,7 +576,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_call_for_proposals(
         self, call_for_proposals_id: Any, **kwargs: Any
-    ) -> GetCallForProposals:
+    ) -> "GetCallForProposals":
+        from .get_call_for_proposals import GetCallForProposals
+
         query = gql("""
             query getCallForProposals($callForProposalsId: CallForProposalsId!) {
               callForProposals(callForProposalsId: $callForProposalsId) {
@@ -594,11 +627,13 @@ class GraphQLClient(AsyncBaseClient):
     async def get_calls_for_proposals(
         self,
         include_deleted: bool,
-        where: Union[Optional[WhereCallForProposals], UnsetType] = UNSET,
-        offset: Union[Optional[Any], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereCallForProposals"], "UnsetType"] = UNSET,
+        offset: Union[Optional[Any], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetCallsForProposals:
+    ) -> "GetCallsForProposals":
+        from .get_calls_for_proposals import GetCallsForProposals
+
         query = gql("""
             query getCallsForProposals($where: WhereCallForProposals, $offset: CallForProposalsId, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               callsForProposals(
@@ -657,7 +692,9 @@ class GraphQLClient(AsyncBaseClient):
         data = self.get_data(response)
         return GetCallsForProposals.model_validate(data)
 
-    async def get_goats_programs(self, **kwargs: Any) -> GetGOATSPrograms:
+    async def get_goats_programs(self, **kwargs: Any) -> "GetGOATSPrograms":
+        from .get_goats_programs import GetGOATSPrograms
+
         query = gql("""
             query GetGOATSPrograms {
               programs(includeDeleted: false, WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
@@ -688,7 +725,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_goats_observations(
         self, program_id: Any, **kwargs: Any
-    ) -> GetGOATSObservations:
+    ) -> "GetGOATSObservations":
+        from .get_goats_observations import GetGOATSObservations
+
         query = gql("""
             query GetGOATSObservations($programId: ProgramId!) {
               observations(
@@ -1913,7 +1952,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_goats_configuration_requests(
         self, program_id: Any, **kwargs: Any
-    ) -> GetGOATSConfigurationRequests:
+    ) -> "GetGOATSConfigurationRequests":
+        from .get_goats_configuration_requests import GetGOATSConfigurationRequests
+
         query = gql("""
             query GetGOATSConfigurationRequests($programId: ProgramId!) {
               configurationRequests(
@@ -1976,8 +2017,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetGOATSConfigurationRequests.model_validate(data)
 
     async def get_goats_config_options(
-        self, instrument: Instrument, **kwargs: Any
-    ) -> GetGOATSConfigOptions:
+        self, instrument: "Instrument", **kwargs: Any
+    ) -> "GetGOATSConfigOptions":
+        from .get_goats_config_options import GetGOATSConfigOptions
+
         query = gql("""
             query GetGOATSConfigOptions($instrument: Instrument!) {
               spectroscopyConfigOptions(WHERE: {instrument: {EQ: $instrument}}) {
@@ -2042,8 +2085,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetGOATSConfigOptions.model_validate(data)
 
     async def create_observation(
-        self, input: CreateObservationInput, **kwargs: Any
-    ) -> CreateObservation:
+        self, input: "CreateObservationInput", **kwargs: Any
+    ) -> "CreateObservation":
+        from .create_observation import CreateObservation
+
         query = gql("""
             mutation createObservation($input: CreateObservationInput!) {
               createObservation(input: $input) {
@@ -3052,8 +3097,10 @@ class GraphQLClient(AsyncBaseClient):
         return CreateObservation.model_validate(data)
 
     async def clone_observation(
-        self, input: CloneObservationInput, **kwargs: Any
-    ) -> CloneObservation:
+        self, input: "CloneObservationInput", **kwargs: Any
+    ) -> "CloneObservation":
+        from .clone_observation import CloneObservation
+
         query = gql("""
             mutation cloneObservation($input: CloneObservationInput!) {
               cloneObservation(input: $input) {
@@ -4062,8 +4109,10 @@ class GraphQLClient(AsyncBaseClient):
         return CloneObservation.model_validate(data)
 
     async def update_observations(
-        self, input: UpdateObservationsInput, **kwargs: Any
-    ) -> UpdateObservations:
+        self, input: "UpdateObservationsInput", **kwargs: Any
+    ) -> "UpdateObservations":
+        from .update_observations import UpdateObservations
+
         query = gql("""
             mutation updateObservations($input: UpdateObservationsInput!) {
               updateObservations(input: $input) {
@@ -5073,8 +5122,10 @@ class GraphQLClient(AsyncBaseClient):
         return UpdateObservations.model_validate(data)
 
     async def update_observation_by_id(
-        self, observation_id: Any, set_: ObservationPropertiesInput, **kwargs: Any
-    ) -> UpdateObservationById:
+        self, observation_id: Any, set_: "ObservationPropertiesInput", **kwargs: Any
+    ) -> "UpdateObservationById":
+        from .update_observation_by_id import UpdateObservationById
+
         query = gql("""
             mutation updateObservationById($observationId: ObservationId!, $SET: ObservationPropertiesInput!) {
               updateObservations(
@@ -6088,9 +6139,11 @@ class GraphQLClient(AsyncBaseClient):
     async def update_observation_by_reference(
         self,
         observation_reference: Any,
-        set_: ObservationPropertiesInput,
+        set_: "ObservationPropertiesInput",
         **kwargs: Any,
-    ) -> UpdateObservationByReference:
+    ) -> "UpdateObservationByReference":
+        from .update_observation_by_reference import UpdateObservationByReference
+
         query = gql("""
             mutation updateObservationByReference($observationReference: NonEmptyString!, $SET: ObservationPropertiesInput!) {
               updateObservations(
@@ -7106,7 +7159,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def restore_observation_by_id(
         self, observation_id: Any, **kwargs: Any
-    ) -> RestoreObservationById:
+    ) -> "RestoreObservationById":
+        from .restore_observation_by_id import RestoreObservationById
+
         query = gql("""
             mutation restoreObservationById($observationId: ObservationId!) {
               updateObservations(
@@ -8119,7 +8174,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def restore_observation_by_reference(
         self, observation_reference: Any, **kwargs: Any
-    ) -> RestoreObservationByReference:
+    ) -> "RestoreObservationByReference":
+        from .restore_observation_by_reference import RestoreObservationByReference
+
         query = gql("""
             mutation restoreObservationByReference($observationReference: NonEmptyString!) {
               updateObservations(
@@ -9132,7 +9189,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def delete_observation_by_id(
         self, observation_id: Any, **kwargs: Any
-    ) -> DeleteObservationById:
+    ) -> "DeleteObservationById":
+        from .delete_observation_by_id import DeleteObservationById
+
         query = gql("""
             mutation deleteObservationById($observationId: ObservationId!) {
               updateObservations(
@@ -10145,7 +10204,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def delete_observation_by_reference(
         self, observation_reference: Any, **kwargs: Any
-    ) -> DeleteObservationByReference:
+    ) -> "DeleteObservationByReference":
+        from .delete_observation_by_reference import DeleteObservationByReference
+
         query = gql("""
             mutation deleteObservationByReference($observationReference: NonEmptyString!) {
               updateObservations(
@@ -11158,10 +11219,12 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_observation(
         self,
-        observation_id: Union[Optional[Any], UnsetType] = UNSET,
-        observation_reference: Union[Optional[Any], UnsetType] = UNSET,
+        observation_id: Union[Optional[Any], "UnsetType"] = UNSET,
+        observation_reference: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetObservation:
+    ) -> "GetObservation":
+        from .get_observation import GetObservation
+
         query = gql("""
             query getObservation($observationId: ObservationId, $observationReference: ObservationReferenceLabel) {
               observation(
@@ -12173,11 +12236,13 @@ class GraphQLClient(AsyncBaseClient):
     async def get_observations(
         self,
         include_deleted: bool,
-        where: Union[Optional[WhereObservation], UnsetType] = UNSET,
-        offset: Union[Optional[Any], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereObservation"], "UnsetType"] = UNSET,
+        offset: Union[Optional[Any], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetObservations:
+    ) -> "GetObservations":
+        from .get_observations import GetObservations
+
         query = gql("""
             query getObservations($WHERE: WhereObservation, $OFFSET: ObservationId, $LIMIT: NonNegInt, $includeDeleted: Boolean! = false) {
               observations(
@@ -13194,8 +13259,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetObservations.model_validate(data)
 
     async def observation_edit(
-        self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[ObservationEdit]:
+        self, program_id: Union[Optional[Any], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> AsyncIterator["ObservationEdit"]:
+        from .observation_edit import ObservationEdit
+
         query = gql("""
             subscription ObservationEdit($programId: ProgramId) {
               observationEdit(input: {programId: $programId}) {
@@ -13309,8 +13376,10 @@ class GraphQLClient(AsyncBaseClient):
             yield ObservationEdit.model_validate(data)
 
     async def obs_calculation_update(
-        self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[ObsCalculationUpdate]:
+        self, program_id: Union[Optional[Any], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> AsyncIterator["ObsCalculationUpdate"]:
+        from .obs_calculation_update import ObsCalculationUpdate
+
         query = gql("""
             subscription ObsCalculationUpdate($programId: ProgramId) {
               obscalcUpdate(input: {programId: $programId}) {
@@ -13352,9 +13421,11 @@ class GraphQLClient(AsyncBaseClient):
     async def create_program(
         self,
         include_deleted: bool,
-        properties: Union[Optional[ProgramPropertiesInput], UnsetType] = UNSET,
+        properties: Union[Optional["ProgramPropertiesInput"], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> CreateProgram:
+    ) -> "CreateProgram":
+        from .create_program import CreateProgram
+
         query = gql("""
             mutation createProgram($properties: ProgramPropertiesInput, $includeDeleted: Boolean! = false) {
               createProgram(input: {SET: $properties}) {
@@ -13447,12 +13518,14 @@ class GraphQLClient(AsyncBaseClient):
 
     async def update_programs(
         self,
-        properties: ProgramPropertiesInput,
+        properties: "ProgramPropertiesInput",
         include_deleted: bool,
-        where: Union[Optional[WhereProgram], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereProgram"], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> UpdatePrograms:
+    ) -> "UpdatePrograms":
+        from .update_programs import UpdatePrograms
+
         query = gql("""
             mutation updatePrograms($properties: ProgramPropertiesInput!, $where: WhereProgram, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               updatePrograms(
@@ -13551,10 +13624,12 @@ class GraphQLClient(AsyncBaseClient):
     async def update_program_by_id(
         self,
         program_id: Any,
-        properties: ProgramPropertiesInput,
+        properties: "ProgramPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> UpdateProgramById:
+    ) -> "UpdateProgramById":
+        from .update_program_by_id import UpdateProgramById
+
         query = gql("""
             mutation updateProgramById($programId: ProgramId!, $properties: ProgramPropertiesInput!, $includeDeleted: Boolean! = false) {
               updatePrograms(
@@ -13654,7 +13729,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def restore_program_by_id(
         self, program_id: Any, **kwargs: Any
-    ) -> RestoreProgramById:
+    ) -> "RestoreProgramById":
+        from .restore_program_by_id import RestoreProgramById
+
         query = gql("""
             mutation restoreProgramById($programId: ProgramId!) {
               updatePrograms(
@@ -13746,7 +13823,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def delete_program_by_id(
         self, program_id: Any, **kwargs: Any
-    ) -> DeleteProgramById:
+    ) -> "DeleteProgramById":
+        from .delete_program_by_id import DeleteProgramById
+
         query = gql("""
             mutation deleteProgramById($programId: ProgramId!) {
               updatePrograms(
@@ -13838,7 +13917,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_by_id(
         self, program_id: Any, include_deleted: bool, **kwargs: Any
-    ) -> GetProgramById:
+    ) -> "GetProgramById":
+        from .get_program_by_id import GetProgramById
+
         query = gql("""
             query getProgramById($programId: ProgramId!, $includeDeleted: Boolean! = false) {
               program(programId: $programId) {
@@ -13929,7 +14010,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_by_reference(
         self, program_reference: Any, include_deleted: bool, **kwargs: Any
-    ) -> GetProgramByReference:
+    ) -> "GetProgramByReference":
+        from .get_program_by_reference import GetProgramByReference
+
         query = gql("""
             query getProgramByReference($programReference: ProgramReferenceLabel!, $includeDeleted: Boolean! = false) {
               program(programReference: $programReference) {
@@ -14023,7 +14106,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_program_by_proposal_reference(
         self, proposal_reference: Any, include_deleted: bool, **kwargs: Any
-    ) -> GetProgramByProposalReference:
+    ) -> "GetProgramByProposalReference":
+        from .get_program_by_proposal_reference import GetProgramByProposalReference
+
         query = gql("""
             query getProgramByProposalReference($proposalReference: ProposalReferenceLabel!, $includeDeleted: Boolean! = false) {
               program(proposalReference: $proposalReference) {
@@ -14118,11 +14203,13 @@ class GraphQLClient(AsyncBaseClient):
     async def get_programs(
         self,
         include_deleted: bool,
-        where: Union[Optional[WhereProgram], UnsetType] = UNSET,
-        offset: Union[Optional[Any], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereProgram"], "UnsetType"] = UNSET,
+        offset: Union[Optional[Any], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetPrograms:
+    ) -> "GetPrograms":
+        from .get_programs import GetPrograms
+
         query = gql("""
             query getPrograms($where: WhereProgram, $offset: ProgramId, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               programs(
@@ -14222,8 +14309,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetPrograms.model_validate(data)
 
     async def program_edit(
-        self, program_id: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[ProgramEdit]:
+        self, program_id: Union[Optional[Any], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> AsyncIterator["ProgramEdit"]:
+        from .program_edit import ProgramEdit
+
         query = gql("""
             subscription ProgramEdit($programId: ProgramId) {
               programEdit(input: {programId: $programId}) {
@@ -14253,11 +14342,13 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_scheduler_programs(
         self,
-        programs_list: Union[Optional[list[Any]], UnsetType] = UNSET,
-        offset: Union[Optional[Any], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        programs_list: Union[Optional[list[Any]], "UnsetType"] = UNSET,
+        offset: Union[Optional[Any], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetSchedulerPrograms:
+    ) -> "GetSchedulerPrograms":
+        from .get_scheduler_programs import GetSchedulerPrograms
+
         query = gql("""
             query GetSchedulerPrograms($programsList: [ProgramId!], $offset: ProgramId, $limit: NonNegInt) {
               programs(WHERE: {id: {IN: $programsList}}, OFFSET: $offset, LIMIT: $limit) {
@@ -14369,8 +14460,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetSchedulerPrograms.model_validate(data)
 
     async def get_scheduler_all_programs_id(
-        self, today: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
-    ) -> GetSchedulerAllProgramsId:
+        self, today: Union[Optional[Any], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> "GetSchedulerAllProgramsId":
+        from .get_scheduler_all_programs_id import GetSchedulerAllProgramsId
+
         query = gql("""
             query GetSchedulerAllProgramsId($today: Date) {
               programs(
@@ -14397,8 +14490,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetSchedulerAllProgramsId.model_validate(data)
 
     async def scheduler_observations_updates(
-        self, executable_only: Union[Optional[bool], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[SchedulerObservationsUpdates]:
+        self, executable_only: Union[Optional[bool], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> AsyncIterator["SchedulerObservationsUpdates"]:
+        from .scheduler_observations_updates import SchedulerObservationsUpdates
+
         query = gql("""
             subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
               obscalcUpdate(
@@ -14524,10 +14619,12 @@ class GraphQLClient(AsyncBaseClient):
         self,
         target_id: Any,
         include_deleted: bool,
-        properties: Union[Optional[TargetPropertiesInput], UnsetType] = UNSET,
-        replace_in: Union[Optional[list[Any]], UnsetType] = UNSET,
+        properties: Union[Optional["TargetPropertiesInput"], "UnsetType"] = UNSET,
+        replace_in: Union[Optional[list[Any]], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> CloneTarget:
+    ) -> "CloneTarget":
+        from .clone_target import CloneTarget
+
         query = gql("""
             mutation cloneTarget($targetId: TargetId!, $properties: TargetPropertiesInput, $replaceIn: [ObservationId!], $includeDeleted: Boolean! = false) {
               cloneTarget(
@@ -14628,10 +14725,12 @@ class GraphQLClient(AsyncBaseClient):
     async def create_target_by_program_id(
         self,
         program_id: Any,
-        properties: TargetPropertiesInput,
+        properties: "TargetPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> CreateTargetByProgramId:
+    ) -> "CreateTargetByProgramId":
+        from .create_target_by_program_id import CreateTargetByProgramId
+
         query = gql("""
             mutation createTargetByProgramId($programId: ProgramId!, $properties: TargetPropertiesInput!, $includeDeleted: Boolean! = false) {
               createTarget(input: {programId: $programId, SET: $properties}) {
@@ -14732,10 +14831,12 @@ class GraphQLClient(AsyncBaseClient):
     async def create_target_by_proposal_reference(
         self,
         proposal_reference: Any,
-        properties: TargetPropertiesInput,
+        properties: "TargetPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> CreateTargetByProposalReference:
+    ) -> "CreateTargetByProposalReference":
+        from .create_target_by_proposal_reference import CreateTargetByProposalReference
+
         query = gql("""
             mutation createTargetByProposalReference($proposalReference: ProposalReferenceLabel!, $properties: TargetPropertiesInput!, $includeDeleted: Boolean! = false) {
               createTarget(input: {proposalReference: $proposalReference, SET: $properties}) {
@@ -14836,10 +14937,12 @@ class GraphQLClient(AsyncBaseClient):
     async def create_target_by_program_reference(
         self,
         program_reference: Any,
-        properties: TargetPropertiesInput,
+        properties: "TargetPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> CreateTargetByProgramReference:
+    ) -> "CreateTargetByProgramReference":
+        from .create_target_by_program_reference import CreateTargetByProgramReference
+
         query = gql("""
             mutation createTargetByProgramReference($programReference: ProgramReferenceLabel!, $properties: TargetPropertiesInput!, $includeDeleted: Boolean! = false) {
               createTarget(input: {programReference: $programReference, SET: $properties}) {
@@ -14939,12 +15042,14 @@ class GraphQLClient(AsyncBaseClient):
 
     async def update_targets(
         self,
-        properties: TargetPropertiesInput,
+        properties: "TargetPropertiesInput",
         include_deleted: bool,
-        where: Union[Optional[WhereTarget], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereTarget"], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> UpdateTargets:
+    ) -> "UpdateTargets":
+        from .update_targets import UpdateTargets
+
         query = gql("""
             mutation updateTargets($properties: TargetPropertiesInput!, $where: WhereTarget, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               updateTargets(
@@ -15046,10 +15151,12 @@ class GraphQLClient(AsyncBaseClient):
     async def update_target_by_id(
         self,
         target_id: Any,
-        properties: TargetPropertiesInput,
+        properties: "TargetPropertiesInput",
         include_deleted: bool,
         **kwargs: Any,
-    ) -> UpdateTargetById:
+    ) -> "UpdateTargetById":
+        from .update_target_by_id import UpdateTargetById
+
         query = gql("""
             mutation updateTargetById($targetId: TargetId!, $properties: TargetPropertiesInput!, $includeDeleted: Boolean! = false) {
               updateTargets(
@@ -15152,7 +15259,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def restore_target_by_id(
         self, target_id: Any, **kwargs: Any
-    ) -> RestoreTargetById:
+    ) -> "RestoreTargetById":
+        from .restore_target_by_id import RestoreTargetById
+
         query = gql("""
             mutation restoreTargetById($targetId: TargetId!) {
               updateTargets(
@@ -15243,7 +15352,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def delete_target_by_id(
         self, target_id: Any, **kwargs: Any
-    ) -> DeleteTargetById:
+    ) -> "DeleteTargetById":
+        from .delete_target_by_id import DeleteTargetById
+
         query = gql("""
             mutation deleteTargetById($targetId: TargetId!) {
               updateTargets(
@@ -15334,7 +15445,9 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_target_by_id(
         self, target_id: Any, include_deleted: bool, **kwargs: Any
-    ) -> GetTargetById:
+    ) -> "GetTargetById":
+        from .get_target_by_id import GetTargetById
+
         query = gql("""
             query getTargetById($targetId: TargetId!, $includeDeleted: Boolean! = false) {
               target(targetId: $targetId) {
@@ -15429,11 +15542,13 @@ class GraphQLClient(AsyncBaseClient):
     async def get_targets(
         self,
         include_deleted: bool,
-        where: Union[Optional[WhereTarget], UnsetType] = UNSET,
-        offset: Union[Optional[Any], UnsetType] = UNSET,
-        limit: Union[Optional[Any], UnsetType] = UNSET,
+        where: Union[Optional["WhereTarget"], "UnsetType"] = UNSET,
+        offset: Union[Optional[Any], "UnsetType"] = UNSET,
+        limit: Union[Optional[Any], "UnsetType"] = UNSET,
         **kwargs: Any,
-    ) -> GetTargets:
+    ) -> "GetTargets":
+        from .get_targets import GetTargets
+
         query = gql("""
             query getTargets($where: WhereTarget, $offset: TargetId, $limit: NonNegInt, $includeDeleted: Boolean! = false) {
               targets(
@@ -15536,8 +15651,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetTargets.model_validate(data)
 
     async def target_edit(
-        self, target_edit: Union[Optional[Any], UnsetType] = UNSET, **kwargs: Any
-    ) -> AsyncIterator[TargetEdit]:
+        self, target_edit: Union[Optional[Any], "UnsetType"] = UNSET, **kwargs: Any
+    ) -> AsyncIterator["TargetEdit"]:
+        from .target_edit import TargetEdit
+
         query = gql("""
             subscription TargetEdit($targetEdit: TargetId) {
               targetEdit(input: {targetId: $targetEdit}) {
@@ -15568,7 +15685,9 @@ class GraphQLClient(AsyncBaseClient):
         ):
             yield TargetEdit.model_validate(data)
 
-    async def ping(self, **kwargs: Any) -> Ping:
+    async def ping(self, **kwargs: Any) -> "Ping":
+        from .ping import Ping
+
         query = gql("""
             query ping {
               programs(LIMIT: 1) {
@@ -15586,8 +15705,10 @@ class GraphQLClient(AsyncBaseClient):
         return Ping.model_validate(data)
 
     async def set_observation_workflow_state(
-        self, observation_id: Any, state: ObservationWorkflowState, **kwargs: Any
-    ) -> SetObservationWorkflowState:
+        self, observation_id: Any, state: "ObservationWorkflowState", **kwargs: Any
+    ) -> "SetObservationWorkflowState":
+        from .set_observation_workflow_state import SetObservationWorkflowState
+
         query = gql("""
             mutation setObservationWorkflowState($observationId: ObservationId!, $state: ObservationWorkflowState!) {
               setObservationWorkflowState(
@@ -15622,7 +15743,11 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_observation_workflow_state_by_id(
         self, observation_id: Any, **kwargs: Any
-    ) -> GetObservationWorkflowStateById:
+    ) -> "GetObservationWorkflowStateById":
+        from .get_observation_workflow_state_by_id import (
+            GetObservationWorkflowStateById,
+        )
+
         query = gql("""
             query getObservationWorkflowStateById($observationId: ObservationId!) {
               observation(observationId: $observationId) {
@@ -15682,7 +15807,11 @@ class GraphQLClient(AsyncBaseClient):
 
     async def get_observation_workflow_state_by_reference(
         self, observation_reference: Any, **kwargs: Any
-    ) -> GetObservationWorkflowStateByReference:
+    ) -> "GetObservationWorkflowStateByReference":
+        from .get_observation_workflow_state_by_reference import (
+            GetObservationWorkflowStateByReference,
+        )
+
         query = gql("""
             query getObservationWorkflowStateByReference($observationReference: ObservationReferenceLabel!) {
               observation(observationReference: $observationReference) {
@@ -15741,7 +15870,10 @@ class GraphQLClient(AsyncBaseClient):
         return GetObservationWorkflowStateByReference.model_validate(data)
 
     async def execute_custom_operation(
-        self, *fields: GraphQLField, operation_type: OperationType, operation_name: str
+        self,
+        *fields: "GraphQLField",
+        operation_type: OperationType,
+        operation_name: str,
     ) -> dict[str, Any]:
         selections = self._build_selection_set(fields)
         combined_variables = self._combine_variables(fields)
@@ -15759,7 +15891,7 @@ class GraphQLClient(AsyncBaseClient):
         return self.get_data(response)
 
     def _combine_variables(
-        self, fields: tuple[GraphQLField, ...]
+        self, fields: tuple["GraphQLField", ...]
     ) -> dict[str, dict[str, Any]]:
         variables_types_combined = {}
         processed_variables_combined = {}
@@ -15806,17 +15938,19 @@ class GraphQLClient(AsyncBaseClient):
         )
 
     def _build_selection_set(
-        self, fields: tuple[GraphQLField, ...]
+        self, fields: tuple["GraphQLField", ...]
     ) -> list[SelectionNode]:
         return [field.to_ast(idx) for idx, field in enumerate(fields)]
 
-    async def query(self, *fields: GraphQLField, operation_name: str) -> dict[str, Any]:
+    async def query(
+        self, *fields: "GraphQLField", operation_name: str
+    ) -> dict[str, Any]:
         return await self.execute_custom_operation(
             *fields, operation_type=OperationType.QUERY, operation_name=operation_name
         )
 
     async def mutation(
-        self, *fields: GraphQLField, operation_name: str
+        self, *fields: "GraphQLField", operation_name: str
     ) -> dict[str, Any]:
         return await self.execute_custom_operation(
             *fields,

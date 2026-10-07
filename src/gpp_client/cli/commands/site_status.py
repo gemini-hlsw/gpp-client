@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client
 from gpp_client.domains.site_status import Site
 
 site_status_app = typer.Typer(
@@ -31,7 +30,7 @@ async def get_site_status(
     Get site status by site ID.
     """
     with output.status("Fetching site status..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.site_status.get_by_id(site_id=site_id.value)
 
     output.json(result)

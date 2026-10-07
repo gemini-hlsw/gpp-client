@@ -12,9 +12,6 @@ class GetObservationAttachmentsByReferenceObservation(BaseModel):
     attachments: list["GetObservationAttachmentsByReferenceObservationAttachments"]
 
 
-class GetObservationAttachmentsByReferenceObservationAttachments(AttachmentDetails):
-    pass
-
-
+GetObservationAttachmentsByReferenceObservationAttachments = AttachmentDetails
 GetObservationAttachmentsByReference.model_rebuild()
 GetObservationAttachmentsByReferenceObservation.model_rebuild()

@@ -10,6 +10,7 @@ import sys
 from enum import Enum
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("_ext"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -29,6 +30,9 @@ extensions = [
     "sphinxcontrib.typer",
     "sphinx_copybutton",
     "sphinx.ext.intersphinx",
+    "availability_badge",
+    "class_index",
+    "object_reprs",
 ]
 
 source_suffix = {".rst": "restructuredtext"}
@@ -42,6 +46,10 @@ exclude_patterns = []
 
 html_theme = "furo"
 html_static_path = ["_static"]
+html_css_files = ["mobile.css"]
+html_js_files = ["toc-breaks.js"]
+# Served at the docs root, where agents look for it.
+html_extra_path = ["../../llms.txt"]
 html_title = "GPP Client"
 github_url = "https://github.com/gemini-hlsw/gpp-client"
 html_theme_options = {
@@ -74,17 +82,15 @@ html_theme_options = {
 # Dynamic announcement banner based on RTD build context.
 if os.environ.get("READTHEDOCS") == "True":
     version_slug = os.environ.get("READTHEDOCS_VERSION", "")
-    version_type = os.environ.get("READTHEDOCS_VERSION_TYPE", "")
     version_name = os.environ.get("READTHEDOCS_VERSION_NAME", "")
     stable_version = os.environ.get("READTHEDOCS_STABLE_VERSION", "")
 
     announcement = ""
 
-    # Development builds: either .devN or 'latest'.
-    if (version_type == "tag" and ".dev" in version_slug) or version_slug == "latest":
+    if version_slug == "latest":
         announcement = (
-            "<strong>Development Build:</strong> Intended for GPP development "
-            "environments; production compatibility not guaranteed."
+            "<strong>Unreleased:</strong> These docs follow the main branch "
+            "and may describe changes not yet in a release."
         )
 
     if announcement:
@@ -95,6 +101,11 @@ autodoc_default_options = {
     "undoc-members": True,
     "show-inheritance": True,
 }
+# A class signature repeats every field the field list shows, under its GraphQL
+# alias, and would list settings fields the reference must not show.
+autodoc_class_signature = "separated"
+add_module_names = False
+toc_object_entries_show_parents = "hide"
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }
@@ -172,7 +183,19 @@ def clean_generated_signature(
     return cleaned_signature, return_annotation
 
 
+def show_public_bases(app, name, obj, options, bases):
+    """Show a private base class, such as ``_TolerantEnum``, as its own bases."""
+    public = []
+    for base in bases:
+        if getattr(base, "__name__", "").startswith("_"):
+            public.extend(b for b in base.__bases__ if b not in public)
+        elif base not in public:
+            public.append(base)
+    bases[:] = public
+
+
 def setup(app):
+    app.connect("autodoc-process-bases", show_public_bases)
     app.connect("autodoc-skip-member", skip_model_config)
     app.connect("autodoc-skip-member", skip_generated_support_modules)
     app.connect("autodoc-process-docstring", suppress_enum_docstring)

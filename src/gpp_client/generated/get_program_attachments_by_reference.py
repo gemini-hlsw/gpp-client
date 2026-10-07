@@ -12,9 +12,6 @@ class GetProgramAttachmentsByReferenceProgram(BaseModel):
     attachments: list["GetProgramAttachmentsByReferenceProgramAttachments"]
 
 
-class GetProgramAttachmentsByReferenceProgramAttachments(AttachmentDetails):
-    pass
-
-
+GetProgramAttachmentsByReferenceProgramAttachments = AttachmentDetails
 GetProgramAttachmentsByReference.model_rebuild()
 GetProgramAttachmentsByReferenceProgram.model_rebuild()

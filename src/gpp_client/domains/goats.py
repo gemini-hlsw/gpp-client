@@ -2,15 +2,22 @@
 Module for GOATS-related operations.
 """
 
+from __future__ import annotations
+
 __all__ = ["GOATSDomain"]
 
+from typing import TYPE_CHECKING
+
 from gpp_client.domains.base import BaseDomain
-from gpp_client.generated.get_goats_config_options import GetGOATSConfigOptions
-from gpp_client.generated.get_goats_configuration_requests import (
-    GetGOATSConfigurationRequests,
-)
-from gpp_client.generated.get_goats_observations import GetGOATSObservations
-from gpp_client.generated.get_goats_programs import GetGOATSPrograms
+
+if TYPE_CHECKING:
+    from gpp_client.generated.enums import Instrument
+    from gpp_client.generated.get_goats_config_options import GetGOATSConfigOptions
+    from gpp_client.generated.get_goats_configuration_requests import (
+        GetGOATSConfigurationRequests,
+    )
+    from gpp_client.generated.get_goats_observations import GetGOATSObservations
+    from gpp_client.generated.get_goats_programs import GetGOATSPrograms
 
 
 class GOATSDomain(BaseDomain):
@@ -74,14 +81,14 @@ class GOATSDomain(BaseDomain):
     async def get_config_options(
         self,
         *,
-        instrument: str,
+        instrument: Instrument,
     ) -> GetGOATSConfigOptions:
         """
         Get the valid spectroscopy and imaging configuration options.
 
         Parameters
         ----------
-        instrument : str
+        instrument : Instrument
             The instrument to get the options for.
 
         Returns

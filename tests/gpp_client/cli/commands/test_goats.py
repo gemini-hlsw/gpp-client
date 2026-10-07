@@ -18,7 +18,7 @@ def test_list_goats_programs(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.goats.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(goats=goats),
     )
     json_pydantic_mock = mocker.patch(
@@ -45,7 +45,7 @@ def test_list_goats_observations(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.goats.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(goats=goats),
     )
     json_pydantic_mock = mocker.patch(

@@ -6,7 +6,9 @@ import httpx
 import pytest
 
 from gpp_client.client import _HTTP_TIMEOUT, GPPClient
+from gpp_client.constants import DEVELOPMENT_URL, PRODUCTION_URL
 from gpp_client.environment import GPPEnvironment
+from gpp_client.urls import get_graphql_url
 
 
 @pytest.fixture()
@@ -18,7 +20,7 @@ def mock_settings() -> SimpleNamespace:
         debug=False,
         resolved_token="resolved-token",
         token="raw-token",
-        environment=SimpleNamespace(base_url="https://example.test"),
+        environment=GPPEnvironment.PRODUCTION,
     )
 
 
@@ -37,7 +39,7 @@ def test_init_builds_settings_and_core_clients(
     """
     Ensure initialization builds settings and core clients.
     """
-    graphql_client = object()
+    graphql_client = SimpleNamespace(url="https://graphql.example.test")
     rest_client = object()
 
     build_settings = mocker.patch.object(
@@ -59,8 +61,8 @@ def test_init_builds_settings_and_core_clients(
 
     client = GPPClient(token="abc", debug=True)
 
-    build_settings.assert_called_once_with(token="abc", debug=True)
-    build_graphql.assert_called_once_with()
+    build_settings.assert_called_once_with(environment=None, token="abc", debug=True)
+    build_graphql.assert_called_once_with(None)
     build_rest.assert_called_once_with()
     init_domains.assert_called_once_with()
 
@@ -86,7 +88,7 @@ def test_init_enables_dev_logging_when_debug_true(
     mocker.patch.object(
         GPPClient,
         "_build_graphql_client",
-        return_value=object(),
+        return_value=SimpleNamespace(url="https://graphql.example.test"),
     )
     mocker.patch.object(
         GPPClient,
@@ -101,45 +103,19 @@ def test_init_enables_dev_logging_when_debug_true(
     enable_logging.assert_called_once_with()
 
 
-def test_build_graphql_client_uses_expected_settings(
-    mocker,
-    bare_client,
-    mock_settings,
-) -> None:
+def test_graphql_client_targets_the_selected_environment() -> None:
     """
-    Ensure the GraphQL client is constructed from settings.
+    Ensure the GraphQL client sends HTTP and websocket requests to the selected
+    environment with the token, and waits longer than httpx's 5 second default.
     """
-    graphql_cls = mocker.patch("gpp_client.client.GraphQLClient")
-    get_ws_url = mocker.patch(
-        "gpp_client.client.get_ws_url",
-        return_value="wss://ws.example.test",
-    )
-    get_graphql_url = mocker.patch(
-        "gpp_client.client.get_graphql_url",
-        return_value="https://graphql.example.test",
-    )
+    client = GPPClient(environment="development", token="dev-token")
+    auth = {"Authorization": "Bearer dev-token"}
 
-    bare_client._settings = mock_settings
-
-    bare_client._build_graphql_client()
-
-    get_ws_url.assert_called_once_with(mock_settings.environment)
-    get_graphql_url.assert_called_once_with(mock_settings.environment)
-    graphql_cls.assert_called_once_with(
-        url="https://graphql.example.test",
-        headers={"Authorization": "Bearer resolved-token"},
-        http_client=mocker.ANY,
-        ws_url="wss://ws.example.test",
-        ws_headers={"Authorization": "Bearer resolved-token"},
-        ws_connection_init_payload={"Authorization": "Bearer resolved-token"},
-    )
-
-    # The custom http client must carry the auth headers and a timeout longer
-    # than the 5 second httpx default.
-    http_client = graphql_cls.call_args.kwargs["http_client"]
-    assert isinstance(http_client, httpx.AsyncClient)
-    assert http_client.headers["Authorization"] == "Bearer resolved-token"
-    assert http_client.timeout == _HTTP_TIMEOUT
+    assert client.graphql.url == f"{DEVELOPMENT_URL}/odb"
+    assert client.graphql.ws_url == "wss://lucuma-postgres-odb-dev.herokuapp.com/ws"
+    assert client.graphql.ws_headers == auth
+    assert client.graphql.ws_connection_init_payload == auth
+    assert client.graphql.http_client.timeout == _HTTP_TIMEOUT
 
 
 def test_build_rest_client_uses_expected_settings(
@@ -157,8 +133,9 @@ def test_build_rest_client_uses_expected_settings(
     bare_client._build_rest_client()
 
     rest_cls.assert_called_once_with(
-        base_url="https://example.test",
+        base_url=PRODUCTION_URL,
         gpp_token="resolved-token",
+        environment=GPPEnvironment.PRODUCTION,
     )
 
 
@@ -260,6 +237,7 @@ async def test_close_delegates_to_rest_client(
     """
     rest_client = SimpleNamespace(close=mocker.AsyncMock())
     bare_client._rest = rest_client
+    bare_client._owns_http_client = False
 
     await bare_client.close()
 
@@ -324,63 +302,67 @@ async def test_ping_returns_failure_on_exception(
     graphql.ping.assert_called_once_with()
 
 
-def test_build_settings_maps_explicit_token_to_production_token(
-    mocker,
-    bare_client,
+@pytest.mark.asyncio
+async def test_supplied_http_client_sends_auth_header(
+    gpp_client,
+    gpp_transport,
 ) -> None:
     """
-    Ensure an explicit client token maps to ``token`` in production.
+    Ensure requests through a caller-supplied http client carry the token.
     """
-    mocker.patch(
-        "gpp_client.client._get_packaged_environment",
-        return_value=GPPEnvironment.PRODUCTION,
-    )
-    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
-    settings_instance = settings_cls.return_value
+    gpp_transport.respond({"observation": None})
 
-    result = bare_client._build_settings(token="prod-token", debug=True)
+    await gpp_client.workflow_state.get_by_id(observation_id="o-1")
 
-    settings_cls.assert_called_once_with(token="prod-token", debug=True)
-    assert result is settings_instance
+    [request] = gpp_transport.requests
+    assert request.headers["Authorization"] == "Bearer test-token"
+    assert str(request.url) == get_graphql_url(gpp_client.settings.environment)
 
 
-def test_build_settings_maps_explicit_token_to_development_token(
-    mocker,
-    bare_client,
-) -> None:
+@pytest.mark.asyncio
+async def test_clients_sharing_http_client_send_own_token(gpp_transport) -> None:
     """
-    Ensure an explicit client token maps to ``development_token`` in development.
+    Ensure two clients sharing one http client each send their own token and
+    leave the shared client's headers unchanged.
     """
-    mocker.patch(
-        "gpp_client.client._get_packaged_environment",
-        return_value=GPPEnvironment.DEVELOPMENT,
-    )
-    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
-    settings_instance = settings_cls.return_value
+    gpp_transport.respond({"observation": None})
+    gpp_transport.respond({"observation": None})
 
-    result = bare_client._build_settings(token="dev-token", debug=False)
+    async with httpx.AsyncClient(
+        transport=gpp_transport, headers={"X-Caller": "kept"}
+    ) as http_client:
+        headers_before = dict(http_client.headers)
+        first = GPPClient(token="token-a", http_client=http_client)
+        second = GPPClient(token="token-b", http_client=http_client)
 
-    settings_cls.assert_called_once_with(
-        development_token="dev-token",
-        debug=False,
-    )
-    assert result is settings_instance
+        await first.workflow_state.get_by_id(observation_id="o-1")
+        await second.workflow_state.get_by_id(observation_id="o-1")
+
+        assert dict(http_client.headers) == headers_before
+
+    sent = [request.headers["Authorization"] for request in gpp_transport.requests]
+    assert sent == ["Bearer token-a", "Bearer token-b"]
+    assert all(r.headers["X-Caller"] == "kept" for r in gpp_transport.requests)
 
 
-def test_build_settings_without_explicit_token_uses_default_sources(
-    mocker,
-    bare_client,
-) -> None:
+@pytest.mark.asyncio
+async def test_exit_closes_built_http_client() -> None:
     """
-    Ensure settings construction does not consult packaged environment when no
-    explicit token is provided.
+    Ensure leaving the context closes the http client the client built.
     """
-    packaged_environment = mocker.patch("gpp_client.client._get_packaged_environment")
-    settings_cls = mocker.patch("gpp_client.client.GPPSettings", autospec=True)
-    settings_instance = settings_cls.return_value
+    async with GPPClient(token="test-token") as client:
+        http_client = client.graphql.http_client
 
-    result = bare_client._build_settings(debug=True)
+    assert http_client.is_closed
 
-    packaged_environment.assert_not_called()
-    settings_cls.assert_called_once_with(debug=True)
-    assert result is settings_instance
+
+@pytest.mark.asyncio
+async def test_exit_leaves_supplied_http_client_open(gpp_transport) -> None:
+    """
+    Ensure leaving the context leaves a caller-supplied http client open.
+    """
+    async with httpx.AsyncClient(transport=gpp_transport) as http_client:
+        async with GPPClient(token="test-token", http_client=http_client):
+            pass
+
+        assert not http_client.is_closed

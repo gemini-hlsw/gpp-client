@@ -1,0 +1,57 @@
+/* Furo marks its dark theme with selectors, not color-scheme, so the badge
+   mirrors them; light-dark() then keeps each color pair in one place. */
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme="light"]) .availability {
+    color-scheme: dark;
+  }
+}
+
+body[data-theme="dark"] .availability {
+  color-scheme: dark;
+}
+
+.availability {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em;
+  font-size: 0.85em;
+  color: var(--color-foreground-secondary);
+  color-scheme: light;
+}
+
+.availability-pill {
+  display: inline-block;
+  padding: 0.05em 0.6em;
+  /* At least 3:1 against the page in both themes, so the pill's edge shows. */
+  border: 1px solid var(--color-foreground-border);
+  border-radius: 1em;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-foreground-primary);
+  background: var(--color-background-secondary);
+}
+
+/* Development and production take hues away from the brown and amber brand
+   links, so a pill never reads as a link. */
+.availability-development {
+  color: light-dark(oklch(0.42 0.15 292), oklch(0.88 0.08 292));
+  background: light-dark(oklch(0.95 0.035 292), oklch(0.31 0.08 292));
+  border-color: light-dark(oklch(0.84 0.08 292), oklch(0.45 0.11 292));
+}
+
+.availability-production {
+  color: light-dark(oklch(0.42 0.09 190), oklch(0.88 0.08 190));
+  background: light-dark(oklch(0.95 0.035 190), oklch(0.31 0.055 190));
+  border-color: light-dark(oklch(0.82 0.07 190), oklch(0.45 0.07 190));
+}
+
+/* Hidden on screen, but copied, so copied pills read as a list. */
+.availability-separator {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: pre;
+}

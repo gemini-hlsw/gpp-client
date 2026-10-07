@@ -1,0 +1,44 @@
+# gpp-client
+
+> Async Python client and `gpp` command line tool for GPP, the Gemini Program Platform. One install reaches development and production, and the client uses production unless you select development. Each environment has its own token: `GPP_TOKEN` for production and `GPP_DEVELOPMENT_TOKEN` for development. Get each token from Explore, GPP's web app: https://explore.gemini.edu/ for production and https://explore-dev.lucuma.xyz/ for development.
+
+```python
+import asyncio
+
+from gpp_client import GPPClient
+
+
+async def main() -> None:
+    async with GPPClient() as client:
+        result = await client.program.get_all(limit=5)
+        for program in result.programs.matches:
+            print(program.id, program.name)
+
+
+asyncio.run(main())
+```
+
+Domains such as `client.program` cover common tasks, and `client.graphql` has a generated method for every operation. The client follows GPP's schema closely, so upgrade often.
+
+## Docs
+
+- [Getting started](https://gpp-client.readthedocs.io/en/stable/getting-started.html): install, token and first call.
+- [Configure the client](https://gpp-client.readthedocs.io/en/stable/guides/configuration.html): every setting, and the arguments, variables, .env file and configuration file that set it.
+- [Select an environment](https://gpp-client.readthedocs.io/en/stable/guides/environments.html): development or production, and a token for each.
+- [Use the domains](https://gpp-client.readthedocs.io/en/stable/guides/domains.html): get, find and change items through `client.program` and the other domains.
+- [Handle errors](https://gpp-client.readthedocs.io/en/stable/guides/errors.html#environment-errors): what each error and warning means, including calls that use something the selected environment lacks.
+- [Write a custom query](https://gpp-client.readthedocs.io/en/stable/guides/custom-queries.html): select the fields yourself when no domain method fits.
+- [Use the command line](https://gpp-client.readthedocs.io/en/stable/guides/cli.html): the `gpp` command.
+- [Upgrade the client](https://gpp-client.readthedocs.io/en/stable/guides/versions.html): one release works with both environments, and why to upgrade often.
+- [Reference](https://gpp-client.readthedocs.io/en/stable/client.html): generated API reference, starting at `GPPClient`; the site's Reference section also covers the domains, GraphQL API, REST client, settings, exceptions and CLI.
+
+## Optional
+
+- [Follow changes as they happen](https://gpp-client.readthedocs.io/en/stable/guides/subscriptions.html): subscribe to edits.
+- [Upload and download attachments](https://gpp-client.readthedocs.io/en/stable/guides/attachments.html): also list, replace and delete files.
+
+## Availability
+
+This list comes from the schemas this release was built from. Anything not listed works on development and production.
+
+- Arguments, input fields and enum values only on development: `CloneObservationInput.sequence`, `CloneSequenceMode.ALL_STEPS`, `CloneSequenceMode.NONE`, `CloneSequenceMode.PENDING_STEPS`, `ObservationValidationCode.CFP_WARNING`

@@ -8,6 +8,7 @@ __all__ = [
     "success",
     "warning",
     "fail",
+    "environment",
     "panel",
     "confirm_prompt",
     "print_exception",
@@ -20,8 +21,10 @@ __all__ = [
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
+from pydantic import BaseModel
+from rich.align import AlignMethod
 from rich.console import RenderableType
 from rich.json import JSON
 from rich.padding import Padding
@@ -30,6 +33,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 
 from gpp_client.cli.console import console, error_console
+from gpp_client.environment import GPPEnvironment
 
 ICON_BULLET = "[bold white]•[/]"
 ICON_SUCCESS = "[bold green]✔[/]"
@@ -45,7 +49,7 @@ def space() -> None:
     console.print("")
 
 
-def section(title: str, style: str = "dim cyan", align: str = "left") -> None:
+def section(title: str, style: str = "dim cyan", align: AlignMethod = "left") -> None:
     """
     Render a horizontal rule section header.
 
@@ -55,7 +59,7 @@ def section(title: str, style: str = "dim cyan", align: str = "left") -> None:
         Text to display inside the rule.
     style : str, optional
         Rich style applied to the rule line and title.
-    align : str, optional
+    align : {"left", "center", "right"}, optional
         Alignment of the title within the rule.
     """
     space()
@@ -124,6 +128,22 @@ def fail(msg: RenderableType) -> None:
     error_console.print(f"{ICON_ERROR} {msg}")
 
 
+def environment(env: GPPEnvironment) -> None:
+    """
+    Print the environment a command uses to stderr.
+
+    Parameters
+    ----------
+    env : GPPEnvironment
+        The environment the client was built for.
+    """
+    error_console.print(
+        f"Environment: {env.label} ({env.base_url})",
+        style="dim",
+        soft_wrap=True,
+    )
+
+
 def procedure(msg: RenderableType) -> None:
     """
     Print a procedure message prefixed with a blue arrow.
@@ -161,13 +181,13 @@ def json(data: dict) -> None:
     console.print(JSON.from_data(data))
 
 
-def json_pydantic(model: object) -> None:
+def json_pydantic(model: BaseModel) -> None:
     """
     Print a Pydantic model as JSON.
 
     Parameters
     ----------
-    model : object
+    model : BaseModel
         The Pydantic model to print.
     """
     console.print(JSON.from_data(model.model_dump(mode="json")))
@@ -176,9 +196,9 @@ def json_pydantic(model: object) -> None:
 def panel(
     msg: RenderableType,
     *,
-    title: Optional[str] = None,
-    subtitle: Optional[str] = None,
-    style: Optional[str] = None,
+    title: str | None = None,
+    subtitle: str | None = None,
+    style: str | None = None,
     border_style: str = "cyan",
     expand: bool = False,
 ) -> None:

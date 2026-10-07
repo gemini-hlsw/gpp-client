@@ -16,11 +16,6 @@ class CreateCallForProposalsCreateCallForProposals(BaseModel):
     )
 
 
-class CreateCallForProposalsCreateCallForProposalsCallForProposals(
-    CallForProposalsDetails
-):
-    pass
-
-
+CreateCallForProposalsCreateCallForProposalsCallForProposals = CallForProposalsDetails
 CreateCallForProposals.model_rebuild()
 CreateCallForProposalsCreateCallForProposals.model_rebuild()

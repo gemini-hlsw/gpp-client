@@ -1,15 +1,13 @@
 Client
 ======
 
-The :class:`~gpp_client.generated.client.GraphQLClient` provides direct access
-to generated GraphQL operations.
+The ``client.graphql`` attribute is a
+:class:`~gpp_client.generated.client.GraphQLClient` for the client's
+environment. It has one method for each generated operation, plus ``query``,
+``mutation`` and ``execute`` for custom documents. When a domain has the call
+you need, use the domain instead.
 
-Most users should prefer :class:`~gpp_client.GPPClient` and its domains.
-
-Use the generated client when you need low-level access to generated
-operations or want to inspect exact return types.
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.generated.client.GraphQLClient

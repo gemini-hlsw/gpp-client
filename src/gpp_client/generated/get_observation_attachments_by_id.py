@@ -12,9 +12,6 @@ class GetObservationAttachmentsByIdObservation(BaseModel):
     attachments: list["GetObservationAttachmentsByIdObservationAttachments"]
 
 
-class GetObservationAttachmentsByIdObservationAttachments(AttachmentDetails):
-    pass
-
-
+GetObservationAttachmentsByIdObservationAttachments = AttachmentDetails
 GetObservationAttachmentsById.model_rebuild()
 GetObservationAttachmentsByIdObservation.model_rebuild()
