@@ -2,10 +2,9 @@
 Runtime settings for the installed GPP client package.
 """
 
-import re
-import tomllib
 from pathlib import Path
 
+import tomlkit
 import typer
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import (
@@ -14,6 +13,7 @@ from pydantic_settings import (
     SettingsConfigDict,
     TomlConfigSettingsSource,
 )
+from tomlkit.exceptions import TOMLKitError
 
 from gpp_client.constants import APP_NAME, CONFIG_FILE_NAME
 from gpp_client.environment import GPPEnvironment
@@ -194,15 +194,12 @@ def get_config_path() -> Path:
     return Path(typer.get_app_dir(APP_NAME)) / CONFIG_FILE_NAME
 
 
-_ENVIRONMENT_KEY = re.compile(r"""^\s*["']?environment["']?\s*=""")
-
-
 def set_default_environment(environment: GPPEnvironment | str) -> Path:
     """
     Store the default environment in the configuration file.
 
-    The file and its folder are created if missing. Every other line of an
-    existing file is kept as it is.
+    The file and its folder are created if missing. The comments, layout and
+    other settings of an existing file are kept.
 
     Parameters
     ----------
@@ -217,56 +214,31 @@ def set_default_environment(environment: GPPEnvironment | str) -> Path:
     Raises
     ------
     GPPClientError
-        If the existing file is not valid TOML, or the edit would change more
-        than the environment.
+        If the existing file is not valid TOML, or its ``environment`` is not
+        a single name.
     """
     environment = GPPEnvironment(environment)
     path = get_config_path()
     text = path.read_text(encoding="utf-8") if path.is_file() else ""
     try:
-        tomllib.loads(text)
-    except tomllib.TOMLDecodeError as exc:
+        document = tomlkit.parse(text)
+    except TOMLKitError as exc:
         raise GPPClientError(
             f"Cannot update {path}: it is not valid TOML ({exc})."
         ) from None
 
-    entry = f'environment = "{environment.label}"\n'
-    lines = text.splitlines(keepends=True)
-    existing = _top_level_environment_line(lines)
-    if existing is None:
-        lines.insert(0, entry)
-    else:
-        lines[existing] = entry
-    updated = "".join(lines)
-
-    # A line-based edit can misread multi-line values; never write a file
-    # whose meaning is not exactly the old one plus the new environment.
-    expected = {**tomllib.loads(text), "environment": environment.label}
-    try:
-        written = tomllib.loads(updated)
-    except tomllib.TOMLDecodeError:
-        written = None
-    if written != expected:
+    current = document.get("environment")
+    if current is not None and not isinstance(current, str):
         raise GPPClientError(
-            f"Cannot update {path} safely. Set environment = "
-            f'"{environment.label}" at the top of the file by hand.'
+            f"Cannot update {path}: environment must be a single name, "
+            'such as "development".'
         )
 
+    document["environment"] = environment.label
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(updated, encoding="utf-8")
+    path.write_text(tomlkit.dumps(document), encoding="utf-8")
     return path
-
-
-def _top_level_environment_line(lines: list[str]) -> int | None:
-    """
-    Return the index of the ``environment`` key before any table, if present.
-    """
-    for index, line in enumerate(lines):
-        if line.lstrip().startswith("["):
-            return None
-        if _ENVIRONMENT_KEY.match(line):
-            return index
-    return None
 
 
 def _unwrap(secret: SecretStr | None) -> str | None:

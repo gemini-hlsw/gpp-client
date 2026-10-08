@@ -49,9 +49,34 @@ from graphql import (
 
 
 class _Lack(NamedTuple):
-    item: str
+    """
+    An item the selected environment lacks, as the parts of its schema coordinate.
+
+    An operation has no coordinate, so its lack holds its name in ``type_name``.
+    """
+
     kind: EnvironmentItemKind
+    type_name: str
+    member: str | None = None
+    argument: str | None = None
     required: bool = False
+
+    @property
+    def item(self) -> str:
+        """
+        Return the item as the error names it.
+
+        Returns
+        -------
+        str
+            The coordinate, such as ``Query.program(id:)``, or the operation name.
+        """
+        item = self.type_name
+        if self.member is not None:
+            item += f".{self.member}"
+        if self.argument is not None:
+            item += f"({self.argument}:)"
+        return item
 
 
 def check_document(
@@ -266,7 +291,7 @@ class _DroppedArgumentFinder(Visitor):
         self.type_info = type_info
         self.variables = variables
         self.field = ""
-        self.argument: str | None = None
+        self.argument: _Lack | None = None
         self.lack: _Lack | None = None
 
     def enter_field(self, node: FieldNode, *_args) -> None:
@@ -280,14 +305,22 @@ class _DroppedArgumentFinder(Visitor):
             and self.type_info.get_directive() is None
             and self.type_info.get_argument() is None
         ):
-            self.argument = f"{parent.name}.{self.field}({node.name.value}:)"
+            self.argument = _Lack(
+                EnvironmentItemKind.ARGUMENT,
+                parent.name,
+                self.field,
+                node.name.value,
+            )
 
     def leave_argument(self, *_args) -> None:
         self.argument = None
 
     def enter_variable(self, node: VariableNode, *_args) -> object:
-        if self.argument and self.variables.get(node.name.value) is not None:
-            self.lack = _Lack(self.argument, EnvironmentItemKind.ARGUMENT)
+        if (
+            self.argument is not None
+            and self.variables.get(node.name.value) is not None
+        ):
+            self.lack = self.argument
             return BREAK
         return None
 
@@ -320,16 +353,17 @@ def _lack_another_environment_has(
 
 
 def _has(schema: GraphQLSchema, lack: _Lack) -> bool:
-    type_name, _, member = lack.item.partition(".")
+    member = lack.member
+    if member is None:
+        return False
     if lack.kind is EnvironmentItemKind.ENUM_VALUE:
-        return _has_enum_value(schema, type_name, member)
-    fields = getattr(schema.get_type(type_name), "fields", {})
+        return _has_enum_value(schema, lack.type_name, member)
+    fields = getattr(schema.get_type(lack.type_name), "fields", {})
     if lack.kind is EnvironmentItemKind.FIELD:
         return member in fields
     if lack.kind is EnvironmentItemKind.ARGUMENT:
-        field_name, _, argument = member.removesuffix(":)").partition("(")
-        field = fields.get(field_name)
-        definition = field.args.get(argument) if field is not None else None
+        field = fields.get(member)
+        definition = field.args.get(lack.argument) if field is not None else None
     elif lack.kind is EnvironmentItemKind.INPUT_FIELD:
         definition = fields.get(member)
     else:
@@ -367,7 +401,7 @@ def _what_lacks(
         if lack is not None:
             return lack
     name = operation.name.value if operation.name else "anonymous"
-    return _Lack(name, EnvironmentItemKind.OPERATION)
+    return _Lack(EnvironmentItemKind.OPERATION, name)
 
 
 class _LackFinder(Visitor):
@@ -386,11 +420,10 @@ class _LackFinder(Visitor):
         name = node.name.value
         if parent is None or name.startswith("__"):
             return None
-        coordinate = f"{parent.name}.{name}"
         selected_type = self.selected.get_type(parent.name)
         selected_field = getattr(selected_type, "fields", {}).get(name)
         if selected_field is None:
-            return self._found(_Lack(coordinate, EnvironmentItemKind.FIELD))
+            return self._found(_Lack(EnvironmentItemKind.FIELD, parent.name, name))
         given = {argument.name.value for argument in node.arguments or ()}
         for argument_name, argument in selected_field.args.items():
             if argument_name in given:
@@ -398,8 +431,10 @@ class _LackFinder(Visitor):
             if is_non_null_type(argument.type) and argument.default_value is Undefined:
                 return self._found(
                     _Lack(
-                        f"{coordinate}({argument_name}:)",
                         EnvironmentItemKind.ARGUMENT,
+                        parent.name,
+                        name,
+                        argument_name,
                         required=True,
                     )
                 )
@@ -407,8 +442,10 @@ class _LackFinder(Visitor):
             if argument.name.value not in selected_field.args:
                 return self._found(
                     _Lack(
-                        f"{coordinate}({argument.name.value}:)",
                         EnvironmentItemKind.ARGUMENT,
+                        parent.name,
+                        name,
+                        argument.name.value,
                     )
                 )
         return None
@@ -420,9 +457,7 @@ class _LackFinder(Visitor):
         named = get_named_type(parent)
         if not _has_input_field(self.selected, named.name, node.name.value):
             return self._found(
-                _Lack(
-                    f"{named.name}.{node.name.value}", EnvironmentItemKind.INPUT_FIELD
-                )
+                _Lack(EnvironmentItemKind.INPUT_FIELD, named.name, node.name.value)
             )
         return None
 
@@ -433,7 +468,7 @@ class _LackFinder(Visitor):
         named = get_named_type(input_type)
         if not _has_enum_value(self.selected, named.name, node.value):
             return self._found(
-                _Lack(f"{named.name}.{node.value}", EnvironmentItemKind.ENUM_VALUE)
+                _Lack(EnvironmentItemKind.ENUM_VALUE, named.name, node.value)
             )
         return None
 
@@ -459,7 +494,7 @@ def _value_lack(input_type: Any, value: Any, selected: GraphQLSchema) -> _Lack |
         if isinstance(value, str) and not _has_enum_value(
             selected, input_type.name, value
         ):
-            return _Lack(f"{input_type.name}.{value}", EnvironmentItemKind.ENUM_VALUE)
+            return _Lack(EnvironmentItemKind.ENUM_VALUE, input_type.name, value)
         return None
     if not isinstance(input_type, GraphQLInputObjectType) or not isinstance(
         value, dict
@@ -474,13 +509,11 @@ def _value_lack(input_type: Any, value: Any, selected: GraphQLSchema) -> _Lack |
             and value.get(name) is None
         ):
             return _Lack(
-                f"{input_type.name}.{name}",
-                EnvironmentItemKind.INPUT_FIELD,
-                required=True,
+                EnvironmentItemKind.INPUT_FIELD, input_type.name, name, required=True
             )
     for name, item in value.items():
         if name not in selected_fields:
-            return _Lack(f"{input_type.name}.{name}", EnvironmentItemKind.INPUT_FIELD)
+            return _Lack(EnvironmentItemKind.INPUT_FIELD, input_type.name, name)
         if name in input_type.fields:
             lack = _value_lack(input_type.fields[name].type, item, selected)
             if lack is not None:

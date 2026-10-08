@@ -140,9 +140,9 @@ class BaseDomain:
         """
         try:
             # Validate exactly one source is provided.
+            if file_path is None and content is not None:
+                return content
             if file_path is None or content is not None:
-                if file_path is None and content is not None:
-                    return content
                 raise ValueError(
                     "Provide exactly one of 'file_path' or 'content', but not both."
                 )

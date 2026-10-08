@@ -4,8 +4,8 @@ GraphQL client behavior shared by every environment.
 
 __all__ = ["EnvironmentGraphQLClient", "GPPGraphQLClient"]
 
-from collections.abc import AsyncIterator
-from functools import lru_cache
+from collections.abc import AsyncIterator, Callable
+from functools import lru_cache, partial
 from typing import TYPE_CHECKING, Any
 
 from gpp_client.document_checks import check_document
@@ -61,34 +61,31 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         what they use.
         """
         trimmed = find_trimmed_operation(self.environment, query)
-        if trimmed is None:
-            check_document(
-                self.environment,
-                query,
-                operation_name,
-                self._convert_dict_to_json_serializable(variables or {}),
-            )
-            return query, variables
-        if trimmed.document is None:
-            raise GPPEnvironmentError(
-                trimmed.name,
-                EnvironmentItemKind.OPERATION,
-                self.environment,
-                GPPEnvironment.where(lambda env: _sent(env, query) is not None),
-            )
+        document = query
+        sent: Callable[[GPPEnvironment], str | None] | None = None
+        if trimmed is not None:
+            if trimmed.document is None:
+                raise GPPEnvironmentError(
+                    trimmed.name,
+                    EnvironmentItemKind.OPERATION,
+                    self.environment,
+                    GPPEnvironment.where(lambda env: _sent(env, query) is not None),
+                )
+            document = trimmed.document
+            sent = partial(_sent, query=query)
         check_document(
             self.environment,
             query,
             operation_name,
             self._convert_dict_to_json_serializable(variables or {}),
-            sent=lambda environment: _sent(environment, query),
+            sent=sent,
         )
-        if variables and trimmed.document != query:
+        if variables and document != query:
             # Trimming drops the variables only the removed parts used; sending
             # them anyway would rely on GPP ignoring undeclared variables.
-            declared = _declared_variables(trimmed.document)
+            declared = _declared_variables(document)
             variables = {k: v for k, v in variables.items() if k in declared}
-        return trimmed.document, variables
+        return document, variables
 
     async def execute(
         self,

@@ -146,7 +146,7 @@ def test_set_default_env_keeps_other_settings(runner, cli_app, config_path) -> N
     assert config_path.read_text() == (
         "# my settings\n"
         'token = "prod-token"\n'
-        'environment = "development"\n'
+        'environment = "development"  # was production\n'
         "debug = true\n"
         "\n"
         "[other]\n"
@@ -162,7 +162,7 @@ def test_set_default_env_adds_key_above_tables(runner, cli_app, config_path) -> 
 
     assert result.exit_code == 0, result.output
     assert config_path.read_text() == (
-        'environment = "production"\ndebug = true\n[other]\nenvironment = "keep"'
+        'debug = true\nenvironment = "production"\n\n[other]\nenvironment = "keep"'
     )
 
 
@@ -179,18 +179,48 @@ def test_set_default_env_leaves_invalid_toml_alone(
     assert config_path.read_text() == "debug = \n"
 
 
-def test_set_default_env_refuses_an_edit_it_cannot_make_safely(
+def test_set_default_env_leaves_an_environment_table_alone(
     runner, cli_app, config_path
 ) -> None:
-    original = 'notes = """\nenvironment = "inside a string"\n"""\n'
     config_path.parent.mkdir(parents=True)
-    config_path.write_text(original)
+    config_path.write_text('[environment]\nurl = "x"\n')
 
     result = runner.invoke(cli_app, ["set-default-env", "development"])
 
     assert result.exit_code == 1
-    assert "by hand" in result.output
-    assert config_path.read_text() == original
+    assert "environment must be a single name" in result.output
+    assert config_path.read_text() == '[environment]\nurl = "x"\n'
+
+
+def test_set_default_env_leaves_multi_line_strings_alone(
+    runner, cli_app, config_path
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text('notes = """\nenvironment = "inside a string"\n"""\n')
+
+    result = runner.invoke(cli_app, ["set-default-env", "development"])
+
+    assert result.exit_code == 0, result.output
+    assert config_path.read_text() == (
+        'notes = """\nenvironment = "inside a string"\n"""\n'
+        'environment = "development"\n'
+    )
+
+
+def test_set_default_env_finds_the_key_after_a_multi_line_string(
+    runner, cli_app, config_path
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        '# keep me\nnotes = """\n[not a table]\n"""\nenvironment = "production"\n'
+    )
+
+    result = runner.invoke(cli_app, ["set-default-env", "development"])
+
+    assert result.exit_code == 0, result.output
+    assert config_path.read_text() == (
+        '# keep me\nnotes = """\n[not a table]\n"""\nenvironment = "development"\n'
+    )
 
 
 def test_set_default_env_rejects_staging(runner, cli_app, config_path) -> None:

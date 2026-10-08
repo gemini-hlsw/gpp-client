@@ -77,7 +77,7 @@ The step-by-step procedure is in [agents/schema-update.md](agents/schema-update.
 - When the check passes on production, `warn_leaving_field` (`src/gpp_client/leaving_fields.py`) emits `GPPFieldLeavingWarning`, a `FutureWarning`, for each selected field development lacks, once per field per process. A subscription raises or warns when iterated, before it connects. Each schema is built on first use (about 90 ms each; production's first call loads development's too, for the leaving check); validation is cached per document, so a repeated document costs microseconds and a new one under a millisecond.
 - `RESTClient` (`src/gpp_client/rest/client.py`) knows its environment. When a scheduler REST path answers 404, it raises `GPPEnvironmentError` with `kind` `EnvironmentItemKind.REST_PATH`, naming the path and the environment, with `available` empty. That 404 arrives after sending, and nothing tells which environment serves the path, so the message names no other environment and does not say nothing was sent. Attachment REST calls in `domains/attachment.py` keep raising `GPPResponseError` on 404, which there means a missing attachment.
 - The client logs one INFO line at start naming the environment and its GraphQL URL.
-- The CLI (`src/gpp_client/cli/`, Typer) builds every client through `open_client()` in `cli/utils.py`, which passes the global `gpp --env` choice as `environment=` and prints `Environment: <name> (<url>)` to stderr. `--env` and `gpp set-default-env` offer development and production only. `set-default-env` writes `environment` into `config.toml` through `settings.set_default_environment`, creating the file if missing, editing only that top-level line, and refusing to write when the result would not parse to the old settings plus the new environment.
+- The CLI (`src/gpp_client/cli/`, Typer) builds every client through `open_client()` in `cli/utils.py`, which passes the global `gpp --env` choice as `environment=` and prints `Environment: <name> (<url>)` to stderr. `--env` and `gpp set-default-env` offer development and production only. `set-default-env` writes `environment` into `config.toml` through `settings.set_default_environment`, creating the file if missing. It edits the file with tomlkit, a TOML library that keeps comments and layout, so only the top-level `environment` key changes; a file that is not valid TOML, or whose `environment` is not a string, is left alone.
 - `GPPSettings` (`src/gpp_client/settings.py`, pydantic-settings, prefix `GPP_`) reads its sources in this order, highest priority first:
   1. constructor arguments
   2. environment variables
@@ -92,9 +92,9 @@ The step-by-step procedure is in [agents/schema-update.md](agents/schema-update.
   1. validates the release with `python -m scripts.validate_release <tag>`
   2. runs lint and tests
   3. builds the package and smoke-tests the wheel
-  4. pushes the tag and drafts a GitHub release
+  4. pushes the tag and drafts a GitHub release, whose notes are the availability lists followed by GitHub's generated notes
 
-  `python -m scripts.release_notes <previous tag>` (`scripts/release_notes.py`) diffs `graphql/schemas/merged.graphql` at that tag against the working copy and prints, per development and production, the parts new to it and removed from it, and the parts newly leaving production. A part whose parent changed the same way is not listed separately. The maintainer pastes it into the draft.
+  The availability lists come from `python -m scripts.release_notes <previous tag>` (`scripts/release_notes.py`), run on the nearest earlier `v*` tag. It diffs `graphql/schemas/merged.graphql` at that tag against the working copy and prints, per development and production, the parts new to it and removed from it, and the parts newly leaving production. A part whose parent changed the same way is not listed separately. When there is no earlier tag, or it has no merged schema, the workflow skips the lists.
 
   Publishing that draft triggers `publish.yaml`, which uploads to PyPI.
 - Releases are one stream: every release reaches every environment. `validate_release` refuses:

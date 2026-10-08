@@ -59,8 +59,9 @@ To store a default for every command and script on this machine, run
    gpp set-default-env development
 
 If the configuration file doesn't exist yet, ``set-default-env`` creates it. If
-the file exists, the command keeps your other settings, but it won't change a
-file that isn't valid TOML.
+the file exists, the command keeps your comments and other settings, but it
+won't change a file that isn't valid TOML, or one whose ``environment`` is
+anything other than a single name such as ``"development"``.
 
 Use both environments at once
 -----------------------------

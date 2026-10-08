@@ -34,10 +34,8 @@ A release is a tag on `main`. Every release reaches every environment in one str
    uv run --group codegen python -m scripts.validate_release v26.5.0
    ```
    It refuses a tag that is not `vYY.M.PATCH`, and a checkout whose `merged.graphql`, `generated/` or `llms.txt` differs from a fresh build. On a mismatch, run the build, commit the result in its own PR, and check again.
-2. The user runs `Create Release` with the tag. It creates a draft release with GitHub's generated notes.
-3. List what the release changes per environment, from the previous release tag:
+2. The user runs `Create Release` with the tag. It creates a draft release whose notes start with the output of `python -m scripts.release_notes <previous tag>`, followed by GitHub's generated notes. The script compares `merged.graphql` at the previous tag with the working copy and prints Markdown: per development and production, the parts new to it and the parts removed from it, and the parts leaving production (gone from development, still on production). The workflow takes the nearest `v*` tag before the release as the previous tag; when there is none, or it has no `merged.graphql`, the draft has only GitHub's notes. To preview the lists locally:
    ```bash
    uv run --group codegen python -m scripts.release_notes v26.4.0
    ```
-   It compares `merged.graphql` at that tag with the working copy and prints Markdown: per development and production, the parts new to it and the parts removed from it, and the parts leaving production (gone from development, still on production). Paste it at the top of the draft's notes. If the tag has no `merged.graphql`, the script says so and stops.
-4. The user publishes the draft. Publishing runs `Upload Python Package`, which uploads to PyPI.
+3. The user publishes the draft. Publishing runs `Upload Python Package`, which uploads to PyPI.

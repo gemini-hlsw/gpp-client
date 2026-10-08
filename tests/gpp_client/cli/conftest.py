@@ -57,7 +57,8 @@ def runner() -> CliRunner:
     CliRunner
         CLI test runner.
     """
-    return CliRunner()
+    # Rich wraps at the terminal width, so a long temp path would split asserted text.
+    return CliRunner(env={"COLUMNS": "1000"})
 
 
 @pytest.fixture()

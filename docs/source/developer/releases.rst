@@ -37,19 +37,22 @@ Make the release
    ``main`` branch and enter the tag, such as ``v26.5.0``.
 
    The workflow checks the tag, runs Ruff and the tests, then builds and
-   smoke-tests the package. Then it pushes the tag and creates a draft release
-   with GitHub's generated notes.
+   smoke-tests the package. Then it pushes the tag and creates a draft release.
+   The draft's notes start with what changed on development and production
+   since the previous release tag: per environment, the parts that are new to
+   it and the parts removed from it, and the parts leaving production (gone
+   from development, still on production). GitHub's generated list of pull
+   requests follows. When there's no previous tag, or it has no merged schema,
+   the draft has only GitHub's list.
 
-3. Print what changed on development and production since the previous
-   release tag, as Markdown:
+   To preview the environment lists before you run the workflow:
 
    .. code-block:: bash
 
       uv run --group codegen python -m scripts.release_notes v26.4.0
 
-   Paste the output at the top of the draft's notes.
-
-4. Publish the draft. Publishing runs Upload Python Package, which builds the
-   package from the tag, smoke-tests it, and publishes it to PyPI:
+3. Read the draft's notes, then publish the draft. Publishing runs Upload
+   Python Package, which builds the package from the tag, smoke-tests it, and
+   publishes it to PyPI:
 
    https://pypi.org/project/gpp-client/

@@ -1,8 +1,14 @@
 """
 Environment definitions for the GPP client.
 
-``_DETAILS`` is the one table of environments: everything else that lists them,
-from settings to the CLI and the build, derives from it.
+``GPPEnvironment`` lists the environments, and ``_DETAILS`` holds each one's base
+URL and token variable. The CLI choices, the settings validation and the build
+scripts loop over ``GPPEnvironment``; URLs and token variable names come from
+``_DETAILS``. The exception is the token settings: ``GPPSettings`` declares
+``token`` and ``development_token`` by hand, so a new environment needs a new
+field there. The "leaving" checks in the release scripts name production and
+development on purpose, since leaving means on production but gone from
+development.
 """
 
 __all__ = ["GPPEnvironment"]

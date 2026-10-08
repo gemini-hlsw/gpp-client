@@ -192,6 +192,32 @@ async def test_production_raises_for_a_new_enum_value_mixed_with_an_old_field(bu
     assert error.available == (GPPEnvironment.DEVELOPMENT,)
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("query", "item", "kind"),
+    [
+        (
+            'mutation { updateProgram(input: {name: "n", note: "x"}) { id } }',
+            "UpdateInput.note",
+            "input field",
+        ),
+        (
+            "mutation { updateProgram(input: {kind: CALIBRATION}) { id } }",
+            "Kind.CALIBRATION",
+            "enum value",
+        ),
+    ],
+    ids=["input-field", "enum-value"],
+)
+async def test_production_raises_for_a_development_only_literal(
+    built, query, item, kind
+):
+    error = await _raised(built, GPPEnvironment.PRODUCTION, "execute", query=query)
+
+    assert error.item == item
+    assert error.kind == kind
+
+
 _BOTH_REQUIRE = {
     "development": """
 type Program { id: ID! }
