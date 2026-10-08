@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command, require_exactly_one
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client, require_exactly_one
 
 attachment_app = typer.Typer(
     name="attachment",
@@ -69,7 +68,7 @@ async def list_attachments(
     )
 
     with output.status("Fetching attachments..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             match selector_name:
                 case "observation_id":
                     result = await client.attachment.get_all_by_observation_id(

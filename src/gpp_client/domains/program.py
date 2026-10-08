@@ -2,25 +2,31 @@
 Module for retrieving and managing program information.
 """
 
+from __future__ import annotations
+
 __all__ = ["ProgramDomain"]
 
 import logging
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 from gpp_client.domains.base import BaseDomain
-from gpp_client.generated.create_program import CreateProgram
-from gpp_client.generated.delete_program_by_id import DeleteProgramById
-from gpp_client.generated.get_program_by_id import GetProgramById
-from gpp_client.generated.get_program_by_proposal_reference import (
-    GetProgramByProposalReference,
-)
-from gpp_client.generated.get_program_by_reference import GetProgramByReference
-from gpp_client.generated.get_programs import GetPrograms
-from gpp_client.generated.input_types import ProgramPropertiesInput, WhereProgram
-from gpp_client.generated.program_edit import ProgramEdit
-from gpp_client.generated.restore_program_by_id import RestoreProgramById
-from gpp_client.generated.update_program_by_id import UpdateProgramById
-from gpp_client.generated.update_programs import UpdatePrograms
+
+if TYPE_CHECKING:
+    from gpp_client.generated.create_program import CreateProgram
+    from gpp_client.generated.delete_program_by_id import DeleteProgramById
+    from gpp_client.generated.get_program_by_id import GetProgramById
+    from gpp_client.generated.get_program_by_proposal_reference import (
+        GetProgramByProposalReference,
+    )
+    from gpp_client.generated.get_program_by_reference import GetProgramByReference
+    from gpp_client.generated.get_programs import GetPrograms
+    from gpp_client.generated.input_types import ProgramPropertiesInput, WhereProgram
+    from gpp_client.generated.program_edit import ProgramEdit
+    from gpp_client.generated.restore_program_by_id import RestoreProgramById
+    from gpp_client.generated.update_program_by_id import UpdateProgramById
+    from gpp_client.generated.update_programs import UpdatePrograms
+
 
 logger = logging.getLogger(__name__)
 

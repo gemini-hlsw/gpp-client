@@ -62,7 +62,7 @@ def test_list_attachments_dispatches_to_correct_method(
     getattr(attachment, method_name).return_value = result_model
 
     mocker.patch(
-        "gpp_client.cli.commands.attachment.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(attachment=attachment),
     )
     json_pydantic_mock = mocker.patch(

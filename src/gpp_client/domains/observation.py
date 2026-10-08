@@ -2,38 +2,44 @@
 Module for observation-related operations.
 """
 
+from __future__ import annotations
+
 __all__ = ["ObservationDomain"]
 
 import logging
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 from gpp_client.domains.base import BaseDomain
-from gpp_client.generated.clone_observation import CloneObservation
-from gpp_client.generated.create_observation import CreateObservation
-from gpp_client.generated.delete_observation_by_id import DeleteObservationById
-from gpp_client.generated.delete_observation_by_reference import (
-    DeleteObservationByReference,
-)
-from gpp_client.generated.get_observation import GetObservation
-from gpp_client.generated.get_observations import GetObservations
-from gpp_client.generated.input_types import (
-    CloneObservationInput,
-    CreateObservationInput,
-    ObservationPropertiesInput,
-    UpdateObservationsInput,
-    WhereObservation,
-)
-from gpp_client.generated.obs_calculation_update import ObsCalculationUpdate
-from gpp_client.generated.observation_edit import ObservationEdit
-from gpp_client.generated.restore_observation_by_id import RestoreObservationById
-from gpp_client.generated.restore_observation_by_reference import (
-    RestoreObservationByReference,
-)
-from gpp_client.generated.update_observation_by_id import UpdateObservationById
-from gpp_client.generated.update_observation_by_reference import (
-    UpdateObservationByReference,
-)
-from gpp_client.generated.update_observations import UpdateObservations
+
+if TYPE_CHECKING:
+    from gpp_client.generated.clone_observation import CloneObservation
+    from gpp_client.generated.create_observation import CreateObservation
+    from gpp_client.generated.delete_observation_by_id import DeleteObservationById
+    from gpp_client.generated.delete_observation_by_reference import (
+        DeleteObservationByReference,
+    )
+    from gpp_client.generated.get_observation import GetObservation
+    from gpp_client.generated.get_observations import GetObservations
+    from gpp_client.generated.input_types import (
+        CloneObservationInput,
+        CreateObservationInput,
+        ObservationPropertiesInput,
+        UpdateObservationsInput,
+        WhereObservation,
+    )
+    from gpp_client.generated.obs_calculation_update import ObsCalculationUpdate
+    from gpp_client.generated.observation_edit import ObservationEdit
+    from gpp_client.generated.restore_observation_by_id import RestoreObservationById
+    from gpp_client.generated.restore_observation_by_reference import (
+        RestoreObservationByReference,
+    )
+    from gpp_client.generated.update_observation_by_id import UpdateObservationById
+    from gpp_client.generated.update_observation_by_reference import (
+        UpdateObservationByReference,
+    )
+    from gpp_client.generated.update_observations import UpdateObservations
+
 
 logger = logging.getLogger(__name__)
 

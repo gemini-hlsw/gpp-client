@@ -429,7 +429,7 @@ async def test_download_by_id_rejects_existing_file_without_overwrite(
         ),
         (
             "get_all_by_program_reference",
-            "get_program_attachments_by_program_reference",
+            "get_program_attachments_by_reference",
             {"program_reference": "prog-ref"},
         ),
         (
@@ -458,3 +458,22 @@ async def test_attachment_graphql_methods_dispatch_correctly(
 
     assert result is result_model
     getattr(graphql, graphql_name).assert_called_once_with(**kwargs)
+
+
+@pytest.mark.asyncio
+async def test_get_all_by_program_reference_sends_query_and_returns_model(
+    gpp_client,
+    gpp_transport,
+) -> None:
+    """
+    Ensure get_all_by_program_reference sends the reference and parses the reply.
+    """
+    gpp_transport.respond({"program": {"attachments": []}})
+
+    result = await gpp_client.attachment.get_all_by_program_reference("GN-2026A-Q-1")
+
+    assert result.program is not None
+    assert result.program.attachments == []
+    [body] = gpp_transport.bodies
+    assert body["operationName"] == "GetProgramAttachmentsByReference"
+    assert body["variables"] == {"programReference": "GN-2026A-Q-1"}

@@ -1,21 +1,18 @@
-Input Types
+Input types
 ===========
 
-The ``gpp_client.generated.input_types`` module contains Pydantic models used
-to construct typed GraphQL inputs.
+Each GraphQL input has a Pydantic model, such as ``CreateObservationInput``.
+The client doesn't send a field that you leave unset. A badge marks an input
+field that only one environment has.
 
-Use these models when calling domain methods or generated GraphQL operations
-that require structured input.
-
-Example
+Classes
 -------
 
-.. code-block:: python
+.. class-index::
 
-   from gpp_client.generated.input_types import CreateObservationInput
-
-API Reference
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.input_types
    :members:
+   :no-show-inheritance:

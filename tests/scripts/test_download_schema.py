@@ -1,299 +1,105 @@
 """
-Tests for the schema download script.
+Tests for downloading environment schemas, with GPP mocked by an httpx transport.
 """
 
-from contextlib import nullcontext
-from pathlib import Path
-from subprocess import CalledProcessError, CompletedProcess
+import json
 
+import httpx
 import pytest
-from typer.testing import CliRunner
 
-from gpp_client.constants import DEVELOPMENT_TOKEN_ENV_VAR, TOKEN_ENV_VAR
-from gpp_client.environment import GPPEnvironment
-from scripts.download_schema import (
-    SchemaDownloadError,
-    SchemaPaths,
-    _required_token_env_var,
-    _run,
-    _run_schema_download,
-    _validate_token_env_var,
-    app,
-)
+from graphql import build_schema, introspection_from_schema
+from scripts.download_schema import SchemaDownloadError, download_schemas
+
+FIXTURE_SDL = """
+scalar Email @specifiedBy(url: "https://example.com/email")
+
+input AngleInput @oneOf {
+  degrees: Float
+  "Old name."
+  arcsec: Float @deprecated(reason: "Use degrees.")
+}
+
+type Query {
+  angle(input: AngleInput!): Float
+  contact: Email
+}
+"""
 
 
-def _touch_file(path):
+def _introspection() -> dict:
+    return {"data": introspection_from_schema(build_schema(FIXTURE_SDL))}
+
+
+class _FakeGPP:
     """
-    Create a file and parent directories.
+    Answers introspection like GPP; ``refuse`` lists hosts that need a token.
     """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.touch()
+
+    def __init__(self, refuse: set[str] = frozenset()):
+        self.refuse = refuse
+        self.requests: list[httpx.Request] = []
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        anonymous = "authorization" not in request.headers
+        if request.url.host in self.refuse and anonymous:
+            return httpx.Response(401, json={"errors": [{"message": "Unauthorized"}]})
+        return httpx.Response(200, json=_introspection())
+
+    def client(self) -> httpx.Client:
+        return httpx.Client(transport=httpx.MockTransport(self))
 
 
-@pytest.fixture()
-def repo_root(tmp_path, monkeypatch):
-    """
-    Create and switch to a temp repo.
-    """
-    monkeypatch.chdir(tmp_path)
-    return tmp_path
+def test_downloads_development_and_production_anonymously_with_full_fidelity(tmp_path):
+    gpp = _FakeGPP()
+
+    written = download_schemas(tmp_path, http_client=gpp.client(), environ={})
+
+    assert [path.name for path in written] == [
+        "development.graphql",
+        "production.graphql",
+    ]
+    assert [r.url.path for r in gpp.requests] == ["/odb"] * 2
+    assert all("authorization" not in r.headers for r in gpp.requests)
+    query = json.loads(gpp.requests[0].content)["query"]
+    for flag in ("specifiedByURL", "isOneOf", "includeDeprecated: true"):
+        assert flag in query
+    sdl = (tmp_path / "production.graphql").read_text()
+    assert "@oneOf" in sdl
+    assert '@specifiedBy(url: "https://example.com/email")' in sdl
+    assert 'arcsec: Float @deprecated(reason: "Use degrees.")' in sdl
 
 
-@pytest.fixture()
-def paths(repo_root):
-    """
-    Return schema paths for temp repo.
-    """
-    return SchemaPaths(root=repo_root)
+def test_falls_back_to_the_token_when_anonymous_introspection_is_refused(tmp_path):
+    gpp = _FakeGPP(refuse={"lucuma-postgres-odb-dev.herokuapp.com"})
 
-
-@pytest.fixture()
-def runner():
-    """
-    Return a Typer CLI runner.
-    """
-    return CliRunner()
-
-
-@pytest.fixture(autouse=True)
-def mock_output(mocker):
-    """
-    Mock CLI output helpers.
-    """
-    mocker.patch("scripts.download_schema.output.status", return_value=nullcontext())
-    mocker.patch("scripts.download_schema.output.info")
-    mocker.patch("scripts.download_schema.output.dim_info")
-    mocker.patch("scripts.download_schema.output.success")
-    mocker.patch("scripts.download_schema.output.fail")
-
-
-@pytest.mark.parametrize(
-    ("env", "expected_filename"),
-    [
-        (GPPEnvironment.DEVELOPMENT, "development.toml"),
-        (GPPEnvironment.PRODUCTION, "production.toml"),
-    ],
-)
-def test_schema_toml_path(paths, env, expected_filename):
-    """
-    Schema TOML path resolves correctly.
-    """
-    result = paths.schema_toml_path(env)
-
-    assert result == paths.root / "graphql" / "schemas" / expected_filename
-
-
-@pytest.mark.parametrize(
-    ("env", "expected_env_var"),
-    [
-        (GPPEnvironment.DEVELOPMENT, DEVELOPMENT_TOKEN_ENV_VAR),
-        (GPPEnvironment.PRODUCTION, TOKEN_ENV_VAR),
-    ],
-)
-def test_required_token_env_var(env, expected_env_var):
-    """
-    Required token environment variable resolves correctly.
-    """
-    result = _required_token_env_var(env)
-
-    assert result == expected_env_var
-
-
-@pytest.mark.parametrize(
-    ("env", "env_var"),
-    [
-        (GPPEnvironment.DEVELOPMENT, DEVELOPMENT_TOKEN_ENV_VAR),
-        (GPPEnvironment.PRODUCTION, TOKEN_ENV_VAR),
-    ],
-)
-def test_validate_token_env_var_succeeds(monkeypatch, env, env_var):
-    """
-    Existing token environment variable succeeds.
-    """
-    monkeypatch.setenv(env_var, "secret-token")
-
-    _validate_token_env_var(env)
-
-
-@pytest.mark.parametrize(
-    ("env", "env_var"),
-    [
-        (GPPEnvironment.DEVELOPMENT, DEVELOPMENT_TOKEN_ENV_VAR),
-        (GPPEnvironment.PRODUCTION, TOKEN_ENV_VAR),
-    ],
-)
-def test_validate_token_env_var_raises_for_missing_token(monkeypatch, env, env_var):
-    """
-    Missing token environment variable raises an error.
-    """
-    monkeypatch.delenv(env_var, raising=False)
-
-    with pytest.raises(SchemaDownloadError, match=env_var):
-        _validate_token_env_var(env)
-
-
-def test_run_schema_download_calls_ariadne_codegen(repo_root, mocker):
-    """
-    Schema download calls Ariadne Codegen.
-    """
-    toml_path = Path("/fake/development.toml")
-
-    run_spy = mocker.patch(
-        "scripts.download_schema.subprocess.run",
-        return_value=CompletedProcess(
-            args=["ariadne-codegen"],
-            returncode=0,
-            stdout="schema downloaded",
-            stderr="",
-        ),
+    download_schemas(
+        tmp_path,
+        http_client=gpp.client(),
+        environ={"GPP_DEVELOPMENT_TOKEN": "secret"},
     )
 
-    _run_schema_download(toml_path)
+    development = [r for r in gpp.requests if "-dev." in r.url.host]
+    assert [r.headers.get("authorization") for r in development] == [
+        None,
+        "Bearer secret",
+    ]
+    assert (tmp_path / "development.graphql").is_file()
 
-    run_spy.assert_called_once_with(
-        [
-            "ariadne-codegen",
-            "graphqlschema",
-            "--config",
-            str(toml_path),
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-        cwd=Path.cwd(),
+
+def test_refusal_without_a_token_names_the_variable_to_set(tmp_path):
+    gpp = _FakeGPP(refuse={"lucuma-postgres-odb-production.herokuapp.com"})
+
+    with pytest.raises(SchemaDownloadError, match="GPP_TOKEN"):
+        download_schemas(tmp_path, http_client=gpp.client(), environ={})
+
+
+def test_downloads_only_the_named_environments(tmp_path):
+    gpp = _FakeGPP()
+
+    written = download_schemas(
+        tmp_path, ["production"], http_client=gpp.client(), environ={}
     )
 
-
-@pytest.mark.parametrize(
-    ("stderr", "expected"),
-    [
-        ("permission denied", "permission denied"),
-        ("", "Schema download failed."),
-        (None, "Schema download failed."),
-    ],
-)
-def test_run_schema_download_raises_schema_download_error_on_subprocess_failure(
-    repo_root,
-    mocker,
-    stderr,
-    expected,
-):
-    """
-    Subprocess failures are wrapped.
-    """
-    toml_path = Path("/fake/development.toml")
-
-    error = CalledProcessError(
-        returncode=1,
-        cmd=["ariadne-codegen"],
-        stderr=stderr,
-        output="partial output",
-    )
-
-    mocker.patch("scripts.download_schema.subprocess.run", side_effect=error)
-
-    with pytest.raises(SchemaDownloadError, match=expected):
-        _run_schema_download(toml_path)
-
-
-def test_run_raises_when_config_file_missing(repo_root):
-    """
-    Workflow fails when the environment config file is missing.
-    """
-    with pytest.raises(
-        SchemaDownloadError,
-        match="Schema config file not found",
-    ):
-        _run(GPPEnvironment.DEVELOPMENT)
-
-
-def test_run_raises_when_token_is_missing(repo_root, monkeypatch):
-    """
-    Workflow fails when the required token is missing.
-    """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
-    monkeypatch.delenv(DEVELOPMENT_TOKEN_ENV_VAR, raising=False)
-
-    with pytest.raises(
-        SchemaDownloadError,
-        match=DEVELOPMENT_TOKEN_ENV_VAR,
-    ):
-        _run(GPPEnvironment.DEVELOPMENT)
-
-
-def test_run_downloads_schema_when_config_and_token_exist(
-    repo_root,
-    mocker,
-    monkeypatch,
-):
-    """
-    Full workflow invokes schema download.
-    """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
-    monkeypatch.setenv(DEVELOPMENT_TOKEN_ENV_VAR, "secret-token")
-
-    download_spy = mocker.patch("scripts.download_schema._run_schema_download")
-
-    _run(GPPEnvironment.DEVELOPMENT)
-
-    download_spy.assert_called_once_with(toml_path)
-
-
-@pytest.mark.parametrize(
-    "side_effect",
-    [
-        SchemaDownloadError("download failure"),
-        SchemaDownloadError("invalid config"),
-    ],
-)
-def test_run_propagates_schema_download_error(
-    repo_root,
-    mocker,
-    monkeypatch,
-    side_effect,
-):
-    """
-    Workflow propagates schema download errors.
-    """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
-    monkeypatch.setenv(DEVELOPMENT_TOKEN_ENV_VAR, "secret-token")
-
-    mocker.patch(
-        "scripts.download_schema._run_schema_download",
-        side_effect=side_effect,
-    )
-
-    with pytest.raises(SchemaDownloadError, match=str(side_effect)):
-        _run(GPPEnvironment.DEVELOPMENT)
-
-
-def test_cli_success(repo_root, runner, mocker, monkeypatch):
-    """
-    CLI exits successfully when schema download succeeds.
-    """
-    toml_path = repo_root / "graphql" / "schemas" / "development.toml"
-    _touch_file(toml_path)
-    monkeypatch.setenv(DEVELOPMENT_TOKEN_ENV_VAR, "secret-token")
-
-    mocker.patch("scripts.download_schema._run_schema_download")
-
-    result = runner.invoke(app, [GPPEnvironment.DEVELOPMENT.value.lower()])
-
-    assert result.exit_code == 0
-
-
-def test_cli_failure(runner, mocker):
-    """
-    CLI exits with error when schema download fails.
-    """
-    mocker.patch(
-        "scripts.download_schema._run",
-        side_effect=SchemaDownloadError("Bad schema config"),
-    )
-
-    result = runner.invoke(app, [GPPEnvironment.DEVELOPMENT.value.lower()])
-
-    assert result.exit_code == 1
+    assert [path.name for path in written] == ["production.graphql"]
+    assert len(gpp.requests) == 1

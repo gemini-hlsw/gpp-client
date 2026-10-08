@@ -21,7 +21,7 @@ def test_get_site_status_dispatches_correctly(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.site_status.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(site_status=site_status),
     )
     json_mock = mocker.patch("gpp_client.cli.commands.site_status.output.json")
@@ -49,7 +49,7 @@ def test_get_site_status_accepts_south(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.site_status.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(site_status=site_status),
     )
     json_mock = mocker.patch("gpp_client.cli.commands.site_status.output.json")

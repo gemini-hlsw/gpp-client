@@ -1,31 +1,12 @@
-GOATS
-=====
+``gpp goats``
+=============
 
-The ``gpp goats`` command group provides access to GOATS resources.
-
-Quick Example
--------------
-
-List GOATS programs:
-
-.. code-block:: bash
-
-   gpp goats list-programs
-
-List observations for a program:
-
-.. code-block:: bash
-
-   gpp goats list-observations p-123
-
-Reference
----------
+This command group lists the programs and observations that GOATS uses. To do
+the same in Python, see :doc:`../domains/goats`.
 
 .. typer:: gpp_client.cli.cli.app:goats
    :prog: gpp goats
    :make-sections:
    :show-nested:
+   :preferred: text
    :width: 80
-   :theme: dark
-
-See also: :doc:`../domains/goats`

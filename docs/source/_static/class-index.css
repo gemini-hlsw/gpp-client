@@ -1,0 +1,23 @@
+table.class-index td p {
+  margin: 0;
+}
+
+/* A phone has no room for two columns, so each class stacks its name above
+   its summary, and the page never scrolls sideways. */
+@media (max-width: 40em) {
+  table.class-index,
+  table.class-index tbody,
+  table.class-index tr,
+  table.class-index td {
+    display: block;
+  }
+
+  table.class-index td:first-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  table.class-index code {
+    overflow-wrap: anywhere;
+  }
+}

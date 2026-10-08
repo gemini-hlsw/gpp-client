@@ -2,7 +2,7 @@
 Tests for the scheduler domain.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -255,14 +255,14 @@ async def test_get_visibility_changes_parses_rest_response(
     rest.get_visibility_changes = mocker.AsyncMock(
         return_value=("o-123\t2026-07-15T10:00:00Z\nt-456\t2026-07-15T11:30:00Z\n")
     )
-    since = datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+    since = datetime(2026, 7, 15, 9, 0, tzinfo=UTC)
 
     result = await scheduler_domain.get_visibility_changes(since)
 
     rest.get_visibility_changes.assert_awaited_once_with(since)
     assert result.observation_ids == frozenset({"o-123"})
     assert result.target_ids == frozenset({"t-456"})
-    assert result.max_timestamp == datetime(2026, 7, 15, 11, 30, tzinfo=timezone.utc)
+    assert result.max_timestamp == datetime(2026, 7, 15, 11, 30, tzinfo=UTC)
 
 
 @pytest.mark.asyncio
@@ -278,7 +278,7 @@ async def test_get_visibility_changes_propagates_rest_errors(
 
     with pytest.raises(RuntimeError, match="HTTP 500"):
         await scheduler_domain.get_visibility_changes(
-            datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+            datetime(2026, 7, 15, 9, 0, tzinfo=UTC)
         )
 
 
@@ -298,7 +298,7 @@ async def test_get_visibility_changes_leaves_shared_rest_client_open(
     rest.get_visibility_changes = mocker.AsyncMock(return_value="")
 
     await scheduler_domain.get_visibility_changes(
-        datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+        datetime(2026, 7, 15, 9, 0, tzinfo=UTC)
     )
 
     rest.close.assert_not_called()
@@ -340,3 +340,33 @@ async def test_get_all_leaves_shared_rest_client_open(
 
     rest.get_atom_digests.assert_awaited_once_with(["o-1"])
     rest.close.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_get_all_reference_labels_skips_programs_without_reference(
+    gpp_client,
+    gpp_transport,
+) -> None:
+    """
+    Ensure get_all_reference_labels lists only programs that have a reference.
+    """
+    gpp_transport.respond(
+        {
+            "programs": {
+                "matches": [
+                    {
+                        "id": "p-1",
+                        "reference": {
+                            "__typename": "ScienceProgramReference",
+                            "label": "G-2026A-0001-Q",
+                        },
+                    },
+                    {"id": "p-2", "reference": None},
+                ]
+            }
+        }
+    )
+
+    result = await gpp_client.scheduler.get_all_reference_labels(date="2026-10-01")
+
+    assert result == [("G-2026A-0001-Q", "p-1")]

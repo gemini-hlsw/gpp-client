@@ -41,6 +41,6 @@ class AtomDomain(BaseDomain):
         ValueError
             For invalid observation IDs.
         """
-        return await self._rest._get_atom_digest(
+        return await self._rest.get_atom_digests(
             observation_ids=observation_ids, accept_gzip=accept_gzip
         )

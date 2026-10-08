@@ -4,7 +4,12 @@ from pydantic import Field
 
 from .base_model import BaseModel
 from .enums import Existence
-from .fragments import TargetDetails
+from .fragments import (  # noqa: F401
+    TargetDetails,
+    TargetDetailsNonsidereal,
+    TargetDetailsOpportunity,
+    TargetDetailsSidereal,
+)
 
 
 class DeleteTargetById(BaseModel):

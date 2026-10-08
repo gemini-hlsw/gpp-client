@@ -22,7 +22,7 @@ In priority order. When two conflict, the higher one wins.
 1. **Generated first, and complete.** Every part of the GPP API we support reaches users through the generated client. Coverage gaps are bugs. ([ADR 0004](adr/0004-generated-first-curated-on-top.md))
 2. **Curated on top, and tested.** Curated conveniences sit on top of generated coverage, never in place of it, and each has a test that fails when the schema under it changes. ([ADR 0004](adr/0004-generated-first-curated-on-top.md))
 3. **Easy to use and easy to maintain.** Both are the goal, and auto-generation is how we get both at once.
-4. **All three environments.** Users should reach development, staging or production from one install and switch easily. Not met today - see [Environments](#environments).
+4. **Development and production from one install.** Users switch between them easily. See [Environments](#environments).
 
 ## How GPP changes
 
@@ -40,6 +40,8 @@ https://github.com/gemini-hlsw/lucuma-odb/blob/main/modules/schema/src/main/reso
 | staging | promoted by hand from development | about weekly |
 | production | promoted by hand from staging | every two to three weeks |
 
+The client tracks development and production only, so a change reaches it twice: on development, and later on production.
+
 There is no announcement channel. We plan to watch the GitHub Deployments API, which records the commit live in each environment, and back it up with a nightly check of each live server's schema.
 
 ## Data sources
@@ -53,7 +55,7 @@ There is no announcement channel. We plan to watch the GitHub Deployments API, w
 
 ## Release contract
 
-A release matches the production schema on its release date. A `.devN` pre-release matches the development schema on its date. Neither is guaranteed to work against GPP weeks later. Users should upgrade often.
+Releases are one stream. A release matches each environment's schema on its release date. A release is not guaranteed to work against GPP weeks later. Users should upgrade often.
 
 When GPP removes or renames something, the break reaches users on their next upgrade. We keep no shims (adapters that keep old names working); release notes name what changed. ([ADR 0005](adr/0005-schema-breaks-pass-through.md))
 
@@ -61,19 +63,19 @@ Versions are CalVer (calendar versioning, `YY.M.PATCH`, such as `26.9.0`), set f
 
 ## Environments
 
-GPP runs three environments: development, staging and production.
+The client reaches two GPP environments: development and production.
 
-- **Today:** the generated client is built for development or production, never both, and that choice is made when the package is built. A pre-release carries development code; a release carries production code. Staging is not supported. ([ADR 0002](adr/0002-environment-fixed-at-build-time.md))
-- **Why:** some operations exist only on development, and generated code matches one schema. Development is not a strict superset of production either: fields have existed only on production (23 of them at `a9f9755`).
-- **Goal:** one install that reaches all three environments, with easy switching.
-- **Status:** open problem, no chosen design. It gets its own design session and an ADR that supersedes ADR 0002.
+- **How it works:** one install reaches development and production. One generated client is built from the merged schema, and the environment is chosen at runtime: `GPPClient(environment=...)`, then `GPP_ENVIRONMENT`, then `.env`, then `config.toml`, then production. The client sends the selected environment's trimmed copy of each operation. ([ADR 0006](adr/0006-merged-schema-runtime-environment.md))
+- **Why a merged schema:** the environments differ, and generated code can match only one schema. Development is not a strict superset of production either: fields have existed only on production (23 of them at `a9f9755`).
+- **Checks:** every GraphQL call, over HTTP and as a websocket subscription, raises `GPPEnvironmentError` before sending when it uses something the environment lacks or leaves unset something it requires. On production, the client issues `GPPFieldLeavingWarning` when a call selects a field development has removed. A scheduler REST path the environment answers with 404 raises `GPPEnvironmentError` too.
+- **Not yet:** domain methods are typed the same on every environment. See [Known gaps](#known-gaps).
 
 ## Testing policy
 
 | When | What runs | Network |
 |---|---|---|
-| Pull requests and merges | Mocked unit tests; codegen, which rejects operations that don't match the committed schemas | None |
-| Nightly (planned) | Live reads on all three environments; live writes on development and staging, deleting only what the test created | Yes |
+| Pull requests and merges | Mocked unit tests; every generated operation run on every environment against responses built from its committed schema; codegen, which rejects operations that don't match the committed schemas | None |
+| Nightly (planned) | Live reads on development and production; live writes on development only, deleting only what the test created | Yes |
 
 The plan keeps production free of live writes.
 
@@ -81,10 +83,9 @@ The plan keeps production free of live writes.
 
 Things the principles ask for that the code does not do yet:
 
-- Staging is unsupported, and the environment is fixed at build time.
 - No test runs against a live server, and operations are only checked against schemas as old as the last schema update.
-- Schema drift detection is not running: the schema-check workflows are manual-only and do not work as written.
-- The codegen check in CI regenerates code but does not fail when the committed code differs.
+- Schema drift detection runs only by hand: `check_schema.yaml` compares each environment's live schema with the committed one when started, not on a schedule.
+- Custom scalars (ids, timestamps, coordinates and the rest) are typed `Any` in the generated models, so users get no type checking on them, and a null where a model requires one parses without error.
 - Coverage is incomplete: call-for-proposals operations exist in `graphql/operations/` with no domain or CLI command.
-- Nothing yet helps AI agents use the library, such as an `llms.txt` or a usage skill.
-- Parts of the README and the Sphinx docs describe older behavior.
+- AI agents get a generated `llms.txt` (repo root and docs root), but no usage skill.
+- Only `client.graphql` is typed per environment. Domain methods offer the same types on development and production.

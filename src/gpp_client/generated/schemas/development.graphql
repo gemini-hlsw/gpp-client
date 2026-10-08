@@ -1,0 +1,7887 @@
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
+
+input AddDatasetEventInput {
+  datasetId: DatasetId!
+  datasetStage: DatasetStage!
+  clientTime: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type AddDatasetEventResult {
+  event: DatasetEvent!
+}
+
+input AddProgramUserInput {
+  programId: ProgramId!
+  role: ProgramUserRole!
+  SET: ProgramUserPropertiesInput
+}
+
+type AddProgramUserResult {
+  programUser: ProgramUser!
+}
+
+input AddSequenceEventInput {
+  visitId: VisitId!
+  command: SequenceCommand!
+  clientTime: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type AddSequenceEventResult {
+  event: SequenceEvent!
+}
+
+input AddSlewEventInput {
+  observationId: ObservationId!
+  slewStage: SlewStage!
+  clientTime: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type AddSlewEventResult {
+  event: SlewEvent!
+}
+
+input AddStepEventInput {
+  stepId: StepId!
+  visitId: VisitId!
+  stepStage: StepStage!
+  clientTime: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type AddStepEventResult {
+  event: StepEvent!
+}
+
+input AddEventBatchEntryInput {
+  dataset: AddDatasetEventInput
+  sequence: AddSequenceEventInput
+  slew: AddSlewEventInput
+  step: AddStepEventInput
+}
+
+input AddEventBatchInput {
+  events: [AddEventBatchEntryInput!]!
+}
+
+type AddEventBatchResult {
+  events: [ExecutionEvent!]!
+  hasMore: Boolean!
+}
+
+input AddTimeChargeCorrectionInput {
+  visitId: VisitId!
+  correction: TimeChargeCorrectionInput!
+}
+
+type AddTimeChargeCorrectionResult {
+  timeChargeInvoice: TimeChargeInvoice!
+}
+
+input AirMassRangeInput {
+  min: PosBigDecimal
+  max: PosBigDecimal
+}
+
+type Allocation {
+  category: TimeAccountingCategory!
+  scienceBand: ScienceBand!
+  duration: TimeSpan!
+}
+
+input AllocationInput {
+  category: TimeAccountingCategory!
+  scienceBand: ScienceBand!
+  duration: TimeSpanInput!
+}
+
+input AngleInput @oneOf {
+  microarcseconds: Long
+  microseconds: BigDecimal
+  milliarcseconds: BigDecimal
+  milliseconds: BigDecimal
+  arcseconds: BigDecimal
+  seconds: BigDecimal
+  arcminutes: BigDecimal
+  minutes: BigDecimal
+  degrees: BigDecimal
+  hours: BigDecimal
+  dms: String
+  hms: String
+}
+
+type AtomEvent implements ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  atom: AtomRecord
+  atomStage: AtomStage!
+  idempotencyKey: IdempotencyKey
+}
+
+enum AtomExecutionState {
+  NOT_STARTED
+  ONGOING
+  COMPLETED
+  ABANDONED
+}
+
+scalar AtomId
+
+enum AtomStage {
+  END_ATOM
+  START_ATOM
+}
+
+type AtomRecord {
+  id: AtomId!
+  visit: Visit!
+  index: PosInt!
+  description: NonEmptyString
+  instrument: Instrument!
+  observation: Observation!
+  executionState: AtomExecutionState!
+  interval: TimestampInterval
+  sequenceType: SequenceType!
+  steps(OFFSET: PosInt, LIMIT: NonNegInt): StepRecordSelectResult!
+}
+
+type AtomRecordSelectResult {
+  matches: [AtomRecord!]!
+  hasMore: Boolean!
+}
+
+type BandedTime {
+  band: ScienceBand
+  time: CategorizedTime!
+}
+
+type CalculatedBandedTime {
+  calculationState: CalculationState!
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
+  value: BandedTime
+}
+
+input BandBrightnessIntegratedInput {
+  band: Band!
+  value: BigDecimal
+  units: BrightnessIntegratedUnits
+  error: BigDecimal
+}
+
+input BandBrightnessSurfaceInput {
+  band: Band!
+  value: BigDecimal
+  units: BrightnessSurfaceUnits
+  error: BigDecimal
+}
+
+input BandNormalizedIntegratedInput {
+  sed: UnnormalizedSedInput
+  brightnesses: [BandBrightnessIntegratedInput!]
+}
+
+input BandNormalizedSurfaceInput {
+  sed: UnnormalizedSedInput
+  brightnesses: [BandBrightnessSurfaceInput!]
+}
+
+type Bias implements StepConfig {
+  stepType: StepType!
+}
+
+enum BlindOffsetType {
+  AUTOMATIC
+  MANUAL
+}
+
+enum Breakpoint {
+  ENABLED
+  DISABLED
+}
+
+enum Observatory {
+  GEMINI
+  KECK
+  SUBARU
+}
+
+enum ExchangePartner {
+  KECK
+  SUBARU
+}
+
+type GeminiCallProperties {
+  type: GeminiCallForProposalsType!
+  coordinateLimits: SiteCoordinateLimits!
+  instruments: [Instrument!]!
+  proprietaryMonths: NonNegInt!
+  allowsNonPartnerPi: Boolean!
+  nonPartnerDeadline: Timestamp
+  exchangePartners: [CallForProposalsExchangePartner!]!
+}
+
+input GeminiCallPropertiesInput {
+  type: GeminiCallForProposalsType
+  coordinateLimits: SiteCoordinateLimitsInput
+  instruments: [Instrument!]
+  proprietaryMonths: NonNegInt
+  exchangePartners: [CallForProposalsExchangePartnerInput!]
+}
+
+enum KeckInstrument {
+  HIRES
+  OTHER
+}
+
+type KeckCallProperties {
+  instruments: [KeckInstrument!]!
+  coordinateLimits: CoordinateLimits!
+}
+
+input KeckCallPropertiesInput {
+  instruments: [KeckInstrument!]
+  coordinateLimits: CoordinateLimitsInput
+}
+
+enum SubaruInstrument {
+  FOCAS
+  HDS
+  HSC
+  IRCS
+  MOIRCS
+  PFS
+  VISITOR
+}
+
+enum SubaruCallForProposalsType {
+  NORMAL
+  INTENSIVE
+}
+
+type SubaruCallProperties {
+  type: SubaruCallForProposalsType!
+  instruments: [SubaruInstrument!]!
+  coordinateLimits: CoordinateLimits!
+}
+
+input SubaruCallPropertiesInput {
+  type: SubaruCallForProposalsType
+  instruments: [SubaruInstrument!]
+  coordinateLimits: CoordinateLimitsInput
+}
+
+type CallForProposals {
+  id: CallForProposalsId!
+  title: NonEmptyString!
+  semester: Semester!
+  active: DateInterval!
+  partners: [CallForProposalsPartner!]!
+  submissionDeadlineDefault: Timestamp
+  existence: Existence!
+  observatory: Observatory!
+  gemini: GeminiCallProperties
+  keck: KeckCallProperties
+  subaru: SubaruCallProperties
+}
+
+scalar CallForProposalsId
+
+input CallForProposalsPropertiesInput {
+  semester: Semester
+  title: NonEmptyString
+  activeStart: Date
+  activeEnd: Date
+  partners: [CallForProposalsPartnerInput!]
+  submissionDeadlineDefault: Timestamp
+  existence: Existence
+  gemini: GeminiCallPropertiesInput
+  keck: KeckCallPropertiesInput
+  subaru: SubaruCallPropertiesInput
+}
+
+input SiteCoordinateLimitsInput {
+  north: CoordinateLimitsInput
+  south: CoordinateLimitsInput
+}
+
+input CoordinateLimitsInput {
+  raStart: RightAscensionInput
+  raEnd: RightAscensionInput
+  decStart: DeclinationInput
+  decEnd: DeclinationInput
+}
+
+type CallForProposalsPartner {
+  geminiPartner: Partner!
+  submissionDeadlineOverride: Timestamp
+  submissionDeadline: Timestamp
+}
+
+input CallForProposalsPartnerInput {
+  geminiPartner: Partner!
+  submissionDeadlineOverride: Timestamp
+}
+
+type CallForProposalsExchangePartner {
+  exchangePartner: ExchangePartner!
+  submissionDeadlineOverride: Timestamp
+  submissionDeadline: Timestamp
+}
+
+input CallForProposalsExchangePartnerInput {
+  exchangePartner: ExchangePartner!
+  submissionDeadlineOverride: Timestamp
+}
+
+type CallsForProposalsSelectResult {
+  matches: [CallForProposals!]!
+  hasMore: Boolean!
+}
+
+enum GeminiCallForProposalsType {
+  DEMO_SCIENCE
+  DIRECTORS_TIME
+  FAST_TURNAROUND
+  LARGE_PROGRAM
+  POOR_WEATHER
+  REGULAR_SEMESTER
+  SYSTEM_VERIFICATION
+}
+
+input CatalogInfoInput {
+  name: CatalogName
+  id: NonEmptyString
+  objectType: NonEmptyString
+}
+
+type CategorizedTime {
+  program: TimeSpan!
+  nonCharged: TimeSpan!
+  total: TimeSpan!
+}
+
+type CategorizedTimeRange {
+  minimum: CategorizedTime!
+  maximum: CategorizedTime!
+}
+
+type CalculatedCategorizedTimeRange {
+  calculationState: CalculationState!
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
+  value: CategorizedTimeRange
+}
+
+input ChangeProgramUserRoleInput {
+  programUserId: ProgramUserId!
+  newRole: ProgramUserRole!
+}
+
+type ChangeProgramUserRoleResult {
+  programUser: ProgramUser!
+}
+
+input ChangePrincipalInvestigatorInput {
+  programUserId: ProgramUserId!
+}
+
+type ChangePrincipalInvestigatorResult {
+  programUser: ProgramUser!
+}
+
+input CloneObservationInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  SET: ObservationPropertiesInput
+  sequence: CloneSequenceMode! = NONE
+}
+
+enum CloneSequenceMode {
+  NONE
+  ALL_STEPS
+  PENDING_STEPS
+}
+
+type CloneObservationResult {
+  newObservation: Observation!
+}
+
+input CloneTargetInput {
+  targetId: TargetId!
+  SET: TargetPropertiesInput
+  REPLACE_IN: [ObservationId!]
+}
+
+type CloneTargetResult {
+  newTarget: Target!
+}
+
+input ConstraintSetInput {
+  imageQuality: ImageQualityPreset
+  cloudExtinction: CloudExtinctionPreset
+  skyBackground: SkyBackground
+  waterVapor: WaterVapor
+  elevationRange: ElevationRangeInput
+}
+
+scalar ChronicleId
+
+scalar TransactionId
+
+interface ChronicleEntry {
+  id: ChronicleId!
+  transactionId: TransactionId!
+  user: User
+  timestamp: Timestamp!
+}
+
+type ConditionsEntry {
+  id: ChronicleId!
+  transactionId: TransactionId!
+  user: User
+  timestamp: Timestamp!
+  measurement: ConditionsMeasurement
+  intuition: ConditionsIntuition
+}
+
+input ConditionsEntryInput {
+  measurement: ConditionsMeasurementInput
+  intuition: ConditionsIntuitionInput
+}
+
+scalar Extinction
+
+enum ConditionsMeasurementSource {
+  OBSERVER
+}
+
+enum SeeingTrend {
+  GETTING_BETTER
+  GETTING_WORSE
+  STAYING_THE_SAME
+  VARIABLE
+}
+
+enum ConditionsExpectationType {
+  CLEAR_SKIES
+  FOG
+  THICK_CLOUDS
+  THIN_CLOUDS
+}
+
+type ConditionsMeasurement {
+  source: ConditionsMeasurementSource!
+  seeing: Angle
+  extinction: Extinction
+  wavelength: Wavelength
+  azimuth: Angle
+  elevation: Angle
+}
+
+input ConditionsMeasurementInput {
+  source: ConditionsMeasurementSource!
+  seeing: AngleInput
+  extinction: Extinction
+  wavelength: WavelengthInput
+  azimuth: AngleInput
+  elevation: AngleInput
+}
+
+type ConditionsIntuition {
+  expectation: ConditionsExpectation
+  seeingTrend: SeeingTrend
+}
+
+input ConditionsIntuitionInput {
+  expectation: ConditionsExpectationInput
+  seeingTrend: SeeingTrend
+}
+
+type ConditionsExpectation {
+  type: ConditionsExpectationType!
+  timeframe: TimeSpan!
+}
+
+input ConditionsExpectationInput {
+  type: ConditionsExpectationType!
+  timeframe: TimeSpanInput!
+}
+
+type AddConditionsEntryResult {
+  conditionsEntry: ConditionsEntry!
+}
+
+type CoordinateLimits {
+  raStart: RightAscension!
+  raEnd: RightAscension!
+  decStart: Declination!
+  decEnd: Declination!
+}
+
+input CoordinatesInput {
+  ra: RightAscensionInput
+  dec: DeclinationInput
+}
+
+input CreateCallForProposalsInput {
+  SET: CallForProposalsPropertiesInput
+}
+
+type CreateCallForProposalsResult {
+  callForProposals: CallForProposals!
+}
+
+input CreateObservationInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: ObservationPropertiesInput
+}
+
+type CreateObservationResult {
+  observation: Observation!
+}
+
+input CreateProgramInput {
+  SET: ProgramPropertiesInput
+}
+
+input CreateProgramNoteInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: ProgramNotePropertiesInput!
+}
+
+type CreateProgramNoteResult {
+  programNote: ProgramNote!
+}
+
+type CreateProgramResult {
+  program: Program!
+}
+
+input CreateProposalInput {
+  programId: ProgramId!
+  SET: ProposalPropertiesInput!
+}
+
+type CreateProposalResult {
+  proposal: Proposal!
+}
+
+input CreateTargetInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: TargetPropertiesInput!
+}
+
+type CreateTargetResult {
+  target: Target!
+}
+
+type Dark implements StepConfig {
+  stepType: StepType!
+}
+
+input DatasetPropertiesInput {
+  qaState: DatasetQaState
+  comment: NonEmptyString
+}
+
+scalar Date
+
+type DateInterval {
+  start: Date!
+  end: Date!
+}
+
+input DeclinationInput @oneOf {
+  microarcseconds: Long
+  degrees: BigDecimal
+  dms: DmsString
+}
+
+input DeleteProgramUserInput {
+  programUserId: ProgramUserId!
+}
+
+type DeleteProgramUserResult {
+  result: Boolean!
+}
+
+input DeleteProposalInput {
+  programId: ProgramId!
+}
+
+type DeleteProposalResult {
+  result: Boolean!
+}
+
+input EditAsterismsPatchInput {
+  ADD: [TargetId!]
+  DELETE: [TargetId!]
+}
+
+enum EditType {
+  CREATED
+  UPDATED
+  HARD_DELETE
+}
+
+input ElevationRangeInput {
+  airMass: AirMassRangeInput
+  hourAngle: HourAngleRangeInput
+}
+
+type Email {
+  senderEmail: EmailAddress!
+  recipientEmail: EmailAddress!
+  subject: NonEmptyString!
+  textMessage: NonEmptyString!
+  htmlMessage: NonEmptyString
+  originalTime: Timestamp!
+  status: EmailStatus!
+  statusTime: Timestamp!
+}
+
+enum EmailStatus {
+  QUEUED
+  REJECTED
+  ACCEPTED
+  DELIVERED
+  PERMANENT_FAILURE
+  TEMPORARY_FAILURE
+}
+
+input EmissionLineIntegratedInput {
+  wavelength: WavelengthInput!
+  lineWidth: PosBigDecimal
+  lineFlux: LineFluxIntegratedInput
+}
+
+input EmissionLineSurfaceInput {
+  wavelength: WavelengthInput!
+  lineWidth: PosBigDecimal
+  lineFlux: LineFluxSurfaceInput
+}
+
+input EmissionLinesIntegratedInput {
+  lines: [EmissionLineIntegratedInput!]
+  fluxDensityContinuum: FluxDensityContinuumIntegratedInput
+}
+
+input EmissionLinesSurfaceInput {
+  lines: [EmissionLineSurfaceInput!]
+  fluxDensityContinuum: FluxDensityContinuumSurfaceInput
+}
+
+enum ExecutionEventType {
+  SEQUENCE
+  SLEW
+  ATOM
+  STEP
+  DATASET
+}
+
+input ExposureTimeModeInput @oneOf {
+  signalToNoise: SignalToNoiseExposureTimeModeInput
+  timeAndCount: TimeAndCountExposureTimeModeInput
+}
+
+input TimeAndCountExposureTimeModeInput {
+  time: TimeSpanInput!
+  count: PosInt!
+  at: WavelengthInput!
+}
+
+input FluxDensity {
+  wavelength: WavelengthInput!
+  density: BigDecimal!
+}
+
+input FluxDensityContinuumIntegratedInput {
+  value: BigDecimal!
+  units: FluxDensityContinuumIntegratedUnits!
+  error: BigDecimal
+}
+
+input FluxDensityContinuumSurfaceInput {
+  value: BigDecimal!
+  units: FluxDensityContinuumSurfaceUnits!
+  error: BigDecimal
+}
+
+input GaussianInput {
+  fwhm: AngleInput
+  spectralDefinition: SpectralDefinitionIntegratedInput
+}
+
+type Gcal implements StepConfig {
+  continuum: GcalContinuum
+  arcs: [GcalArc!]!
+  filter: GcalFilter!
+  diffuser: GcalDiffuser!
+  shutter: GcalShutter!
+  stepType: StepType!
+}
+
+enum GcalArc {
+  AR_ARC
+  TH_AR_ARC
+  CU_AR_ARC
+  XE_ARC
+}
+
+enum GcalContinuum {
+  IR_GREY_BODY_LOW
+  IR_GREY_BODY_HIGH
+  QUARTZ_HALOGEN5
+  QUARTZ_HALOGEN100
+}
+
+enum GcalDiffuser {
+  IR
+  VISIBLE
+}
+
+enum GcalFilter {
+  NONE
+  GMOS
+  HROS
+  NIR
+  ND10
+  ND16
+  ND20
+  ND30
+  ND40
+  ND45
+  ND50
+}
+
+enum GcalShutter {
+  OPEN
+  CLOSED
+}
+
+enum GhostResolutionMode {
+  STANDARD
+  HIGH
+}
+
+enum GhostBinning {
+  ONE_BY_ONE
+  ONE_BY_TWO
+  ONE_BY_FOUR
+  ONE_BY_EIGHT
+  TWO_BY_TWO
+  TWO_BY_FOUR
+  TWO_BY_EIGHT
+  FOUR_BY_FOUR
+}
+
+enum GhostReadMode {
+  SLOW
+  MEDIUM
+  FAST
+}
+
+enum GmosAmpCount {
+  THREE
+  SIX
+  TWELVE
+}
+
+type GmosCcdMode {
+  xBin: GmosBinning!
+  yBin: GmosBinning!
+  ampCount: GmosAmpCount!
+  ampGain: GmosAmpGain!
+  ampReadMode: GmosAmpReadMode!
+}
+
+input GmosCcdModeInput {
+  xBin: GmosBinning
+  yBin: GmosBinning
+  ampCount: GmosAmpCount
+  ampGain: GmosAmpGain
+  ampReadMode: GmosAmpReadMode
+}
+
+type GmosCustomMask {
+  attachmentId: AttachmentId
+  slitWidth: GmosCustomSlitWidth!
+}
+
+input GmosCustomMaskInput {
+  attachmentId: AttachmentId
+  slitWidth: GmosCustomSlitWidth!
+}
+
+enum GmosCustomSlitWidth {
+  CUSTOM_WIDTH_0_25
+  CUSTOM_WIDTH_0_50
+  CUSTOM_WIDTH_0_75
+  CUSTOM_WIDTH_1_00
+  CUSTOM_WIDTH_1_50
+  CUSTOM_WIDTH_2_00
+  CUSTOM_WIDTH_5_00
+}
+
+enum GmosMosAcquisitionType {
+  MASK_IN
+  MASK_OUT
+}
+
+enum GmosDtax {
+  MINUS_SIX
+  MINUS_FIVE
+  MINUS_FOUR
+  MINUS_THREE
+  MINUS_TWO
+  MINUS_ONE
+  ZERO
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
+  SIX
+}
+
+enum GmosEOffsetting {
+  ON
+  OFF
+}
+
+enum GmosGratingOrder {
+  ZERO
+  ONE
+  TWO
+}
+
+type GmosNodAndShuffle {
+  posA: Offset!
+  posB: Offset!
+  eOffset: GmosEOffsetting!
+  shuffleOffset: Int!
+  shuffleCycles: Int!
+}
+
+input GmosNodAndShuffleInput {
+  posA: OffsetInput!
+  posB: OffsetInput!
+  eOffset: GmosEOffsetting!
+  shuffleOffset: PosInt!
+  shuffleCycles: PosInt!
+}
+
+type GmosNorthAtom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [GmosNorthStep!]!
+}
+
+enum GmosNorthDetector {
+  E2_V
+  HAMAMATSU
+}
+
+type GmosNorthDynamic {
+  exposure: TimeSpan!
+  readout: GmosCcdMode!
+  dtax: GmosDtax!
+  roi: GmosRoi!
+  gratingConfig: GmosNorthGratingConfig
+  filter: GmosNorthFilter
+  fpu: GmosNorthFpu
+  centralWavelength: Wavelength
+}
+
+input GmosNorthDynamicInput {
+  exposure: TimeSpanInput!
+  readout: GmosCcdModeInput!
+  dtax: GmosDtax!
+  roi: GmosRoi!
+  gratingConfig: GmosNorthGratingConfigInput
+  filter: GmosNorthFilter
+  fpu: GmosNorthFpuInput
+}
+
+type GmosNorthExecutionConfig {
+  static: GmosNorthStatic!
+  acquisition: GmosNorthExecutionSequence
+  science: GmosNorthExecutionSequence
+}
+
+type GmosNorthExecutionSequence {
+  nextAtom: GmosNorthAtom!
+  possibleFuture: [GmosNorthAtom!]!
+  hasMore: Boolean!
+}
+
+type GmosNorthFpu {
+  customMask: GmosCustomMask
+  builtin: GmosNorthBuiltinFpu
+}
+
+input GmosNorthFpuInput {
+  customMask: GmosCustomMaskInput
+  builtin: GmosNorthBuiltinFpu
+}
+
+type GmosNorthGratingConfig {
+  grating: GmosNorthGrating!
+  order: GmosGratingOrder!
+  wavelength: Wavelength!
+}
+
+input GmosNorthGratingConfigInput {
+  grating: GmosNorthGrating!
+  order: GmosGratingOrder!
+  wavelength: WavelengthInput!
+}
+
+input GmosNorthLongSlitAcquisitionInput {
+  explicitFilter: GmosNorthFilter
+  explicitRoi: GmosLongSlitAcquisitionRoi
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosNorthLongSlitInput {
+  grating: GmosNorthGrating
+  filter: GmosNorthFilter
+  fpu: GmosNorthBuiltinFpu
+  centralWavelength: WavelengthInput
+  exposureTimeMode: ExposureTimeModeInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  acquisition: GmosNorthLongSlitAcquisitionInput
+}
+
+input GmosNorthImagingInput {
+  variant: ImagingVariantInput
+  filters: [GmosNorthImagingFilterInput!]
+  explicitBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+}
+
+enum GmosNorthStageMode {
+  NO_FOLLOW
+  FOLLOW_XY
+}
+
+type GmosNorthStatic {
+  stageMode: GmosNorthStageMode!
+  detector: GmosNorthDetector!
+  mosPreImaging: MosPreImaging!
+  nodAndShuffle: GmosNodAndShuffle
+}
+
+input GmosNorthStaticInput {
+  stageMode: GmosNorthStageMode
+  detector: GmosNorthDetector
+  mosPreImaging: MosPreImaging
+  nodAndShuffle: GmosNodAndShuffleInput
+}
+
+type GmosNorthStep {
+  instrumentConfig: GmosNorthDynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+type GmosSouthAtom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [GmosSouthStep!]!
+}
+
+enum GmosSouthDetector {
+  E2_V
+  HAMAMATSU
+}
+
+type GmosSouthDynamic {
+  exposure: TimeSpan!
+  readout: GmosCcdMode!
+  dtax: GmosDtax!
+  roi: GmosRoi!
+  gratingConfig: GmosSouthGratingConfig
+  filter: GmosSouthFilter
+  fpu: GmosSouthFpu
+  centralWavelength: Wavelength
+}
+
+input GmosSouthDynamicInput {
+  exposure: TimeSpanInput!
+  readout: GmosCcdModeInput!
+  dtax: GmosDtax!
+  roi: GmosRoi!
+  gratingConfig: GmosSouthGratingConfigInput
+  filter: GmosSouthFilter
+  fpu: GmosSouthFpuInput
+}
+
+type GmosSouthExecutionConfig {
+  static: GmosSouthStatic!
+  acquisition: GmosSouthExecutionSequence
+  science: GmosSouthExecutionSequence
+}
+
+type GmosSouthExecutionSequence {
+  nextAtom: GmosSouthAtom!
+  possibleFuture: [GmosSouthAtom!]!
+  hasMore: Boolean!
+}
+
+type GmosSouthFpu {
+  customMask: GmosCustomMask
+  builtin: GmosSouthBuiltinFpu
+}
+
+input GmosSouthFpuInput {
+  customMask: GmosCustomMaskInput
+  builtin: GmosSouthBuiltinFpu
+}
+
+type GmosSouthGratingConfig {
+  grating: GmosSouthGrating!
+  order: GmosGratingOrder!
+  wavelength: Wavelength!
+}
+
+input GmosSouthGratingConfigInput {
+  grating: GmosSouthGrating!
+  order: GmosGratingOrder!
+  wavelength: WavelengthInput!
+}
+
+input GmosSouthLongSlitAcquisitionInput {
+  explicitFilter: GmosSouthFilter
+  explicitRoi: GmosLongSlitAcquisitionRoi
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosSouthLongSlitInput {
+  grating: GmosSouthGrating
+  filter: GmosSouthFilter
+  fpu: GmosSouthBuiltinFpu
+  centralWavelength: WavelengthInput
+  exposureTimeMode: ExposureTimeModeInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  acquisition: GmosSouthLongSlitAcquisitionInput
+}
+
+input GmosNorthIfuInput {
+  grating: GmosNorthGrating
+  filter: GmosNorthFilter
+  fpu: GmosNorthIfuFpu
+  centralWavelength: WavelengthInput
+  exposureTimeMode: ExposureTimeModeInput
+  explicitIfuAnalysis: GmosIfuAnalysisInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+  acquisition: GmosNorthIfuAcquisitionInput
+}
+
+input GmosNorthIfuAcquisitionInput {
+  explicitFilter: GmosNorthFilter
+  explicitRoi: GmosIfuAcquisitionRoi
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosSouthIfuInput {
+  grating: GmosSouthGrating
+  filter: GmosSouthFilter
+  fpu: GmosSouthIfuFpu
+  centralWavelength: WavelengthInput
+  exposureTimeMode: ExposureTimeModeInput
+  explicitIfuAnalysis: GmosIfuAnalysisInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+  acquisition: GmosSouthIfuAcquisitionInput
+}
+
+input GmosSouthIfuAcquisitionInput {
+  explicitFilter: GmosSouthFilter
+  explicitRoi: GmosIfuAcquisitionRoi
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosNorthMosInput {
+  grating: GmosNorthGrating
+  filter: GmosNorthFilter
+  customMask: GmosCustomMaskInput
+  centralWavelength: WavelengthInput
+  acquisitionType: GmosMosAcquisitionType
+  exposureTimeMode: ExposureTimeModeInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+  acquisition: GmosNorthMosAcquisitionInput
+}
+
+input GmosNorthMosAcquisitionInput {
+  explicitFilter: GmosNorthFilter
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosSouthMosInput {
+  grating: GmosSouthGrating
+  filter: GmosSouthFilter
+  customMask: GmosCustomMaskInput
+  centralWavelength: WavelengthInput
+  acquisitionType: GmosMosAcquisitionType
+  exposureTimeMode: ExposureTimeModeInput
+  explicitXBin: GmosBinning
+  explicitYBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+  explicitWavelengthDithers: [WavelengthDitherInput!]
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+  acquisition: GmosSouthMosAcquisitionInput
+}
+
+input GmosSouthMosAcquisitionInput {
+  explicitFilter: GmosSouthFilter
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+type GmosSouthImagingFilter {
+  filter: GmosSouthFilter!
+  exposureTimeMode: ExposureTimeMode!
+}
+
+input GmosSouthImagingFilterInput {
+  filter: GmosSouthFilter!
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input GmosSouthImagingInput {
+  variant: ImagingVariantInput
+  filters: [GmosSouthImagingFilterInput!]
+  explicitBin: GmosBinning
+  explicitAmpReadMode: GmosAmpReadMode
+  explicitAmpGain: GmosAmpGain
+  explicitRoi: GmosRoi
+}
+
+enum GmosSouthStageMode {
+  NO_FOLLOW
+  FOLLOW_XYZ
+  FOLLOW_Z
+}
+
+type GmosSouthStatic {
+  stageMode: GmosSouthStageMode!
+  detector: GmosSouthDetector!
+  mosPreImaging: MosPreImaging!
+  nodAndShuffle: GmosNodAndShuffle
+}
+
+input GmosSouthStaticInput {
+  stageMode: GmosSouthStageMode
+  detector: GmosSouthDetector
+  mosPreImaging: MosPreImaging
+  nodAndShuffle: GmosNodAndShuffleInput
+}
+
+type GmosSouthStep {
+  instrumentConfig: GmosSouthDynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+input CloneGroupInput {
+  groupId: GroupId!
+  SET: GroupPropertiesInput
+}
+
+type CloneGroupResult {
+  newGroup: Group!
+}
+
+enum GuideState {
+  ENABLED
+  DISABLED
+}
+
+input HourAngleRangeInput {
+  minHours: BigDecimal
+  maxHours: BigDecimal
+}
+
+input LineFluxIntegratedInput {
+  value: PosBigDecimal!
+  units: LineFluxIntegratedUnits!
+}
+
+input LineFluxSurfaceInput {
+  value: PosBigDecimal!
+  units: LineFluxSurfaceUnits!
+}
+
+input LinkUserInput {
+  programUserId: ProgramUserId!
+  userId: UserId!
+}
+
+scalar ProgramUserId
+
+scalar UserInvitationId
+
+scalar UserInvitationKey
+
+input CreateUserInvitationInput {
+  programUserId: ProgramUserId!
+  recipientEmail: EmailAddress!
+}
+
+enum UserInvitationStatus {
+  PENDING
+  REDEEMED
+  DECLINED
+  REVOKED
+}
+
+type UserInvitation {
+  id: UserInvitationId!
+  status: UserInvitationStatus!
+  issuer: User!
+  recipientEmail: EmailAddress!
+  programUser: ProgramUser!
+  email: Email
+}
+
+type CreateUserInvitationResult {
+  invitation: UserInvitation!
+  key: UserInvitationKey!
+}
+
+input RedeemUserInvitationInput {
+  key: UserInvitationKey!
+  accept: Boolean = true
+}
+
+type RedeemUserInvitationResult {
+  invitation: UserInvitation!
+}
+
+input RevokeUserInvitationInput {
+  id: UserInvitationId!
+}
+
+type RevokeUserInvitationResult {
+  invitation: UserInvitation!
+}
+
+type LinkUserResult {
+  user: ProgramUser!
+}
+
+enum MosPreImaging {
+  IS_MOS_PRE_IMAGING
+  IS_NOT_MOS_PRE_IMAGING
+}
+
+type Mutation {
+  addConditionsEntry(input: ConditionsEntryInput): AddConditionsEntryResult!
+  addDatasetEvent(input: AddDatasetEventInput!): AddDatasetEventResult!
+  addProgramUser(input: AddProgramUserInput!): AddProgramUserResult!
+  addSequenceEvent(input: AddSequenceEventInput!): AddSequenceEventResult!
+  addSlewEvent(input: AddSlewEventInput!): AddSlewEventResult!
+  addStepEvent(input: AddStepEventInput!): AddStepEventResult!
+  addEventBatch(input: AddEventBatchInput!): AddEventBatchResult!
+  addTimeChargeCorrection(input: AddTimeChargeCorrectionInput!): AddTimeChargeCorrectionResult!
+  changeProgramUserRole(input: ChangeProgramUserRoleInput!): ChangeProgramUserRoleResult!
+  changePrincipalInvestigator(input: ChangePrincipalInvestigatorInput!): ChangePrincipalInvestigatorResult!
+  cloneObservation(input: CloneObservationInput!): CloneObservationResult!
+  cloneGroup(input: CloneGroupInput!): CloneGroupResult!
+  cloneTarget(input: CloneTargetInput!): CloneTargetResult!
+  createCallForProposals(input: CreateCallForProposalsInput!): CreateCallForProposalsResult!
+  createGroup(input: CreateGroupInput!): CreateGroupResult!
+  createObservation(input: CreateObservationInput!): CreateObservationResult!
+  createProgram(input: CreateProgramInput!): CreateProgramResult!
+  createProgramNote(input: CreateProgramNoteInput!): CreateProgramNoteResult!
+  declineTooTrigger(input: DeclineTooTriggerInput!): DeclineTooTriggerResult!
+  createProposal(input: CreateProposalInput!): CreateProposalResult
+  createTarget(input: CreateTargetInput!): CreateTargetResult!
+  deleteProgramUser(input: DeleteProgramUserInput!): DeleteProgramUserResult!
+  deleteProposal(input: DeleteProposalInput!): DeleteProposalResult!
+  deleteSequence(input: DeleteSequenceInput!): DeleteSequenceResult!
+  linkUser(input: LinkUserInput!): LinkUserResult!
+  recordDataset(input: RecordDatasetInput!): RecordDatasetResult!
+  recordFlamingos2Visit(input: RecordFlamingos2VisitInput!): RecordFlamingos2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+  replaceFlamingos2Sequence(input: ReplaceFlamingos2SequenceInput!): ReplaceFlamingos2SequenceResult!
+  recordGmosNorthVisit(input: RecordGmosNorthVisitInput!): RecordGmosNorthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+  replaceGmosNorthSequence(input: ReplaceGmosNorthSequenceInput!): ReplaceGmosNorthSequenceResult!
+  recordGmosSouthVisit(input: RecordGmosSouthVisitInput!): RecordGmosSouthVisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+  recordIgrins2Visit(input: RecordIgrins2VisitInput!): RecordIgrins2VisitResult! @deprecated(reason: "Use `recordVisit` instead.")
+  recordVisit(input: RecordVisitInput!): RecordVisitResult!
+  replaceGmosSouthSequence(input: ReplaceGmosSouthSequenceInput!): ReplaceGmosSouthSequenceResult!
+  replaceIgrins2Sequence(input: ReplaceIgrins2SequenceInput!): ReplaceIgrins2SequenceResult!
+  replaceGnirsSequence(input: ReplaceGnirsSequenceInput!): ReplaceGnirsSequenceResult!
+  replaceGhostSequence(input: ReplaceGhostSequenceInput!): ReplaceGhostSequenceResult!
+  refreshArchiveDuplication(input: RefreshArchiveDuplicationInput!): RefreshArchiveDuplicationResult!
+  resetAcquisition(input: ResetAcquisitionInput!): ResetAcquisitionResult!
+  setAllocations(input: SetAllocationsInput!): SetAllocationsResult!
+  setGuideTargetName(input: SetGuideTargetNameInput!): SetGuideTargetNameResult!
+  setProgramReference(input: SetProgramReferenceInput!): SetProgramReferenceResult!
+  setProgramResourceLimit(input: SetProgramResourceLimitInput!): SetProgramResourceLimitResult!
+  regenerateProposalSummaries(input: RegenerateProposalSummariesInput!): RegenerateProposalSummariesResult!
+  setProposalStatus(input: SetProposalStatusInput!): SetProposalStatusResult!
+  unlinkUser(input: UnlinkUserInput!): UnlinkUserResult!
+  updateAsterisms(input: UpdateAsterismsInput!): UpdateAsterismsResult!
+  updateAttachments(input: UpdateAttachmentsInput!): UpdateAttachmentsResult!
+  updateCallsForProposals(input: UpdateCallsForProposalsInput!): UpdateCallsForProposalsResult!
+  updateDatasets(input: UpdateDatasetsInput!): UpdateDatasetsResult!
+  updateGroups(input: UpdateGroupsInput!): UpdateGroupsResult!
+  updateObservations(input: UpdateObservationsInput!): UpdateObservationsResult!
+  updateConfigurationRequests(input: UpdateConfigurationRequestsInput!): UpdateConfigurationRequestsResult!
+  updateObservationsTimes(input: UpdateObservationsTimesInput!): UpdateObservationsResult!
+  updatePrograms(input: UpdateProgramsInput!): UpdateProgramsResult!
+  updateProgramNotes(input: UpdateProgramNotesInput!): UpdateProgramNotesResult!
+  updateProgramUsers(input: UpdateProgramUsersInput!): UpdateProgramUsersResult!
+  updateProposal(input: UpdateProposalInput!): UpdateProposalResult!
+  updateTargets(input: UpdateTargetsInput!): UpdateTargetsResult!
+  createUserInvitation(input: CreateUserInvitationInput!): CreateUserInvitationResult!
+  redeemUserInvitation(input: RedeemUserInvitationInput!): RedeemUserInvitationResult!
+  revokeUserInvitation(input: RevokeUserInvitationInput!): RevokeUserInvitationResult!
+  createConfigurationRequest(input: CreateConfigurationRequestInput!): ConfigurationRequest!
+  setObservationWorkflowState(input: SetObservationWorkflowStateInput!): ObservationWorkflow
+}
+
+input SetObservationWorkflowStateInput {
+  observationId: ObservationId!
+  state: ObservationWorkflowState!
+}
+
+input UserSuppliedEphemerisElement {
+  when: Timestamp
+  coordinates: CoordinatesInput
+  velocity: OffsetInput
+}
+
+input UserSuppliedEphemeris {
+  gn: [UserSuppliedEphemerisElement!]!
+  gs: [UserSuppliedEphemerisElement!]!
+}
+
+input NonsiderealInput {
+  keyType: EphemerisKeyType
+  des: NonEmptyString
+  key: NonEmptyString
+  ephemeris: UserSuppliedEphemeris
+}
+
+type ObservationEdit {
+  editType: EditType!
+  observationId: ObservationId!
+  value: Observation
+}
+
+type ConfigurationRequestEdit {
+  editType: EditType!
+  configurationRequestId: ConfigurationRequestId!
+  configurationRequest: ConfigurationRequest
+}
+
+input ConfigurationRequestProperties {
+  status: ConfigurationRequestStatus
+  justification: NonEmptyString
+  feedback: NonEmptyString
+}
+
+enum SchedulingMode {
+  UNCONSTRAINED
+  NO_SPLITTING
+  UNINTERRUPTIBLE
+}
+
+input SchedulingConstraintsInput {
+  tooActivation: TooActivation
+  schedulingMode: SchedulingMode
+  timingWindows: [TimingWindowInput!]
+}
+
+type SchedulingConstraints {
+  tooActivation: TooActivation!
+  schedulingMode: SchedulingMode!
+  timingWindows: [TimingWindow!]!
+}
+
+input ObservationPropertiesInput {
+  subtitle: NonEmptyString
+  scienceBand: ScienceBand
+  posAngleConstraint: PosAngleConstraintInput
+  targetEnvironment: TargetEnvironmentInput
+  constraintSet: ConstraintSetInput
+  timingWindows: [TimingWindowInput!] @deprecated(reason: "Use `schedulingConstraints` instead. (Deprecated June 4, 2026)")
+  schedulingConstraints: SchedulingConstraintsInput
+  attachments: [AttachmentId!]
+  scienceRequirements: ScienceRequirementsInput
+  observingMode: ObservingModeInput
+  existence: Existence
+  groupId: GroupId
+  groupIndex: NonNegShort
+  observerNotes: NonEmptyString
+  priority: ObservationPriority
+}
+
+input ObservationTimesInput {
+  observationTime: Timestamp
+  observationDuration: TimeSpanInput
+}
+
+type Offset {
+  p: OffsetP!
+  q: OffsetQ!
+}
+
+input OffsetComponentInput @oneOf {
+  microarcseconds: Long
+  milliarcseconds: BigDecimal
+  arcseconds: BigDecimal
+}
+
+input OffsetInput {
+  p: OffsetComponentInput!
+  q: OffsetComponentInput!
+}
+
+type TelescopeConfigGenerator {
+  generatorType: TelescopeConfigGeneratorType!
+  enumerated: EnumeratedTelescopeConfigGenerator
+  random: RandomTelescopeConfigGenerator
+  spiral: SpiralTelescopeConfigGenerator
+  uniform: UniformTelescopeConfigGenerator
+}
+
+input TelescopeConfigGeneratorInput @oneOf {
+  enumerated: EnumeratedTelescopeConfigGeneratorInput
+  random: RandomTelescopeConfigGeneratorInput
+  spiral: SpiralTelescopeConfigGeneratorInput
+  uniform: UniformTelescopeConfigGeneratorInput
+}
+
+enum TelescopeConfigGeneratorType {
+  NONE
+  ENUMERATED
+  RANDOM
+  SPIRAL
+  UNIFORM
+}
+
+type EnumeratedTelescopeConfigGenerator {
+  values: [TelescopeConfig!]!
+}
+
+input EnumeratedTelescopeConfigGeneratorInput {
+  values: [TelescopeConfigInput!]!
+}
+
+type RandomTelescopeConfigGenerator {
+  size: Angle!
+  center: Offset!
+  seed: Long!
+}
+
+input RandomTelescopeConfigGeneratorInput {
+  size: AngleInput!
+  center: OffsetInput
+  seed: Long
+}
+
+type SpiralTelescopeConfigGenerator {
+  size: Angle!
+  center: Offset!
+  seed: Long!
+}
+
+input SpiralTelescopeConfigGeneratorInput {
+  size: AngleInput!
+  center: OffsetInput
+  seed: Long
+}
+
+type UniformTelescopeConfigGenerator {
+  cornerA: Offset!
+  cornerB: Offset!
+}
+
+input UniformTelescopeConfigGeneratorInput {
+  cornerA: OffsetInput!
+  cornerB: OffsetInput!
+}
+
+input ParallaxInput @oneOf {
+  microarcseconds: Long
+  milliarcseconds: BigDecimal
+}
+
+enum Partner {
+  AR
+  BR
+  CA
+  CL
+  KR
+  UH
+  US
+}
+
+enum PartnerLinkType {
+  HAS_GEMINI_PARTNER
+  HAS_EXCHANGE_PARTNER
+  HAS_NON_PARTNER
+  HAS_UNSPECIFIED_PARTNER
+}
+
+interface PartnerLink {
+  linkType: PartnerLinkType!
+}
+
+type HasGeminiPartner implements PartnerLink {
+  linkType: PartnerLinkType!
+  geminiPartner: Partner!
+}
+
+type HasExchangePartner implements PartnerLink {
+  linkType: PartnerLinkType!
+  exchangePartner: ExchangePartner!
+}
+
+type HasNonPartner implements PartnerLink {
+  linkType: PartnerLinkType!
+}
+
+type HasUnspecifiedPartner implements PartnerLink {
+  linkType: PartnerLinkType!
+}
+
+input PartnerLinkInput {
+  linkType: PartnerLinkType
+  geminiPartner: Partner
+  exchangePartner: ExchangePartner
+}
+
+type PartnerSplit {
+  partner: Partner!
+  percent: IntPercent!
+}
+
+input PartnerSplitInput {
+  partner: Partner!
+  percent: IntPercent!
+}
+
+input PosAngleConstraintInput {
+  mode: PosAngleConstraintMode
+  angle: AngleInput
+}
+
+scalar PosLong
+
+type ProgramEdit {
+  editType: EditType!
+  value: Program!
+}
+
+input ProgramPropertiesInput {
+  name: NonEmptyString
+  description: NonEmptyString
+  goa: GoaPropertiesInput
+  existence: Existence
+  explicitStatus: ProgramStatus
+  activeStart: Date
+  activeEnd: Date
+  dismissedWarnings: [ObservationValidationCode!]
+  tooActivationCeiling: TooActivation
+}
+
+input ProgramNotePropertiesInput {
+  title: NonEmptyString
+  text: NonEmptyString
+  isPrivate: Boolean
+  existence: Existence
+}
+
+input ProgramUserPropertiesInput {
+  partnerLink: PartnerLinkInput
+  preferredProfile: UserProfileInput
+  educationalStatus: EducationalStatus
+  thesis: Boolean
+  gender: Gender
+  affiliation: NonEmptyString
+  hasDataAccess: Boolean
+  classicalVisitor: Boolean
+}
+
+enum ProgramUserRole {
+  PI
+  COI
+  COI_RO
+  EXTERNAL
+  SUPPORT_PRIMARY
+  SUPPORT_SECONDARY
+}
+
+enum ProgramUserSupportRoleType {
+  STAFF
+  PARTNER
+}
+
+type ProgramUser {
+  id: ProgramUserId!
+  role: ProgramUserRole!
+  program: Program
+  user: User
+  partnerLink: PartnerLink!
+  preferredProfile: UserProfile!
+  educationalStatus: EducationalStatus
+  gender: Gender
+  thesis: Boolean
+  invitations: [UserInvitation!]!
+  affiliation: NonEmptyString
+  hasDataAccess: Boolean!
+  classicalVisitor: Boolean!
+  displayName: String
+  email: String
+}
+
+input ProperMotionComponentInput @oneOf {
+  microarcsecondsPerYear: Long
+  milliarcsecondsPerYear: BigDecimal
+}
+
+input ProperMotionInput {
+  ra: ProperMotionComponentInput!
+  dec: ProperMotionComponentInput!
+}
+
+type AeonMultiFacility {
+  requiredInstruments: [Instrument!]!
+}
+
+interface GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+}
+
+type KeckProposalType {
+  minPercentTime: IntPercent!
+  partnerSplits: [PartnerSplit!]!
+}
+
+type SubaruProposalType {
+  minPercentTime: IntPercent!
+  partnerSplits: [PartnerSplit!]!
+}
+
+type Classical implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+  partnerSplits: [PartnerSplit!]!
+  exchangePartner: ExchangePartner
+  aeonMultiFacility: AeonMultiFacility
+  jwstSynergy: Boolean!
+  usLongTerm: Boolean!
+}
+
+type DemoScience implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+}
+
+type DirectorsTime implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+}
+
+type FastTurnaround implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+  reviewer: ProgramUser
+  mentor: ProgramUser
+}
+
+type LargeProgram implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+  minPercentTotalTime: IntPercent!
+  totalTime: TimeSpan!
+  aeonMultiFacility: AeonMultiFacility
+  jwstSynergy: Boolean!
+}
+
+type PoorWeather implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+}
+
+type Queue implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+  partnerSplits: [PartnerSplit!]!
+  exchangePartner: ExchangePartner
+  considerForBand3: ConsiderForBand3!
+  aeonMultiFacility: AeonMultiFacility
+  jwstSynergy: Boolean!
+  usLongTerm: Boolean!
+}
+
+type SystemVerification implements GeminiProposalType {
+  scienceSubtype: ScienceSubtype!
+  minPercentTime: IntPercent!
+}
+
+input AeonMultiFacilityInput {
+  requiredInstruments: [Instrument!]
+}
+
+input GeminiProposalTypeInput @oneOf {
+  classical: ClassicalInput
+  demoScience: DemoScienceInput
+  directorsTime: DirectorsTimeInput
+  fastTurnaround: FastTurnaroundInput
+  largeProgram: LargeProgramInput
+  poorWeather: PoorWeatherInput
+  queue: QueueInput
+  systemVerification: SystemVerificationInput
+}
+
+input KeckProposalTypeInput {
+  minPercentTime: IntPercent
+  partnerSplits: [PartnerSplitInput!]
+}
+
+input SubaruProposalTypeInput {
+  minPercentTime: IntPercent
+  partnerSplits: [PartnerSplitInput!]
+}
+
+input ClassicalInput {
+  minPercentTime: IntPercent
+  partnerSplits: [PartnerSplitInput!]
+  exchangePartner: ExchangePartner
+  aeonMultiFacility: AeonMultiFacilityInput
+  jwstSynergy: Boolean
+  usLongTerm: Boolean
+}
+
+input DemoScienceInput {
+  minPercentTime: IntPercent
+}
+
+input DirectorsTimeInput {
+  minPercentTime: IntPercent
+}
+
+input FastTurnaroundInput {
+  minPercentTime: IntPercent
+  reviewerId: ProgramUserId
+  mentorId: ProgramUserId
+}
+
+input LargeProgramInput {
+  minPercentTime: IntPercent
+  minPercentTotalTime: IntPercent
+  totalTime: TimeSpanInput
+  aeonMultiFacility: AeonMultiFacilityInput
+  jwstSynergy: Boolean
+}
+
+input DeleteSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+}
+
+type DeleteSequenceResult {
+  observation: Observation!
+}
+
+enum Ignore {
+  IGNORE
+}
+
+input PoorWeatherInput {
+  ignore: Ignore
+}
+
+input QueueInput {
+  minPercentTime: IntPercent
+  partnerSplits: [PartnerSplitInput!]
+  exchangePartner: ExchangePartner
+  considerForBand3: ConsiderForBand3
+  aeonMultiFacility: AeonMultiFacilityInput
+  jwstSynergy: Boolean
+  usLongTerm: Boolean
+}
+
+input SystemVerificationInput {
+  minPercentTime: IntPercent
+}
+
+input ProposalPropertiesInput {
+  category: TacCategory
+  callId: CallForProposalsId
+  explicitTimeRequest: TimeSpanInput
+  gemini: GeminiProposalTypeInput
+  keck: KeckProposalTypeInput
+  subaru: SubaruProposalTypeInput
+}
+
+input RadialVelocityInput @oneOf {
+  centimetersPerSecond: Long
+  metersPerSecond: BigDecimal
+  kilometersPerSecond: BigDecimal
+}
+
+input RecordDatasetInput {
+  stepId: StepId!
+  visitId: VisitId!
+  filename: DatasetFilename!
+  qaState: DatasetQaState
+  comment: NonEmptyString
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordDatasetResult {
+  dataset: Dataset!
+}
+
+input RecordVisitInput {
+  observationId: ObservationId!
+  clientTime: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordVisitResult {
+  visit: Visit!
+}
+
+input RecordGmosNorthVisitInput {
+  observationId: ObservationId!
+  gmosNorth: GmosNorthStaticInput!
+  time: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordGmosNorthVisitResult {
+  visit: Visit!
+}
+
+input RecordGmosSouthVisitInput {
+  observationId: ObservationId!
+  gmosSouth: GmosSouthStaticInput!
+  time: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordGmosSouthVisitResult {
+  visit: Visit!
+}
+
+input RefreshArchiveDuplicationInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+}
+
+type RefreshArchiveDuplicationResult {
+  archiveDuplication: ArchiveDuplication!
+  observation: Observation!
+}
+
+input ResetAcquisitionInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+}
+
+type ResetAcquisitionResult {
+  observation: Observation!
+}
+
+input RightAscensionInput @oneOf {
+  microseconds: Long
+  degrees: BigDecimal
+  hours: BigDecimal
+  hms: HmsString
+}
+
+type Science implements StepConfig {
+  stepType: StepType!
+}
+
+enum SmartGcalType {
+  ARC
+  FLAT
+  DAY_BASELINE
+  NIGHT_BASELINE
+}
+
+type SmartGcal implements StepConfig {
+  smartGcalType: SmartGcalType!
+  stepType: StepType!
+}
+
+input ObservingModeInput @oneOf {
+  exchange: ExchangeInput
+  flamingos2Imaging: Flamingos2ImagingInput
+  flamingos2LongSlit: Flamingos2LongSlitInput
+  flamingos2Mos: Flamingos2MosInput
+  ghostIfu: GhostIfuInput
+  gmosNorthIfu: GmosNorthIfuInput
+  gmosNorthImaging: GmosNorthImagingInput
+  gmosNorthLongSlit: GmosNorthLongSlitInput
+  gmosNorthMos: GmosNorthMosInput
+  gmosSouthIfu: GmosSouthIfuInput
+  gmosSouthImaging: GmosSouthImagingInput
+  gmosSouthLongSlit: GmosSouthLongSlitInput
+  gmosSouthMos: GmosSouthMosInput
+  gnirsIfu: GnirsIfuInput
+  gnirsImaging: GnirsImagingInput
+  gnirsLongSlit: GnirsLongSlitInput
+  gnirsSpectroscopy: GnirsSpectroscopyInput @deprecated(reason: "Use 'gnirsLongSlit' or 'gnirsIfu' instead.")
+  igrins2LongSlit: Igrins2LongSlitInput
+  visitor: VisitorInput
+}
+
+input VisitorInput {
+  mode: VisitorObservingModeType
+  centralWavelength: WavelengthInput
+  agsDiameter: AngleInput
+  scienceFovDiameter: AngleInput
+  name: NonEmptyString
+  totalRequestTime: TimeSpanInput
+}
+
+type Visitor {
+  mode: VisitorObservingModeType!
+  centralWavelength: Wavelength!
+  agsDiameter: Angle!
+  scienceFovDiameter: Angle!
+  name: NonEmptyString
+  totalRequestTime: TimeSpan
+}
+
+input ExchangeInput {
+  keckInstrument: KeckInstrument
+  subaruInstrument: SubaruInstrument
+  totalRequestTime: TimeSpanInput
+}
+
+type Exchange {
+  mode: ExchangeObservingModeType!
+  keckInstrument: KeckInstrument
+  subaruInstrument: SubaruInstrument
+  totalRequestTime: TimeSpan!
+}
+
+input ScienceRequirementsInput {
+  exposureTimeMode: ExposureTimeModeInput
+  spectroscopy: SpectroscopyScienceRequirementsInput
+  imaging: ImagingScienceRequirementsInput
+}
+
+input SetAllocationsInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  allocations: [AllocationInput!]!
+}
+
+type SetAllocationsResult {
+  allocations: [Allocation!]!
+}
+
+type SetupTime {
+  full: TimeSpan!
+  reacquisition: TimeSpan!
+}
+
+input SetGuideTargetNameInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  targetName: NonEmptyString
+}
+
+type SetGuideTargetNameResult {
+  observation: Observation
+}
+
+input SetProgramReferenceInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: ProgramReferencePropertiesInput!
+}
+
+input ProgramReferencePropertiesInput @oneOf {
+  calibration: ProgramReferencePropertiesCalibrationInput
+  commissioning: ProgramReferencePropertiesCommissioningInput
+  engineering: ProgramReferencePropertiesEngineeringInput
+  example: ProgramReferencePropertiesExampleInput
+  keck: ProgramReferencePropertiesKeckInput
+  library: ProgramReferencePropertiesLibraryInput
+  monitoring: ProgramReferencePropertiesMonitoringInput
+  science: ProgramReferencePropertiesScienceInput
+  subaru: ProgramReferencePropertiesSubaruInput
+  system: ProgramReferencePropertiesSystemInput
+}
+
+type SetProgramReferenceResult {
+  reference: ProgramReference
+}
+
+input SetProgramResourceLimitInput {
+  programId: ProgramId!
+  limit: NonNegInt!
+}
+
+type SetProgramResourceLimitResult {
+  program: Program!
+}
+
+input ProgramReferencePropertiesCalibrationInput {
+  semester: Semester!
+  instrument: Instrument!
+}
+
+input ProgramReferencePropertiesCommissioningInput {
+  semester: Semester!
+  instrument: Instrument!
+}
+
+input ProgramReferencePropertiesEngineeringInput {
+  semester: Semester!
+  instrument: Instrument!
+}
+
+input ProgramReferencePropertiesExampleInput {
+  instrument: Instrument!
+}
+
+input ProgramReferencePropertiesLibraryInput {
+  instrument: Instrument!
+  description: NonEmptyString!
+}
+
+input ProgramReferencePropertiesMonitoringInput {
+  semester: Semester!
+  instrument: Instrument!
+}
+
+input ProgramReferencePropertiesKeckInput {
+  semester: Semester!
+}
+
+input ProgramReferencePropertiesScienceInput {
+  semester: Semester!
+  scienceSubtype: ScienceSubtype!
+}
+
+input ProgramReferencePropertiesSubaruInput {
+  semester: Semester!
+  subaruType: SubaruCallForProposalsType!
+}
+
+input ProgramReferencePropertiesSystemInput {
+  description: NonEmptyString!
+}
+
+input SetProposalStatusInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  status: ProposalStatus!
+}
+
+input RegenerateProposalSummariesInput {
+  programId: ProgramId!
+}
+
+type RegenerateProposalSummariesResult {
+  program: Program!
+}
+
+type SetProposalStatusResult {
+  program: Program!
+}
+
+input SiderealInput {
+  ra: RightAscensionInput
+  dec: DeclinationInput
+  epoch: EpochString
+  properMotion: ProperMotionInput
+  radialVelocity: RadialVelocityInput
+  parallax: ParallaxInput
+  catalogInfo: CatalogInfoInput
+}
+
+input OpportunityInput {
+  region: RegionInput
+}
+
+input RegionInput {
+  rightAscensionArc: RightAscensionArcInput
+  declinationArc: DeclinationArcInput
+}
+
+input RightAscensionArcInput {
+  type: ArcType!
+  start: RightAscensionInput
+  end: RightAscensionInput
+}
+
+input DeclinationArcInput {
+  type: ArcType!
+  start: DeclinationInput
+  end: DeclinationInput
+}
+
+input SignalToNoiseExposureTimeModeInput {
+  value: SignalToNoise!
+  at: WavelengthInput!
+}
+
+input SourceProfileInput @oneOf {
+  point: SpectralDefinitionIntegratedInput
+  uniform: SpectralDefinitionSurfaceInput
+  gaussian: GaussianInput
+}
+
+input SpectralDefinitionIntegratedInput @oneOf {
+  bandNormalized: BandNormalizedIntegratedInput
+  emissionLines: EmissionLinesIntegratedInput
+}
+
+input SpectralDefinitionSurfaceInput @oneOf {
+  bandNormalized: BandNormalizedSurfaceInput
+  emissionLines: EmissionLinesSurfaceInput
+}
+
+input SpectroscopyScienceRequirementsInput {
+  wavelength: WavelengthInput
+  resolution: PosInt
+  wavelengthCoverage: WavelengthInput
+  focalPlane: FocalPlane
+  focalPlaneAngle: AngleInput
+  capability: SpectroscopyCapability
+}
+
+interface StepConfig {
+  stepType: StepType!
+}
+
+input StepConfigInput @oneOf {
+  bias: Boolean
+  dark: Boolean
+  gcal: StepConfigGcalInput
+  science: Boolean
+  smartGcal: StepConfigSmartGcalInput
+}
+
+input StepConfigGcalInput {
+  arcs: [GcalArc!]
+  continuum: GcalContinuum
+  diffuser: GcalDiffuser!
+  filter: GcalFilter!
+  shutter: GcalShutter!
+}
+
+input StepConfigSmartGcalInput {
+  smartGcalType: SmartGcalType!
+}
+
+enum StepExecutionState {
+  NOT_STARTED
+  ONGOING
+  ABORTED
+  COMPLETED
+  STOPPED
+  ABANDONED
+}
+
+enum StepType {
+  BIAS
+  DARK
+  GCAL
+  SCIENCE
+  SMART_GCAL
+}
+
+type Subscription {
+  datasetEdit(input: DatasetEditInput): DatasetEdit!
+  obscalcUpdate(input: ObscalcUpdateInput): ObscalcUpdate!
+  observationEdit(input: ObservationEditInput): ObservationEdit!
+  programEdit(input: ProgramEditInput): ProgramEdit!
+  targetEdit(input: TargetEditInput): TargetEdit!
+  groupEdit(input: GroupEditInput): GroupEdit!
+  configurationRequestEdit(input: ConfigurationRequestEditInput): ConfigurationRequestEdit!
+  executionEventAdded(input: ExecutionEventAddedInput): ExecutionEventAdded!
+  tooTriggerEdit(input: TooTriggerEditInput): TooTriggerEdit!
+}
+
+enum CalculationState {
+  RETRY
+  PENDING
+  CALCULATING
+  READY
+}
+
+input ObscalcUpdateInput {
+  programId: ProgramId
+  observationId: ObservationId
+  oldCalculationState: WhereOptionEqCalculationState
+  oldState: WhereOptionEqCalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
+  newCalculationState: WhereOptionEqCalculationState
+  newState: WhereOptionEqCalculationState @deprecated(reason: "Use `newCalculationState` instead.")
+  executableOnly: Boolean = false
+}
+
+input WhereOrderCalculationState {
+  EQ: CalculationState
+  NEQ: CalculationState
+  IN: [CalculationState!]
+  NIN: [CalculationState!]
+  GT: CalculationState
+  LT: CalculationState
+  GTE: CalculationState
+  LTE: CalculationState
+}
+
+input WhereOptionEqCalculationState {
+  IS_NULL: Boolean
+  EQ: CalculationState
+  NEQ: CalculationState
+  IN: [CalculationState!]
+  NIN: [CalculationState!]
+}
+
+type ObscalcUpdate {
+  editType: EditType!
+  oldCalculationState: CalculationState
+  oldState: CalculationState @deprecated(reason: "Use `oldCalculationState` instead.")
+  newCalculationState: CalculationState
+  newState: CalculationState @deprecated(reason: "Use `newCalculationState` instead.")
+  observationId: ObservationId!
+  value: Observation
+}
+
+input ExecutionEventAddedInput {
+  programId: ProgramId
+  observationId: ObservationId
+  visitId: VisitId
+  eventType: WhereEqExecutionEventType
+}
+
+type ExecutionEventAdded {
+  value: ExecutionEvent!
+}
+
+input TargetEditInput {
+  targetId: TargetId
+  programId: ProgramId
+}
+
+input GroupEditInput {
+  groupId: GroupId
+  programId: ProgramId
+}
+
+input ConfigurationRequestEditInput {
+  programId: ProgramId
+}
+
+input DatasetEditInput {
+  datasetId: DatasetId
+  observationId: ObservationId
+  programId: ProgramId
+  isWritten: Boolean
+}
+
+type DatasetEdit {
+  editType: EditType!
+  datasetId: DatasetId!
+  value: Dataset
+}
+
+input ObservationEditInput {
+  observationId: ObservationId
+  programId: ProgramId
+}
+
+input ProgramEditInput {
+  programId: ProgramId
+}
+
+type TargetEdit {
+  editType: EditType!
+  targetId: TargetId!
+  value: Target
+}
+
+type GroupEdit {
+  editType: EditType!
+  program: Program!
+  groupId: GroupId
+  value: Group
+}
+
+input TargetEnvironmentInput {
+  explicitBase: CoordinatesInput
+  asterism: [TargetId!]
+  explicitSignalToNoiseTargetId: TargetId
+  useBlindOffset: Boolean
+  blindOffsetTarget: TargetPropertiesInput
+  blindOffsetType: BlindOffsetType
+  explicitGuideProbe: GuideProbe
+  altair: AltairInput
+}
+
+input TargetPropertiesInput {
+  name: NonEmptyString
+  sidereal: SiderealInput
+  nonsidereal: NonsiderealInput
+  opportunity: OpportunityInput
+  sourceProfile: SourceProfileInput
+  existence: Existence
+}
+
+type TelescopeConfig {
+  offset: Offset!
+  guiding: GuideState!
+}
+
+input TelescopeConfigInput {
+  offset: OffsetInput
+  guiding: GuideState
+}
+
+enum TimeAccountingCategory {
+  AR
+  BR
+  CA
+  CAL
+  CFHT
+  CL
+  DD
+  DS
+  ENG
+  GT
+  JP
+  KECK
+  KR
+  LP
+  LTP
+  SV
+  UH
+  US
+}
+
+input TimingWindowRepeatInput {
+  period: TimeSpanInput!
+  times: PosInt
+}
+
+input TimingWindowEndInput {
+  atUtc: Timestamp
+  after: TimeSpanInput
+  repeat: TimingWindowRepeatInput
+}
+
+input TimingWindowInput {
+  inclusion: TimingWindowInclusion!
+  startUtc: Timestamp!
+  end: TimingWindowEndInput
+}
+
+input UnnormalizedSedInput @oneOf {
+  stellarLibrary: StellarLibrarySpectrum
+  coolStar: CoolStarTemperature
+  galaxy: GalaxySpectrum
+  planet: PlanetSpectrum
+  quasar: QuasarSpectrum
+  hiiRegion: HiiRegionSpectrum
+  planetaryNebula: PlanetaryNebulaSpectrum
+  powerLaw: BigDecimal
+  blackBodyTempK: PosInt
+  fluxDensities: [FluxDensity!]
+  fluxDensitiesAttachment: AttachmentId
+}
+
+input UpdateAsterismsInput {
+  SET: EditAsterismsPatchInput!
+  WHERE: WhereObservation
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateAsterismsResult {
+  observations: [Observation!]!
+  hasMore: Boolean!
+}
+
+input UpdateAttachmentsInput {
+  SET: AttachmentPropertiesInput!
+  WHERE: WhereAttachment
+  LIMIT: NonNegInt
+}
+
+type UpdateAttachmentsResult {
+  attachments: [Attachment!]!
+  hasMore: Boolean!
+}
+
+input UpdateCallsForProposalsInput {
+  SET: CallForProposalsPropertiesInput!
+  WHERE: WhereCallForProposals
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateCallsForProposalsResult {
+  callsForProposals: [CallForProposals!]!
+  hasMore: Boolean!
+}
+
+input UpdateDatasetsInput {
+  SET: DatasetPropertiesInput!
+  WHERE: WhereDataset
+  LIMIT: NonNegInt
+}
+
+type UpdateDatasetsResult {
+  datasets: [Dataset!]!
+  hasMore: Boolean!
+}
+
+input UpdateGroupsInput {
+  SET: GroupPropertiesInput!
+  WHERE: WhereGroup
+  LIMIT: NonNegInt
+}
+
+type UpdateGroupsResult {
+  groups: [Group!]!
+  hasMore: Boolean!
+}
+
+input UpdateObservationsInput {
+  SET: ObservationPropertiesInput!
+  WHERE: WhereObservation
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+input UpdateConfigurationRequestsInput {
+  SET: ConfigurationRequestProperties!
+  WHERE: WhereConfigurationRequest
+  LIMIT: NonNegInt
+}
+
+input UpdateObservationsTimesInput {
+  SET: ObservationTimesInput!
+  WHERE: WhereObservation
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateObservationsResult {
+  observations: [Observation!]!
+  hasMore: Boolean!
+}
+
+type UpdateConfigurationRequestsResult {
+  requests: [ConfigurationRequest!]!
+  hasMore: Boolean!
+}
+
+input UpdateProgramUsersInput {
+  SET: ProgramUserPropertiesInput!
+  WHERE: WhereProgramUser
+  LIMIT: NonNegInt
+}
+
+type UpdateProgramUsersResult {
+  programUsers: [ProgramUser!]!
+  hasMore: Boolean!
+}
+
+input UpdateProgramNotesInput {
+  SET: ProgramNotePropertiesInput!
+  WHERE: WhereProgramNote
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateProgramNotesResult {
+  programNotes: [ProgramNote!]!
+  hasMore: Boolean!
+}
+
+input UpdateProgramsInput {
+  SET: ProgramPropertiesInput!
+  WHERE: WhereProgram
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateProgramsResult {
+  programs: [Program!]!
+  hasMore: Boolean!
+}
+
+input UpdateProposalInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: ProposalPropertiesInput!
+}
+
+type UpdateProposalResult {
+  proposal: Proposal!
+}
+
+input UpdateTargetsInput {
+  SET: TargetPropertiesInput!
+  WHERE: WhereTarget
+  LIMIT: NonNegInt
+  includeDeleted: Boolean = false
+}
+
+type UpdateTargetsResult {
+  targets: [Target!]!
+  hasMore: Boolean!
+}
+
+input WavelengthInput @oneOf {
+  picometers: PosInt
+  angstroms: PosBigDecimal
+  nanometers: PosBigDecimal
+  micrometers: PosBigDecimal
+}
+
+input WavelengthDitherInput @oneOf {
+  picometers: Int
+  angstroms: BigDecimal
+  nanometers: BigDecimal
+  micrometers: BigDecimal
+}
+
+type OffsetP {
+  microarcseconds: Long!
+  milliarcseconds: BigDecimal!
+  arcseconds: BigDecimal!
+}
+
+type AirMassRange {
+  min: PosBigDecimal!
+  max: PosBigDecimal!
+}
+
+type Angle {
+  microarcseconds: Long!
+  microseconds: BigDecimal!
+  milliarcseconds: BigDecimal!
+  milliseconds: BigDecimal!
+  arcseconds: BigDecimal!
+  seconds: BigDecimal!
+  arcminutes: BigDecimal!
+  minutes: BigDecimal!
+  degrees: BigDecimal!
+  hours: BigDecimal!
+  hms: String!
+  dms: String!
+}
+
+type AsterismGroup {
+  program: Program!
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  asterism: [Target!]!
+}
+
+type AsterismGroupSelectResult {
+  matches: [AsterismGroup!]!
+  hasMore: Boolean!
+}
+
+scalar AttachmentId
+
+enum AttachmentType {
+  SCIENCE
+  TEAM
+  FINDER
+  MOS_MASK
+  PRE_IMAGING
+  CUSTOM_SED
+  SUMMARY
+}
+
+type Attachment {
+  id: AttachmentId!
+  attachmentType: AttachmentType!
+  fileName: NonEmptyString!
+  maskName: NonEmptyString @deprecated(reason: "Use `mask.name` instead.")
+  mask: MaskDefinition
+  description: NonEmptyString
+  checked: Boolean!
+  fileSize: Long!
+  updatedAt: Timestamp!
+  proposalSummary: ProposalSummaryProperties
+  program: Program!
+}
+
+type ProposalSummaryProperties {
+  partner: Partner
+  style: ProposalSummaryStyle!
+}
+
+type ProposalSummaryGeneration {
+  state: ProposalSummaryGenerationState!
+  requestedAt: Timestamp
+  failures: [ProposalSummaryFailure!]!
+}
+
+type ProposalSummaryFailure {
+  partner: Partner
+  message: String!
+}
+
+enum ProposalSummaryGenerationState {
+  IDLE
+  GENERATING
+  FAILED
+}
+
+enum ProposalSummaryStyle {
+  GEMINI_STANDARD
+  GEMINI_DARP
+  GEMINI_NO_INVESTIGATORS
+  GEMINI_INVESTIGATORS_AT_END
+  CHILE
+  NOIRLAB_DARP
+}
+
+input AttachmentPropertiesInput {
+  description: NonEmptyString
+  checked: Boolean
+}
+
+type MaskDefinition {
+  name: NonEmptyString!
+  instrument: Instrument!
+  pixelScale: BigDecimal!
+  pointing: Coordinates!
+  positionAngle: Angle!
+  dispersionDirection: MosDispersionDirection!
+  slits: [MaskSlit!]!
+  scienceSlitCount: Int!
+  acquisitionSlitCount: Int!
+  averageSlitWidth: Angle
+}
+
+type MaskSlit {
+  id: Int!
+  coordinates: Coordinates!
+  x: BigDecimal!
+  y: BigDecimal!
+  width: Angle!
+  length: Angle!
+  offsetAlongSlit: Angle!
+  offsetAcrossSlit: Angle!
+  tilt: Angle!
+  priority: MosSlitPriority!
+}
+
+enum MosDispersionDirection {
+  HORIZONTAL
+  VERTICAL
+}
+
+enum MosSlitPriority {
+  ACQUISITION
+  HIGH
+  MEDIUM
+  LOW
+  IGNORE
+}
+
+enum Band {
+  SLOAN_U
+  SLOAN_G
+  SLOAN_R
+  SLOAN_I
+  SLOAN_Z
+  U
+  B
+  V
+  R
+  I
+  Y
+  J
+  H
+  K
+  L
+  M
+  N
+  Q
+  AP
+  GAIA
+  GAIA_BP
+  GAIA_RP
+}
+
+type BandBrightnessIntegrated {
+  band: Band!
+  value: BigDecimal!
+  units: BrightnessIntegratedUnits!
+  error: BigDecimal
+}
+
+type BandBrightnessSurface {
+  band: Band!
+  value: BigDecimal!
+  units: BrightnessSurfaceUnits!
+  error: BigDecimal
+}
+
+interface BandNormalized {
+  sed: UnnormalizedSed
+}
+
+type BandNormalizedIntegrated implements BandNormalized {
+  brightnesses: [BandBrightnessIntegrated!]!
+  sed: UnnormalizedSed
+}
+
+type BandNormalizedSurface implements BandNormalized {
+  brightnesses: [BandBrightnessSurface!]!
+  sed: UnnormalizedSed
+}
+
+enum BrightnessIntegratedUnits {
+  VEGA_MAGNITUDE
+  AB_MAGNITUDE
+  JANSKY
+  W_PER_M_SQUARED_PER_UM
+  ERG_PER_S_PER_CM_SQUARED_PER_A
+  ERG_PER_S_PER_CM_SQUARED_PER_HZ
+}
+
+enum BrightnessSurfaceUnits {
+  VEGA_MAG_PER_ARCSEC_SQUARED
+  AB_MAG_PER_ARCSEC_SQUARED
+  JY_PER_ARCSEC_SQUARED
+  W_PER_M_SQUARED_PER_UM_PER_ARCSEC_SQUARED
+  ERG_PER_S_PER_CM_SQUARED_PER_A_PER_ARCSEC_SQUARED
+  ERG_PER_S_PER_CM_SQUARED_PER_HZ_PER_ARCSEC_SQUARED
+}
+
+type CatalogInfo {
+  name: CatalogName!
+  id: String!
+  objectType: String
+}
+
+enum CassRotator {
+  FIXED
+  FOLLOWING
+}
+
+enum CatalogName {
+  SIMBAD
+  IMPORT
+  GAIA
+  TELLURIC
+}
+
+enum ChargeClass {
+  NON_CHARGED
+  PROGRAM
+}
+
+enum CloudExtinctionPreset {
+  ZERO
+  POINT_ONE
+  POINT_THREE
+  POINT_FIVE
+  ONE_POINT_ZERO
+  TWO_POINT_ZERO
+  THREE_POINT_ZERO
+}
+
+enum ObservingModeType {
+  ALOPEKE_SPECKLE
+  ALOPEKE_WIDE_FIELD
+  EXCHANGE_KECK
+  EXCHANGE_SUBARU
+  FLAMINGOS_2_IMAGING
+  FLAMINGOS_2_LONG_SLIT
+  FLAMINGOS_2_MOS
+  GHOST_IFU
+  GMOS_NORTH_IFU
+  GMOS_NORTH_IMAGING
+  GMOS_NORTH_LONG_SLIT
+  GMOS_NORTH_MOS
+  GMOS_SOUTH_IFU
+  GMOS_SOUTH_IMAGING
+  GMOS_SOUTH_LONG_SLIT
+  GMOS_SOUTH_MOS
+  GNIRS_IMAGING
+  GNIRS_LONG_SLIT
+  GNIRS_IFU
+  IGRINS_2_LONG_SLIT
+  MAROON_X
+  VISITOR_NORTH
+  VISITOR_SOUTH
+  ZORRO_SPECKLE
+  ZORRO_WIDE_FIELD
+}
+
+enum VisitorObservingModeType {
+  ALOPEKE_SPECKLE
+  ALOPEKE_WIDE_FIELD
+  MAROON_X
+  VISITOR_NORTH
+  VISITOR_SOUTH
+  ZORRO_SPECKLE
+  ZORRO_WIDE_FIELD
+}
+
+enum ExchangeObservingModeType {
+  EXCHANGE_KECK
+  EXCHANGE_SUBARU
+}
+
+type ConstraintSet {
+  imageQuality: ImageQualityPreset!
+  cloudExtinction: CloudExtinctionPreset!
+  skyBackground: SkyBackground!
+  waterVapor: WaterVapor!
+  elevationRange: ElevationRange!
+}
+
+type ConstraintSetGroup {
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  constraintSet: ConstraintSet!
+  program: Program!
+}
+
+type ConstraintSetGroupSelectResult {
+  matches: [ConstraintSetGroup!]!
+  hasMore: Boolean!
+}
+
+enum CoolStarTemperature {
+  T400_K
+  T600_K
+  T800_K
+  T900_K
+  T1000_K
+  T1200_K
+  T1400_K
+  T1600_K
+  T1800_K
+  T2000_K
+  T2200_K
+  T2400_K
+  T2600_K
+  T2800_K
+}
+
+type Coordinates {
+  ra: RightAscension!
+  dec: Declination!
+}
+
+scalar DatasetId
+
+type Dataset {
+  id: DatasetId!
+  step: StepRecord!
+  index: PosInt!
+  reference: DatasetReference
+  observation: Observation!
+  visit: Visit!
+  events(OFFSET: ExecutionEventId, LIMIT: NonNegInt): ExecutionEventSelectResult!
+  filename: DatasetFilename!
+  qaState: DatasetQaState
+  comment: NonEmptyString
+  idempotencyKey: IdempotencyKey
+  interval: TimestampInterval
+  isWritten: Boolean!
+}
+
+enum DatabaseOperation {
+  INSERT
+  UPDATE
+  DELETE
+  TRUNCATE
+}
+
+type DatasetChronicleEntry {
+  id: ChronicleId!
+  transactionId: TransactionId!
+  user: User
+  timestamp: Timestamp!
+  operation: DatabaseOperation!
+  dataset: Dataset!
+  modDatasetId: Boolean!
+  modStepId: Boolean!
+  modObservationId: Boolean!
+  modVisitId: Boolean!
+  modReference: Boolean!
+  modFilename: Boolean!
+  modQaState: Boolean!
+  modInterval: Boolean!
+  modComment: Boolean!
+  newDatasetId: DatasetId
+  newStepId: StepId
+  newObservationId: ObservationId
+  newVisitId: VisitId
+  newReference: DatasetReferenceLabel
+  newFilename: DatasetFilename
+  newQaState: DatasetQaState
+  newInterval: TimestampInterval
+  newComment: NonEmptyString
+}
+
+input WhereDatasetChronicleEntry {
+  AND: [WhereDatasetChronicleEntry!]
+  OR: [WhereDatasetChronicleEntry!]
+  NOT: WhereDatasetChronicleEntry
+  id: WhereOrderChronicleId
+  user: WhereUser
+  operation: WhereEqDatabaseOperation
+  timestamp: WhereOrderTimestamp
+  dataset: WhereOrderDatasetId
+  program: WhereProgram
+  modDatasetId: WhereBoolean
+  modStepId: WhereBoolean
+  modObservationId: WhereBoolean
+  modVisitId: WhereBoolean
+  modReference: WhereBoolean
+  modFilename: WhereBoolean
+  modQaState: WhereBoolean
+  modInterval: WhereBoolean
+  modComment: WhereBoolean
+}
+
+type DatasetChronicleEntrySelectResult {
+  matches: [DatasetChronicleEntry!]!
+  hasMore: Boolean!
+}
+
+type DatasetEvent implements ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  atom: AtomRecord!
+  step: StepRecord!
+  datasetStage: DatasetStage!
+  dataset: Dataset!
+  idempotencyKey: IdempotencyKey
+}
+
+scalar DatasetFilename
+
+enum DatasetQaState {
+  PASS
+  USABLE
+  FAIL
+}
+
+type DatasetReference {
+  label: DatasetReferenceLabel!
+  observation: ObservationReference!
+  stepIndex: PosInt!
+  exposureIndex: PosInt!
+}
+
+scalar DatasetReferenceLabel
+
+type DatasetSelectResult {
+  matches: [Dataset!]!
+  hasMore: Boolean!
+}
+
+enum DatasetStage {
+  END_EXPOSE
+  END_READOUT
+  END_WRITE
+  START_EXPOSE
+  START_READOUT
+  START_WRITE
+}
+
+type Declination {
+  dms: DmsString!
+  degrees: BigDecimal!
+  microarcseconds: Long!
+}
+
+scalar DmsString
+
+enum EducationalStatus {
+  PHD
+  GRAD_STUDENT
+  UNDERGRAD_STUDENT
+  OTHER
+}
+
+type ElevationRange {
+  airMass: AirMassRange
+  hourAngle: HourAngleRange
+}
+
+type EmissionLineIntegrated {
+  wavelength: Wavelength!
+  lineWidth: PosBigDecimal!
+  lineFlux: LineFluxIntegrated!
+}
+
+type EmissionLineSurface {
+  wavelength: Wavelength!
+  lineWidth: PosBigDecimal!
+  lineFlux: LineFluxSurface!
+}
+
+type EmissionLinesIntegrated {
+  lines: [EmissionLineIntegrated!]!
+  fluxDensityContinuum: FluxDensityContinuumIntegrated!
+}
+
+type EmissionLinesSurface {
+  lines: [EmissionLineSurface!]!
+  fluxDensityContinuum: FluxDensityContinuumSurface!
+}
+
+enum EphemerisKeyType {
+  COMET
+  ASTEROID_NEW
+  ASTEROID_OLD
+  MAJOR_BODY
+  USER_SUPPLIED
+}
+
+scalar EpochString
+
+type Execution {
+  digest: CalculatedExecutionDigest
+  executionState: ExecutionState!
+  atomRecords(OFFSET: PosInt, LIMIT: NonNegInt): AtomRecordSelectResult!
+  datasets(OFFSET: DatasetId, LIMIT: NonNegInt): DatasetSelectResult!
+  events(OFFSET: ExecutionEventId, LIMIT: NonNegInt): ExecutionEventSelectResult!
+  visits(OFFSET: VisitId, LIMIT: NonNegInt): VisitSelectResult!
+  originalEstimate: ObservationTimeEstimate
+  timeCharge: CategorizedTime!
+  scienceSequenceIsMaterialized: Boolean!
+  acquisitionSequenceIsMaterialized: Boolean!
+  scienceSequenceIsCustomized: Boolean!
+  acquisitionSequenceIsCustomized: Boolean!
+}
+
+type ExecutionConfig {
+  instrument: Instrument
+  flamingos2: Flamingos2ExecutionConfig
+  ghost: GhostExecutionConfig
+  gmosNorth: GmosNorthExecutionConfig
+  gmosSouth: GmosSouthExecutionConfig
+  gnirs: GnirsExecutionConfig
+  igrins2: Igrins2ExecutionConfig
+}
+
+interface ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  idempotencyKey: IdempotencyKey
+}
+
+scalar ExecutionEventId
+
+type ExecutionEventSelectResult {
+  matches: [ExecutionEvent!]!
+  hasMore: Boolean!
+}
+
+enum Existence {
+  PRESENT
+  DELETED
+}
+
+type ExecutionDigest {
+  estimate: ObservationTimeEstimate!
+  setup: SetupTime! @deprecated(reason: "Use `estimate.setup` instead.")
+  setupCount: NonNegInt! @deprecated(reason: "Use `estimate.setupCount` instead.")
+  acquisition: SequenceDigest
+  science: SequenceDigest
+  fullTimeEstimate: CategorizedTime! @deprecated(reason: "Use `estimate.total` instead.")
+}
+
+type ObservationTimeEstimate {
+  setup: SetupTime!
+  setupCount: NonNegInt!
+  reacquisitionCount: NonNegInt!
+  calibrationCount: NonNegInt!
+  science: CategorizedTime!
+  total: CategorizedTime!
+}
+
+type CalculatedExecutionDigest {
+  calculationState: CalculationState!
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
+  value: ExecutionDigest
+}
+
+type ExposureTimeMode {
+  signalToNoise: SignalToNoiseExposureTimeMode
+  timeAndCount: TimeAndCountExposureTimeMode
+}
+
+type Flamingos2ExecutionConfig {
+  static: Flamingos2Static!
+  acquisition: Flamingos2ExecutionSequence
+  science: Flamingos2ExecutionSequence
+}
+
+type Flamingos2ExecutionSequence {
+  nextAtom: Flamingos2Atom!
+  possibleFuture: [Flamingos2Atom!]!
+  hasMore: Boolean!
+}
+
+type Flamingos2Static {
+  mosPreImaging: MosPreImaging!
+  useElectronicOffsetting: Boolean!
+}
+
+input Flamingos2StaticInput {
+  mosPreImaging: MosPreImaging
+  useElectronicOffsetting: Boolean
+}
+
+input RecordFlamingos2VisitInput {
+  observationId: ObservationId!
+  flamingos2: Flamingos2StaticInput!
+  time: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordFlamingos2VisitResult {
+  visit: Visit!
+}
+
+input Igrins2StaticInput {
+  saveSVCImages: Boolean
+  offsetMode: SlitOffsetMode
+}
+
+input RecordIgrins2VisitInput {
+  observationId: ObservationId!
+  igrins2: Igrins2StaticInput!
+  time: Timestamp
+  idempotencyKey: IdempotencyKey
+}
+
+type RecordIgrins2VisitResult {
+  visit: Visit!
+}
+
+type Flamingos2Atom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [Flamingos2Step!]!
+}
+
+type Flamingos2Step {
+  instrumentConfig: Flamingos2Dynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+type Flamingos2Dynamic {
+  exposure: TimeSpan!
+  disperser: Flamingos2Disperser
+  filter: Flamingos2Filter!
+  readMode: Flamingos2ReadMode!
+  lyotWheel: Flamingos2LyotWheel!
+  fpu: Flamingos2FpuMask
+  decker: Flamingos2Decker!
+  readoutMode: Flamingos2ReadoutMode!
+  reads: Flamingos2Reads!
+  centralWavelength: Wavelength!
+}
+
+type Igrins2ExecutionConfig {
+  static: Igrins2Static!
+  acquisition: Igrins2ExecutionSequence
+  science: Igrins2ExecutionSequence
+}
+
+type Igrins2ExecutionSequence {
+  nextAtom: Igrins2Atom!
+  possibleFuture: [Igrins2Atom!]!
+  hasMore: Boolean!
+}
+
+type Igrins2Static {
+  saveSVCImages: Boolean!
+  offsetMode: SlitOffsetMode!
+}
+
+type Igrins2Dynamic {
+  exposure: TimeSpan!
+  centralWavelength: Wavelength
+}
+
+type Igrins2Atom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [Igrins2Step!]!
+}
+
+type Igrins2Step {
+  instrumentConfig: Igrins2Dynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+type GnirsExecutionConfig {
+  static: GnirsStatic!
+  acquisition: GnirsExecutionSequence
+  science: GnirsExecutionSequence
+}
+
+type GnirsExecutionSequence {
+  nextAtom: GnirsAtom!
+  possibleFuture: [GnirsAtom!]!
+  hasMore: Boolean!
+}
+
+type GnirsStatic {
+  wellDepth: GnirsWellDepth!
+}
+
+type GnirsDynamic {
+  exposure: TimeSpan!
+  coadds: PosInt!
+  centralWavelength: Wavelength!
+  filter: GnirsFilter!
+  decker: GnirsDecker!
+  fpuSlit: GnirsFpuSlit
+  fpuOther: GnirsFpuOther
+  fpuIfu: GnirsFpuIfu
+  acquisitionMirrorOut: GnirsAcquisitionMirrorOut
+  camera: GnirsCamera!
+  focusMotorSteps: Int
+  readMode: GnirsReadMode!
+}
+
+type GnirsAcquisitionMirrorOut {
+  prism: GnirsPrism!
+  grating: GnirsGrating!
+  wavelength: Wavelength!
+}
+
+type GnirsAtom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [GnirsStep!]!
+}
+
+type GnirsStep {
+  instrumentConfig: GnirsDynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+input Flamingos2DynamicInput {
+  exposure: TimeSpanInput!
+  disperser: Flamingos2Disperser
+  filter: Flamingos2Filter!
+  readMode: Flamingos2ReadMode!
+  lyotWheel: Flamingos2LyotWheel!
+  fpu: Flamingos2FpuMaskInput
+  decker: Flamingos2Decker!
+  readoutMode: Flamingos2ReadoutMode!
+  reads: Flamingos2Reads!
+}
+
+type Flamingos2FpuMask {
+  customMask: Flamingos2CustomMask
+  builtin: Flamingos2Fpu
+}
+
+input Flamingos2FpuMaskInput {
+  customMask: Flamingos2CustomMaskInput
+  builtin: Flamingos2Fpu
+}
+
+type Flamingos2CustomMask {
+  attachmentId: AttachmentId
+  slitWidth: Flamingos2CustomSlitWidth!
+}
+
+input Flamingos2CustomMaskInput {
+  attachmentId: AttachmentId
+  slitWidth: Flamingos2CustomSlitWidth!
+}
+
+enum Flamingos2CustomSlitWidth {
+  CUSTOM_WIDTH_1_PIX
+  CUSTOM_WIDTH_2_PIX
+  CUSTOM_WIDTH_3_PIX
+  CUSTOM_WIDTH_4_PIX
+  CUSTOM_WIDTH_6_PIX
+  CUSTOM_WIDTH_8_PIX
+  OTHER
+}
+
+enum Flamingos2LyotWheel {
+  F16
+  GEMS_UNDER
+  GEMS_OVER
+  HARTMANN_A
+  HARTMANN_B
+}
+
+enum Flamingos2Disperser {
+  R1200_JH
+  R1200_HK
+  R3000
+}
+
+enum Flamingos2Filter {
+  Y
+  J
+  H
+  JH
+  HK
+  J_LOW
+  K_LONG
+  K_SHORT
+  K_BLUE
+  K_RED
+}
+
+enum Flamingos2Fpu {
+  PINHOLE
+  SUB_PIX_PINHOLE
+  LONG_SLIT_1
+  LONG_SLIT_2
+  LONG_SLIT_3
+  LONG_SLIT_4
+  LONG_SLIT_6
+  LONG_SLIT_8
+}
+
+enum Flamingos2ReadMode {
+  BRIGHT
+  MEDIUM
+  FAINT
+}
+
+enum Flamingos2Decker {
+  IMAGING
+  LONG_SLIT
+  MOS
+}
+
+enum Flamingos2ReadoutMode {
+  SCIENCE
+  ENGINEERING
+}
+
+enum Flamingos2Reads {
+  READS_1
+  READS_3
+  READS_4
+  READS_5
+  READS_6
+  READS_7
+  READS_8
+  READS_9
+  READS_10
+  READS_11
+  READS_12
+  READS_13
+  READS_14
+  READS_15
+  READS_16
+}
+
+enum TelluricTag {
+  HOT
+  A0V
+  SOLAR
+  MANUAL
+  NO_TELLURIC
+}
+
+type TelluricType {
+  tag: TelluricTag!
+  starTypes: [String!]
+}
+
+input TelluricTypeInput {
+  tag: TelluricTag!
+  starTypes: [String!]
+}
+
+type Flamingos2LongSlitAcquisition {
+  filter: Flamingos2Filter!
+  defaultFilter: Flamingos2Filter!
+  explicitFilter: Flamingos2Filter
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type Flamingos2LongSlit {
+  disperser: Flamingos2Disperser!
+  filter: Flamingos2Filter!
+  fpu: Flamingos2Fpu!
+  exposureTimeMode: ExposureTimeMode!
+  explicitReadMode: Flamingos2ReadMode
+  explicitReads: Flamingos2Reads
+  decker: Flamingos2Decker!
+  defaultDecker: Flamingos2Decker!
+  explicitDecker: Flamingos2Decker
+  readoutMode: Flamingos2ReadoutMode!
+  defaultReadoutMode: Flamingos2ReadoutMode!
+  explicitReadoutMode: Flamingos2ReadoutMode
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  telluricType: TelluricType!
+  acquisition: Flamingos2LongSlitAcquisition!
+  initialDisperser: Flamingos2Disperser!
+  initialFilter: Flamingos2Filter!
+  initialFpu: Flamingos2Fpu!
+}
+
+input Flamingos2LongSlitAcquisitionInput {
+  explicitFilter: Flamingos2Filter
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+input Flamingos2LongSlitInput {
+  disperser: Flamingos2Disperser
+  filter: Flamingos2Filter
+  fpu: Flamingos2Fpu
+  exposureTimeMode: ExposureTimeModeInput
+  explicitReadMode: Flamingos2ReadMode
+  explicitReads: Flamingos2Reads
+  explicitDecker: Flamingos2Decker
+  explicitReadoutMode: Flamingos2ReadoutMode
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  telluricType: TelluricTypeInput
+  acquisition: Flamingos2LongSlitAcquisitionInput
+}
+
+type Flamingos2MosAcquisition {
+  filter: Flamingos2Filter!
+  defaultFilter: Flamingos2Filter!
+  explicitFilter: Flamingos2Filter
+  exposureTimeMode: ExposureTimeMode!
+}
+
+input Flamingos2MosAcquisitionInput {
+  explicitFilter: Flamingos2Filter
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+type Flamingos2Mos {
+  disperser: Flamingos2Disperser!
+  filter: Flamingos2Filter!
+  customMask: Flamingos2CustomMask!
+  exposureTimeMode: ExposureTimeMode!
+  explicitReadMode: Flamingos2ReadMode
+  explicitReads: Flamingos2Reads
+  decker: Flamingos2Decker!
+  defaultDecker: Flamingos2Decker!
+  explicitDecker: Flamingos2Decker
+  readoutMode: Flamingos2ReadoutMode!
+  defaultReadoutMode: Flamingos2ReadoutMode!
+  explicitReadoutMode: Flamingos2ReadoutMode
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  telluricType: TelluricType!
+  acquisition: Flamingos2MosAcquisition!
+  initialDisperser: Flamingos2Disperser!
+  initialFilter: Flamingos2Filter!
+  initialSlitWidth: Flamingos2CustomSlitWidth!
+}
+
+input Flamingos2MosInput {
+  disperser: Flamingos2Disperser
+  filter: Flamingos2Filter
+  customMask: Flamingos2CustomMaskInput
+  exposureTimeMode: ExposureTimeModeInput
+  explicitReadMode: Flamingos2ReadMode
+  explicitReads: Flamingos2Reads
+  explicitDecker: Flamingos2Decker
+  explicitReadoutMode: Flamingos2ReadoutMode
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  telluricType: TelluricTypeInput
+  acquisition: Flamingos2MosAcquisitionInput
+}
+
+type Flamingos2ImagingFilter {
+  filter: Flamingos2Filter!
+  exposureTimeMode: ExposureTimeMode!
+}
+
+input Flamingos2ImagingFilterInput {
+  filter: Flamingos2Filter!
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+type Flamingos2Imaging {
+  variant: ImagingVariant!
+  filters: [Flamingos2ImagingFilter!]!
+  initialFilters: [Flamingos2ImagingFilter!]!
+  defaultReadMode: Flamingos2ReadMode!
+  explicitReadMode: Flamingos2ReadMode
+  defaultReads: Flamingos2Reads!
+  explicitReads: Flamingos2Reads
+  decker: Flamingos2Decker!
+  defaultDecker: Flamingos2Decker!
+  explicitDecker: Flamingos2Decker
+  readoutMode: Flamingos2ReadoutMode!
+  defaultReadoutMode: Flamingos2ReadoutMode!
+  explicitReadoutMode: Flamingos2ReadoutMode
+}
+
+input Flamingos2ImagingInput {
+  variant: ImagingVariantInput
+  filters: [Flamingos2ImagingFilterInput!]
+  explicitReadMode: Flamingos2ReadMode
+  explicitReads: Flamingos2Reads
+  explicitDecker: Flamingos2Decker
+  explicitReadoutMode: Flamingos2ReadoutMode
+}
+
+enum GhostIfu1FiberAgitator {
+  DISABLED
+  ENABLED
+}
+
+enum GhostIfu2FiberAgitator {
+  DISABLED
+  ENABLED
+}
+
+input GhostDetectorConfigInput {
+  exposureTimeMode: ExposureTimeModeInput
+  explicitBinning: GhostBinning
+  explicitReadMode: GhostReadMode
+}
+
+input GhostIfuInput {
+  stepCount: PosInt
+  resolutionMode: GhostResolutionMode
+  red: GhostDetectorConfigInput
+  blue: GhostDetectorConfigInput
+  skyPosition: CoordinatesInput
+  slitViewingCameraExposureTime: TimeSpanInput
+  explicitIfu1Agitator: GhostIfu1FiberAgitator
+  explicitIfu2Agitator: GhostIfu2FiberAgitator
+}
+
+type GhostDetectorConfig {
+  exposureTimeMode: ExposureTimeMode!
+  binning: GhostBinning!
+  defaultBinning: GhostBinning!
+  explicitBinning: GhostBinning
+  readMode: GhostReadMode!
+  defaultReadMode: GhostReadMode!
+  explicitReadMode: GhostReadMode
+}
+
+type GhostIfu {
+  stepCount: PosInt!
+  resolutionMode: GhostResolutionMode!
+  red: GhostDetectorConfig!
+  blue: GhostDetectorConfig!
+  skyPosition: Coordinates
+  slitViewingCameraExposureTime: TimeSpan
+  ifu1Agitator: GhostIfu1FiberAgitator!
+  defaultIfu1Agitator: GhostIfu1FiberAgitator!
+  explicitIfu1Agitator: GhostIfu1FiberAgitator
+  ifu2Agitator: GhostIfu2FiberAgitator!
+  defaultIfu2Agitator: GhostIfu2FiberAgitator!
+  explicitIfu2Agitator: GhostIfu2FiberAgitator
+}
+
+enum GhostIfuMappingType {
+  SINGLE_TARGET
+  TARGET_PLUS_SKY
+  SKY_PLUS_TARGET
+  DUAL_TARGET
+}
+
+type GhostIfuMapping {
+  mappingType: GhostIfuMappingType!
+  singleTarget: GhostSingleTarget
+  targetPlusSky: GhostTargetPlusSky
+  skyPlusTarget: GhostSkyPlusTarget
+  dualTarget: GhostDualTarget
+}
+
+type GhostSingleTarget {
+  ifu1: TargetId!
+}
+
+type GhostTargetPlusSky {
+  ifu1: TargetId!
+  ifu2: Coordinates!
+}
+
+type GhostSkyPlusTarget {
+  ifu1: Coordinates!
+  ifu2: TargetId!
+}
+
+type GhostDualTarget {
+  ifu1: TargetId!
+  ifu2: TargetId!
+}
+
+type GhostStatic {
+  resolutionMode: GhostResolutionMode!
+  ifuMapping: GhostIfuMapping!
+  slitViewingCameraExposureTime: TimeSpan
+}
+
+type GhostDetector {
+  exposureTime: TimeSpan!
+  exposureCount: PosInt!
+  binning: GhostBinning!
+  readMode: GhostReadMode!
+}
+
+type GhostDynamic {
+  red: GhostDetector!
+  blue: GhostDetector!
+  ifu1FiberAgitator: GhostIfu1FiberAgitator!
+  ifu2FiberAgitator: GhostIfu2FiberAgitator!
+  centralWavelength: Wavelength
+}
+
+type GhostStep {
+  instrumentConfig: GhostDynamic!
+  id: StepId!
+  breakpoint: Breakpoint!
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  estimate: StepEstimate!
+  observeClass: ObserveClass!
+}
+
+type GhostAtom {
+  id: AtomId!
+  description: String
+  observeClass: ObserveClass!
+  steps: [GhostStep!]!
+}
+
+type GhostExecutionSequence {
+  nextAtom: GhostAtom!
+  possibleFuture: [GhostAtom!]!
+  hasMore: Boolean!
+}
+
+type GhostExecutionConfig {
+  static: GhostStatic!
+  science: GhostExecutionSequence
+}
+
+enum SlitOffsetMode {
+  NOD_ALONG_SLIT
+  NOD_TO_SKY
+}
+
+type Igrins2LongSlit {
+  exposureTimeMode: ExposureTimeMode!
+  svc: Igrins2SvcConfig
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  telluricType: TelluricType!
+}
+
+input Igrins2LongSlitInput {
+  exposureTimeMode: ExposureTimeModeInput
+  svc: Igrins2SvcInput
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  telluricType: TelluricTypeInput
+}
+
+type Igrins2SvcConfig {
+  exposure: TimeSpan!
+  defaultExposure: TimeSpan!
+  explicitExposure: TimeSpan
+  telescopeConfigs: [TelescopeConfig!]!
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+  explicitTelescopeConfigs: [TelescopeConfig!]
+}
+
+input Igrins2SvcInput {
+  explicitExposure: TimeSpanInput
+  explicitTelescopeConfigs: [TelescopeConfigInput!]
+}
+
+type GnirsImagingFilter {
+  filter: GnirsFilter!
+  exposureTimeMode: ExposureTimeMode!
+  coadds: PosInt!
+}
+
+input GnirsImagingFilterInput {
+  filter: GnirsFilter!
+  exposureTimeMode: ExposureTimeModeInput
+  coadds: PosInt
+}
+
+type GnirsImagingAcquisition {
+  exposureTimeMode: ExposureTimeMode!
+  explicitExposureTimeMode: ExposureTimeMode
+  coadds: PosInt!
+  explicitAcquisitionType: GnirsAcquisitionType
+  explicitFilter: GnirsFilter
+  skyOffset: Offset
+}
+
+type GnirsImaging {
+  variant: ImagingVariant!
+  filters: [GnirsImagingFilter!]!
+  initialFilters: [GnirsImagingFilter!]!
+  camera: GnirsCamera!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  acquisition: GnirsImagingAcquisition!
+}
+
+input GnirsImagingAcquisitionInput {
+  explicitFilter: GnirsFilter
+  explicitAcquisitionType: GnirsAcquisitionType
+  coadds: PosInt
+  skyOffset: OffsetInput
+  explicitExposureTimeMode: ExposureTimeModeInput
+}
+
+input GnirsImagingInput {
+  variant: ImagingVariantInput
+  filters: [GnirsImagingFilterInput!]
+  camera: GnirsCamera
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsImagingAcquisitionInput
+}
+
+type GnirsSpectroscopyAcquisition {
+  exposureTimeMode: ExposureTimeMode!
+  explicitExposureTimeMode: ExposureTimeMode
+  coadds: PosInt!
+  explicitAcquisitionType: GnirsAcquisitionType
+  explicitFilter: GnirsFilter
+  skyOffset: Offset
+}
+
+type GnirsCentralWavelengthConfig {
+  centralWavelength: Wavelength!
+  exposureTimeMode: ExposureTimeMode!
+  coadds: PosInt!
+}
+
+input GnirsCentralWavelengthConfigInput {
+  centralWavelength: WavelengthInput!
+  exposureTimeMode: ExposureTimeModeInput
+  coadds: PosInt
+}
+
+type GnirsSpectroscopy {
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+  centralWavelengths: [GnirsCentralWavelengthConfig!]!
+  initialCentralWavelengths: [GnirsCentralWavelengthConfig!]!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  slit: GnirsSpectroscopyLongSlit
+  ifu: GnirsSpectroscopyIfu
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  acquisition: GnirsSpectroscopyAcquisition!
+  telluricType: TelluricType!
+}
+
+type GnirsSpectroscopyLongSlit {
+  fpu: GnirsFpuSlit!
+  initialFpu: GnirsFpuSlit!
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+}
+
+type GnirsSpectroscopyIfu {
+  fpu: GnirsFpuIfu!
+  initialFpu: GnirsFpuIfu!
+  telescopeConfigs: [TelescopeConfig!]!
+}
+
+type GnirsLongSlit {
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+  centralWavelengths: [GnirsCentralWavelengthConfig!]!
+  initialCentralWavelengths: [GnirsCentralWavelengthConfig!]!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  fpu: GnirsFpuSlit!
+  initialFpu: GnirsFpuSlit!
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  acquisition: GnirsSpectroscopyAcquisition!
+  telluricType: TelluricType!
+}
+
+type GnirsIfu {
+  grating: GnirsGrating!
+  explicitGrating: GnirsGrating
+  initialGrating: GnirsGrating!
+  prism: GnirsPrism!
+  explicitPrism: GnirsPrism
+  initialPrism: GnirsPrism!
+  centralWavelengths: [GnirsCentralWavelengthConfig!]!
+  initialCentralWavelengths: [GnirsCentralWavelengthConfig!]!
+  camera: GnirsCamera!
+  initialCamera: GnirsCamera!
+  fpu: GnirsFpuIfu!
+  initialFpu: GnirsFpuIfu!
+  telescopeConfigs: [TelescopeConfig!]!
+  filter: GnirsFilter!
+  initialFilter: GnirsFilter!
+  decker: GnirsDecker!
+  explicitDecker: GnirsDecker
+  defaultDecker: GnirsDecker!
+  explicitReadMode: GnirsReadMode
+  wellDepth: GnirsWellDepth!
+  explicitWellDepth: GnirsWellDepth
+  defaultWellDepth: GnirsWellDepth!
+  explicitFocusMotorSteps: Int
+  acquisition: GnirsSpectroscopyAcquisition!
+  telluricType: TelluricType!
+}
+
+input GnirsSpectroscopyAcquisitionInput {
+  explicitFilter: GnirsFilter
+  explicitAcquisitionType: GnirsAcquisitionType
+  coadds: PosInt
+  skyOffset: OffsetInput
+  explicitExposureTimeMode: ExposureTimeModeInput
+}
+
+type TelescopeConfigAlongSlit {
+  q: OffsetQ!
+  guiding: GuideState!
+}
+
+type SlitTelescopeConfigs {
+  offsetMode: SlitOffsetMode!
+  alongSlit: [TelescopeConfigAlongSlit!]
+  toSky: [TelescopeConfig!]
+}
+
+input TelescopeConfigAlongSlitInput {
+  q: OffsetComponentInput!
+  guiding: GuideState!
+}
+
+input SlitTelescopeConfigsInput {
+  alongSlit: [TelescopeConfigAlongSlitInput!]
+  toSky: [TelescopeConfigInput!]
+}
+
+input GnirsSpectroscopyLongSlitInput {
+  fpu: GnirsFpuSlit
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+}
+
+input GnirsSpectroscopyIfuInput {
+  fpu: GnirsFpuIfu
+  telescopeConfigs: [TelescopeConfigInput!]
+}
+
+input GnirsSpectroscopyInput {
+  centralWavelengths: [GnirsCentralWavelengthConfigInput!]
+  filter: GnirsFilter
+  slit: GnirsSpectroscopyLongSlitInput
+  ifu: GnirsSpectroscopyIfuInput
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsSpectroscopyAcquisitionInput
+  telluricType: TelluricTypeInput
+}
+
+input GnirsLongSlitInput {
+  centralWavelengths: [GnirsCentralWavelengthConfigInput!]
+  filter: GnirsFilter
+  fpu: GnirsFpuSlit
+  explicitTelescopeConfigs: SlitTelescopeConfigsInput
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsSpectroscopyAcquisitionInput
+  telluricType: TelluricTypeInput
+}
+
+input GnirsIfuInput {
+  centralWavelengths: [GnirsCentralWavelengthConfigInput!]
+  filter: GnirsFilter
+  fpu: GnirsFpuIfu
+  telescopeConfigs: [TelescopeConfigInput!]
+  camera: GnirsCamera
+  grating: GnirsGrating
+  prism: GnirsPrism
+  explicitDecker: GnirsDecker
+  explicitGrating: GnirsGrating
+  explicitPrism: GnirsPrism
+  explicitFocusMotorSteps: Int
+  explicitReadMode: GnirsReadMode
+  explicitWellDepth: GnirsWellDepth
+  acquisition: GnirsSpectroscopyAcquisitionInput
+  telluricType: TelluricTypeInput
+}
+
+type TimeAndCountExposureTimeMode {
+  time: TimeSpan!
+  count: PosInt!
+  at: Wavelength!
+}
+
+type FluxDensityContinuumIntegrated {
+  value: PosBigDecimal!
+  units: FluxDensityContinuumIntegratedUnits!
+  error: PosBigDecimal
+}
+
+enum FluxDensityContinuumIntegratedUnits {
+  W_PER_M_SQUARED_PER_UM
+  ERG_PER_S_PER_CM_SQUARED_PER_A
+}
+
+type FluxDensityContinuumSurface {
+  value: PosBigDecimal!
+  units: FluxDensityContinuumSurfaceUnits!
+  error: PosBigDecimal
+}
+
+enum FluxDensityContinuumSurfaceUnits {
+  W_PER_M_SQUARED_PER_UM_PER_ARCSEC_SQUARED
+  ERG_PER_S_PER_CM_SQUARED_PER_A_PER_ARCSEC_SQUARED
+}
+
+type FluxDensityEntry {
+  wavelength: Wavelength!
+  density: BigDecimal!
+}
+
+enum FocalPlane {
+  SINGLE_SLIT
+  MULTIPLE_SLIT
+  IFU
+}
+
+enum GalaxySpectrum {
+  ELLIPTICAL
+  SPIRAL
+}
+
+type GaussianSource {
+  fwhm: Angle!
+  bandNormalized: BandNormalizedIntegrated
+  emissionLines: EmissionLinesIntegrated
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  NOT_SPECIFIED
+}
+
+enum GmosAmpGain {
+  LOW
+  HIGH
+}
+
+enum GmosAmpReadMode {
+  SLOW
+  FAST
+}
+
+enum GmosIfuAcquisitionRoi {
+  CCD2_FULL_FRAME
+  STAMP_FULL_FRAME
+  FULL_FRAME
+}
+
+enum GmosLongSlitAcquisitionRoi {
+  CCD2_STAMP
+  CCD2
+  STAMP
+  FULL_CCD2
+}
+
+enum GmosNorthIfuFpu {
+  TWO_SLITS
+  ONE_SLIT_BLUE
+  ONE_SLIT_RED
+}
+
+enum GmosSouthIfuFpu {
+  TWO_SLITS
+  ONE_SLIT_BLUE
+  ONE_SLIT_RED
+}
+
+type GmosIfuAnalysis {
+  sumRadius: Angle
+  singleOffset: Angle
+}
+
+input GmosIfuAnalysisInput @oneOf {
+  sumRadius: AngleInput
+  singleOffset: AngleInput
+}
+
+enum GmosNorthBuiltinFpu {
+  NS0
+  NS1
+  NS2
+  NS3
+  NS4
+  NS5
+  LONG_SLIT_0_25
+  LONG_SLIT_0_50
+  LONG_SLIT_0_75
+  LONG_SLIT_1_00
+  LONG_SLIT_1_50
+  LONG_SLIT_2_00
+  LONG_SLIT_5_00
+  IFU2_SLITS
+  IFU_BLUE
+  IFU_RED
+}
+
+enum GmosNorthFilter {
+  G_PRIME
+  R_PRIME
+  I_PRIME
+  Z_PRIME
+  Z
+  Y
+  RI
+  GG455
+  OG515
+  RG610
+  CA_T
+  HA
+  HA_C
+  DS920
+  SII
+  OIII
+  OIIIC
+  OVI
+  OVIC
+  HE_II
+  HE_IIC
+  HARTMANN_A_R_PRIME
+  HARTMANN_B_R_PRIME
+  G_PRIME_GG455
+  G_PRIME_OG515
+  R_PRIME_RG610
+  I_PRIME_CA_T
+  Z_PRIME_CA_T
+}
+
+enum GmosNorthGrating {
+  B1200_G5301
+  R831_G5302
+  R600_G5304
+  B480_G5309
+  R400_G5310
+  R150_G5308
+}
+
+type GmosNorthLongSlitAcquisition {
+  filter: GmosNorthFilter!
+  defaultFilter: GmosNorthFilter!
+  explicitFilter: GmosNorthFilter
+  roi: GmosLongSlitAcquisitionRoi!
+  defaultRoi: GmosLongSlitAcquisitionRoi!
+  explicitRoi: GmosLongSlitAcquisitionRoi
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosNorthLongSlit {
+  grating: GmosNorthGrating!
+  filter: GmosNorthFilter
+  fpu: GmosNorthBuiltinFpu!
+  centralWavelength: Wavelength!
+  exposureTimeMode: ExposureTimeMode!
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  acquisition: GmosNorthLongSlitAcquisition!
+  initialGrating: GmosNorthGrating!
+  initialFilter: GmosNorthFilter
+  initialFpu: GmosNorthBuiltinFpu!
+  initialCentralWavelength: Wavelength!
+}
+
+enum WavelengthOrder {
+  DECREASING
+  INCREASING
+}
+
+enum ImagingVariantType {
+  GROUPED
+  INTERLEAVED
+  PRE_IMAGING
+}
+
+type ImagingVariant {
+  variantType: ImagingVariantType!
+  grouped: GroupedImagingVariant
+  interleaved: InterleavedImagingVariant
+  preImaging: PreImagingVariant
+}
+
+input ImagingVariantInput @oneOf {
+  grouped: GroupedImagingVariantInput
+  interleaved: InterleavedImagingVariantInput
+  preImaging: PreImagingVariantInput
+}
+
+type GroupedImagingVariant {
+  order: WavelengthOrder!
+  offsets: TelescopeConfigGenerator!
+  skyCount: NonNegInt!
+  skyOffsets: TelescopeConfigGenerator!
+}
+
+input GroupedImagingVariantInput {
+  order: WavelengthOrder
+  offsets: TelescopeConfigGeneratorInput
+  skyCount: NonNegInt
+  skyOffsets: TelescopeConfigGeneratorInput
+}
+
+type InterleavedImagingVariant {
+  offsets: TelescopeConfigGenerator!
+  skyCount: NonNegInt!
+  skyOffsets: TelescopeConfigGenerator!
+}
+
+input InterleavedImagingVariantInput {
+  offsets: TelescopeConfigGeneratorInput
+  skyCount: NonNegInt
+  skyOffsets: TelescopeConfigGeneratorInput
+}
+
+type PreImagingVariant {
+  offset1: Offset!
+  offset2: Offset!
+  offset3: Offset!
+  offset4: Offset!
+}
+
+input PreImagingVariantInput {
+  offset1: OffsetInput
+  offset2: OffsetInput
+  offset3: OffsetInput
+  offset4: OffsetInput
+}
+
+type GmosNorthImagingFilter {
+  filter: GmosNorthFilter!
+  exposureTimeMode: ExposureTimeMode!
+}
+
+input GmosNorthImagingFilterInput {
+  filter: GmosNorthFilter!
+  exposureTimeMode: ExposureTimeModeInput
+}
+
+type GmosNorthImaging {
+  variant: ImagingVariant!
+  filters: [GmosNorthImagingFilter!]!
+  initialFilters: [GmosNorthImagingFilter!]!
+  bin: GmosBinning!
+  defaultBin: GmosBinning!
+  explicitBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+}
+
+enum GmosRoi {
+  FULL_FRAME
+  CCD2
+  CENTRAL_SPECTRUM
+  CENTRAL_STAMP
+  CUSTOM
+}
+
+enum GmosSouthBuiltinFpu {
+  NS1
+  NS2
+  NS3
+  NS4
+  NS5
+  LONG_SLIT_0_25
+  LONG_SLIT_0_50
+  LONG_SLIT_0_75
+  LONG_SLIT_1_00
+  LONG_SLIT_1_50
+  LONG_SLIT_2_00
+  LONG_SLIT_5_00
+  IFU2_SLITS
+  IFU_BLUE
+  IFU_RED
+  IFU_NS2_SLITS
+  IFU_NS_BLUE
+  IFU_NS_RED
+}
+
+enum GmosSouthFilter {
+  U_PRIME
+  G_PRIME
+  R_PRIME
+  I_PRIME
+  Z_PRIME
+  Z
+  Y
+  GG455
+  OG515
+  RG610
+  RG780
+  CA_T
+  HARTMANN_A_R_PRIME
+  HARTMANN_B_R_PRIME
+  G_PRIME_GG455
+  G_PRIME_OG515
+  R_PRIME_RG610
+  I_PRIME_RG780
+  I_PRIME_CA_T
+  Z_PRIME_CA_T
+  HA
+  SII
+  HA_C
+  OIII
+  OIIIC
+  OVI
+  OVIC
+  HE_II
+  HE_IIC
+}
+
+enum GmosSouthGrating {
+  B1200_G5321
+  R831_G5322
+  R600_G5324
+  B480_G5327
+  R400_G5325
+  R150_G5326
+}
+
+type GmosSouthLongSlitAcquisition {
+  filter: GmosSouthFilter!
+  defaultFilter: GmosSouthFilter!
+  explicitFilter: GmosSouthFilter
+  roi: GmosLongSlitAcquisitionRoi!
+  defaultRoi: GmosLongSlitAcquisitionRoi!
+  explicitRoi: GmosLongSlitAcquisitionRoi
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosSouthLongSlit {
+  grating: GmosSouthGrating!
+  filter: GmosSouthFilter
+  fpu: GmosSouthBuiltinFpu!
+  centralWavelength: Wavelength!
+  exposureTimeMode: ExposureTimeMode!
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: SlitTelescopeConfigs!
+  defaultTelescopeConfigs: SlitTelescopeConfigs!
+  explicitTelescopeConfigs: SlitTelescopeConfigs
+  acquisition: GmosSouthLongSlitAcquisition!
+  initialGrating: GmosSouthGrating!
+  initialFilter: GmosSouthFilter
+  initialFpu: GmosSouthBuiltinFpu!
+  initialCentralWavelength: Wavelength!
+}
+
+type GmosNorthIfuAcquisition {
+  filter: GmosNorthFilter!
+  defaultFilter: GmosNorthFilter!
+  explicitFilter: GmosNorthFilter
+  roi: GmosIfuAcquisitionRoi!
+  defaultRoi: GmosIfuAcquisitionRoi!
+  explicitRoi: GmosIfuAcquisitionRoi
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosNorthIfu {
+  grating: GmosNorthGrating!
+  filter: GmosNorthFilter
+  fpu: GmosNorthIfuFpu!
+  centralWavelength: Wavelength!
+  exposureTimeMode: ExposureTimeMode!
+  ifuAnalysis: GmosIfuAnalysis!
+  defaultIfuAnalysis: GmosIfuAnalysis!
+  explicitIfuAnalysis: GmosIfuAnalysis
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: [TelescopeConfig!]!
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+  explicitTelescopeConfigs: [TelescopeConfig!]
+  initialGrating: GmosNorthGrating!
+  initialFilter: GmosNorthFilter
+  initialFpu: GmosNorthIfuFpu!
+  initialCentralWavelength: Wavelength!
+  acquisition: GmosNorthIfuAcquisition!
+}
+
+type GmosSouthIfuAcquisition {
+  filter: GmosSouthFilter!
+  defaultFilter: GmosSouthFilter!
+  explicitFilter: GmosSouthFilter
+  roi: GmosIfuAcquisitionRoi!
+  defaultRoi: GmosIfuAcquisitionRoi!
+  explicitRoi: GmosIfuAcquisitionRoi
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosSouthIfu {
+  grating: GmosSouthGrating!
+  filter: GmosSouthFilter
+  fpu: GmosSouthIfuFpu!
+  centralWavelength: Wavelength!
+  exposureTimeMode: ExposureTimeMode!
+  ifuAnalysis: GmosIfuAnalysis!
+  defaultIfuAnalysis: GmosIfuAnalysis!
+  explicitIfuAnalysis: GmosIfuAnalysis
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: [TelescopeConfig!]!
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+  explicitTelescopeConfigs: [TelescopeConfig!]
+  initialGrating: GmosSouthGrating!
+  initialFilter: GmosSouthFilter
+  initialFpu: GmosSouthIfuFpu!
+  initialCentralWavelength: Wavelength!
+  acquisition: GmosSouthIfuAcquisition!
+}
+
+type GmosNorthMosAcquisition {
+  filter: GmosNorthFilter!
+  defaultFilter: GmosNorthFilter!
+  explicitFilter: GmosNorthFilter
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosNorthMos {
+  grating: GmosNorthGrating!
+  filter: GmosNorthFilter
+  customMask: GmosCustomMask!
+  centralWavelength: Wavelength!
+  acquisitionType: GmosMosAcquisitionType!
+  exposureTimeMode: ExposureTimeMode!
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: [TelescopeConfig!]!
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+  explicitTelescopeConfigs: [TelescopeConfig!]
+  initialGrating: GmosNorthGrating!
+  initialFilter: GmosNorthFilter
+  initialSlitWidth: GmosCustomSlitWidth!
+  initialCentralWavelength: Wavelength!
+  acquisition: GmosNorthMosAcquisition!
+}
+
+type GmosSouthMosAcquisition {
+  filter: GmosSouthFilter!
+  defaultFilter: GmosSouthFilter!
+  explicitFilter: GmosSouthFilter
+  exposureTimeMode: ExposureTimeMode!
+}
+
+type GmosSouthMos {
+  grating: GmosSouthGrating!
+  filter: GmosSouthFilter
+  customMask: GmosCustomMask!
+  centralWavelength: Wavelength!
+  acquisitionType: GmosMosAcquisitionType!
+  exposureTimeMode: ExposureTimeMode!
+  xBin: GmosBinning!
+  defaultXBin: GmosBinning!
+  explicitXBin: GmosBinning
+  yBin: GmosBinning!
+  defaultYBin: GmosBinning!
+  explicitYBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+  wavelengthDithers: [WavelengthDither!]!
+  defaultWavelengthDithers: [WavelengthDither!]!
+  explicitWavelengthDithers: [WavelengthDither!]
+  telescopeConfigs: [TelescopeConfig!]!
+  defaultTelescopeConfigs: [TelescopeConfig!]!
+  explicitTelescopeConfigs: [TelescopeConfig!]
+  initialGrating: GmosSouthGrating!
+  initialFilter: GmosSouthFilter
+  initialSlitWidth: GmosCustomSlitWidth!
+  initialCentralWavelength: Wavelength!
+  acquisition: GmosSouthMosAcquisition!
+}
+
+type GmosSouthImaging {
+  variant: ImagingVariant!
+  filters: [GmosSouthImagingFilter!]!
+  initialFilters: [GmosSouthImagingFilter!]!
+  bin: GmosBinning!
+  defaultBin: GmosBinning!
+  explicitBin: GmosBinning
+  ampReadMode: GmosAmpReadMode!
+  defaultAmpReadMode: GmosAmpReadMode!
+  explicitAmpReadMode: GmosAmpReadMode
+  ampGain: GmosAmpGain!
+  defaultAmpGain: GmosAmpGain!
+  explicitAmpGain: GmosAmpGain
+  roi: GmosRoi!
+  defaultRoi: GmosRoi!
+  explicitRoi: GmosRoi
+}
+
+enum GmosBinning {
+  ONE
+  TWO
+  FOUR
+}
+
+type GoaProperties {
+  proprietaryMonths: NonNegInt!
+  shouldNotify: Boolean!
+  privateHeader: Boolean!
+}
+
+input GoaPropertiesInput {
+  proprietaryMonths: NonNegInt
+  shouldNotify: Boolean
+  privateHeader: Boolean
+}
+
+type Group {
+  id: GroupId!
+  parentId: GroupId
+  parentIndex: NonNegShort!
+  program: Program!
+  name: NonEmptyString
+  description: NonEmptyString
+  minimumRequired: NonNegShort
+  ordered: Boolean!
+  minimumInterval: TimeSpan
+  maximumInterval: TimeSpan
+  sameNight: Boolean!
+  elements(includeDeleted: Boolean! = false): [GroupElement!]!
+  timeEstimateRange: CalculatedCategorizedTimeRange
+  timeEstimateBanded: [CalculatedBandedTime!]!
+  existence: Existence!
+  system: Boolean!
+  calibrationRoles: [CalibrationRole!]!
+}
+
+scalar GroupId
+
+type GroupElement {
+  parentGroupId: GroupId
+  parentIndex: NonNegShort!
+  group: Group
+  observation: Observation
+  existence: Existence!
+}
+
+input GroupElementInput @oneOf {
+  groupId: GroupId
+  observationId: ObservationId
+}
+
+input GroupPropertiesInput {
+  name: NonEmptyString
+  description: NonEmptyString
+  minimumRequired: NonNegShort
+  ordered: Boolean
+  minimumInterval: TimeSpanInput
+  maximumInterval: TimeSpanInput
+  sameNight: Boolean
+  parentGroup: GroupId
+  parentGroupIndex: NonNegShort
+  existence: Existence
+}
+
+input CreateGroupInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  SET: GroupPropertiesInput
+  initialContents: [GroupElementInput]
+}
+
+type CreateGroupResult {
+  group: Group!
+}
+
+type GuideAvailabilityPeriod {
+  start: Timestamp!
+  end: Timestamp!
+  posAngles: [Angle!]!
+}
+
+type GuideEnvironment {
+  posAngle: Angle!
+  guideTargets: [GuideTarget!]!
+}
+
+enum AltairMode {
+  NGS
+  LGS
+  LGS_P1
+}
+
+enum FieldLens {
+  IN
+  OUT
+}
+
+enum AltairNdFilter {
+  IN
+  OUT
+}
+
+type Altair {
+  mode: AltairMode!
+  explicitFieldLens: FieldLens
+  defaultFieldLens: FieldLens
+  fieldLens: FieldLens
+  cassRotator: CassRotator!
+  ndFilter: AltairNdFilter!
+}
+
+input AltairInput {
+  mode: AltairMode!
+  fieldLens: FieldLens
+  cassRotator: CassRotator = FOLLOWING
+  ndFilter: AltairNdFilter = OUT
+}
+
+enum GuideProbe {
+  PWFS1
+  PWFS2
+  GMOS_OIWFS
+  FLAMINGOS2_OIWFS
+  ALTAIR_AOWFS
+}
+
+type GuideTarget {
+  probe: GuideProbe!
+  name: NonEmptyString!
+  sourceProfile: SourceProfile!
+  sidereal: Sidereal
+  nonsidereal: Nonsidereal
+}
+
+enum HiiRegionSpectrum {
+  ORION_NEBULA
+}
+
+scalar HmsString
+
+type HourAngleRange {
+  minHours: BigDecimal!
+  maxHours: BigDecimal!
+}
+
+enum ImageQualityPreset {
+  POINT_ONE
+  POINT_TWO
+  POINT_THREE
+  POINT_FOUR
+  POINT_SIX
+  POINT_EIGHT
+  ONE_POINT_ZERO
+  ONE_POINT_TWO
+  ONE_POINT_FIVE
+  TWO_POINT_ZERO
+}
+
+scalar Timestamp
+
+enum PortDisposition {
+  SIDE
+  BOTTOM
+}
+
+enum Instrument {
+  ACQ_CAM_NORTH
+  ACQ_CAM_SOUTH
+  FLAMINGOS2
+  GHOST
+  GMOS_NORTH
+  GMOS_SOUTH
+  GNIRS
+  GPI
+  GSAOI
+  IGRINS2
+  NIRI
+  VISITOR_NORTH
+  VISITOR_SOUTH
+  SCORPIO
+  ALOPEKE
+  ZORRO
+  MAROON_X
+}
+
+type SpectroscopyConfigOption {
+  name: NonEmptyString!
+  instrument: Instrument!
+  focalPlane: FocalPlane!
+  fpuLabel: NonEmptyString!
+  slitWidth: Angle!
+  slitLength: Angle!
+  disperserLabel: NonEmptyString!
+  filterLabel: NonEmptyString
+  wavelengthMin: Wavelength!
+  wavelengthMax: Wavelength!
+  wavelengthOptimal: Wavelength!
+  wavelengthCoverage: Wavelength!
+  resolution: PosInt!
+  adaptiveOptics: Boolean!
+  capability: SpectroscopyCapability
+  site: Site!
+  flamingos2: SpectroscopyConfigOptionFlamingos2
+  ghost: SpectroscopyConfigOptionGhost
+  gmosNorth: SpectroscopyConfigOptionGmosNorth
+  gmosSouth: SpectroscopyConfigOptionGmosSouth
+  gnirs: SpectroscopyConfigOptionGnirs
+}
+
+type SpectroscopyConfigOptionFlamingos2 {
+  fpu: Flamingos2Fpu
+  customSlitWidth: Flamingos2CustomSlitWidth
+  disperser: Flamingos2Disperser!
+  filter: Flamingos2Filter!
+}
+
+type SpectroscopyConfigOptionGhost {
+  resolutionMode: GhostResolutionMode!
+  binning: GhostBinning!
+}
+
+type SpectroscopyConfigOptionGmosNorth {
+  fpu: GmosNorthBuiltinFpu
+  customSlitWidth: GmosCustomSlitWidth
+  grating: GmosNorthGrating!
+  filter: GmosNorthFilter
+}
+
+type SpectroscopyConfigOptionGmosSouth {
+  fpu: GmosSouthBuiltinFpu
+  customSlitWidth: GmosCustomSlitWidth
+  grating: GmosSouthGrating!
+  filter: GmosSouthFilter
+}
+
+type SpectroscopyConfigOptionGnirs {
+  grating: GnirsGrating!
+  filter: GnirsFilter!
+  fpuSlit: GnirsFpuSlit
+  fpuIfu: GnirsFpuIfu
+  prism: GnirsPrism!
+  camera: GnirsCamera!
+}
+
+enum GnirsPrism {
+  MIRROR
+  SXD
+  LXD
+}
+
+enum GnirsCamera {
+  LONG_BLUE
+  LONG_RED
+  SHORT_BLUE
+  SHORT_RED
+}
+
+enum GnirsGrating {
+  D10
+  D32
+  D111
+}
+
+enum GnirsFilter {
+  CROSS_DISPERSED
+  ORDER6
+  ORDER5
+  ORDER4
+  ORDER3
+  ORDER2
+  ORDER1
+  H2
+  H_ND100X
+  H2_ND100X
+  PAH
+  Y
+  J
+  K
+}
+
+enum GnirsFpuSlit {
+  LONG_SLIT_0_10
+  LONG_SLIT_0_15
+  LONG_SLIT_0_20
+  LONG_SLIT_0_30
+  LONG_SLIT_0_45
+  LONG_SLIT_0_675
+  LONG_SLIT_1_00
+}
+
+enum GnirsFpuIfu {
+  LOW_RESOLUTION
+  HIGH_RESOLUTION
+}
+
+enum GnirsFpuOther {
+  ACQUISITION
+  PUPIL_VIEWER
+  PINHOLE1
+  PINHOLE3
+}
+
+enum GnirsReadMode {
+  VERY_BRIGHT
+  BRIGHT
+  FAINT
+  VERY_FAINT
+}
+
+enum GnirsWellDepth {
+  SHALLOW
+  DEEP
+}
+
+enum GnirsAcquisitionType {
+  VERY_BRIGHT
+  BRIGHT
+  FAINT
+}
+
+enum GnirsDecker {
+  ACQUISITION
+  PUPIL_VIEWER
+  SHORT_CAM_CROSS_DISPERSED
+  LONG_CAM_LONG_SLIT
+  SHORT_CAM_LONG_SLIT
+  LONG_CAM_CROSS_DISPERSED
+  LOW_RESOLUTION_IFU
+  HIGH_RESOLUTION_IFU
+}
+
+input ImagingScienceRequirementsInput {
+  minimumFov: AngleInput
+  narrowFilters: Boolean
+  broadFilters: Boolean
+  combinedFilters: Boolean
+}
+
+scalar IdempotencyKey
+
+type ImagingScienceRequirements {
+  minimumFov: Angle
+  narrowFilters: Boolean
+  broadFilters: Boolean
+  combinedFilters: Boolean
+}
+
+type ImagingConfigOption {
+  instrument: Instrument!
+  filterLabel: NonEmptyString!
+  adaptiveOptics: Boolean!
+  capability: ImagingCapability
+  site: Site!
+  fov: Angle!
+  gmosNorth: ImagingConfigOptionGmosNorth
+  gmosSouth: ImagingConfigOptionGmosSouth
+  flamingos2: ImagingConfigOptionFlamingos2
+  gnirs: ImagingConfigOptionGnirs
+}
+
+type ImagingConfigOptionGmosNorth {
+  filter: GmosNorthFilter!
+}
+
+type ImagingConfigOptionGmosSouth {
+  filter: GmosSouthFilter!
+}
+
+type ImagingConfigOptionFlamingos2 {
+  filter: Flamingos2Filter!
+}
+
+type ImagingConfigOptionGnirs {
+  filter: GnirsFilter!
+  camera: GnirsCamera!
+}
+
+scalar IntPercent
+
+type ItcResult {
+  targetId: TargetId!
+  exposureTime: TimeSpan!
+  frameCount: NonNegInt!
+  coadds: PosInt!
+  exposureCount: NonNegInt! @deprecated(reason: "Use `frameCount`.")
+  signalToNoiseAt: SignalToNoiseAt
+  peakPixel: ItcPeakPixel
+}
+
+type ItcPeakPixel {
+  flux: Float!
+  adu: Int!
+}
+
+enum ItcType {
+  FLAMINGOS_2_IMAGING
+  GHOST_IFU
+  GMOS_NORTH_IMAGING
+  GMOS_SOUTH_IMAGING
+  GNIRS_IMAGING
+  SCIENCE_ONLY_SPECTROSCOPY
+  GNIRS_SPECTROSCOPY
+  SPECTROSCOPY
+}
+
+type ItcResultSet {
+  selected: ItcResult!
+  all: [ItcResult!]
+  index: NonNegInt!
+}
+
+type ItcFlamingos2ImagingResultSet {
+  filter: Flamingos2Filter!
+  results: ItcResultSet!
+}
+
+type ItcGmosNorthImagingResultSet {
+  filter: GmosNorthFilter!
+  results: ItcResultSet!
+}
+
+type ItcGmosSouthImagingResultSet {
+  filter: GmosSouthFilter!
+  results: ItcResultSet!
+}
+
+type ItcGnirsImagingResultSet {
+  filter: GnirsFilter!
+  results: ItcResultSet!
+}
+
+type ItcGnirsSpectroscopyResultSet {
+  centralWavelength: Wavelength!
+  results: ItcResultSet!
+}
+
+interface Itc {
+  itcType: ItcType!
+}
+
+type ItcFlamingos2Imaging implements Itc {
+  itcType: ItcType!
+  flamingos2ImagingScience: [ItcFlamingos2ImagingResultSet!]!
+}
+
+type ItcGhostIfu implements Itc {
+  itcType: ItcType!
+  red: ItcResultSet!
+  blue: ItcResultSet!
+}
+
+type ItcGmosNorthImaging implements Itc {
+  itcType: ItcType!
+  gmosNorthImagingScience: [ItcGmosNorthImagingResultSet!]!
+}
+
+type ItcGmosSouthImaging implements Itc {
+  itcType: ItcType!
+  gmosSouthImagingScience: [ItcGmosSouthImagingResultSet!]!
+}
+
+type ItcGnirsImaging implements Itc {
+  itcType: ItcType!
+  gnirsImagingScience: [ItcGnirsImagingResultSet!]!
+}
+
+type ItcGnirsSpectroscopy implements Itc {
+  itcType: ItcType!
+  acquisition: ItcResultSet!
+  gnirsSpectroscopyScience: [ItcGnirsSpectroscopyResultSet!]!
+}
+
+type ItcSpectroscopy implements Itc {
+  itcType: ItcType!
+  acquisition: ItcResultSet!
+  spectroscopyScience: ItcResultSet!
+}
+
+type ItcScienceOnlySpectroscopy implements Itc {
+  itcType: ItcType!
+  spectroscopyScience: ItcResultSet!
+}
+
+type SignalToNoiseAt {
+  single: SignalToNoise!
+  total: SignalToNoise!
+  wavelength: Wavelength!
+}
+
+type LineFluxIntegrated {
+  value: PosBigDecimal!
+  units: LineFluxIntegratedUnits!
+}
+
+enum LineFluxIntegratedUnits {
+  W_PER_M_SQUARED
+  ERG_PER_S_PER_CM_SQUARED
+}
+
+type LineFluxSurface {
+  value: PosBigDecimal!
+  units: LineFluxSurfaceUnits!
+}
+
+enum LineFluxSurfaceUnits {
+  W_PER_M_SQUARED_PER_ARCSEC_SQUARED
+  ERG_PER_S_PER_CM_SQUARED_PER_ARCSEC_SQUARED
+}
+
+scalar NonEmptyString
+
+scalar NonNegBigDecimal
+
+scalar NonNegShort
+
+scalar NonNegInt
+
+scalar NonNegLong
+
+type Nonsidereal {
+  des: String!
+  keyType: EphemerisKeyType!
+  key: String!
+}
+
+enum ObsActiveStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ObsStatus {
+  NEW
+  INCLUDED
+  PROPOSED
+  APPROVED
+  READY
+  ONGOING
+  OBSERVED
+}
+
+enum TimingWindowInclusion {
+  INCLUDE
+  EXCLUDE
+}
+
+type TimingWindowRepeat {
+  period: TimeSpan!
+  times: PosInt
+}
+
+type TimingWindowEndAt {
+  atUtc: Timestamp!
+}
+
+type TimingWindowEndAfter {
+  after: TimeSpan!
+  repeat: TimingWindowRepeat
+}
+
+union TimingWindowEnd = TimingWindowEndAt | TimingWindowEndAfter
+
+type TimingWindow {
+  inclusion: TimingWindowInclusion!
+  startUtc: Timestamp!
+  end: TimingWindowEnd
+}
+
+type Observation {
+  id: ObservationId!
+  existence: Existence!
+  reference: ObservationReference
+  index: PosInt!
+  title: NonEmptyString!
+  subtitle: NonEmptyString
+  scienceBand: ScienceBand
+  observationTime: Timestamp
+  observationDuration: TimeSpan
+  posAngleConstraint: PosAngleConstraint!
+  program: Program!
+  targetEnvironment: TargetEnvironment!
+  constraintSet: ConstraintSet!
+  timingWindows: [TimingWindow!]! @deprecated(reason: "Use `schedulingConstraints` instead. (Deprecated June 5, 2026)")
+  schedulingConstraints: SchedulingConstraints!
+  attachments: [Attachment!]!
+  scienceRequirements: ScienceRequirements!
+  observingMode: ObservingMode
+  instrument: Instrument
+  execution: Execution!
+  itc: Itc!
+  groupId: GroupId
+  groupIndex: NonNegShort!
+  calibrationRole: CalibrationRole
+  observerNotes: NonEmptyString
+  priority: ObservationPriority!
+  configuration: Configuration!
+  configurationRequests: [ConfigurationRequest!]!
+  workflow: CalculatedObservationWorkflow
+  archiveDuplication: ArchiveDuplication!
+}
+
+enum ArchiveDuplicationState {
+  NOT_CHECKED
+  NOT_APPLICABLE
+  CHECKED
+  ERROR
+}
+
+type ArchiveMatch {
+  name: String!
+  dataLabel: String
+  coordinates: Coordinates
+  instrumentString: String!
+  instrument: Instrument
+  observeClassString: String
+  observeClass: ObserveClass
+  qaStateString: String
+  qaState: DatasetQaState
+  utDateTime: Timestamp
+  releaseDate: Date
+  programReference: String
+  observationReference: String
+  objectName: String
+  exposure: TimeSpan
+  disperser: String
+  filter: String
+  wavelength: Wavelength
+  airmass: BigDecimal
+  azimuth: Angle
+  elevation: Angle
+  distance: Angle
+}
+
+type ArchiveDuplication {
+  state: ArchiveDuplicationState!
+  stale: Boolean!
+  matchCount: NonNegInt!
+  saturated: Boolean!
+  lastCheckedAt: Timestamp
+  attemptedAt: Timestamp
+  error: NonEmptyString
+  searchCoordinates: Coordinates
+  searchTargetName: NonEmptyString
+  searchRadius: Angle
+  queryUrls: [String!]!
+  matches: [ArchiveMatch!]!
+}
+
+enum ExecutionState {
+  NOT_DEFINED
+  NOT_STARTED
+  ONGOING
+  COMPLETED
+  DECLARED_COMPLETE
+  DECLARED_ONGOING
+}
+
+type ConfigurationTarget {
+  coordinates: Coordinates
+  region: Region
+}
+
+type Configuration {
+  conditions: ConfigurationConditions!
+  target: ConfigurationTarget
+  observingMode: ConfigurationObservingMode
+  altairMode: AltairMode
+  schedulingMode: SchedulingMode!
+}
+
+type ConfigurationConditions {
+  imageQuality: ImageQualityPreset!
+  cloudExtinction: CloudExtinctionPreset!
+  skyBackground: SkyBackground!
+  waterVapor: WaterVapor!
+}
+
+type ConfigurationObservingMode {
+  instrument: Instrument
+  mode: ObservingModeType!
+  gmosNorthLongSlit: ConfigurationGmosNorthLongSlit
+  gmosSouthLongSlit: ConfigurationGmosSouthLongSlit
+  gmosNorthMos: ConfigurationGmosNorthMos
+  gmosSouthMos: ConfigurationGmosSouthMos
+  gmosNorthIfu: ConfigurationGmosNorthIfu
+  gmosSouthIfu: ConfigurationGmosSouthIfu
+  gmosNorthImaging: ConfigurationGmosNorthImaging
+  gmosSouthImaging: ConfigurationGmosSouthImaging
+  flamingos2LongSlit: ConfigurationFlamingos2LongSlit
+  flamingos2Mos: ConfigurationFlamingos2Mos
+  gnirsLongSlit: ConfigurationGnirsLongSlit
+  gnirsIfu: ConfigurationGnirsIfu
+  igrins2LongSlit: ConfigurationIgrins2LongSlit
+  visitor: ConfigurationVisitor
+}
+
+type ConfigurationVisitor {
+  mode: VisitorObservingModeType!
+  radius: Angle!
+}
+
+type ConfigurationGmosNorthLongSlit {
+  grating: GmosNorthGrating!
+}
+
+type ConfigurationGmosSouthLongSlit {
+  grating: GmosSouthGrating!
+}
+
+type ConfigurationGmosNorthMos {
+  grating: GmosNorthGrating!
+}
+
+type ConfigurationGmosSouthMos {
+  grating: GmosSouthGrating!
+}
+
+type ConfigurationGmosNorthImaging {
+  filters: [GmosNorthFilter!]!
+}
+
+type ConfigurationGmosSouthImaging {
+  filters: [GmosSouthFilter!]!
+}
+
+type ConfigurationFlamingos2LongSlit {
+  disperser: Flamingos2Disperser!
+}
+
+type ConfigurationFlamingos2Mos {
+  disperser: Flamingos2Disperser!
+}
+
+type ConfigurationGnirsLongSlit {
+  grating: GnirsGrating!
+  camera: GnirsCamera!
+  prism: GnirsPrism!
+}
+
+type ConfigurationGmosNorthIfu {
+  grating: GmosNorthGrating!
+  fpu: GmosNorthIfuFpu!
+}
+
+type ConfigurationGmosSouthIfu {
+  grating: GmosSouthGrating!
+  fpu: GmosSouthIfuFpu!
+}
+
+type ConfigurationGnirsIfu {
+  grating: GnirsGrating!
+  fpu: GnirsFpuIfu!
+}
+
+type ConfigurationIgrins2LongSlit {
+  ignore: Ignore
+}
+
+scalar ConfigurationRequestId
+
+enum ConfigurationRequestStatus {
+  REQUESTED
+  APPROVED
+  DENIED
+  WITHDRAWN
+}
+
+scalar TooTriggerId
+
+enum TooTriggerStatus {
+  REQUESTED
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  SUPERSEDED
+}
+
+type TooTriggerEdit {
+  editType: EditType!
+  tooTriggerId: TooTriggerId!
+  value: TooTrigger!
+  observation: Observation!
+}
+
+input TooTriggerEditInput {
+  programId: ProgramId
+  observationId: ObservationId
+  tooTriggerId: TooTriggerId
+  tooActivation: WhereOrderTooActivation
+}
+
+type TooTrigger {
+  id: TooTriggerId!
+  observation: Observation!
+  status: TooTriggerStatus!
+  tooActivation: TooActivation!
+  supersedes: TooTrigger
+  resolutionReason: NonEmptyString
+  requestedAt: Timestamp!
+  requestedBy: User
+  updatedAt: Timestamp!
+}
+
+type DeclineTooTriggerResult {
+  tooTrigger: TooTrigger!
+}
+
+input DeclineTooTriggerInput {
+  tooTriggerId: TooTriggerId!
+  reason: NonEmptyString
+}
+
+type TooTriggerSelectResult {
+  matches: [TooTrigger!]!
+  hasMore: Boolean!
+}
+
+input WhereOrderTooTriggerId {
+  EQ: TooTriggerId
+  NEQ: TooTriggerId
+  IN: [TooTriggerId!]
+  NIN: [TooTriggerId!]
+  GT: TooTriggerId
+  LT: TooTriggerId
+  GTE: TooTriggerId
+  LTE: TooTriggerId
+}
+
+input WhereOrderTooTriggerStatus {
+  EQ: TooTriggerStatus
+  NEQ: TooTriggerStatus
+  IN: [TooTriggerStatus!]
+  NIN: [TooTriggerStatus!]
+  GT: TooTriggerStatus
+  LT: TooTriggerStatus
+  GTE: TooTriggerStatus
+  LTE: TooTriggerStatus
+}
+
+input WhereOrderTooActivation {
+  EQ: TooActivation
+  NEQ: TooActivation
+  IN: [TooActivation!]
+  NIN: [TooActivation!]
+  GT: TooActivation
+  LT: TooActivation
+  GTE: TooActivation
+  LTE: TooActivation
+}
+
+input WhereTooTrigger {
+  AND: [WhereTooTrigger!]
+  OR: [WhereTooTrigger!]
+  NOT: WhereTooTrigger
+  id: WhereOrderTooTriggerId
+  observationId: WhereOrderObservationId
+  programId: WhereOrderProgramId
+  status: WhereOrderTooTriggerStatus
+  tooActivation: WhereOrderTooActivation
+  requestedAt: WhereOrderTimestamp
+  requestedBy: WhereUser
+  updatedAt: WhereOrderTimestamp
+}
+
+type TooTriggerChronicleEntry {
+  id: ChronicleId!
+  transactionId: TransactionId!
+  user: User
+  timestamp: Timestamp!
+  operation: DatabaseOperation!
+  tooTrigger: TooTrigger!
+  modObservationId: Boolean!
+  modProgramId: Boolean!
+  modStatus: Boolean!
+  modResolutionReason: Boolean!
+  modTooActivation: Boolean!
+  modSupersedes: Boolean!
+  newObservationId: ObservationId
+  newProgramId: ProgramId
+  newStatus: TooTriggerStatus
+  newResolutionReason: NonEmptyString
+  newTooActivation: TooActivation
+  newSupersedes: TooTriggerId
+}
+
+input WhereTooTriggerChronicleEntry {
+  AND: [WhereTooTriggerChronicleEntry!]
+  OR: [WhereTooTriggerChronicleEntry!]
+  NOT: WhereTooTriggerChronicleEntry
+  id: WhereOrderChronicleId
+  user: WhereUser
+  operation: WhereEqDatabaseOperation
+  timestamp: WhereOrderTimestamp
+  tooTrigger: WhereOrderTooTriggerId
+  modObservationId: WhereBoolean
+  modProgramId: WhereBoolean
+  modStatus: WhereBoolean
+  modResolutionReason: WhereBoolean
+  modTooActivation: WhereBoolean
+  modSupersedes: WhereBoolean
+}
+
+type TooTriggerChronicleEntrySelectResult {
+  matches: [TooTriggerChronicleEntry!]!
+  hasMore: Boolean!
+}
+
+type ConfigurationRequest {
+  id: ConfigurationRequestId!
+  program: Program!
+  status: ConfigurationRequestStatus!
+  justification: NonEmptyString
+  feedback: NonEmptyString
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  configuration: Configuration!
+  applicableObservations: [ObservationId!]!
+}
+
+input CreateConfigurationRequestInput {
+  observationId: ObservationId
+  SET: ConfigurationRequestProperties
+}
+
+scalar ObservationId
+
+type ObservationSelectResult {
+  matches: [Observation!]!
+  hasMore: Boolean!
+}
+
+type ConfigurationRequestSelectResult {
+  matches: [ConfigurationRequest!]!
+  hasMore: Boolean!
+}
+
+type ObservationReference {
+  label: ObservationReferenceLabel!
+  program: ProgramReference!
+  index: PosInt!
+}
+
+scalar ObservationReferenceLabel
+
+type ObservationValidation {
+  code: ObservationValidationCode!
+  messages: [String!]!
+}
+
+enum ObservationPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ObservationValidationCode {
+  CONFIGURATION_ERROR
+  CFP_ERROR
+  ITC_ERROR
+  CONFIG_REQUEST_UNAVAILABLE
+  CONFIG_REQUEST_NOT_REQUESTED
+  CONFIG_REQUEST_DENIED
+  CONFIG_REQUEST_PENDING
+  TOO_ACTIVATION_UNAPPROVED
+  GENERIC_WARNING
+  LOW_TOTAL_SIGNAL_TO_NOISE
+  CONDITIONS_UNLIKELY
+  CONFIGURATION_WARNING
+  TOO_ACTIVATION_UNEXPECTED
+  CFP_WARNING
+}
+
+enum ObserveClass {
+  SCIENCE
+  NIGHT_CAL
+  ACQUISITION
+  DAY_CAL
+}
+
+type Parallax {
+  microarcseconds: Long!
+  milliarcseconds: BigDecimal!
+}
+
+enum PlanetSpectrum {
+  MARS
+  JUPITER
+  SATURN
+  URANUS
+  NEPTUNE
+}
+
+enum PlanetaryNebulaSpectrum {
+  NGC7009
+  IC5117
+}
+
+type PosAngleConstraint {
+  mode: PosAngleConstraintMode!
+  angle: Angle!
+}
+
+enum PosAngleConstraintMode {
+  UNBOUNDED
+  FIXED
+  ALLOW_FLIP
+  AVERAGE_PARALLACTIC
+  PARALLACTIC_OVERRIDE
+}
+
+scalar PosBigDecimal
+
+scalar PosInt
+
+scalar PosShort
+
+type Program {
+  id: ProgramId!
+  existence: Existence!
+  name: NonEmptyString
+  description: NonEmptyString
+  notes(includeDeleted: Boolean! = false): [ProgramNote!]!
+  type: ProgramType!
+  reference: ProgramReference
+  proposal: Proposal
+  active: DateInterval!
+  status: ProgramStatus!
+  explicitStatus: ProgramStatus
+  defaultStatus: ProgramStatus!
+  proposalStatus: ProposalStatus!
+  pi: ProgramUser
+  users: [ProgramUser!]!
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  configurationRequests(OFFSET: ConfigurationRequestId, LIMIT: NonNegInt): ConfigurationRequestSelectResult!
+  attachments: [Attachment!]!
+  groupElements(includeDeleted: Boolean! = false): [GroupElement!]!
+  allGroupElements(includeDeleted: Boolean! = false): [GroupElement!]!
+  timeEstimateRange: CalculatedCategorizedTimeRange
+  timeEstimateBanded: [CalculatedBandedTime!]!
+  timeCharge: [BandedTime!]!
+  userInvitations: [UserInvitation!]!
+  allocations: [Allocation!]!
+  calibrationRole: CalibrationRole
+  goa: GoaProperties!
+  proposalSummaryGeneration: ProposalSummaryGeneration!
+  resourceLimit: NonNegInt!
+  resourceCount: NonNegInt!
+  dismissedWarnings: [ObservationValidationCode!]!
+  tooActivationCeiling: TooActivation
+  maxTooActivation: TooActivation!
+  maxSchedulingMode: SchedulingMode!
+}
+
+scalar ProgramId
+
+type ProgramNote {
+  id: ProgramNoteId!
+  program: Program!
+  title: NonEmptyString!
+  text: NonEmptyString
+  isPrivate: Boolean!
+  existence: Existence!
+}
+
+scalar ProgramNoteId
+
+interface ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+}
+
+type CalibrationProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  instrument: Instrument!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type CommissioningProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  instrument: Instrument!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type EngineeringProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  instrument: Instrument!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type ExampleProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  instrument: Instrument!
+}
+
+type LibraryProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  description: NonEmptyString!
+  instrument: Instrument!
+}
+
+type MonitoringProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  instrument: Instrument!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type ScienceProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  scienceSubtype: ScienceSubtype!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type KeckProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+type SubaruProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+  semester: Semester!
+  semesterIndex: PosInt!
+  subaruType: SubaruCallForProposalsType!
+}
+
+type SystemProgramReference implements ProgramReference {
+  label: ProgramReferenceLabel!
+  type: ProgramType!
+}
+
+scalar ProgramReferenceLabel
+
+type ProgramNoteSelectResult {
+  matches: [ProgramNote!]!
+  hasMore: Boolean!
+}
+
+type ProgramSelectResult {
+  matches: [Program!]!
+  hasMore: Boolean!
+}
+
+enum ProgramStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETE
+  INCOMPLETE
+}
+
+enum ProgramType {
+  CALIBRATION
+  COMMISSIONING
+  ENGINEERING
+  EXAMPLE
+  KECK
+  LIBRARY
+  MONITORING
+  SCIENCE
+  SUBARU
+  SYSTEM
+}
+
+enum ProposalStatus {
+  NOT_SUBMITTED
+  SUBMITTED
+  ACCEPTED
+  NOT_ACCEPTED
+}
+
+type ProgramUserSelectResult {
+  matches: [ProgramUser!]!
+  hasMore: Boolean!
+}
+
+type ProperMotion {
+  ra: ProperMotionRA!
+  dec: ProperMotionDeclination!
+}
+
+type ProperMotionDeclination {
+  microarcsecondsPerYear: Long!
+  milliarcsecondsPerYear: BigDecimal!
+}
+
+type ProperMotionRA {
+  microarcsecondsPerYear: Long!
+  milliarcsecondsPerYear: BigDecimal!
+}
+
+type Proposal {
+  reference: ProposalReference
+  call: CallForProposals
+  category: TacCategory
+  timeRequest: CalculatedCategorizedTimeRange
+  defaultTimeRequest: CalculatedCategorizedTimeRange
+  explicitTimeRequest: TimeSpan
+  gemini: GeminiProposalType
+  keck: KeckProposalType
+  subaru: SubaruProposalType
+  submissionHistory: [ProposalStatusChange!]!
+}
+
+type ProposalStatusChange {
+  timestamp: Timestamp!
+  status: ProposalStatus!
+}
+
+type ProposalReference {
+  label: ProposalReferenceLabel!
+  semester: Semester!
+  semesterIndex: PosInt!
+}
+
+scalar ProposalReferenceLabel
+
+enum QuasarSpectrum {
+  QS0
+  QS02
+}
+
+type Query {
+  asterismGroup(programId: ProgramId, proposalReference: ProposalReferenceLabel, programReference: ProgramReferenceLabel, WHERE: WhereObservation, LIMIT: NonNegInt, includeDeleted: Boolean! = false): AsterismGroupSelectResult!
+  callForProposals(callForProposalsId: CallForProposalsId!): CallForProposals
+  callsForProposals(WHERE: WhereCallForProposals, OFFSET: CallForProposalsId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): CallsForProposalsSelectResult!
+  constraintSetGroup(programId: ProgramId, proposalReference: ProposalReferenceLabel, programReference: ProgramReferenceLabel, WHERE: WhereObservation, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ConstraintSetGroupSelectResult!
+  dataset(datasetId: DatasetId, datasetReference: DatasetReferenceLabel): Dataset
+  datasets(WHERE: WhereDataset, OFFSET: DatasetId, LIMIT: NonNegInt): DatasetSelectResult!
+  datasetChronicleEntries(WHERE: WhereDatasetChronicleEntry, OFFSET: ChronicleId, LIMIT: NonNegInt): DatasetChronicleEntrySelectResult!
+  events(WHERE: WhereExecutionEvent, OFFSET: ExecutionEventId, LIMIT: NonNegInt): ExecutionEventSelectResult!
+  executionConfig(observationId: ObservationId, observationReference: ObservationReferenceLabel, futureLimit: NonNegInt = 25): ExecutionConfig
+  goaDataDownloadAccess(orcidId: String!): [ProgramReferenceLabel!]!
+  group(groupId: GroupId!): Group
+  observation(observationId: ObservationId, observationReference: ObservationReferenceLabel): Observation
+  observations(WHERE: WhereObservation, OFFSET: ObservationId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ObservationSelectResult!
+  configurationRequests(WHERE: WhereConfigurationRequest, OFFSET: ConfigurationRequestId, LIMIT: NonNegInt): ConfigurationRequestSelectResult!
+  observingModeGroup(programId: ProgramId, proposalReference: ProposalReferenceLabel, programReference: ProgramReferenceLabel, WHERE: WhereObservation, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ObservingModeGroupSelectResult!
+  program(programId: ProgramId, proposalReference: ProposalReferenceLabel, programReference: ProgramReferenceLabel): Program
+  programs(WHERE: WhereProgram, OFFSET: ProgramId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ProgramSelectResult!
+  programNote(programNoteId: ProgramNoteId!): ProgramNote
+  programNotes(WHERE: WhereProgramNote, OFFSET: ProgramNoteId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ProgramNoteSelectResult!
+  tooTrigger(tooTriggerId: TooTriggerId!): TooTrigger
+  tooTriggers(WHERE: WhereTooTrigger, OFFSET: TooTriggerId, LIMIT: NonNegInt): TooTriggerSelectResult!
+  tooTriggerChronicleEntries(WHERE: WhereTooTriggerChronicleEntry, OFFSET: ChronicleId, LIMIT: NonNegInt): TooTriggerChronicleEntrySelectResult!
+  programUsers(WHERE: WhereProgramUser, OFFSET: UserId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): ProgramUserSelectResult!
+  spectroscopyConfigOptions(WHERE: WhereSpectroscopyConfigOption): [SpectroscopyConfigOption!]!
+  imagingConfigOptions(WHERE: WhereImagingConfigOption): [ImagingConfigOption!]!
+  target(targetId: TargetId!): Target
+  targetGroup(programId: ProgramId, proposalReference: ProposalReferenceLabel, programReference: ProgramReferenceLabel, WHERE: WhereObservation, LIMIT: NonNegInt, includeDeleted: Boolean! = false): TargetGroupSelectResult!
+  targets(WHERE: WhereTarget, OFFSET: TargetId, LIMIT: NonNegInt, includeDeleted: Boolean! = false): TargetSelectResult!
+}
+
+type RadialVelocity {
+  centimetersPerSecond: Long!
+  metersPerSecond: BigDecimal!
+  kilometersPerSecond: BigDecimal!
+}
+
+type RightAscension {
+  hms: HmsString!
+  hours: BigDecimal!
+  degrees: BigDecimal!
+  microseconds: Long!
+}
+
+type ObservingMode {
+  instrument: Instrument
+  mode: ObservingModeType!
+  exchange: Exchange
+  flamingos2Imaging: Flamingos2Imaging
+  flamingos2LongSlit: Flamingos2LongSlit
+  flamingos2Mos: Flamingos2Mos
+  ghostIfu: GhostIfu
+  gmosNorthIfu: GmosNorthIfu
+  gmosNorthImaging: GmosNorthImaging
+  gmosNorthLongSlit: GmosNorthLongSlit
+  gmosNorthMos: GmosNorthMos
+  gmosSouthIfu: GmosSouthIfu
+  gmosSouthImaging: GmosSouthImaging
+  gmosSouthLongSlit: GmosSouthLongSlit
+  gmosSouthMos: GmosSouthMos
+  gnirsIfu: GnirsIfu
+  gnirsImaging: GnirsImaging
+  gnirsLongSlit: GnirsLongSlit
+  gnirsSpectroscopy: GnirsSpectroscopy @deprecated(reason: "Use 'gnirsLongSlit' or 'gnirsIfu' instead.")
+  igrins2LongSlit: Igrins2LongSlit
+  visitor: Visitor
+}
+
+type ObservingModeGroup {
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  observingMode: ObservingMode!
+  program: Program!
+}
+
+type ObservingModeGroupSelectResult {
+  matches: [ObservingModeGroup!]!
+  hasMore: Boolean!
+}
+
+enum ScienceMode {
+  IMAGING
+  SPECTROSCOPY
+}
+
+enum ScienceBand {
+  BAND1
+  BAND2
+  BAND3
+  BAND4
+}
+
+enum ScienceSubtype {
+  CLASSICAL
+  DIRECTORS_TIME
+  FAST_TURNAROUND
+  LARGE_PROGRAM
+  POOR_WEATHER
+  QUEUE
+  DEMO_SCIENCE
+  SYSTEM_VERIFICATION
+}
+
+type ScienceRequirements {
+  mode: ScienceMode
+  exposureTimeMode: ExposureTimeMode
+  spectroscopy: SpectroscopyScienceRequirements
+  imaging: ImagingScienceRequirements
+}
+
+type ScienceRequirementsGroup {
+  observationIds: [ObservationId!]!
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  scienceRequirements: ScienceRequirements!
+}
+
+type ScienceRequirementsGroupSelectResult {
+  matches: [ScienceRequirementsGroup!]!
+  hasMore: Boolean!
+}
+
+scalar Semester
+
+enum SequenceCommand {
+  ABORT
+  CONTINUE
+  PAUSE
+  START
+  STOP
+}
+
+type StepDigest {
+  count: NonNegInt!
+  time: CategorizedTime!
+}
+
+type StepDigests {
+  bias: StepDigest!
+  dark: StepDigest!
+  arc: StepDigest!
+  flat: StepDigest!
+  science: StepDigest!
+}
+
+type SequenceDigest {
+  observeClass: ObserveClass!
+  timeEstimate: CategorizedTime!
+  telescopeConfigs: [TelescopeConfig!]!
+  atomCount: NonNegInt!
+  gcalSets: NonNegInt!
+  steps: StepDigests!
+  executionState: ExecutionState!
+}
+
+type SequenceEvent implements ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  command: SequenceCommand!
+  idempotencyKey: IdempotencyKey
+}
+
+enum SequenceType {
+  ACQUISITION
+  SCIENCE
+}
+
+type Sidereal {
+  ra: RightAscension!
+  dec: Declination!
+  epoch: EpochString!
+  properMotion: ProperMotion
+  radialVelocity: RadialVelocity
+  parallax: Parallax
+  catalogInfo: CatalogInfo
+}
+
+scalar SignalToNoise
+
+type SignalToNoiseExposureTimeMode {
+  value: SignalToNoise!
+  at: Wavelength!
+}
+
+enum Site {
+  GN
+  GS
+}
+
+type SiteCoordinateLimits {
+  north: CoordinateLimits!
+  south: CoordinateLimits!
+}
+
+enum SkyBackground {
+  DARKEST
+  DARK
+  GRAY
+  BRIGHT
+}
+
+type SlewEvent implements ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  slewStage: SlewStage!
+  idempotencyKey: IdempotencyKey
+}
+
+enum SlewStage {
+  START_SLEW
+  END_SLEW
+}
+
+type SourceProfile {
+  point: SpectralDefinitionIntegrated
+  uniform: SpectralDefinitionSurface
+  gaussian: GaussianSource
+}
+
+type SpectralDefinitionIntegrated {
+  bandNormalized: BandNormalizedIntegrated
+  emissionLines: EmissionLinesIntegrated
+}
+
+type SpectralDefinitionSurface {
+  bandNormalized: BandNormalizedSurface
+  emissionLines: EmissionLinesSurface
+}
+
+enum ImagingCapability {
+  SPECKLE
+  WIDE_FIELD
+}
+
+enum SpectroscopyCapability {
+  NOD_AND_SHUFFLE
+  POLARIMETRY
+  CORONAGRAPHY
+}
+
+type SpectroscopyScienceRequirements {
+  wavelength: Wavelength
+  resolution: PosInt
+  wavelengthCoverage: Wavelength
+  focalPlane: FocalPlane
+  focalPlaneAngle: Angle
+  capability: SpectroscopyCapability
+}
+
+enum StellarLibrarySpectrum {
+  O5_V
+  O8_III
+  O9_V_CALSPEC
+  O9_5_V_CALSPEC
+  B0_V
+  B0_5_V_CALSPEC
+  B3_V_CALSPEC
+  B5_7_V
+  B5_III
+  B5_I
+  B9_III_CALSPEC
+  A0_I
+  A0_III
+  A0_III_CALSPEC
+  A0_V
+  A0_V_CALSPEC
+  A1_V_CALSPEC
+  A2_V_CALSPEC
+  A3_V_CALSPEC
+  A4_V_CALSPEC
+  A5_III
+  A5_V
+  A5_V_CALSPEC
+  A6_V_CALSPEC
+  A8_III_CALSPEC
+  F0_I
+  F0_I_PICKLES_IRTF
+  F0_II_PICKLES_IRTF
+  F0_III
+  F0_III_PICKLES_IRTF
+  F0_IV_PICKLES_IRTF
+  F0_V
+  F0_V_PICKLES_IRTF
+  F2_II_PICKLES_IRTF
+  F2_III_PICKLES_IRTF
+  F2_V_PICKLES_IRTF
+  F4_V_CALSPEC
+  F5_I
+  F5_I_PICKLES_IRTF
+  F5_III
+  F5_III_PICKLES_IRTF
+  F5_V
+  F5_V_PICKLES_IRTF
+  F5_V_W
+  F6_V_R
+  F7_V_CALSPEC
+  F8_I_PICKLES_IRTF
+  F8_IV_CALSPEC
+  F8_V_PICKLES_IRTF
+  G0_I
+  G0_I_PICKLES_IRTF
+  G0_III
+  G0_V
+  G0_V_CALSPEC
+  G0_V_W
+  G0_V_R
+  G1_V_CALSPEC
+  G2_I_PICKLES_IRTF
+  G2_IV_PICKLES_IRTF
+  G2_V
+  G2_V_CALSPEC
+  G3_V_CALSPEC
+  G5_I
+  G5_I_PICKLES_IRTF
+  G5_III
+  G5_III_PICKLES_IRTF
+  G5_III_W
+  G5_III_R
+  G5_V
+  G5_V_CALSPEC
+  G5_V_W
+  G5_V_R
+  G7_III_CALSPEC
+  G8_I_PICKLES_IRTF
+  G8_III_PICKLES_IRTF
+  G8_V_PICKLES_IRTF
+  K0_III
+  K0_III_PICKLES_IRTF
+  K0_III_W
+  K0_III_R
+  K0_IV_PICKLES_IRTF
+  K0_V
+  K0_V_PICKLES_IRTF
+  K0_V_R
+  K0_5_III_CALSPEC
+  K0_1_II
+  K1_5_III_CALSPEC
+  K2_I_PICKLES_IRTF
+  K2_III_PICKLES_IRTF
+  K2_V_PICKLES_IRTF
+  K3_II_PICKLES_IRTF
+  K3_III_PICKLES_IRTF
+  K3_V_PICKLES_IRTF
+  K4_I
+  K4_I_PICKLES_IRTF
+  K4_III
+  K4_III_PICKLES_IRTF
+  K4_III_W
+  K4_III_R
+  K4_V
+  K5_III_PICKLES_IRTF
+  K5_V_PICKLES_IRTF
+  M0_III
+  M0_III_PICKLES_IRTF
+  M0_V
+  M0_V_PICKLES_IRTF
+  M1_III_PICKLES_IRTF
+  M1_V_PICKLES_IRTF
+  M2_I_PICKLES_IRTF
+  M2_III_PICKLES_IRTF
+  M2_V_PICKLES_IRTF
+  M3_III
+  M3_III_PICKLES_IRTF
+  M3_V
+  M3_V_PICKLES_IRTF
+  M4_III_PICKLES_IRTF
+  M4_V_PICKLES_IRTF
+  M5_V_PICKLES_IRTF
+  M6_III
+  M6_III_PICKLES_IRTF
+  M6_V
+  M7_III_PICKLES_IRTF
+  M8_III_PICKLES_IRTF
+  M9_III
+  SD_B_CALSPEC
+  SD_F8_CALSPEC
+  SD_O_CALSPEC
+  DA08_CALSPEC
+  DA09_CALSPEC
+  DA12_CALSPEC
+  DA15_CALSPEC
+  DA18_CALSPEC
+  DA24_CALSPEC
+  DA28_CALSPEC
+  DA30_CALSPEC
+  DA31_CALSPEC
+  DA33_CALSPEC
+  DA36_CALSPEC
+  DA38_CALSPEC
+  DA48_CALSPEC
+  DA57_CALSPEC
+  DBQ40_CALSPEC
+  DBQA50_CALSPEC
+  DO20_CALSPEC
+  T2800_K
+  T2600_K
+  T2400_K
+  T2200_K
+  T2000_K
+  T1800_K
+  T1600_K
+  T1400_K
+  T1200_K
+  T1000_K
+  T0900_K
+  T0800_K
+  T0600_K
+  T0400_K
+}
+
+type StepEvent implements ExecutionEvent {
+  id: ExecutionEventId!
+  visit: Visit!
+  observation: Observation!
+  recordedTime: Timestamp!
+  received: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  eventType: ExecutionEventType!
+  atom: AtomRecord!
+  step: StepRecord!
+  stepStage: StepStage!
+  idempotencyKey: IdempotencyKey
+}
+
+scalar StepId
+
+enum StepStage {
+  ABORT
+  CONTINUE
+  END_CONFIGURE
+  END_OBSERVE
+  END_STEP
+  PAUSE
+  START_CONFIGURE
+  START_OBSERVE
+  START_STEP
+  STOP
+}
+
+type ConfigChangeEstimate {
+  name: String!
+  description: String!
+  estimate: TimeSpan!
+}
+
+type AllConfigChangeEstimates {
+  selected: ConfigChangeEstimate!
+  index: NonNegInt!
+  all: [ConfigChangeEstimate!]!
+  estimate: TimeSpan!
+}
+
+type DatasetEstimate {
+  exposure: TimeSpan!
+  readout: TimeSpan!
+  write: TimeSpan!
+  estimate: TimeSpan!
+}
+
+type DetectorEstimate {
+  name: String!
+  description: String!
+  dataset: DatasetEstimate!
+  count: NonNegInt!
+  estimate: TimeSpan!
+}
+
+type AllDetectorEstimates {
+  selected: DetectorEstimate!
+  index: NonNegInt!
+  all: [DetectorEstimate!]!
+  estimate: TimeSpan!
+}
+
+type StepEstimate {
+  configChange: AllConfigChangeEstimates
+  detector: AllDetectorEstimates
+  total: TimeSpan!
+}
+
+type StepRecord {
+  id: StepId!
+  index: PosInt!
+  instrument: Instrument!
+  atom: AtomRecord!
+  executionState: StepExecutionState!
+  interval: TimestampInterval
+  stepConfig: StepConfig!
+  telescopeConfig: TelescopeConfig!
+  observeClass: ObserveClass!
+  estimate: TimeSpan!
+  qaState: DatasetQaState
+  datasets(OFFSET: DatasetId, LIMIT: NonNegInt): DatasetSelectResult!
+  events(OFFSET: ExecutionEventId, LIMIT: NonNegInt): ExecutionEventSelectResult!
+  flamingos2: Flamingos2Dynamic
+  ghost: GhostDynamic
+  gmosNorth: GmosNorthDynamic
+  gmosSouth: GmosSouthDynamic
+  igrins2: Igrins2Dynamic
+  gnirs: GnirsDynamic
+}
+
+type StepRecordSelectResult {
+  matches: [StepRecord!]!
+  hasMore: Boolean!
+}
+
+enum TacCategory {
+  SMALL_BODIES
+  PLANETARY_ATMOSPHERES
+  PLANETARY_SURFACES
+  SOLAR_SYSTEM_OTHER
+  EXOPLANET_RADIAL_VELOCITIES
+  EXOPLANET_ATMOSPHERES_ACTIVITY
+  EXOPLANET_TRANSITS
+  EXOPLANET_HOST_STAR
+  EXOPLANET_OTHER
+  STELLAR_ASTROPHYSICS
+  STELLAR_POPULATIONS
+  STAR_FORMATION
+  GASEOUS_ASTROPHYSICS
+  STELLAR_REMNANTS
+  GALACTIC_OTHER
+  COSMOLOGY
+  CLUSTERS_OF_GALAXIES
+  HIGH_Z_UNIVERSE
+  LOW_Z_UNIVERSE
+  ACTIVE_GALAXIES
+  EXTRAGALACTIC_OTHER
+}
+
+enum TargetDisposition {
+  SCIENCE
+  CALIBRATION
+  BLIND_OFFSET
+}
+
+enum CalibrationRole {
+  TWILIGHT
+  PHOTOMETRIC
+  SPECTROPHOTOMETRIC
+  TELLURIC
+  DAYTIME_PINHOLE
+}
+
+type Target {
+  id: TargetId!
+  existence: Existence!
+  program(includeDeleted: Boolean! = false): Program!
+  name: NonEmptyString!
+  disposition: TargetDisposition!
+  calibrationRole: CalibrationRole
+  sourceProfile: SourceProfile!
+  sidereal: Sidereal
+  nonsidereal: Nonsidereal
+  opportunity: Opportunity
+}
+
+type Opportunity {
+  region: Region!
+}
+
+enum ArcType {
+  EMPTY
+  FULL
+  PARTIAL
+}
+
+type RightAscensionArc {
+  type: ArcType!
+  start: RightAscension
+  end: RightAscension
+}
+
+type DeclinationArc {
+  type: ArcType!
+  start: Declination
+  end: Declination
+}
+
+type Region {
+  rightAscensionArc: RightAscensionArc!
+  declinationArc: DeclinationArc!
+}
+
+enum BasePositionType {
+  SINGLE_TARGET
+  ASTERISM
+  EXPLICIT_BASE
+}
+
+type BasePosition {
+  type: BasePositionType!
+  name: NonEmptyString!
+  sidereal: Sidereal
+  nonsidereal: Nonsidereal
+  coordinates: Coordinates
+}
+
+type TargetEnvironment {
+  asterism(includeDeleted: Boolean! = false): [Target!]!
+  firstScienceTarget(includeDeleted: Boolean! = false): Target
+  explicitSignalToNoiseTarget: Target
+  basePosition: BasePosition
+  guideEnvironment: GuideEnvironment!
+  guideAvailability(start: Timestamp!, end: Timestamp!): [GuideAvailabilityPeriod!]!
+  explicitBase: Coordinates
+  guideTargetName: NonEmptyString
+  useBlindOffset: Boolean!
+  blindOffsetTarget: Target
+  blindOffsetType: BlindOffsetType!
+  guideProbe: GuideProbe
+  defaultGuideProbe: GuideProbe
+  explicitGuideProbe: GuideProbe
+  cassRotator: CassRotator!
+  altair: Altair
+}
+
+type TargetGroup {
+  observations(includeDeleted: Boolean! = false, OFFSET: ObservationId, LIMIT: NonNegInt): ObservationSelectResult!
+  target: Target!
+  program: Program!
+}
+
+type TargetGroupSelectResult {
+  matches: [TargetGroup!]!
+  hasMore: Boolean!
+}
+
+scalar TargetId
+
+type TargetSelectResult {
+  matches: [Target!]!
+  hasMore: Boolean!
+}
+
+type TimeChargeCorrection {
+  created: Timestamp!
+  chargeClass: ChargeClass!
+  op: TimeChargeCorrectionOp!
+  amount: TimeSpan!
+  user: User
+  comment: NonEmptyString
+}
+
+input TimeChargeCorrectionInput {
+  chargeClass: ChargeClass!
+  op: TimeChargeCorrectionOp!
+  amount: TimeSpanInput!
+  comment: String
+}
+
+enum TimeChargeCorrectionOp {
+  ADD
+  SUBTRACT
+}
+
+interface TimeChargeDiscount {
+  interval: TimestampInterval!
+  amount: TimeSpan!
+  comment: String!
+}
+
+type TimeChargeDaylightDiscount implements TimeChargeDiscount {
+  interval: TimestampInterval!
+  amount: TimeSpan!
+  comment: String!
+  site: Site!
+}
+
+type TimeChargeNoDataDiscount implements TimeChargeDiscount {
+  interval: TimestampInterval!
+  amount: TimeSpan!
+  comment: String!
+}
+
+type TimeChargeOverlapDiscount implements TimeChargeDiscount {
+  interval: TimestampInterval!
+  amount: TimeSpan!
+  comment: String!
+  observation: Observation!
+}
+
+type TimeChargeQaDiscount implements TimeChargeDiscount {
+  interval: TimestampInterval!
+  amount: TimeSpan!
+  comment: String!
+  datasets: [Dataset!]!
+}
+
+type TimeChargeInvoice {
+  executionTime: CategorizedTime!
+  discounts: [TimeChargeDiscount!]!
+  corrections: [TimeChargeCorrection!]!
+  finalCharge: CategorizedTime!
+}
+
+type TimeSpan {
+  microseconds: Long!
+  milliseconds: BigDecimal!
+  seconds: BigDecimal!
+  minutes: BigDecimal!
+  hours: BigDecimal!
+  iso: String!
+}
+
+input TimeSpanInput @oneOf {
+  microseconds: Long
+  milliseconds: BigDecimal
+  seconds: BigDecimal
+  minutes: BigDecimal
+  hours: BigDecimal
+  iso: String
+}
+
+type TimestampInterval {
+  start: Timestamp!
+  end: Timestamp!
+  duration: TimeSpan!
+}
+
+enum ConsiderForBand3 {
+  UNSET
+  CONSIDER
+  DO_NOT_CONSIDER
+}
+
+enum TooActivation {
+  NONE
+  RAPID
+  INTERRUPTING
+}
+
+input UnlinkUserInput {
+  programUserId: ProgramUserId!
+}
+
+type UnlinkUserResult {
+  result: Boolean!
+}
+
+type UnnormalizedSed {
+  stellarLibrary: StellarLibrarySpectrum
+  coolStar: CoolStarTemperature
+  galaxy: GalaxySpectrum
+  planet: PlanetSpectrum
+  quasar: QuasarSpectrum
+  hiiRegion: HiiRegionSpectrum
+  planetaryNebula: PlanetaryNebulaSpectrum
+  powerLaw: BigDecimal
+  blackBodyTempK: PosInt
+  fluxDensities: [FluxDensityEntry!]
+  fluxDensitiesAttachment: AttachmentId
+}
+
+scalar UserId
+
+enum UserType {
+  GUEST
+  STANDARD
+  SERVICE
+}
+
+type User {
+  id: UserId!
+  type: UserType!
+  serviceName: String
+  orcidId: String
+  profile: UserProfile!
+}
+
+type UserProfile {
+  givenName: String
+  familyName: String
+  creditName: String
+  email: String
+}
+
+input UserProfileInput {
+  givenName: String
+  familyName: String
+  creditName: String
+  email: String
+}
+
+type Visit {
+  id: VisitId!
+  instrument: Instrument!
+  observation: Observation!
+  recordedTime: Timestamp!
+  created: Timestamp! @deprecated(reason: "Use `recordedTime` instead.")
+  clientTime: Timestamp
+  effectiveTime: Timestamp!
+  site: Site!
+  interval: TimestampInterval
+  atomRecords(OFFSET: PosInt, LIMIT: NonNegInt): AtomRecordSelectResult!
+  datasets(OFFSET: DatasetId, LIMIT: NonNegInt): DatasetSelectResult!
+  events(OFFSET: ExecutionEventId, LIMIT: NonNegInt): ExecutionEventSelectResult!
+  timeChargeInvoice: TimeChargeInvoice!
+  idempotencyKey: IdempotencyKey
+  flamingos2: Flamingos2Static
+  gmosNorth: GmosNorthStatic
+  gmosSouth: GmosSouthStatic
+  igrins2: Igrins2Static
+  gnirs: GnirsStatic
+}
+
+type VisitSelectResult {
+  matches: [Visit!]!
+  hasMore: Boolean!
+}
+
+scalar VisitId
+
+enum WaterVapor {
+  VERY_DRY
+  DRY
+  MEDIAN
+  WET
+}
+
+type Wavelength {
+  picometers: PosInt!
+  angstroms: PosBigDecimal!
+  nanometers: PosBigDecimal!
+  micrometers: PosBigDecimal!
+}
+
+type WavelengthDither {
+  picometers: Int!
+  angstroms: BigDecimal!
+  nanometers: BigDecimal!
+  micrometers: BigDecimal!
+}
+
+input WhereAngle {
+  AND: [WhereAngle!]
+  OR: [WhereAngle!]
+  NOT: WhereAngle
+  microarcseconds: WhereOrderLong
+  microseconds: WhereOrderBigDecimal
+  milliarcseconds: WhereOrderBigDecimal
+  milliseconds: WhereOrderBigDecimal
+  arcseconds: WhereOrderBigDecimal
+  seconds: WhereOrderBigDecimal
+  arcminutes: WhereOrderBigDecimal
+  minutes: WhereOrderBigDecimal
+  degrees: WhereOrderBigDecimal
+  hours: WhereOrderBigDecimal
+}
+
+input WhereBoolean {
+  EQ: Boolean
+}
+
+input WhereOptionBoolean {
+  IS_NULL: Boolean
+  EQ: Boolean
+}
+
+input WhereCallForProposals {
+  AND: [WhereCallForProposals!]
+  OR: [WhereCallForProposals!]
+  NOT: WhereCallForProposals
+  id: WhereOrderCallForProposalsId
+  semester: WhereOrderSemester
+  activeStart: WhereOrderDate
+  activeEnd: WhereOrderDate
+  isOpen: WhereBoolean
+  observatory: WhereObservatoryEq
+  gemini: WhereGeminiCallProperties
+}
+
+input WhereObservatoryEq {
+  EQ: Observatory
+  NEQ: Observatory
+  IN: [Observatory!]
+  NIN: [Observatory!]
+}
+
+input WhereGeminiCallProperties {
+  type: WhereEqGeminiCallForProposalsType
+  allowsNonPartnerPi: WhereBoolean
+}
+
+input WhereAttachment {
+  AND: [WhereAttachment!]
+  OR: [WhereAttachment!]
+  NOT: WhereAttachment
+  id: WhereOrderAttachmentId
+  fileName: WhereString
+  maskName: WhereOptionString
+  description: WhereOptionString
+  attachmentType: WhereAttachmentType
+  checked: Boolean
+  program: WhereProgram
+}
+
+input WhereAttachmentType {
+  EQ: AttachmentType
+  NEQ: AttachmentType
+  IN: [AttachmentType!]
+  NIN: [AttachmentType!]
+}
+
+input WhereOrderAttachmentId {
+  EQ: AttachmentId
+  NEQ: AttachmentId
+  IN: [AttachmentId!]
+  NIN: [AttachmentId!]
+  GT: AttachmentId
+  LT: AttachmentId
+  GTE: AttachmentId
+  LTE: AttachmentId
+}
+
+input WhereDataset {
+  AND: [WhereDataset!]
+  OR: [WhereDataset!]
+  NOT: WhereDataset
+  id: WhereOrderDatasetId
+  reference: WhereDatasetReference
+  observation: WhereObservation
+  program: WhereProgram
+  stepId: WhereEqStepId
+  index: WhereOrderPosInt
+  filename: WhereString
+  qaState: WhereOptionEqQaState
+  comment: WhereOptionString
+  isWritten: WhereBoolean
+  start: WhereOptionOrderTimestamp
+  end: WhereOptionOrderTimestamp
+}
+
+input WhereDatasetReference {
+  IS_NULL: Boolean
+  label: WhereString
+  observation: WhereObservationReference
+  stepIndex: WhereOrderPosInt
+  exposureIndex: WhereOrderPosInt
+}
+
+input WhereEqGeminiCallForProposalsType {
+  EQ: GeminiCallForProposalsType
+  NEQ: GeminiCallForProposalsType
+  IN: [GeminiCallForProposalsType!]
+  NIN: [GeminiCallForProposalsType!]
+}
+
+input WhereEqDatabaseOperation {
+  EQ: DatabaseOperation
+  NEQ: DatabaseOperation
+  IN: [DatabaseOperation!]
+  NIN: [DatabaseOperation!]
+}
+
+input WhereOptionEqEducationalStatus {
+  IS_NULL: Boolean
+  EQ: EducationalStatus
+  NEQ: EducationalStatus
+  IN: [EducationalStatus!]
+  NIN: [EducationalStatus!]
+}
+
+input WhereEqExecutionEventType {
+  EQ: ExecutionEventType
+  NEQ: ExecutionEventType
+  IN: [ExecutionEventType!]
+  NIN: [ExecutionEventType!]
+}
+
+input WhereOptionEqGender {
+  IS_NULL: Boolean
+  EQ: Gender
+  NEQ: Gender
+  IN: [Gender!]
+  NIN: [Gender!]
+}
+
+input WhereOptionEqInstrument {
+  IS_NULL: Boolean
+  EQ: Instrument
+  NEQ: Instrument
+  IN: [Instrument!]
+  NIN: [Instrument!]
+}
+
+input WhereOptionEqObservingModeType {
+  IS_NULL: Boolean
+  EQ: ObservingModeType
+  NEQ: ObservingModeType
+  IN: [ObservingModeType!]
+  NIN: [ObservingModeType!]
+}
+
+input WhereEqPartner {
+  EQ: Partner
+  NEQ: Partner
+  IN: [Partner!]
+  NIN: [Partner!]
+}
+
+input WhereEqPartnerLinkType {
+  EQ: PartnerLinkType
+  NEQ: PartnerLinkType
+  IN: [PartnerLinkType!]
+  NIN: [PartnerLinkType!]
+}
+
+input WhereEqProgramUserRole {
+  EQ: ProgramUserRole
+  NEQ: ProgramUserRole
+  IN: [ProgramUserRole!]
+  NIN: [ProgramUserRole!]
+}
+
+input WhereEqProgramType {
+  EQ: ProgramType
+  NEQ: ProgramType
+  IN: [ProgramType!]
+  NIN: [ProgramType!]
+}
+
+input WhereEqProgramStatus {
+  EQ: ProgramStatus
+  NEQ: ProgramStatus
+  IN: [ProgramStatus!]
+  NIN: [ProgramStatus!]
+}
+
+input WhereEqProposalStatus {
+  EQ: ProposalStatus
+  NEQ: ProposalStatus
+  IN: [ProposalStatus!]
+  NIN: [ProposalStatus!]
+}
+
+input WhereEqSite {
+  EQ: Site
+  NEQ: Site
+  IN: [Site!]
+  NIN: [Site!]
+}
+
+input WhereOptionEqSite {
+  IS_NULL: Boolean
+  EQ: Site
+  NEQ: Site
+  IN: [Site!]
+  NIN: [Site!]
+}
+
+input WhereEqStepId {
+  EQ: StepId
+  NEQ: StepId
+  IN: [StepId!]
+  NIN: [StepId!]
+}
+
+input WhereEqTooActivation {
+  EQ: TooActivation
+  NEQ: TooActivation
+  IN: [TooActivation!]
+  NIN: [TooActivation!]
+}
+
+input WhereEqUserType {
+  EQ: UserType
+  NEQ: UserType
+  IN: [UserType!]
+  NIN: [UserType!]
+}
+
+input WhereEqVisitId {
+  EQ: VisitId
+  NEQ: VisitId
+  IN: [VisitId!]
+  NIN: [VisitId!]
+}
+
+input WhereExecutionEvent {
+  AND: [WhereExecutionEvent!]
+  OR: [WhereExecutionEvent!]
+  NOT: WhereExecutionEvent
+  id: WhereOrderExecutionEventId
+  visitId: WhereEqVisitId
+  observation: WhereObservation
+  received: WhereOrderTimestamp
+  eventType: WhereEqExecutionEventType
+  slewStage: WhereOrderSlewStage
+  sequenceCommand: WhereOrderSequenceCommand
+  stepId: WhereEqStepId
+  stepStage: WhereOrderStepStage
+  datasetId: WhereOrderDatasetId
+  datasetStage: WhereOrderDatasetStage
+}
+
+input WhereObservation {
+  AND: [WhereObservation!]
+  OR: [WhereObservation!]
+  NOT: WhereObservation
+  id: WhereOrderObservationId
+  reference: WhereObservationReference
+  program: WhereProgram
+  subtitle: WhereOptionString
+  scienceBand: WhereOptionOrderScienceBand
+  priority: WhereOrderObservationPriority
+  instrument: WhereOptionEqInstrument
+  observingModeType: WhereOptionEqObservingModeType
+  site: WhereOptionEqSite
+  workflow: WhereCalculatedObservationWorkflow
+  calibrationRole: WhereOptionEqCalibrationRole
+  targetCoordinates: WhereCone
+}
+
+input WhereConfigurationRequest {
+  AND: [WhereConfigurationRequest!]
+  OR: [WhereConfigurationRequest!]
+  NOT: WhereConfigurationRequest
+  id: WhereOrderConfigurationRequestId
+  program: WhereProgram
+  status: WhereOrderConfigurationRequestStatus
+  justification: WhereOptionString
+  feedback: WhereOptionString
+  createdAt: WhereOrderTimestamp
+  updatedAt: WhereOrderTimestamp
+  observingModeType: WhereOptionEqObservingModeType
+  targetCoordinates: WhereCone
+}
+
+input WhereCone {
+  center: CoordinatesInput!
+  distance: AngleInput!
+}
+
+input WhereObservationReference {
+  IS_NULL: Boolean
+  label: WhereString
+  program: WhereProgramReference
+  index: WhereOrderPosInt
+}
+
+input WhereGroup {
+  AND: [WhereGroup!]
+  OR: [WhereGroup!]
+  NOT: WhereGroup
+  id: WhereOrderGroupId
+  name: WhereOptionString
+  description: WhereOptionString
+}
+
+input WhereOrderGroupId {
+  EQ: GroupId
+  NEQ: GroupId
+  IN: [GroupId!]
+  NIN: [GroupId!]
+  GT: GroupId
+  LT: GroupId
+  GTE: GroupId
+  LTE: GroupId
+}
+
+input WhereEqFocalPlane {
+  EQ: FocalPlane
+  NEQ: FocalPlane
+  IN: [FocalPlane!]
+  NIN: [FocalPlane!]
+}
+
+input WhereEqInstrument {
+  EQ: Instrument
+  NEQ: Instrument
+  IN: [Instrument!]
+  NIN: [Instrument!]
+}
+
+input WhereEqTargetDisposition {
+  EQ: TargetDisposition
+  NEQ: TargetDisposition
+  IN: [TargetDisposition!]
+  NIN: [TargetDisposition!]
+}
+
+input WhereOptionEqCalibrationRole {
+  IS_NULL: Boolean
+  EQ: CalibrationRole
+  NEQ: CalibrationRole
+  IN: [CalibrationRole!]
+  NIN: [CalibrationRole!]
+}
+
+input WhereOptionEqPartner {
+  IS_NULL: Boolean
+  EQ: Partner
+  NEQ: Partner
+  IN: [Partner!]
+  NIN: [Partner!]
+}
+
+input WhereOptionEqExchangePartner {
+  IS_NULL: Boolean
+  EQ: ExchangePartner
+  NEQ: ExchangePartner
+  IN: [ExchangePartner!]
+  NIN: [ExchangePartner!]
+}
+
+input WhereOptionEqQaState {
+  IS_NULL: Boolean
+  EQ: DatasetQaState
+  NEQ: DatasetQaState
+  IN: [DatasetQaState!]
+  NIN: [DatasetQaState!]
+}
+
+input WhereEqScienceSubtype {
+  EQ: ScienceSubtype
+  NEQ: ScienceSubtype
+  IN: [ScienceSubtype!]
+  NIN: [ScienceSubtype!]
+}
+
+input WhereOptionEqImagingCapability {
+  IS_NULL: Boolean
+  EQ: ImagingCapability
+  NEQ: ImagingCapability
+  IN: [ImagingCapability!]
+  NIN: [ImagingCapability!]
+}
+
+input WhereOptionEqSpectroscopyCapability {
+  IS_NULL: Boolean
+  EQ: SpectroscopyCapability
+  NEQ: SpectroscopyCapability
+  IN: [SpectroscopyCapability!]
+  NIN: [SpectroscopyCapability!]
+}
+
+input WhereOptionEqTacCategory {
+  IS_NULL: Boolean
+  EQ: TacCategory
+  NEQ: TacCategory
+  IN: [TacCategory!]
+  NIN: [TacCategory!]
+}
+
+input WhereOptionString {
+  IS_NULL: Boolean
+  EQ: NonEmptyString
+  NEQ: NonEmptyString
+  IN: [NonEmptyString!]
+  NIN: [NonEmptyString!]
+  LIKE: NonEmptyString
+  NLIKE: NonEmptyString
+  MATCH_CASE: Boolean = true
+}
+
+input WhereOrderBigDecimal {
+  EQ: BigDecimal
+  NEQ: BigDecimal
+  IN: [BigDecimal!]
+  NIN: [BigDecimal!]
+  GT: BigDecimal
+  LT: BigDecimal
+  GTE: BigDecimal
+  LTE: BigDecimal
+}
+
+input WhereOrderCallForProposalsId {
+  EQ: CallForProposalsId
+  NEQ: CallForProposalsId
+  IN: [CallForProposalsId!]
+  NIN: [CallForProposalsId!]
+  GT: CallForProposalsId
+  LT: CallForProposalsId
+  GTE: CallForProposalsId
+  LTE: CallForProposalsId
+}
+
+input WhereOrderChronicleId {
+  EQ: ChronicleId
+  NEQ: ChronicleId
+  IN: [ChronicleId!]
+  NIN: [ChronicleId!]
+  GT: ChronicleId
+  LT: ChronicleId
+  GTE: ChronicleId
+  LTE: ChronicleId
+}
+
+input WhereOrderDatasetId {
+  EQ: DatasetId
+  NEQ: DatasetId
+  IN: [DatasetId!]
+  NIN: [DatasetId!]
+  GT: DatasetId
+  LT: DatasetId
+  GTE: DatasetId
+  LTE: DatasetId
+}
+
+input WhereOrderDatasetStage {
+  EQ: DatasetStage
+  NEQ: DatasetStage
+  IN: [DatasetStage!]
+  NIN: [DatasetStage!]
+  GT: DatasetStage
+  LT: DatasetStage
+  GTE: DatasetStage
+  LTE: DatasetStage
+}
+
+input WhereOrderDate {
+  EQ: Date
+  NEQ: Date
+  IN: [Date!]
+  NIN: [Date!]
+  GT: Date
+  LT: Date
+  GTE: Date
+  LTE: Date
+}
+
+input WhereOrderExecutionEventId {
+  EQ: ExecutionEventId
+  NEQ: ExecutionEventId
+  IN: [ExecutionEventId!]
+  NIN: [ExecutionEventId!]
+  GT: ExecutionEventId
+  LT: ExecutionEventId
+  GTE: ExecutionEventId
+  LTE: ExecutionEventId
+}
+
+input WhereOrderTimestamp {
+  EQ: Timestamp
+  NEQ: Timestamp
+  IN: [Timestamp!]
+  NIN: [Timestamp!]
+  GT: Timestamp
+  LT: Timestamp
+  GTE: Timestamp
+  LTE: Timestamp
+}
+
+input WhereOptionOrderTimestamp {
+  IS_NULL: Boolean
+  EQ: Timestamp
+  NEQ: Timestamp
+  IN: [Timestamp!]
+  NIN: [Timestamp!]
+  GT: Timestamp
+  LT: Timestamp
+  GTE: Timestamp
+  LTE: Timestamp
+}
+
+input WhereOrderInt {
+  EQ: Int
+  NEQ: Int
+  IN: [Int!]
+  NIN: [Int!]
+  GT: Int
+  LT: Int
+  GTE: Int
+  LTE: Int
+}
+
+input WhereOrderLong {
+  EQ: Long
+  NEQ: Long
+  IN: [Long!]
+  NIN: [Long!]
+  GT: Long
+  LT: Long
+  GTE: Long
+  LTE: Long
+}
+
+input WhereOrderObservationId {
+  EQ: ObservationId
+  NEQ: ObservationId
+  IN: [ObservationId!]
+  NIN: [ObservationId!]
+  GT: ObservationId
+  LT: ObservationId
+  GTE: ObservationId
+  LTE: ObservationId
+}
+
+input WhereOrderConfigurationRequestId {
+  EQ: ConfigurationRequestId
+  NEQ: ConfigurationRequestId
+  IN: [ConfigurationRequestId!]
+  NIN: [ConfigurationRequestId!]
+  GT: ConfigurationRequestId
+  LT: ConfigurationRequestId
+  GTE: ConfigurationRequestId
+  LTE: ConfigurationRequestId
+}
+
+input WhereOrderConfigurationRequestStatus {
+  EQ: ConfigurationRequestStatus
+  NEQ: ConfigurationRequestStatus
+  IN: [ConfigurationRequestStatus!]
+  NIN: [ConfigurationRequestStatus!]
+  GT: ConfigurationRequestStatus
+  LT: ConfigurationRequestStatus
+  GTE: ConfigurationRequestStatus
+  LTE: ConfigurationRequestStatus
+}
+
+input WhereOrderPosBigDecimal {
+  EQ: PosBigDecimal
+  NEQ: PosBigDecimal
+  IN: [PosBigDecimal!]
+  NIN: [PosBigDecimal!]
+  GT: PosBigDecimal
+  LT: PosBigDecimal
+  GTE: PosBigDecimal
+  LTE: PosBigDecimal
+}
+
+input WhereOrderPosInt {
+  EQ: PosInt
+  NEQ: PosInt
+  IN: [PosInt!]
+  NIN: [PosInt!]
+  GT: PosInt
+  LT: PosInt
+  GTE: PosInt
+  LTE: PosInt
+}
+
+input WhereOrderProgramId {
+  EQ: ProgramId
+  NEQ: ProgramId
+  IN: [ProgramId!]
+  NIN: [ProgramId!]
+  GT: ProgramId
+  LT: ProgramId
+  GTE: ProgramId
+  LTE: ProgramId
+}
+
+input WhereOrderProgramNoteId {
+  EQ: ProgramNoteId
+  NEQ: ProgramNoteId
+  IN: [ProgramNoteId!]
+  NIN: [ProgramNoteId!]
+  GT: ProgramNoteId
+  LT: ProgramNoteId
+  GTE: ProgramNoteId
+  LTE: ProgramNoteId
+}
+
+input WhereOrderProgramUserId {
+  EQ: ProgramUserId
+  NEQ: ProgramUserId
+  IN: [ProgramUserId!]
+  NIN: [ProgramUserId!]
+  GT: ProgramUserId
+  LT: ProgramUserId
+  GTE: ProgramUserId
+  LTE: ProgramUserId
+}
+
+input WhereOrderUserId {
+  EQ: UserId
+  NEQ: UserId
+  IN: [UserId!]
+  NIN: [UserId!]
+  GT: UserId
+  LT: UserId
+  GTE: UserId
+  LTE: UserId
+}
+
+input WhereProposalReference {
+  IS_NULL: Boolean
+  label: WhereString
+  semester: WhereOrderSemester
+  semesterIndex: WhereOrderPosInt
+}
+
+input WhereOrderObservationPriority {
+  EQ: ObservationPriority
+  NEQ: ObservationPriority
+  IN: [ObservationPriority!]
+  NIN: [ObservationPriority!]
+  GT: ObservationPriority
+  LT: ObservationPriority
+  GTE: ObservationPriority
+  LTE: ObservationPriority
+}
+
+input WhereOptionOrderScienceBand {
+  IS_NULL: Boolean
+  EQ: ScienceBand
+  NEQ: ScienceBand
+  IN: [ScienceBand!]
+  NIN: [ScienceBand!]
+  GT: ScienceBand
+  LT: ScienceBand
+  GTE: ScienceBand
+  LTE: ScienceBand
+}
+
+input WhereOrderSemester {
+  EQ: Semester
+  NEQ: Semester
+  IN: [Semester!]
+  NIN: [Semester!]
+  GT: Semester
+  LT: Semester
+  GTE: Semester
+  LTE: Semester
+}
+
+input WhereOrderSequenceCommand {
+  EQ: SequenceCommand
+  NEQ: SequenceCommand
+  IN: [SequenceCommand!]
+  NIN: [SequenceCommand!]
+  GT: SequenceCommand
+  LT: SequenceCommand
+  GTE: SequenceCommand
+  LTE: SequenceCommand
+}
+
+input WhereOrderSequenceType {
+  EQ: SequenceType
+  NEQ: SequenceType
+  IN: [SequenceType!]
+  NIN: [SequenceType!]
+  GT: SequenceType
+  LT: SequenceType
+  GTE: SequenceType
+  LTE: SequenceType
+}
+
+input WhereOrderSlewStage {
+  EQ: SlewStage
+  NEQ: SlewStage
+  IN: [SlewStage!]
+  NIN: [SlewStage!]
+  GT: SlewStage
+  LT: SlewStage
+  GTE: SlewStage
+  LTE: SlewStage
+}
+
+input WhereOrderStepStage {
+  EQ: StepStage
+  NEQ: StepStage
+  IN: [StepStage!]
+  NIN: [StepStage!]
+  GT: StepStage
+  LT: StepStage
+  GTE: StepStage
+  LTE: StepStage
+}
+
+input WhereOrderTargetId {
+  EQ: TargetId
+  NEQ: TargetId
+  IN: [TargetId!]
+  NIN: [TargetId!]
+  GT: TargetId
+  LT: TargetId
+  GTE: TargetId
+  LTE: TargetId
+}
+
+input WherePartnerLink {
+  linkType: WhereEqPartnerLinkType
+  geminiPartner: WhereOptionEqPartner
+  exchangePartner: WhereOptionEqExchangePartner
+}
+
+input WhereProgram {
+  AND: [WhereProgram!]
+  OR: [WhereProgram!]
+  NOT: WhereProgram
+  id: WhereOrderProgramId
+  name: WhereOptionString
+  type: WhereEqProgramType
+  reference: WhereProgramReference
+  pi: WhereProgramUser
+  proposalStatus: WhereEqProposalStatus
+  proposal: WhereProposal
+  calibrationRole: WhereOptionEqCalibrationRole
+  activeStart: WhereOrderDate
+  activeEnd: WhereOrderDate
+  status: WhereEqProgramStatus
+}
+
+input WhereProgramReference {
+  IS_NULL: Boolean
+  label: WhereString
+  semester: WhereOrderSemester
+  semesterIndex: WhereOrderPosInt
+  instrument: WhereEqInstrument
+  description: WhereString
+  scienceSubtype: WhereEqScienceSubtype
+}
+
+input WhereProgramNote {
+  AND: [WhereProgramNote!]
+  OR: [WhereProgramNote!]
+  NOT: WhereProgramNote
+  id: WhereOrderProgramNoteId
+  program: WhereProgram
+  title: WhereString
+  text: WhereOptionString
+  isPrivate: WhereBoolean
+}
+
+input WhereProgramUser {
+  AND: [WhereProgramUser!]
+  OR: [WhereProgramUser!]
+  NOT: WhereProgramUser
+  id: WhereOrderProgramUserId
+  program: WhereProgram
+  user: WhereUser
+  role: WhereEqProgramUserRole
+  partnerLink: WherePartnerLink
+  preferredProfile: WhereUserProfile
+  educationalStatus: WhereOptionEqEducationalStatus
+  thesis: WhereOptionBoolean
+  gender: WhereOptionEqGender
+  hasDataAccess: WhereBoolean
+}
+
+input WhereProposal {
+  IS_NULL: Boolean
+  AND: [WhereProposal!]
+  OR: [WhereProposal!]
+  NOT: WhereProposal
+  title: WhereOptionString
+  reference: WhereProposalReference
+  call: WhereCallForProposals
+}
+
+input WhereProposalPartnerEntry {
+  AND: [WhereProposalPartnerEntry!]
+  OR: [WhereProposalPartnerEntry!]
+  NOT: WhereProposalPartnerEntry
+  partner: WhereEqPartner
+  percent: WhereOrderInt
+}
+
+input WhereProposalPartners {
+  MATCH: WhereProposalPartnerEntry
+  EQ: [Partner!]
+  isJoint: Boolean
+}
+
+input WhereSpectroscopyConfigOption {
+  AND: [WhereSpectroscopyConfigOption!]
+  OR: [WhereSpectroscopyConfigOption!]
+  NOT: WhereSpectroscopyConfigOption
+  adaptiveOptics: WhereBoolean
+  capability: WhereOptionEqSpectroscopyCapability
+  focalPlane: WhereEqFocalPlane
+  instrument: WhereEqInstrument
+  resolution: WhereOrderPosInt
+  site: WhereEqSite
+  slitLength: WhereAngle
+  slitWidth: WhereAngle
+  rangeIncludes: WavelengthInput
+  wavelengthOptimal: WhereWavelength
+  wavelengthCoverage: WhereWavelength
+}
+
+input WhereImagingConfigOption {
+  AND: [WhereImagingConfigOption!]
+  OR: [WhereImagingConfigOption!]
+  NOT: WhereImagingConfigOption
+  adaptiveOptics: WhereBoolean
+  instrument: WhereEqInstrument
+  fov: WhereAngle
+  site: WhereEqSite
+  capability: WhereOptionEqImagingCapability
+}
+
+input WhereString {
+  EQ: NonEmptyString
+  NEQ: NonEmptyString
+  IN: [NonEmptyString!]
+  NIN: [NonEmptyString!]
+  LIKE: NonEmptyString
+  NLIKE: NonEmptyString
+  MATCH_CASE: Boolean = true
+}
+
+input WhereTarget {
+  AND: [WhereTarget!]
+  OR: [WhereTarget!]
+  NOT: WhereTarget
+  id: WhereOrderTargetId
+  program: WhereProgram
+  name: WhereString
+  disposition: WhereEqTargetDisposition
+  calibrationRole: WhereOptionEqCalibrationRole
+}
+
+input WhereUser {
+  IS_NULL: Boolean
+  AND: [WhereUser!]
+  OR: [WhereUser!]
+  NOT: WhereUser
+  id: WhereOrderUserId
+  type: WhereEqUserType
+  orcidId: WhereOptionString
+  profile: WhereUserProfile
+}
+
+input WhereUserProfile {
+  givenName: WhereOptionString
+  creditName: WhereOptionString
+  familyName: WhereOptionString
+  email: WhereOptionString
+}
+
+input WhereWavelength {
+  AND: [WhereWavelength!]
+  OR: [WhereWavelength!]
+  NOT: WhereWavelength
+  picometers: WhereOrderPosInt
+  angstroms: WhereOrderPosBigDecimal
+  nanometers: WhereOrderPosBigDecimal
+  micrometers: WhereOrderPosBigDecimal
+}
+
+input WhereOrderObservationWorkflowState {
+  EQ: ObservationWorkflowState
+  NEQ: ObservationWorkflowState
+  IN: [ObservationWorkflowState!]
+  NIN: [ObservationWorkflowState!]
+  GT: ObservationWorkflowState
+  LT: ObservationWorkflowState
+  GTE: ObservationWorkflowState
+  LTE: ObservationWorkflowState
+}
+
+input WhereCalculatedObservationWorkflow {
+  IS_NULL: Boolean
+  calculationState: WhereOrderCalculationState
+  state: WhereOrderCalculationState @deprecated(reason: "Use `calculationState` instead.")
+  workflowState: WhereOrderObservationWorkflowState
+}
+
+type OffsetQ {
+  microarcseconds: Long!
+  milliarcseconds: BigDecimal!
+  arcseconds: BigDecimal!
+}
+
+scalar BigDecimal
+
+scalar Long
+
+enum ObservationWorkflowState {
+  INACTIVE
+  UNDEFINED
+  UNAPPROVED
+  DEFINED
+  READY
+  ONGOING
+  COMPLETED
+}
+
+type ObservationWorkflow {
+  state: ObservationWorkflowState!
+  validTransitions: [ObservationWorkflowState!]!
+  validationErrors: [ObservationValidation!]!
+}
+
+type CalculatedObservationWorkflow {
+  calculationState: CalculationState!
+  state: CalculationState! @deprecated(reason: "Use `calculationState` instead.")
+  value: ObservationWorkflow!
+}
+
+input Flamingos2StepInput {
+  instrumentConfig: Flamingos2DynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input GmosNorthStepInput {
+  instrumentConfig: GmosNorthDynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input GmosSouthStepInput {
+  instrumentConfig: GmosSouthDynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input Igrins2DynamicInput {
+  exposure: TimeSpanInput!
+}
+
+input Igrins2StepInput {
+  instrumentConfig: Igrins2DynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input Flamingos2AtomInput {
+  description: NonEmptyString
+  steps: [Flamingos2StepInput!]!
+}
+
+input GmosNorthAtomInput {
+  description: NonEmptyString
+  steps: [GmosNorthStepInput!]!
+}
+
+input GmosSouthAtomInput {
+  description: NonEmptyString
+  steps: [GmosSouthStepInput!]!
+}
+
+input Igrins2AtomInput {
+  description: NonEmptyString
+  steps: [Igrins2StepInput!]!
+}
+
+input GnirsAcquisitionMirrorOutInput {
+  prism: GnirsPrism!
+  grating: GnirsGrating!
+  wavelength: WavelengthInput!
+}
+
+input GnirsDynamicInput {
+  exposure: TimeSpanInput!
+  coadds: PosInt!
+  filter: GnirsFilter!
+  decker: GnirsDecker!
+  fpuSlit: GnirsFpuSlit
+  fpuOther: GnirsFpuOther
+  fpuIfu: GnirsFpuIfu
+  acquisitionMirrorOut: GnirsAcquisitionMirrorOutInput
+  camera: GnirsCamera!
+  focusMotorSteps: Int
+  readMode: GnirsReadMode!
+}
+
+input GnirsStepInput {
+  instrumentConfig: GnirsDynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input GnirsAtomInput {
+  description: NonEmptyString
+  steps: [GnirsStepInput!]!
+}
+
+input GhostDetectorInput {
+  exposureTime: TimeSpanInput!
+  exposureCount: PosInt!
+  binning: GhostBinning!
+  readMode: GhostReadMode!
+}
+
+input GhostDynamicInput {
+  red: GhostDetectorInput!
+  blue: GhostDetectorInput!
+  ifu1FiberAgitator: GhostIfu1FiberAgitator!
+  ifu2FiberAgitator: GhostIfu2FiberAgitator!
+}
+
+input GhostStepInput {
+  instrumentConfig: GhostDynamicInput!
+  breakpoint: Breakpoint
+  stepConfig: StepConfigInput!
+  telescopeConfig: TelescopeConfigInput
+  observeClass: ObserveClass!
+}
+
+input GhostAtomInput {
+  description: NonEmptyString
+  steps: [GhostStepInput!]!
+}
+
+input ReplaceFlamingos2SequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [Flamingos2AtomInput!]
+}
+
+type ReplaceFlamingos2SequenceResult {
+  sequence: [Flamingos2Atom!]!
+}
+
+input ReplaceGmosNorthSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [GmosNorthAtomInput!]
+}
+
+type ReplaceGmosNorthSequenceResult {
+  sequence: [GmosNorthAtom!]!
+}
+
+input ReplaceGmosSouthSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [GmosSouthAtomInput!]
+}
+
+type ReplaceGmosSouthSequenceResult {
+  sequence: [GmosSouthAtom!]!
+}
+
+input ReplaceIgrins2SequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [Igrins2AtomInput!]
+}
+
+type ReplaceIgrins2SequenceResult {
+  sequence: [Igrins2Atom!]!
+}
+
+input ReplaceGnirsSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [GnirsAtomInput!]
+}
+
+type ReplaceGnirsSequenceResult {
+  sequence: [GnirsAtom!]!
+}
+
+input ReplaceGhostSequenceInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+  sequenceType: SequenceType!
+  sequence: [GhostAtomInput!]
+}
+
+type ReplaceGhostSequenceResult {
+  sequence: [GhostAtom!]!
+}

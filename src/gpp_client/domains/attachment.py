@@ -2,32 +2,38 @@
 Module for attachment-related domain functionality.
 """
 
+from __future__ import annotations
+
 __all__ = ["AttachmentDomain"]
 
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
 
 from gpp_client.domains.base import BaseDomain
 from gpp_client.exceptions import GPPClientError, GPPResponseError
-from gpp_client.generated.enums import AttachmentType
-from gpp_client.generated.get_observation_attachments_by_id import (
-    GetObservationAttachmentsById,
-)
-from gpp_client.generated.get_observation_attachments_by_reference import (
-    GetObservationAttachmentsByReference,
-)
-from gpp_client.generated.get_program_attachments_by_id import (
-    GetProgramAttachmentsById,
-)
-from gpp_client.generated.get_program_attachments_by_proposal_reference import (
-    GetProgramAttachmentsByProposalReference,
-)
-from gpp_client.generated.get_program_attachments_by_reference import (
-    GetProgramAttachmentsByReference,
-)
+
+if TYPE_CHECKING:
+    from gpp_client.generated.enums import AttachmentType
+    from gpp_client.generated.get_observation_attachments_by_id import (
+        GetObservationAttachmentsById,
+    )
+    from gpp_client.generated.get_observation_attachments_by_reference import (
+        GetObservationAttachmentsByReference,
+    )
+    from gpp_client.generated.get_program_attachments_by_id import (
+        GetProgramAttachmentsById,
+    )
+    from gpp_client.generated.get_program_attachments_by_proposal_reference import (
+        GetProgramAttachmentsByProposalReference,
+    )
+    from gpp_client.generated.get_program_attachments_by_reference import (
+        GetProgramAttachmentsByReference,
+    )
+
 
 logger = logging.getLogger(__name__)
 
@@ -381,7 +387,7 @@ class AttachmentDomain(BaseDomain):
         GetProgramAttachmentsByReference
             The generated GraphQL response model.
         """
-        return await self._graphql.get_program_attachments_by_program_reference(
+        return await self._graphql.get_program_attachments_by_reference(
             program_reference=program_reference
         )
 

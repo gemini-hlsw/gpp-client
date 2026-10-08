@@ -2,32 +2,40 @@
 
 How to bring the client up to date with GPP. Read [ARCHITECTURE.md](../ARCHITECTURE.md#code-generation) first if codegen is new to you.
 
-The generated client holds code for one environment at a time, and the last `run_codegen.py` run wins. Between releases `main` holds development code, so finish every routine update with a DEVELOPMENT codegen run. Check which one is committed in `src/gpp_client/generated/package_environment.py`.
+One build generates the client from the merged schema of both environments, development and production, plus a trimmed copy of every operation per environment. Nothing is sorted by environment by hand.
 
-## Routine update (between releases)
+## Routine update
 
-1. Set `GPP_DEVELOPMENT_TOKEN` and `GPP_TOKEN`. The download script exits without them.
-2. Download both schemas:
+1. Download both schemas, then build:
    ```bash
-   uv run --group schema python scripts/download_schema.py DEVELOPMENT
-   uv run --group schema python scripts/download_schema.py PRODUCTION
+   uv run --group schema python -m scripts.download_schema
+   uv run --group codegen python -m scripts.build_client
    ```
-3. Read `git diff graphql/schemas/`. Note removed or renamed fields and types: those break operations and belong in the PR description.
-4. Check the operations still build against production, then regenerate for development:
+   No token is needed. If a server refuses anonymous introspection, the download names the token variable to set (`GPP_DEVELOPMENT_TOKEN` or `GPP_TOKEN`); a maintainer sets it in their own terminal.
+2. The build fails, naming what to fix, when:
+   - a type is a different kind on two environments: report it upstream;
+   - an operation selects a field whose type differs between environments: the message names the field and each environment's type; change the operation or wait for promotion;
+   - an operation selects something no environment has: fix the operation under `graphql/operations/`;
+   - a trimmed copy is invalid on its environment, for example an input-object literal field that environment lacks: the message names the operation and environment; pass the value as a variable or change the operation.
+
+   It warns about each field whose type differs but no operation selects; that field is left out of `merged.graphql`, so note it in the PR description.
+3. Read `git diff graphql/schemas/`. Note removed or renamed fields and types: those break operations and belong in the PR description. In `merged.graphql`, `@environments(names: [...])` markers that appear or disappear show what moved between environments.
+4. The build prints ariadne-codegen's deprecation warnings: each names a deprecated field that an operation selects, or a deprecated input field the generated input types carry. Note new ones in the PR description.
+5. The build ends with a Markdown trim summary: per environment, the operations it lacks and each part removed from which operations and fragments. Paste it into the PR body.
+6. Run `uv run ruff check . && uv run ruff format --check .`, `uv run ty check --error-on-warning src/gpp_client`, `uv run pytest` and `uv run python -m scripts.check_environment_independence`. Fix domains whose generated method or model names changed.
+7. Done when tests pass and the schemas (including `merged.graphql`), operations and `generated/` changes are in one PR.
+
+## Release prep
+
+A release is a tag on `main`. Every release reaches every environment in one stream.
+
+1. Check the release locally before asking the user to run the `Create Release` workflow:
    ```bash
-   uv run --group codegen python scripts/run_codegen.py PRODUCTION
-   uv run --group codegen python scripts/run_codegen.py DEVELOPMENT
+   uv run --group codegen python -m scripts.validate_release v26.5.0
    ```
-   When codegen fails on a removed field, fix the operation under `graphql/operations/` and rerun. An operation that now works only on development moves to `development_only.graphql`.
-5. Run `uv run pytest` and `uv run ruff check .`. Fix domains whose generated method or model names changed.
-6. Done when `package_environment.py` says `DEVELOPMENT`, tests pass, and the schemas, operations and `generated/` changes are in one PR.
-
-## Release prep (before a production release)
-
-1. Download the production schema as in step 2 above.
-2. Move every operation and fragment in `development_only.graphql` that production now supports into `shared/`. Leave the rest.
-3. Run `run_codegen.py PRODUCTION` last, then the tests. Merge this as its own PR.
-4. Run the `Create Release` workflow with tag `vYY.M.PATCH`. It refuses the tag unless the committed code is PRODUCTION.
-5. After the release, regenerate for DEVELOPMENT in a follow-up PR.
-
-A pre-release (`vYY.M.PATCH.devN`) needs DEVELOPMENT code, which `main` already holds between releases.
+   It refuses a tag that is not `vYY.M.PATCH`, and a checkout whose `merged.graphql`, `generated/` or `llms.txt` differs from a fresh build. On a mismatch, run the build, commit the result in its own PR, and check again.
+2. The user runs `Create Release` with the tag. It creates a draft release whose notes start with the output of `python -m scripts.release_notes <previous tag>`, followed by GitHub's generated notes. The script compares `merged.graphql` at the previous tag with the working copy and prints Markdown: per development and production, the parts new to it and the parts removed from it, and the parts leaving production (gone from development, still on production). The workflow takes the nearest `v*` tag before the release as the previous tag; when there is none, or it has no `merged.graphql`, the draft has only GitHub's notes. To preview the lists locally:
+   ```bash
+   uv run --group codegen python -m scripts.release_notes v26.4.0
+   ```
+3. The user publishes the draft. Publishing runs `Upload Python Package`, which uploads to PyPI.

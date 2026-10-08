@@ -16,9 +16,6 @@ class CloneObservationCloneObservation(BaseModel):
     )
 
 
-class CloneObservationCloneObservationNewObservation(ObservationDetails):
-    pass
-
-
+CloneObservationCloneObservationNewObservation = ObservationDetails
 CloneObservation.model_rebuild()
 CloneObservationCloneObservation.model_rebuild()

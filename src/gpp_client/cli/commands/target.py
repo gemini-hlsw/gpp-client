@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command, require_exactly_one
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client, require_exactly_one
 
 target_app = typer.Typer(name="target", help="Target operations.")
 
@@ -41,7 +40,7 @@ async def get_target(
     )
 
     with output.status("Fetching target..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             match selector_name:
                 case "target_id":
                     result = await client.target.get_by_id(
@@ -84,7 +83,7 @@ async def list_targets(
     List targets.
     """
     with output.status("Fetching targets..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.target.get_all(
                 include_deleted=include_deleted,
                 offset=offset,

@@ -17,11 +17,8 @@ class RestoreCallForProposalsByIdUpdateCallsForProposals(BaseModel):
     ] = Field(alias="callsForProposals")
 
 
-class RestoreCallForProposalsByIdUpdateCallsForProposalsCallsForProposals(
+RestoreCallForProposalsByIdUpdateCallsForProposalsCallsForProposals = (
     CallForProposalsDetails
-):
-    pass
-
-
+)
 RestoreCallForProposalsById.model_rebuild()
 RestoreCallForProposalsByIdUpdateCallsForProposals.model_rebuild()

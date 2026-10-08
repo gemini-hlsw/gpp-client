@@ -15,9 +15,6 @@ class DeleteObservationByIdUpdateObservations(BaseModel):
     observations: list["DeleteObservationByIdUpdateObservationsObservations"]
 
 
-class DeleteObservationByIdUpdateObservationsObservations(ObservationDetails):
-    pass
-
-
+DeleteObservationByIdUpdateObservationsObservations = ObservationDetails
 DeleteObservationById.model_rebuild()
 DeleteObservationByIdUpdateObservations.model_rebuild()

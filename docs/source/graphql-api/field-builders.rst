@@ -1,16 +1,18 @@
-Field Builders
+Field builders
 ==============
 
-The ``gpp_client.generated.custom_fields`` module provides utilities for constructing GraphQL field
-selection trees when building custom queries and mutations.
+Each GraphQL type has a ``<Type>Fields`` class. To build a custom query, you
+select fields from these classes, as :doc:`../guides/custom-queries` shows.
 
-These classes are primarily used for advanced GraphQL customization when the
-default generated operations do not provide the desired field selection.
+Classes
+-------
 
-API Reference
+.. class-index::
+
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.custom_fields
    :members:
    :undoc-members:
-   :show-inheritance:
+   :no-show-inheritance:

@@ -1,25 +1,31 @@
+from __future__ import annotations
+
 __all__ = ["TargetDomain"]
 
 import logging
 from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING
 
 from gpp_client.domains.base import BaseDomain
-from gpp_client.generated.clone_target import CloneTarget
-from gpp_client.generated.create_target_by_program_id import CreateTargetByProgramId
-from gpp_client.generated.create_target_by_program_reference import (
-    CreateTargetByProgramReference,
-)
-from gpp_client.generated.create_target_by_proposal_reference import (
-    CreateTargetByProposalReference,
-)
-from gpp_client.generated.delete_target_by_id import DeleteTargetById
-from gpp_client.generated.get_target_by_id import GetTargetById
-from gpp_client.generated.get_targets import GetTargets
-from gpp_client.generated.input_types import TargetPropertiesInput, WhereTarget
-from gpp_client.generated.restore_target_by_id import RestoreTargetById
-from gpp_client.generated.target_edit import TargetEdit
-from gpp_client.generated.update_target_by_id import UpdateTargetById
-from gpp_client.generated.update_targets import UpdateTargets
+
+if TYPE_CHECKING:
+    from gpp_client.generated.clone_target import CloneTarget
+    from gpp_client.generated.create_target_by_program_id import CreateTargetByProgramId
+    from gpp_client.generated.create_target_by_program_reference import (
+        CreateTargetByProgramReference,
+    )
+    from gpp_client.generated.create_target_by_proposal_reference import (
+        CreateTargetByProposalReference,
+    )
+    from gpp_client.generated.delete_target_by_id import DeleteTargetById
+    from gpp_client.generated.get_target_by_id import GetTargetById
+    from gpp_client.generated.get_targets import GetTargets
+    from gpp_client.generated.input_types import TargetPropertiesInput, WhereTarget
+    from gpp_client.generated.restore_target_by_id import RestoreTargetById
+    from gpp_client.generated.target_edit import TargetEdit
+    from gpp_client.generated.update_target_by_id import UpdateTargetById
+    from gpp_client.generated.update_targets import UpdateTargets
+
 
 logger = logging.getLogger(__name__)
 

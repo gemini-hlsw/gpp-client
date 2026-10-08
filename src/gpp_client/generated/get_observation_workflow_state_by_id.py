@@ -1,7 +1,12 @@
 from typing import Optional
 
 from .base_model import BaseModel
-from .fragments import ObservationCore, ProgramCore, WorkflowDetails
+from .fragments import (
+    ObservationCore,
+    ObservationCoreReference,  # noqa: F401
+    ProgramCore,
+    WorkflowDetails,
+)
 
 
 class GetObservationWorkflowStateById(BaseModel):
@@ -13,13 +18,7 @@ class GetObservationWorkflowStateByIdObservation(ObservationCore):
     workflow: Optional["GetObservationWorkflowStateByIdObservationWorkflow"]
 
 
-class GetObservationWorkflowStateByIdObservationProgram(ProgramCore):
-    pass
-
-
-class GetObservationWorkflowStateByIdObservationWorkflow(WorkflowDetails):
-    pass
-
-
+GetObservationWorkflowStateByIdObservationProgram = ProgramCore
+GetObservationWorkflowStateByIdObservationWorkflow = WorkflowDetails
 GetObservationWorkflowStateById.model_rebuild()
 GetObservationWorkflowStateByIdObservation.model_rebuild()

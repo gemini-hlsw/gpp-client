@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag, e.g. v26.5.0 or v26.5.0.dev1."
+        description: "Release tag, e.g. v26.5.0."
         required: true
 
 permissions:
@@ -35,7 +35,7 @@ jobs:
         run: uv sync --locked --group dev
 
       - name: Validate release
-        run: uv run python scripts/validate_release.py "${{ inputs.tag }}"
+        run: uv run python -m scripts.validate_release "${{ inputs.tag }}"
 
       - name: Check tag does not already exist
         run: |
@@ -54,6 +54,19 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+
+      - name: List availability changes since the previous release
+        run: |
+          NOTES="${RUNNER_TEMP}/availability.md"
+          : > "${NOTES}"
+          if ! PREVIOUS=$(git describe --tags --abbrev=0 --match 'v*' HEAD 2>/dev/null); then
+            echo "No earlier release tag, so no availability lists."
+          elif ! git cat-file -e "${PREVIOUS}:graphql/schemas/merged.graphql" 2>/dev/null; then
+            echo "${PREVIOUS} has no merged schema, so no availability lists."
+          else
+            uv run python -m scripts.release_notes "${PREVIOUS}" > "${NOTES}"
+          fi
+          cat "${NOTES}"
 
       - name: Create local tag
         run: |
@@ -82,7 +95,7 @@ jobs:
           tag_name: ${{ inputs.tag }}
           name: ${{ inputs.tag }}
           draft: true
-          prerelease: ${{ contains(inputs.tag, '.dev') }}
+          body_path: ${{ runner.temp }}/availability.md
           generate_release_notes: true
           files: dist/*
 

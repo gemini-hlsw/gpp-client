@@ -5,14 +5,14 @@ Module for retrieving current Gemini site status information.
 __all__ = ["SiteStatusDomain"]
 
 import re
-from enum import Enum
-from typing import Any, Literal, Optional
+from enum import StrEnum
+from typing import Any, Literal
 
 from bs4 import BeautifulSoup
 from httpx import AsyncClient
 
 
-class Site(str, Enum):
+class Site(StrEnum):
     SOUTH = "south"
     NORTH = "north"
 
@@ -159,7 +159,7 @@ def _parse_gemini_north_webpage(html: str) -> dict[str, Any]:
     return data
 
 
-def _parse_gmos_config_page(html: str) -> Optional[dict[str, Any]]:
+def _parse_gmos_config_page(html: str) -> dict[str, Any] | None:
     """
     Parse the GMOS configuration HTML page.
 
@@ -208,7 +208,7 @@ def _parse_gmos_config_page(html: str) -> Optional[dict[str, Any]]:
     }
 
 
-def _parse_shutter(raw: Optional[str]) -> Optional[dict[str, Any]]:
+def _parse_shutter(raw: str | None) -> dict[str, Any] | None:
     """
     Parse the shutter status block.
 
@@ -245,7 +245,7 @@ def _parse_shutter(raw: Optional[str]) -> Optional[dict[str, Any]]:
     }
 
 
-def _parse_instruments(raw: Optional[str]) -> Optional[dict[str, Any]]:
+def _parse_instruments(raw: str | None) -> dict[str, Any] | None:
     """
     Parse the instruments block.
 

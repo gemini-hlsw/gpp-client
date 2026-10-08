@@ -459,8 +459,8 @@ class CloneObservationInput(BaseModel):
         alias=str("observationReference"), default=None
     )
     set_: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
-    sequence: CloneSequenceMode = CloneSequenceMode.NONE
-    "Which steps, if any, of the source's materialized sequences to copy into the\nclone.  Any mode other than NONE cannot be combined with an observing mode or\nscience requirements edit in SET.  When SET edits the asterism, only the\nscience sequence is copied and the acquisition is generated for the new\ntargets; copied science steps keep their exposure times regardless."
+    sequence: Optional[CloneSequenceMode] = CloneSequenceMode.NONE
+    "Available on: development.\n\nWhich steps, if any, of the source's materialized sequences to copy into the\nclone.  Any mode other than NONE cannot be combined with an observing mode or\nscience requirements edit in SET.  When SET edits the asterism, only the\nscience sequence is copied and the acquisition is generated for the new\ntargets; copied science steps keep their exposure times regardless."
 
 
 class CloneTargetInput(BaseModel):

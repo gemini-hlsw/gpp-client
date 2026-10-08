@@ -40,19 +40,15 @@ def resolve_content(
         If reading the file fails due to an unexpected I/O error.
     """
     try:
-        has_file_path = file_path is not None
-        has_content = content is not None
-
         # Validate exactly one source is provided.
-        if has_file_path == has_content:
+        if file_path is None and content is not None:
+            return content
+        if file_path is None or content is not None:
             raise ValueError(
                 "Provide exactly one of 'file_path' or 'content', but not both."
             )
 
-        if content is not None:
-            return content
-
-        path = Path(file_path).expanduser()  # type: ignore[arg-type]
+        path = Path(file_path).expanduser()
 
         # Validate the file exists and is a file.
         if not path.exists():

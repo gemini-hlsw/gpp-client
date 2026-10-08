@@ -1,0 +1,31 @@
+name: Schema Drift Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  schema_check:
+    name: Check schema - ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [development, production]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install schema dependencies
+        run: uv sync --locked --group schema
+
+      # Introspection is anonymous, so no token is needed.
+      - name: Download schema (${{ matrix.environment }})
+        run: uv run python -m scripts.download_schema ${{ matrix.environment }}
+
+      - name: Fail if GPP's schema differs from the committed one
+        run: |
+          git diff --exit-code --stat -- \
+            graphql/schemas/${{ matrix.environment }}.graphql

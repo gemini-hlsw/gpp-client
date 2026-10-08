@@ -1,35 +1,30 @@
 GraphQL API
 ===========
 
-This section documents the auto-generated models and helpers used by the
-GPP client.
+These pages describe the code that the build generates from GPP's GraphQL
+schema. Most users only need the domains, but these pages help you build an input, read a result
+field, or write a custom query.
 
-These modules are generated from the GraphQL schema and provide:
+.. list-table::
+   :header-rows: 1
 
-- Typed inputs for mutations and queries
-- Structured response models
-- Utilities for building custom GraphQL operations
-
-In most cases, you should prefer :class:`~gpp_client.GPPClient` and its
-domains.
-
-The generated modules are most useful when you need to:
-
-- Construct complex input payloads
-- Inspect exact response model fields
-- Build custom queries or mutations
-
-.. note::
-
-   These modules are auto-generated and should not be modified manually.
-
-Modules
--------
-
-The following modules are the primary entry points for advanced usage.
+   * - Page
+     - Use it to
+   * - :doc:`input-types`
+     - Build the input a method takes.
+   * - :doc:`enums`
+     - Pass or compare enum values.
+   * - :doc:`result-models`
+     - See the fields a method returns.
+   * - :doc:`field-builders`, :doc:`custom-queries`, :doc:`custom-mutations`
+     - Write a custom query.
+   * - :doc:`client`
+     - Call a generated operation directly.
+   * - :doc:`exceptions`
+     - Catch errors GPP returns for a GraphQL call.
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
    input-types
    enums
@@ -40,16 +35,15 @@ The following modules are the primary entry points for advanced usage.
    custom-mutations
    exceptions
 
-Low-level Helpers
------------------
+Internal modules
+----------------
 
-These pages document lower-level generated helpers used internally by the
-GraphQL client implementation.
+The pages above link to types from these internal modules. You shouldn't need
+them, but they're here so that every type link leads somewhere:
 
-.. toctree::
-   :maxdepth: 1
-
-   base-model
-   operation-builder
-   transport-client
-   typed-field-helpers
+- :doc:`base-model` - the shared Pydantic base model and the ``UNSET`` marker.
+- :doc:`operation-builder` - the base classes for the fields and arguments
+  of a custom operation.
+- :doc:`transport-client` - the client that sends each request to GPP.
+- :doc:`typed-field-helpers` - the field classes that the field builders
+  return.

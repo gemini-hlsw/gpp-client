@@ -12,8 +12,5 @@ class GetCallForProposals(BaseModel):
     )
 
 
-class GetCallForProposalsCallForProposals(CallForProposalsDetails):
-    pass
-
-
+GetCallForProposalsCallForProposals = CallForProposalsDetails
 GetCallForProposals.model_rebuild()

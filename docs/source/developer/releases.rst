@@ -1,72 +1,58 @@
 Releases
 ========
 
-The project uses Calendar Versioning (CalVer).
+The :ref:`versions-and-upgrades` page describes what a release promises users:
+one stream, one install for every environment, and how often to upgrade. This
+page shows how to make a release.
 
-Version format:
+Version numbers
+---------------
 
-``YY.MM.PATCH``
+Versions follow calendar versioning: ``YY.M.PATCH``, with the month written
+without a leading zero, such as ``26.5.0`` or ``26.10.1``. The version comes
+from the git tag, so tag ``v26.5.0`` builds version ``26.5.0``. Never write a
+version into ``pyproject.toml``.
 
-Examples:
+Every release reaches every environment, so there's a single release stream.
 
-- ``26.5.0``
-- ``26.5.1``
+Make the release
+----------------
 
-Development Releases
---------------------
+1. Check the release locally, on an up-to-date ``main`` with every tag:
 
-Development releases use the same format with a ``.devN`` suffix:
+   .. code-block:: bash
 
-- ``26.5.0.dev1``
-- ``26.5.0.dev2``
+      git switch main
+      git fetch --tags origin
+      git merge --ff-only origin/main
+      uv run --group codegen python -m scripts.validate_release v26.5.0
 
-Version Source
---------------
+   The check fails on a tag that isn't ``vYY.M.PATCH``. It also fails when the
+   merged schema, the generated code, or ``llms.txt`` differs from a fresh
+   build, and it lists those files. In that case, rebuild and commit, as
+   described in :doc:`updating-the-schema`. The ariadne-codegen deprecation
+   warnings that it prints are expected.
 
-The project uses dynamic versioning through Git tags.
+2. In GitHub, open Actions, then Create Release, then Run workflow. Choose the
+   ``main`` branch and enter the tag, such as ``v26.5.0``.
 
-The package version is derived directly from the release tag during the build
-process.
+   The workflow checks the tag, runs Ruff and the tests, then builds and
+   smoke-tests the package. Then it pushes the tag and creates a draft release.
+   The draft's notes start with what changed on development and production
+   since the previous release tag: per environment, the parts that are new to
+   it and the parts removed from it, and the parts leaving production (gone
+   from development, still on production). GitHub's generated list of pull
+   requests follows. When there's no previous tag, or it has no merged schema,
+   the draft has only GitHub's list.
 
-Examples:
+   To preview the environment lists before you run the workflow:
 
-- Git tag ``v26.5.0`` produces package version ``26.5.0``
-- Git tag ``v26.5.0.dev1`` produces package version ``26.5.0.dev1``
+   .. code-block:: bash
 
-Version values are not manually updated in ``pyproject.toml``.
+      uv run --group codegen python -m scripts.release_notes v26.4.0
 
-Creating a Release
-------------------
+3. Read the draft's notes, then publish the draft. Publishing runs Upload
+   Python Package, which builds the package from the tag, smoke-tests it, and
+   publishes it to PyPI:
 
-All releases are created through the ``Create Release`` GitHub Actions workflow.
-
-Development prerelease example:
-
-.. code-block:: text
-
-   v26.5.0.dev1
-
-Production release example:
-
-.. code-block:: text
-
-   v26.5.0
-
-To create a release:
-
-1. Open the GitHub Actions tab.
-2. Run the ``Create Release`` workflow.
-3. Enter the desired release tag.
-4. Wait for validation, tests, build, and smoke tests to complete.
-5. Review the generated draft GitHub release.
-6. Publish the GitHub release.
-
-Publishing the GitHub release automatically triggers the PyPI publish workflow.
-
-Once the publish workflow completes successfully, the release becomes available on
-PyPI:
-
-- https://pypi.org/project/gpp-client/
-
-The published package version is derived directly from the Git tag used during
-the release workflow.
+   https://pypi.org/project/gpp-client/

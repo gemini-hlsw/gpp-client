@@ -1,169 +1,61 @@
 Target
 ======
 
-The target domain provides access to target queries, mutations, and
-subscriptions.
+The ``client.target`` domain reads and changes targets. To create a target in
+a program, you can name the program by its ID, its program reference or its
+proposal reference.
 
-Use :attr:`~gpp_client.GPPClient.target` to create, retrieve, update, delete,
-restore, clone, and subscribe to targets.
-
-Quick Example
--------------
-
-.. code-block:: python
-
-   async with GPPClient() as client:
-      target = await client.target.get_by_id(
-         target_id="t-123",
-         include_deleted=False,
-      )
-
-
-Creating Targets
-----------------
-
-Create a target by program ID:
-
-.. code-block:: python
-
-   result = await client.target.create_by_program_id(
-      program_id="p-123",
-      properties=properties,
-      include_deleted=False,
-   )
-
-Create a target by program reference:
-
-.. code-block:: python
-
-   result = await client.target.create_by_program_reference(
-      program_reference="GN-2026A-Q-1",
-      properties=properties,
-      include_deleted=False,
-   )
-
-Create a target by proposal reference:
-
-.. code-block:: python
-
-   result = await client.target.create_by_proposal_reference(
-      proposal_reference="GN-2026A-Q-1",
-      properties=properties,
-      include_deleted=False,
-   )
-
-
-Retrieving Targets
+Get a target by ID
 ------------------
 
-Get a target by ID:
+A sidereal target carries its coordinates in ``sidereal``. On any other kind
+of target, ``sidereal`` is ``None``, so the example checks it first:
 
 .. code-block:: python
 
-   result = await client.target.get_by_id(
-      target_id="t-123",
-      include_deleted=False,
+   result = await client.target.get_by_id("t-3b4")
+   target = result.target
+   if target is not None:
+       sidereal = target.sidereal
+       if sidereal is not None:
+           print(target.name)
+           print(sidereal.ra.hms, sidereal.dec.dms)
+
+The example prints the target's name. Then it prints the right ascension in
+hours, minutes and seconds, and the declination in degrees, minutes and
+seconds.
+
+Clone a target
+--------------
+
+To copy a target, call ``clone``. The ``properties`` argument changes the
+copy, and ``replace_in`` swaps the copy in for the original in the
+observations you name.
+
+.. warning::
+
+   This call changes data in GPP. Try it on development first, as described
+   in :ref:`try-on-development`.
+
+This example clones a target under a new name and uses the copy in two
+observations:
+
+.. code-block:: python
+
+   from gpp_client.generated.input_types import (
+       TargetPropertiesInput,
    )
 
-Get multiple targets:
-
-.. code-block:: python
-
-   result = await client.target.get_all(
-      include_deleted=False,
-      where=where_input,
-      limit=50,
-   )
-
-
-Updating Targets
-----------------
-
-Update a single target by ID:
-
-.. code-block:: python
-
-   result = await client.target.update_by_id(
-      target_id="t-123",
-      properties=properties,
-      include_deleted=False,
-   )
-
-Update multiple targets:
-
-.. code-block:: python
-
-   result = await client.target.update_all(
-      properties=properties,
-      include_deleted=False,
-      where=where_input,
-      limit=25,
-   )
-
-
-Cloning Targets
----------------
-
-Clone a target:
-
-.. code-block:: python
-
+   copy = TargetPropertiesInput(name="NGC 1068 copy")
    result = await client.target.clone(
-      target_id="t-123",
-      include_deleted=False,
-      properties=properties,
-      replace_in=["o-123", "o-456"],
+       "t-3b4",
+       properties=copy,
+       replace_in=["o-1a2", "o-1a3"],
    )
+   print(result.clone_target.new_target.id)
+   # t-3b5
 
-The optional ``replace_in`` argument may be used to replace the cloned target
-in one or more observations.
-
-
-Delete and Restore
-------------------
-
-Delete a target by ID:
-
-.. code-block:: python
-
-   result = await client.target.delete_by_id(target_id="t-123")
-
-Restore a target by ID:
-
-.. code-block:: python
-
-   result = await client.target.restore_by_id(target_id="t-123")
-
-
-Subscriptions
--------------
-
-Subscribe to target edit events:
-
-.. code-block:: python
-
-   async for event in client.target.subscribe_edits():
-      print(event)
-
-Restrict the subscription to a single target:
-
-.. code-block:: python
-
-   async for event in client.target.subscribe_edits(
-      target_id="t-123"
-   ):
-      print(event)
-
-
-Notes
------
-
-All target operations use GraphQL and return generated response models.
-
-Subscription methods return asynchronous iterators.
-
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.domains.target.TargetDomain

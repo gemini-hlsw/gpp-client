@@ -1,12 +1,12 @@
-Generated Exceptions
+Generated exceptions
 ====================
 
-The ``gpp_client.generated.exceptions`` module contains exceptions raised by
-generated GraphQL operations.
+Any GraphQL call, including a domain method, can raise these errors. When GPP
+returns errors for a call, ``GraphQLClientGraphQLMultiError`` holds them. For
+when the client raises each error, and what to do about it, see
+:doc:`../guides/errors`.
 
-These are primarily useful when working directly with the generated client.
-
-API Reference
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.exceptions

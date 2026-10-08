@@ -17,11 +17,8 @@ class UpdateCallForProposalsByIdUpdateCallsForProposals(BaseModel):
     ] = Field(alias="callsForProposals")
 
 
-class UpdateCallForProposalsByIdUpdateCallsForProposalsCallsForProposals(
+UpdateCallForProposalsByIdUpdateCallsForProposalsCallsForProposals = (
     CallForProposalsDetails
-):
-    pass
-
-
+)
 UpdateCallForProposalsById.model_rebuild()
 UpdateCallForProposalsByIdUpdateCallsForProposals.model_rebuild()

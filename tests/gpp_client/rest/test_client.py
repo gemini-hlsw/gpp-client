@@ -2,7 +2,7 @@
 Tests for the REST client.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import pytest
@@ -196,7 +196,7 @@ async def test_get_visibility_changes_requests_endpoint(
     session = SimpleNamespace(get=mocker.Mock(return_value=response))
     mocker.patch.object(rest_client, "get_session", return_value=session)
 
-    since = datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+    since = datetime(2026, 7, 15, 9, 0, tzinfo=UTC)
     result = await rest_client.get_visibility_changes(since)
 
     assert result == "o-123\t2026-07-15T10:00:00Z\n"
@@ -241,5 +241,5 @@ async def test_get_visibility_changes_raises_on_http_error(
 
     with pytest.raises(RuntimeError, match="HTTP 500"):
         await rest_client.get_visibility_changes(
-            datetime(2026, 7, 15, 9, 0, tzinfo=timezone.utc)
+            datetime(2026, 7, 15, 9, 0, tzinfo=UTC)
         )
