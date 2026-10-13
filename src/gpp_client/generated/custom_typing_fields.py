@@ -1069,6 +1069,18 @@ class ObservationTimeEstimateGraphQLField(GraphQLField):
         return self
 
 
+class CalibrationDigestGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalibrationDigestGraphQLField":
+        self._alias = alias
+        return self
+
+
+class CalibrationEstimateGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalibrationEstimateGraphQLField":
+        self._alias = alias
+        return self
+
+
 class CalculatedExecutionDigestGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "CalculatedExecutionDigestGraphQLField":
         self._alias = alias
@@ -1669,6 +1681,12 @@ class SpectroscopyConfigOptionGnirsGraphQLField(GraphQLField):
         return self
 
 
+class SpectroscopyConfigOptionScorpioGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionScorpioGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ImagingScienceRequirementsGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ImagingScienceRequirementsGraphQLField":
         self._alias = alias
@@ -2263,6 +2281,12 @@ class StepDigestsGraphQLField(GraphQLField):
 
 class SequenceDigestGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SequenceDigestGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ExposureTimeViolationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ExposureTimeViolationGraphQLField":
         self._alias = alias
         return self
 

@@ -18,6 +18,7 @@ from .enums import (
     CassRotator,
     CatalogName,
     ChargeClass,
+    CloneSequenceMode,
     CloudExtinctionPreset,
     ConditionsExpectationType,
     ConditionsMeasurementSource,
@@ -458,6 +459,8 @@ class CloneObservationInput(BaseModel):
         alias=str("observationReference"), default=None
     )
     set_: Optional["ObservationPropertiesInput"] = Field(alias=str("SET"), default=None)
+    sequence: CloneSequenceMode = CloneSequenceMode.NONE
+    "Which steps, if any, of the source's materialized sequences to copy into the\nclone.  Any mode other than NONE cannot be combined with an observing mode or\nscience requirements edit in SET.  When SET edits the asterism, only the\nscience sequence is copied and the acquisition is generated for the new\ntargets; copied science steps keep their exposure times regardless."
 
 
 class CloneTargetInput(BaseModel):
@@ -1981,6 +1984,8 @@ class ResetAcquisitionInput(BaseModel):
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
     )
+    regenerate: Optional[bool] = False
+    "Regenerate the acquisition from the observing mode even if it was customized\nvia `replace*Sequence`, clearing the customization."
 
 
 class RightAscensionInput(BaseModel):
@@ -2973,6 +2978,7 @@ class Flamingos2CustomMaskInput(BaseModel):
 class TelluricTypeInput(BaseModel):
     tag: TelluricTag
     star_types: Optional[list[str]] = Field(alias=str("starTypes"), default=None)
+    count: Optional[int] = None
 
 
 class Flamingos2LongSlitAcquisitionInput(BaseModel):
@@ -3001,7 +3007,7 @@ class Flamingos2LongSlitInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
-    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used."
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used.  On a telluric\ncalibration a value overrides the mode derived from the science observation\nand survives recalculation; null clears the override.  Null is only valid on\na telluric."
     explicit_read_mode: Optional[Flamingos2ReadMode] = Field(
         alias=str("explicitReadMode"), default=None
     )
@@ -3175,7 +3181,7 @@ class Igrins2LongSlitInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
-    "The exposureTimeMode field may be unset by assigning a null value, or ignored\nby skipping it altogether"
+    "Exposure time mode for the science sequence.  If not specified, the exposure\ntime mode of the observation's science requirements are used.  On a telluric\ncalibration a value overrides the mode derived from the science observation\nand survives recalculation; null clears the override.  Null is only valid on\na telluric."
     svc: Optional["Igrins2SvcInput"] = None
     "Slit-Viewing Camera (SVC) configuration."
     explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
@@ -3263,7 +3269,7 @@ class GnirsCentralWavelengthConfigInput(BaseModel):
     exposure_time_mode: Optional["ExposureTimeModeInput"] = Field(
         alias=str("exposureTimeMode"), default=None
     )
-    "Exposure time mode for this central wavelength.\nIf not specified, it is taken from the observation's requirements."
+    "Exposure time mode for this central wavelength.  If not specified, it is\ntaken from the observation's requirements.  On a telluric calibration a value\noverrides the mode derived from the science observation and survives\nrecalculation; null clears the override.  Null is only valid on a telluric,\nwhose wavelength list must then match its current configuration in order."
     coadds: Optional[Any] = None
     "Coadds per frame for this central wavelength in time-and-count mode.  Defaults\nto 1 when not specified.  Forced to 1 in signal-to-noise mode, where the ITC\nchooses the coadds instead."
 

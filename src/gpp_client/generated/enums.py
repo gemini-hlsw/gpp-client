@@ -64,6 +64,12 @@ class GeminiCallForProposalsType(str, Enum):
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
 
 
+class CloneSequenceMode(str, Enum):
+    NONE = "NONE"
+    ALL_STEPS = "ALL_STEPS"
+    PENDING_STEPS = "PENDING_STEPS"
+
+
 class ConditionsMeasurementSource(str, Enum):
     OBSERVER = "OBSERVER"
 
@@ -655,7 +661,8 @@ class TelluricTag(str, Enum):
     HOT = "HOT"
     A0V = "A0V"
     SOLAR = "SOLAR"
-    MANUAL = "MANUAL"
+    EXPLICIT_SPECTRAL_TYPES = "EXPLICIT_SPECTRAL_TYPES"
+    USER_DEFINED = "USER_DEFINED"
     NO_TELLURIC = "NO_TELLURIC"
 
 
@@ -966,6 +973,16 @@ class GnirsPrism(str, Enum):
     LXD = "LXD"
 
 
+class ScorpioFpu(str, Enum):
+    LONG_SLIT_0_36 = "LONG_SLIT_0_36"
+    LONG_SLIT_0_54 = "LONG_SLIT_0_54"
+    LONG_SLIT_0_72 = "LONG_SLIT_0_72"
+    LONG_SLIT_1_08 = "LONG_SLIT_1_08"
+    LONG_SLIT_1_44 = "LONG_SLIT_1_44"
+    LONG_SLIT_2_16 = "LONG_SLIT_2_16"
+    LONG_SLIT_4_32 = "LONG_SLIT_4_32"
+
+
 class GnirsCamera(str, Enum):
     LONG_BLUE = "LONG_BLUE"
     LONG_RED = "LONG_RED"
@@ -1141,6 +1158,8 @@ class ObservationValidationCode(str, Enum):
     CONDITIONS_UNLIKELY = "CONDITIONS_UNLIKELY"
     CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
+    CFP_WARNING = "CFP_WARNING"
+    EXPOSURE_TIME_WARNING = "EXPOSURE_TIME_WARNING"
 
 
 class ObserveClass(str, Enum):
@@ -1232,6 +1251,11 @@ class SequenceCommand(str, Enum):
     PAUSE = "PAUSE"
     START = "START"
     STOP = "STOP"
+
+
+class ExposureTimeViolationSeverity(str, Enum):
+    ERROR = "ERROR"
+    WARNING = "WARNING"
 
 
 class SequenceType(str, Enum):
