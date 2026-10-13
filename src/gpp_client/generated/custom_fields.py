@@ -4004,14 +4004,6 @@ class ExecutionFields(GraphQLField):
         ExecutionGraphQLField("acquisitionSequenceIsMaterialized")
     )
     "Whether the acquisition sequence has been materialized.\nThis will happen when the sequence is executed or if it is manually edited."
-    science_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
-        "scienceSequenceIsCustomized"
-    )
-    "Whether the science sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence`."
-    acquisition_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
-        "acquisitionSequenceIsCustomized"
-    )
-    "Whether the acquisition sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence` or by resetting the acquisition."
 
     def fields(
         self,
@@ -4129,7 +4121,7 @@ class ExecutionDigestFields(GraphQLField):
 
     @classmethod
     def full_time_estimate(cls) -> "CategorizedTimeFields":
-        """Full time estimate: science time plus setup time for every setup and reacquisition."""
+        """Full time estimate: science time plus full setup time for every setup."""
         return CategorizedTimeFields("fullTimeEstimate")
 
     def fields(
@@ -10624,10 +10616,6 @@ class ObservationTimeEstimateFields(GraphQLField):
         ObservationTimeEstimateGraphQLField("setupCount")
     )
     "Expected number of setups."
-    reacquisition_count: "ObservationTimeEstimateGraphQLField" = (
-        ObservationTimeEstimateGraphQLField("reacquisitionCount")
-    )
-    "Expected number of reacquisitions: recentering on the target between full\nsetups.  Only spectroscopy guided by a PWFS is expected to need them."
     calibration_count: "ObservationTimeEstimateGraphQLField" = (
         ObservationTimeEstimateGraphQLField("calibrationCount")
     )
@@ -10640,8 +10628,7 @@ class ObservationTimeEstimateFields(GraphQLField):
 
     @classmethod
     def total(cls) -> "CategorizedTimeFields":
-        """Total time estimate: science time plus full setup time for every setup and
-        reacquisition time for every reacquisition."""
+        """Total time estimate: science time plus full setup time for every setup."""
         return CategorizedTimeFields("total")
 
     def fields(
