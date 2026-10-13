@@ -52,6 +52,7 @@ from .enums import (
     ImageQualityPreset,
     Instrument,
     KeckInstrument,
+    MosDispersionDirection,
     ObservationValidationCode,
     ObservationWorkflowState,
     Observatory,
@@ -773,6 +774,26 @@ class NonsiderealTargetDetails(BaseModel):
     des: str
     key_type: EphemerisKeyType = Field(alias="keyType")
     key: str
+
+
+class ObservationAttachmentDetails(BaseModel):
+    attachments: list["ObservationAttachmentDetailsAttachments"]
+
+
+class ObservationAttachmentDetailsAttachments(BaseModel):
+    id: Any
+    file_name: Any = Field(alias="fileName")
+    attachment_type: AttachmentType = Field(alias="attachmentType")
+    mask: Optional["ObservationAttachmentDetailsAttachmentsMask"]
+
+
+class ObservationAttachmentDetailsAttachmentsMask(BaseModel):
+    name: Any
+    instrument: Instrument
+    pixel_scale: Any = Field(alias="pixelScale")
+    dispersion_direction: MosDispersionDirection = Field(alias="dispersionDirection")
+    science_slit_count: int = Field(alias="scienceSlitCount")
+    acquisition_slit_count: int = Field(alias="acquisitionSlitCount")
 
 
 class ObservationCore(BaseModel):
@@ -1722,6 +1743,7 @@ class ObservationDetails(ObservationCore):
         alias="targetEnvironment"
     )
     execution: "ObservationDetailsExecution"
+    attachments: list["ObservationDetailsAttachments"]
 
 
 class ObservationDetailsProgram(ProgramCore):
@@ -1804,6 +1826,22 @@ class ObservationDetailsExecutionDigestValueSetupFull(BaseModel):
 
 class ObservationDetailsExecutionDigestValueSetupReacquisition(BaseModel):
     seconds: Any
+
+
+class ObservationDetailsAttachments(BaseModel):
+    id: Any
+    file_name: Any = Field(alias="fileName")
+    attachment_type: AttachmentType = Field(alias="attachmentType")
+    mask: Optional["ObservationDetailsAttachmentsMask"]
+
+
+class ObservationDetailsAttachmentsMask(BaseModel):
+    name: Any
+    instrument: Instrument
+    pixel_scale: Any = Field(alias="pixelScale")
+    dispersion_direction: MosDispersionDirection = Field(alias="dispersionDirection")
+    science_slit_count: int = Field(alias="scienceSlitCount")
+    acquisition_slit_count: int = Field(alias="acquisitionSlitCount")
 
 
 class ObservationWorkflowCore(BaseModel):
@@ -2062,6 +2100,7 @@ GnirsImagingDetails.model_rebuild()
 GnirsSpectroscopyDetails.model_rebuild()
 Igrins2LongSlitDetails.model_rebuild()
 NonsiderealTargetDetails.model_rebuild()
+ObservationAttachmentDetails.model_rebuild()
 ObservationCore.model_rebuild()
 VisitorDetails.model_rebuild()
 Flamingos2MosDetails.model_rebuild()

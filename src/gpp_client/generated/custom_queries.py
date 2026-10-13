@@ -108,12 +108,16 @@ class Query:
         *,
         where: Optional[WhereCallForProposals] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> CallsForProposalsSelectResultFields:
         """Select all Calls for Proposals."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereCallForProposals", "value": where},
             "OFFSET": {"type": "CallForProposalsId", "value": offset},
+            "OFFSET_AT": {"type": "CallForProposalsId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "CallForProposalsId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }
@@ -188,12 +192,16 @@ class Query:
         *,
         where: Optional[WhereDataset] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> DatasetSelectResultFields:
         """Select all datasets associated with a step or observation"""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereDataset", "value": where},
             "OFFSET": {"type": "DatasetId", "value": offset},
+            "OFFSET_AT": {"type": "DatasetId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "DatasetId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -209,6 +217,8 @@ class Query:
         *,
         where: Optional[WhereDatasetChronicleEntry] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> DatasetChronicleEntrySelectResultFields:
         """Select all dataset chronicle entries.  This will contain detailed information
@@ -216,6 +226,8 @@ class Query:
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereDatasetChronicleEntry", "value": where},
             "OFFSET": {"type": "ChronicleId", "value": offset},
+            "OFFSET_AT": {"type": "ChronicleId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ChronicleId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -231,12 +243,16 @@ class Query:
         *,
         where: Optional[WhereExecutionEvent] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ExecutionEventSelectResultFields:
         """Selects the first `LIMIT` matching execution events based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereExecutionEvent", "value": where},
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "OFFSET_AT": {"type": "ExecutionEventId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ExecutionEventId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -330,12 +346,16 @@ class Query:
         *,
         where: Optional[WhereObservation] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ObservationSelectResultFields:
         """Selects the first `LIMIT` matching observations based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereObservation", "value": where},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }
@@ -352,12 +372,16 @@ class Query:
         *,
         where: Optional[WhereConfigurationRequest] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ConfigurationRequestSelectResultFields:
         """Selects the first `LIMIT` matching configuration requests based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereConfigurationRequest", "value": where},
             "OFFSET": {"type": "ConfigurationRequestId", "value": offset},
+            "OFFSET_AT": {"type": "ConfigurationRequestId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ConfigurationRequestId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -438,12 +462,16 @@ class Query:
         *,
         where: Optional[WhereProgram] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramSelectResultFields:
         """Selects the first `LIMIT` matching programs based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgram", "value": where},
             "OFFSET": {"type": "ProgramId", "value": offset},
+            "OFFSET_AT": {"type": "ProgramId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ProgramId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }
@@ -472,6 +500,8 @@ class Query:
         *,
         where: Optional[WhereProgramNote] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramNoteSelectResultFields:
         """Selects the first `LIMIT` matching program notes based on the provided `WHERE`
@@ -479,6 +509,8 @@ class Query:
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgramNote", "value": where},
             "OFFSET": {"type": "ProgramNoteId", "value": offset},
+            "OFFSET_AT": {"type": "ProgramNoteId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ProgramNoteId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }
@@ -506,12 +538,16 @@ class Query:
         *,
         where: Optional[WhereTooTrigger] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TooTriggerSelectResultFields:
         """Selects all Target-of-Opportunity triggers matching the optional WHERE, readable by the caller."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTooTrigger", "value": where},
             "OFFSET": {"type": "TooTriggerId", "value": offset},
+            "OFFSET_AT": {"type": "TooTriggerId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "TooTriggerId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -527,12 +563,16 @@ class Query:
         *,
         where: Optional[WhereTooTriggerChronicleEntry] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TooTriggerChronicleEntrySelectResultFields:
         """Selects Target-of-Opportunity trigger chronicle (audit) entries, readable by the caller."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTooTriggerChronicleEntry", "value": where},
             "OFFSET": {"type": "ChronicleId", "value": offset},
+            "OFFSET_AT": {"type": "ChronicleId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ChronicleId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -549,6 +589,8 @@ class Query:
         *,
         where: Optional[WhereProgramUser] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> ProgramUserSelectResultFields:
         """Selects the first `LIMIT` matching program users based on the provided `WHERE`
@@ -556,6 +598,8 @@ class Query:
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereProgramUser", "value": where},
             "OFFSET": {"type": "UserId", "value": offset},
+            "OFFSET_AT": {"type": "ProgramUserId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ProgramUserId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }
@@ -650,12 +694,16 @@ class Query:
         *,
         where: Optional[WhereTarget] = None,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> TargetSelectResultFields:
         """Selects the first `LIMIT` matching targets based on the provided `WHERE` parameter, if any."""
         arguments: dict[str, dict[str, Any]] = {
             "WHERE": {"type": "WhereTarget", "value": where},
             "OFFSET": {"type": "TargetId", "value": offset},
+            "OFFSET_AT": {"type": "TargetId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "TargetId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
         }

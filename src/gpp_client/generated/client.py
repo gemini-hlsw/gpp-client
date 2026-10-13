@@ -2491,6 +2491,19 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -3486,6 +3499,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }
@@ -4486,6 +4512,19 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -5484,6 +5523,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }
@@ -6489,6 +6541,19 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -7492,6 +7557,19 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -8490,6 +8568,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }
@@ -9492,6 +9583,19 @@ class GraphQLClient(AsyncBaseClient):
                   }
                 }
               }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
             }
 
             fragment ObservingModeDetails on ObservingMode {
@@ -10490,6 +10594,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }
@@ -11491,6 +11608,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }
@@ -12499,6 +12629,19 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
                 }
               }
             }

@@ -37,6 +37,8 @@ from .custom_typing_fields import (
     CalculatedCategorizedTimeRangeGraphQLField,
     CalculatedExecutionDigestGraphQLField,
     CalculatedObservationWorkflowGraphQLField,
+    CalibrationDigestGraphQLField,
+    CalibrationEstimateGraphQLField,
     CalibrationProgramReferenceGraphQLField,
     CallForProposalsExchangePartnerGraphQLField,
     CallForProposalsGraphQLField,
@@ -124,6 +126,7 @@ from .custom_typing_fields import (
     ExecutionEventSelectResultGraphQLField,
     ExecutionGraphQLField,
     ExposureTimeModeGraphQLField,
+    ExposureTimeViolationGraphQLField,
     FastTurnaroundGraphQLField,
     Flamingos2AtomGraphQLField,
     Flamingos2CustomMaskGraphQLField,
@@ -356,6 +359,7 @@ from .custom_typing_fields import (
     SpectroscopyConfigOptionGmosSouthGraphQLField,
     SpectroscopyConfigOptionGnirsGraphQLField,
     SpectroscopyConfigOptionGraphQLField,
+    SpectroscopyConfigOptionScorpioGraphQLField,
     SpectroscopyScienceRequirementsGraphQLField,
     SpiralTelescopeConfigGeneratorGraphQLField,
     StepConfigGraphQLField,
@@ -999,12 +1003,16 @@ class AsterismGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -1155,11 +1163,18 @@ class AtomRecordFields(GraphQLField):
 
     @classmethod
     def steps(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "StepRecordSelectResultFields":
         """Recorded steps associated with this atom, ordered by execution order."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
+            "OFFSET_AT": {"type": "PosInt", "value": offset_at},
+            "OFFSET_AFTER": {"type": "PosInt", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -1599,6 +1614,67 @@ class CalculatedObservationWorkflowFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "CalculatedObservationWorkflowFields":
+        self._alias = alias
+        return self
+
+
+class CalibrationDigestFields(GraphQLField):
+    """Calibrations an observation still needs over its remaining science time.
+    Existing calibrations are observations of their own, so only the expected time
+    is charged to the observation's total."""
+
+    count: "CalibrationDigestGraphQLField" = CalibrationDigestGraphQLField("count")
+    "Tellurics still needed: existing plus expected. Zero with no telluric."
+
+    @classmethod
+    def existing(cls) -> "CalibrationEstimateFields":
+        """Calibrations already generated for this observation and still to be
+        observed, each at its own estimate or a placeholder while it has none.
+        Not part of the observation's total."""
+        return CalibrationEstimateFields("existing")
+
+    @classmethod
+    def expected(cls) -> "CalibrationEstimateFields":
+        """Calibrations predicted but not generated yet, each at the average estimate
+        of the group's calibrations, or a placeholder while none has a digest.
+        Zero when the observation uses no telluric. A declined telluric fills its
+        slot, so none is expected in its place, but later ones still are.
+        Included in the observation's total."""
+        return CalibrationEstimateFields("expected")
+
+    def fields(
+        self,
+        *subfields: Union[CalibrationDigestGraphQLField, "CalibrationEstimateFields"],
+    ) -> "CalibrationDigestFields":
+        """Subfields should come from the CalibrationDigestFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalibrationDigestFields":
+        self._alias = alias
+        return self
+
+
+class CalibrationEstimateFields(GraphQLField):
+    """Number of calibration observations and their estimated time."""
+
+    count: "CalibrationEstimateGraphQLField" = CalibrationEstimateGraphQLField("count")
+    "Number of calibration observations."
+
+    @classmethod
+    def time(cls) -> "CategorizedTimeFields":
+        """Their estimated time, by charge class."""
+        return CategorizedTimeFields("time")
+
+    def fields(
+        self,
+        *subfields: Union[CalibrationEstimateGraphQLField, "CategorizedTimeFields"],
+    ) -> "CalibrationEstimateFields":
+        """Subfields should come from the CalibrationEstimateFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalibrationEstimateFields":
         self._alias = alias
         return self
 
@@ -2730,12 +2806,16 @@ class ConstraintSetGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -3080,11 +3160,18 @@ class DatasetFields(GraphQLField):
 
     @classmethod
     def events(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "ExecutionEventSelectResultFields":
         """Events associated with the dataset."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "OFFSET_AT": {"type": "ExecutionEventId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ExecutionEventId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -3928,12 +4015,19 @@ class ExecutionFields(GraphQLField):
 
     @classmethod
     def atom_records(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "AtomRecordSelectResultFields":
         """Executed (or at least partially executed) atom records, across all visits,
         ordered by execution order of the first contained step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
+            "OFFSET_AT": {"type": "PosInt", "value": offset_at},
+            "OFFSET_AFTER": {"type": "PosInt", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -3943,11 +4037,18 @@ class ExecutionFields(GraphQLField):
 
     @classmethod
     def datasets(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "DatasetSelectResultFields":
         """Datasets associated with the observation, across all visits."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
+            "OFFSET_AT": {"type": "DatasetId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "DatasetId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -3957,11 +4058,18 @@ class ExecutionFields(GraphQLField):
 
     @classmethod
     def events(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "ExecutionEventSelectResultFields":
         """Events associated with the observation, across all visits."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "OFFSET_AT": {"type": "ExecutionEventId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ExecutionEventId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -3971,11 +4079,18 @@ class ExecutionFields(GraphQLField):
 
     @classmethod
     def visits(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "VisitSelectResultFields":
         """Visits associated with the observation."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "VisitId", "value": offset},
+            "OFFSET_AT": {"type": "VisitId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "VisitId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -4004,6 +4119,14 @@ class ExecutionFields(GraphQLField):
         ExecutionGraphQLField("acquisitionSequenceIsMaterialized")
     )
     "Whether the acquisition sequence has been materialized.\nThis will happen when the sequence is executed or if it is manually edited."
+    science_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
+        "scienceSequenceIsCustomized"
+    )
+    "Whether the science sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence`."
+    acquisition_sequence_is_customized: "ExecutionGraphQLField" = ExecutionGraphQLField(
+        "acquisitionSequenceIsCustomized"
+    )
+    "Whether the acquisition sequence has been customized via `replace*Sequence`\n(regardless of whether the replacement differs from what would have been\ngenerated).  Cleared by `deleteSequence` or by `resetAcquisition` with\n`regenerate` set."
 
     def fields(
         self,
@@ -4121,7 +4244,7 @@ class ExecutionDigestFields(GraphQLField):
 
     @classmethod
     def full_time_estimate(cls) -> "CategorizedTimeFields":
-        """Full time estimate: science time plus full setup time for every setup."""
+        """Full time estimate: science time plus setup time for every setup and reacquisition."""
         return CategorizedTimeFields("fullTimeEstimate")
 
     def fields(
@@ -4251,6 +4374,30 @@ class ExposureTimeModeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ExposureTimeModeFields":
+        self._alias = alias
+        return self
+
+
+class ExposureTimeViolationFields(GraphQLField):
+    """An exposure rule that steps of a sequence violate."""
+
+    severity: "ExposureTimeViolationGraphQLField" = ExposureTimeViolationGraphQLField(
+        "severity"
+    )
+    "Whether the violation is an error or a warning."
+    description: "ExposureTimeViolationGraphQLField" = (
+        ExposureTimeViolationGraphQLField("description")
+    )
+    'The rule violated, as a sentence, e.g. "Exposure times for GMOS North must be\nat least 1 s."'
+
+    def fields(
+        self, *subfields: ExposureTimeViolationGraphQLField
+    ) -> "ExposureTimeViolationFields":
+        """Subfields should come from the ExposureTimeViolationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ExposureTimeViolationFields":
         self._alias = alias
         return self
 
@@ -10478,6 +10625,10 @@ class ObservationFields(GraphQLField):
         "calibrationRole"
     )
     "The Calibration role of this observation"
+    is_user_defined_telluric: "ObservationGraphQLField" = ObservationGraphQLField(
+        "isUserDefinedTelluric"
+    )
+    "Whether this is a telluric calibration whose target and configuration the\nuser defines (science telluric type USER_DEFINED).  Such a telluric is\neditable like a science observation and is never regenerated."
     observer_notes: "ObservationGraphQLField" = ObservationGraphQLField("observerNotes")
     "Notes for the observer"
     priority: "ObservationGraphQLField" = ObservationGraphQLField("priority")
@@ -10616,10 +10767,21 @@ class ObservationTimeEstimateFields(GraphQLField):
         ObservationTimeEstimateGraphQLField("setupCount")
     )
     "Expected number of setups."
+    reacquisition_count: "ObservationTimeEstimateGraphQLField" = (
+        ObservationTimeEstimateGraphQLField("reacquisitionCount")
+    )
+    "Expected number of reacquisitions: recentering on the target between full\nsetups.  Only spectroscopy guided by a PWFS is expected to need them."
+
+    @classmethod
+    def calibrations(cls) -> "CalibrationDigestFields":
+        """Calibrations still needed over the remaining science time, existing and
+        expected."""
+        return CalibrationDigestFields("calibrations")
+
     calibration_count: "ObservationTimeEstimateGraphQLField" = (
         ObservationTimeEstimateGraphQLField("calibrationCount")
     )
-    "Expected number of calibration over the remaining science time.\nZero for calibration observations and for modes that take no callibrations per observation."
+    "Number of tellurics still needed."
 
     @classmethod
     def science(cls) -> "CategorizedTimeFields":
@@ -10628,13 +10790,17 @@ class ObservationTimeEstimateFields(GraphQLField):
 
     @classmethod
     def total(cls) -> "CategorizedTimeFields":
-        """Total time estimate: science time plus full setup time for every setup."""
+        """Total time estimate: science time plus full setup time for every setup,
+        reacquisition time for every reacquisition, and the expected calibration
+        time.  Add the existing calibration time for the cost of the observation
+        with all its calibrations."""
         return CategorizedTimeFields("total")
 
     def fields(
         self,
         *subfields: Union[
             ObservationTimeEstimateGraphQLField,
+            "CalibrationDigestFields",
             "CategorizedTimeFields",
             "SetupTimeFields",
         ],
@@ -10840,12 +11006,16 @@ class ObservingModeGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -11186,12 +11356,16 @@ class ProgramFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """All observations associated with the program."""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -11203,11 +11377,18 @@ class ProgramFields(GraphQLField):
 
     @classmethod
     def configuration_requests(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "ConfigurationRequestSelectResultFields":
         """All configuration requests associated with the program."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ConfigurationRequestId", "value": offset},
+            "OFFSET_AT": {"type": "ConfigurationRequestId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ConfigurationRequestId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -11294,7 +11475,7 @@ class ProgramFields(GraphQLField):
     resource_count: "ProgramGraphQLField" = ProgramGraphQLField("resourceCount")
     "Current number of resources (present, non-system observations, groups,\ntargets, attachments, and program notes) associated with this program, counted\nagainst `resourceLimit`."
     dismissed_warnings: "ProgramGraphQLField" = ProgramGraphQLField("dismissedWarnings")
-    "List of validation codes that have been dismissed for this program."
+    "List of validation codes that have been dismissed for this program.  An\nobservation with a warning that has not been dismissed cannot be made READY,\nand a READY observation that picks one up reverts to DEFINED until it is\ndismissed."
     too_activation_ceiling: "ProgramGraphQLField" = ProgramGraphQLField(
         "tooActivationCeiling"
     )
@@ -12505,11 +12686,19 @@ class SequenceDigestFields(GraphQLField):
     )
     "Execution state for the sequence. Note, acquisition sequences are never\n'COMPLETED'.  The execution state for the observation as a whole is that of\nthe science sequence."
 
+    @classmethod
+    def exposure_time_violations(cls) -> "ExposureTimeViolationFields":
+        """The instrument's exposure rules that steps of the sequence violate, errors
+        first.  Errors are exposures that cannot be taken; warnings are those merely
+        outside the recommended range, and are reported for science steps alone."""
+        return ExposureTimeViolationFields("exposureTimeViolations")
+
     def fields(
         self,
         *subfields: Union[
             SequenceDigestGraphQLField,
             "CategorizedTimeFields",
+            "ExposureTimeViolationFields",
             "StepDigestsFields",
             "TelescopeConfigFields",
         ],
@@ -13112,6 +13301,11 @@ class SpectroscopyConfigOptionFields(GraphQLField):
         """For GNIRS options, the GNIRS configuration.  Null for other instruments."""
         return SpectroscopyConfigOptionGnirsFields("gnirs")
 
+    @classmethod
+    def scorpio(cls) -> "SpectroscopyConfigOptionScorpioFields":
+        """For SCORPIO options, the SCORPIO configuration.  Null for other instruments."""
+        return SpectroscopyConfigOptionScorpioFields("scorpio")
+
     def fields(
         self,
         *subfields: Union[
@@ -13122,6 +13316,7 @@ class SpectroscopyConfigOptionFields(GraphQLField):
             "SpectroscopyConfigOptionGmosNorthFields",
             "SpectroscopyConfigOptionGmosSouthFields",
             "SpectroscopyConfigOptionGnirsFields",
+            "SpectroscopyConfigOptionScorpioFields",
             "WavelengthFields",
         ],
     ) -> "SpectroscopyConfigOptionFields":
@@ -13268,6 +13463,26 @@ class SpectroscopyConfigOptionGnirsFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SpectroscopyConfigOptionGnirsFields":
+        self._alias = alias
+        return self
+
+
+class SpectroscopyConfigOptionScorpioFields(GraphQLField):
+    """SCORPIO exposes every channel at once, so a spectroscopy option is identified
+    by its long slit alone."""
+
+    fpu: "SpectroscopyConfigOptionScorpioGraphQLField" = (
+        SpectroscopyConfigOptionScorpioGraphQLField("fpu")
+    )
+
+    def fields(
+        self, *subfields: SpectroscopyConfigOptionScorpioGraphQLField
+    ) -> "SpectroscopyConfigOptionScorpioFields":
+        """Subfields should come from the SpectroscopyConfigOptionScorpioFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "SpectroscopyConfigOptionScorpioFields":
         self._alias = alias
         return self
 
@@ -13583,11 +13798,18 @@ class StepRecordFields(GraphQLField):
 
     @classmethod
     def datasets(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "DatasetSelectResultFields":
         """Datasets associated with this step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
+            "OFFSET_AT": {"type": "DatasetId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "DatasetId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -13597,11 +13819,18 @@ class StepRecordFields(GraphQLField):
 
     @classmethod
     def events(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "ExecutionEventSelectResultFields":
         """Execution events associated with this step."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "OFFSET_AT": {"type": "ExecutionEventId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ExecutionEventId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -14038,12 +14267,16 @@ class TargetGroupFields(GraphQLField):
         include_deleted: bool,
         *,
         offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
         limit: Optional[Any] = None,
     ) -> "ObservationSelectResultFields":
         """Observations associated with the common value"""
         arguments: dict[str, dict[str, Any]] = {
             "includeDeleted": {"type": "Boolean!", "value": include_deleted},
             "OFFSET": {"type": "ObservationId", "value": offset},
+            "OFFSET_AT": {"type": "ObservationId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ObservationId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -14227,6 +14460,7 @@ class TelluricTypeFields(GraphQLField):
 
     tag: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("tag")
     star_types: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("starTypes")
+    count: "TelluricTypeGraphQLField" = TelluricTypeGraphQLField("count")
 
     def fields(self, *subfields: TelluricTypeGraphQLField) -> "TelluricTypeFields":
         """Subfields should come from the TelluricTypeFields class"""
@@ -15407,11 +15641,18 @@ class VisitFields(GraphQLField):
 
     @classmethod
     def atom_records(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "AtomRecordSelectResultFields":
         """Executed (or at least partially executed) atom records for this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "PosInt", "value": offset},
+            "OFFSET_AT": {"type": "PosInt", "value": offset_at},
+            "OFFSET_AFTER": {"type": "PosInt", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -15421,11 +15662,18 @@ class VisitFields(GraphQLField):
 
     @classmethod
     def datasets(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "DatasetSelectResultFields":
         """Datasets associated with this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "DatasetId", "value": offset},
+            "OFFSET_AT": {"type": "DatasetId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "DatasetId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {
@@ -15435,11 +15683,18 @@ class VisitFields(GraphQLField):
 
     @classmethod
     def events(
-        cls, *, offset: Optional[Any] = None, limit: Optional[Any] = None
+        cls,
+        *,
+        offset: Optional[Any] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
     ) -> "ExecutionEventSelectResultFields":
         """Execution events associated with this visit."""
         arguments: dict[str, dict[str, Any]] = {
             "OFFSET": {"type": "ExecutionEventId", "value": offset},
+            "OFFSET_AT": {"type": "ExecutionEventId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "ExecutionEventId", "value": offset_after},
             "LIMIT": {"type": "NonNegInt", "value": limit},
         }
         cleared_arguments = {

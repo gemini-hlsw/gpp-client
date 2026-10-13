@@ -722,8 +722,9 @@ class Mutation:
         cls, input: ResetAcquisitionInput
     ) -> ResetAcquisitionResultFields:
         """Resets the acquisition sequence to start from the initial step regardless of
-        which acquisition steps may have been executed.  Requires staff (or better)
-        access."""
+        which acquisition steps may have been executed.  An acquisition customized
+        via `replace*Sequence` restarts from a copy of its edited steps and stays
+        customized, unless `regenerate` is set.  Requires staff (or better) access."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ResetAcquisitionInput!", "value": input}
         }
