@@ -82,4 +82,33 @@ fragment ObservationDetails on Observation {
         }
       }
   }
+  attachments {
+    id
+    fileName
+    attachmentType
+    mask {
+      name
+      instrument
+      pixelScale
+      dispersionDirection
+      scienceSlitCount
+      acquisitionSlitCount
+    }
+  }
+}
+
+fragment ObservationAttachmentDetails on Observation {
+  attachments {
+    id
+    fileName
+    attachmentType
+    mask {
+      name
+      instrument
+      pixelScale
+      dispersionDirection
+      scienceSlitCount
+      acquisitionSlitCount
+    }
+  }
 }

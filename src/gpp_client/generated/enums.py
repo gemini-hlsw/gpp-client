@@ -64,12 +64,6 @@ class GeminiCallForProposalsType(str, Enum):
     SYSTEM_VERIFICATION = "SYSTEM_VERIFICATION"
 
 
-class CloneSequenceMode(str, Enum):
-    NONE = "NONE"
-    ALL_STEPS = "ALL_STEPS"
-    PENDING_STEPS = "PENDING_STEPS"
-
-
 class ConditionsMeasurementSource(str, Enum):
     OBSERVER = "OBSERVER"
 
@@ -1147,7 +1141,6 @@ class ObservationValidationCode(str, Enum):
     CONDITIONS_UNLIKELY = "CONDITIONS_UNLIKELY"
     CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
-    CFP_WARNING = "CFP_WARNING"
 
 
 class ObserveClass(str, Enum):
