@@ -125,7 +125,7 @@ set, identifying the event type.  Unlike the singular mutations, every event in
 a batch must supply both a 'clientTime' and an 'idempotencyKey' (see
 'addEventBatch').
 """
-input AddEventBatchEntryInput {
+input AddEventBatchEntryInput @oneOf {
   dataset: AddDatasetEventInput
   sequence: AddSequenceEventInput
   slew: AddSlewEventInput
@@ -321,8 +321,20 @@ type AtomRecord {
 
   """Recorded steps associated with this atom, ordered by execution order."""
   steps(
-    """Starts the result set at this index."""
-    OFFSET: PosInt
+    """
+    Starts the result set at this index. Indices are unique within the observation.
+    """
+    OFFSET: PosInt @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given index, or at the next one if it does not exist. Indices are unique within the observation.
+    """
+    OFFSET_AT: PosInt
+
+    """
+    Starts the result set after the given index. Indices are unique within the observation.
+    """
+    OFFSET_AFTER: PosInt
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -979,6 +991,36 @@ input CloneObservationInput {
   observationId: ObservationId
   observationReference: ObservationReferenceLabel
   SET: ObservationPropertiesInput
+
+  """
+  Which steps, if any, of the source's materialized sequences to copy into the
+  clone.  Any mode other than NONE cannot be combined with an observing mode or
+  science requirements edit in SET.  When SET edits the asterism, only the
+  science sequence is copied and the acquisition is generated for the new
+  targets; copied science steps keep their exposure times regardless.
+  """
+  sequence: CloneSequenceMode! = NONE
+}
+
+"""
+What a cloned observation takes from its source's materialized (stored)
+acquisition and science sequences.  Each sequence type is handled on its own,
+and one with nothing to copy is generated as usual.
+"""
+enum CloneSequenceMode {
+  """
+  Copy nothing; the clone generates its sequences from its own configuration.
+  """
+  NONE
+
+  """
+  Copy every step, executed or not and whatever state it ended in, as a pending
+  step.  Atoms keep their steps and are ordered by first execution.
+  """
+  ALL_STEPS
+
+  """Copy only the steps that have not started executing."""
+  PENDING_STEPS
 }
 
 """The result of cloning an observation, containing the new observation."""
@@ -1986,7 +2028,7 @@ type GmosNorthFpu {
 }
 
 """GMOS North FPU input parameters (choose custom or builtin)."""
-input GmosNorthFpuInput {
+input GmosNorthFpuInput @oneOf {
   """Custom mask FPU option"""
   customMask: GmosCustomMaskInput
 
@@ -2330,7 +2372,7 @@ type GmosSouthFpu {
 }
 
 """GMOS South FPU input parameters (choose custom or builtin)."""
-input GmosSouthFpuInput {
+input GmosSouthFpuInput @oneOf {
   """Custom mask FPU option"""
   customMask: GmosCustomMaskInput
 
@@ -3377,8 +3419,9 @@ type Mutation {
 
   """
   Resets the acquisition sequence to start from the initial step regardless of
-  which acquisition steps may have been executed.  Requires staff (or better)
-  access.
+  which acquisition steps may have been executed.  An acquisition customized
+  via `replace*Sequence` restarts from a copy of its edited steps and stays
+  customized, unless `regenerate` is set.  Requires staff (or better) access.
   """
   resetAcquisition(input: ResetAcquisitionInput!): ResetAcquisitionResult!
 
@@ -3838,7 +3881,7 @@ An offset generator is specified by defining one of the `enumerated`, `random`,
 `spiral` or `uniform` options.  If none are defined, the generator type will be
 `NONE`.
 """
-input TelescopeConfigGeneratorInput @oneOf {
+input TelescopeConfigGeneratorInput {
   enumerated: EnumeratedTelescopeConfigGeneratorInput
   random: RandomTelescopeConfigGeneratorInput
   spiral: SpiralTelescopeConfigGeneratorInput
@@ -4976,6 +5019,12 @@ executed.  Select one of `observationId` or `observationReference`.
 input ResetAcquisitionInput {
   observationId: ObservationId
   observationReference: ObservationReferenceLabel
+
+  """
+  Regenerate the acquisition from the observing mode even if it was customized
+  via `replace*Sequence`, clearing the customization.
+  """
+  regenerate: Boolean = false
 }
 
 """The result of resetting the acquisition sequence."""
@@ -6601,9 +6650,17 @@ type AsterismGroup {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7264,9 +7321,17 @@ type ConstraintSetGroup {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7374,7 +7439,15 @@ type Dataset {
     """
     Starts the result set at (or after if not existent) the given execution event id.
     """
-    OFFSET: ExecutionEventId
+    OFFSET: ExecutionEventId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given execution event id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ExecutionEventId
+
+    """Starts the result set after the given execution event id."""
+    OFFSET_AFTER: ExecutionEventId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7743,9 +7816,19 @@ type Execution {
   atomRecords(
     """
     Starts the result set at the given step (execution) index -- atom indices
-    are the index of the first contained step.
+    are the index of the first contained step. Indices are unique within the observation.
     """
-    OFFSET: PosInt
+    OFFSET: PosInt @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given index, or at the next one if it does not exist. Indices are unique within the observation.
+    """
+    OFFSET_AT: PosInt
+
+    """
+    Starts the result set after the given index. Indices are unique within the observation.
+    """
+    OFFSET_AFTER: PosInt
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7758,7 +7841,15 @@ type Execution {
     """
     Starts the result set at (or after if not existent) the given dataset id.
     """
-    OFFSET: DatasetId
+    OFFSET: DatasetId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given dataset id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: DatasetId
+
+    """Starts the result set after the given dataset id."""
+    OFFSET_AFTER: DatasetId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7771,7 +7862,15 @@ type Execution {
     """
     Starts the result set at (or after if not existent) the given execution event id.
     """
-    OFFSET: ExecutionEventId
+    OFFSET: ExecutionEventId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given execution event id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ExecutionEventId
+
+    """Starts the result set after the given execution event id."""
+    OFFSET_AFTER: ExecutionEventId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7784,7 +7883,15 @@ type Execution {
     """
     Starts the result set at (or after if not existent) the given visit id.
     """
-    OFFSET: VisitId
+    OFFSET: VisitId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given visit id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: VisitId
+
+    """Starts the result set after the given visit id."""
+    OFFSET_AFTER: VisitId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -7814,6 +7921,21 @@ type Execution {
   This will happen when the sequence is executed or if it is manually edited.
   """
   acquisitionSequenceIsMaterialized: Boolean!
+
+  """
+  Whether the science sequence has been customized via `replace*Sequence`
+  (regardless of whether the replacement differs from what would have been
+  generated).  Cleared by `deleteSequence`.
+  """
+  scienceSequenceIsCustomized: Boolean!
+
+  """
+  Whether the acquisition sequence has been customized via `replace*Sequence`
+  (regardless of whether the replacement differs from what would have been
+  generated).  Cleared by `deleteSequence` or by `resetAcquisition` with
+  `regenerate` set.
+  """
+  acquisitionSequenceIsCustomized: Boolean!
 }
 
 """
@@ -7939,7 +8061,9 @@ type ExecutionDigest {
   """Science sequence summary."""
   science: SequenceDigest
 
-  """Full time estimate: science time plus full setup time for every setup."""
+  """
+  Full time estimate: science time plus setup time for every setup and reacquisition.
+  """
   fullTimeEstimate: CategorizedTime! @deprecated(reason: "Use `estimate.total` instead.")
 }
 
@@ -7958,18 +8082,65 @@ type ObservationTimeEstimate {
   setupCount: NonNegInt!
 
   """
-  Expected number of calibration over the remaining science time.
-  Zero for calibration observations and for modes that take no callibrations per observation.
+  Expected number of reacquisitions: recentering on the target between full
+  setups.  Only spectroscopy guided by a PWFS is expected to need them.
   """
-  calibrationCount: NonNegInt!
+  reacquisitionCount: NonNegInt!
+
+  """
+  Calibrations still needed over the remaining science time, existing and
+  expected.
+  """
+  calibrations: CalibrationDigest!
+
+  """Number of tellurics still needed."""
+  calibrationCount: NonNegInt! @deprecated(reason: "Use `calibrations.count` instead.")
 
   """Science sequence time estimate."""
   science: CategorizedTime!
 
   """
-  Total time estimate: science time plus full setup time for every setup.
+  Total time estimate: science time plus full setup time for every setup,
+  reacquisition time for every reacquisition, and the expected calibration
+  time.  Add the existing calibration time for the cost of the observation
+  with all its calibrations.
   """
   total: CategorizedTime!
+}
+
+"""
+Calibrations an observation still needs over its remaining science time.
+Existing calibrations are observations of their own, so only the expected time
+is charged to the observation's total.
+"""
+type CalibrationDigest {
+  """Tellurics still needed: existing plus expected. Zero with no telluric."""
+  count: NonNegInt!
+
+  """
+  Calibrations already generated for this observation and still to be
+  observed, each at its own estimate or a placeholder while it has none.
+  Not part of the observation's total.
+  """
+  existing: CalibrationEstimate!
+
+  """
+  Calibrations predicted but not generated yet, each at the average estimate
+  of the group's calibrations, or a placeholder while none has a digest.
+  Zero when the observation uses no telluric. A declined telluric fills its
+  slot, so none is expected in its place, but later ones still are.
+  Included in the observation's total.
+  """
+  expected: CalibrationEstimate!
+}
+
+"""Number of calibration observations and their estimated time."""
+type CalibrationEstimate {
+  """Number of calibration observations."""
+  count: NonNegInt!
+
+  """Their estimated time, by charge class."""
+  time: CategorizedTime!
 }
 
 """Wraps an ExecutionDigest with the background calculation state."""
@@ -8647,7 +8818,8 @@ enum TelluricTag {
   HOT
   A0V
   SOLAR
-  MANUAL
+  EXPLICIT_SPECTRAL_TYPES
+  USER_DEFINED
   NO_TELLURIC
 }
 
@@ -8655,11 +8827,13 @@ enum TelluricTag {
 type TelluricType {
   tag: TelluricTag!
   starTypes: [String!]
+  count: Int
 }
 
 input TelluricTypeInput {
   tag: TelluricTag!
   starTypes: [String!]
+  count: Int
 }
 
 """Flamingos2 Long Slit acquisition settings."""
@@ -8825,7 +8999,10 @@ input Flamingos2LongSlitInput {
 
   """
   Exposure time mode for the science sequence.  If not specified, the exposure
-  time mode of the observation's science requirements are used.
+  time mode of the observation's science requirements are used.  On a telluric
+  calibration a value overrides the mode derived from the science observation
+  and survives recalculation; null clears the override.  Null is only valid on
+  a telluric.
   """
   exposureTimeMode: ExposureTimeModeInput
 
@@ -9542,8 +9719,11 @@ type Igrins2LongSlit {
 """Edit or create IGRINS-2 Long Slit configuration"""
 input Igrins2LongSlitInput {
   """
-  The exposureTimeMode field may be unset by assigning a null value, or ignored
-  by skipping it altogether
+  Exposure time mode for the science sequence.  If not specified, the exposure
+  time mode of the observation's science requirements are used.  On a telluric
+  calibration a value overrides the mode derived from the science observation
+  and survives recalculation; null clears the override.  Null is only valid on
+  a telluric.
   """
   exposureTimeMode: ExposureTimeModeInput
 
@@ -9833,8 +10013,11 @@ input GnirsCentralWavelengthConfigInput {
   centralWavelength: WavelengthInput!
 
   """
-  Exposure time mode for this central wavelength.
-  If not specified, it is taken from the observation's requirements.
+  Exposure time mode for this central wavelength.  If not specified, it is
+  taken from the observation's requirements.  On a telluric calibration a value
+  overrides the mode derived from the science observation and survives
+  recalculation; null clears the override.  Null is only valid on a telluric,
+  whose wavelength list must then match its current configuration in order.
   """
   exposureTimeMode: ExposureTimeModeInput
 
@@ -10080,7 +10263,7 @@ input TelescopeConfigAlongSlitInput {
   guiding: GuideState!
 }
 
-input SlitTelescopeConfigsInput {
+input SlitTelescopeConfigsInput @oneOf {
   alongSlit: [TelescopeConfigAlongSlitInput!]
   toSky: [TelescopeConfigInput!]
 }
@@ -12908,6 +13091,11 @@ type SpectroscopyConfigOption {
   For GNIRS options, the GNIRS configuration.  Null for other instruments.
   """
   gnirs: SpectroscopyConfigOptionGnirs
+
+  """
+  For SCORPIO options, the SCORPIO configuration.  Null for other instruments.
+  """
+  scorpio: SpectroscopyConfigOptionScorpio
 }
 
 type SpectroscopyConfigOptionFlamingos2 {
@@ -12986,6 +13174,24 @@ enum GnirsPrism {
   MIRROR
   SXD
   LXD
+}
+
+"""
+SCORPIO exposes every channel at once, so a spectroscopy option is identified
+by its long slit alone.
+"""
+type SpectroscopyConfigOptionScorpio {
+  fpu: ScorpioFpu!
+}
+
+enum ScorpioFpu {
+  LONG_SLIT_0_36
+  LONG_SLIT_0_54
+  LONG_SLIT_0_72
+  LONG_SLIT_1_08
+  LONG_SLIT_1_44
+  LONG_SLIT_2_16
+  LONG_SLIT_4_32
 }
 
 enum GnirsCamera {
@@ -13643,6 +13849,13 @@ type Observation {
 
   """The Calibration role of this observation"""
   calibrationRole: CalibrationRole
+
+  """
+  Whether this is a telluric calibration whose target and configuration the
+  user defines (science telluric type USER_DEFINED).  Such a telluric is
+  editable like a science observation and is never regenerated.
+  """
+  isUserDefinedTelluric: Boolean!
 
   """Notes for the observer"""
   observerNotes: NonEmptyString
@@ -14573,6 +14786,19 @@ enum ObservationValidationCode {
   set.  Acceptance will limit it to `NONE` unless staff grant more.
   """
   TOO_ACTIVATION_UNEXPECTED
+
+  """
+  The observation is outside the recommendations of the Call for Proposals
+  (e.g., its base coordinates are outside the Call's RA/Dec limits).
+  """
+  CFP_WARNING
+
+  """
+  An exposure time is outside the recommended range for its instrument
+  configuration.  Exposure times that cannot be taken at all are reported as
+  CONFIGURATION_ERROR instead.
+  """
+  EXPOSURE_TIME_WARNING
 }
 
 """
@@ -14737,9 +14963,17 @@ type Program {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -14750,9 +14984,17 @@ type Program {
   """All configuration requests associated with the program."""
   configurationRequests(
     """
-    Starts the result set at (or after if not existent) the given configuration request id.
+    Starts the result set at (or after if not existent) the given configuration request id. The id is unique.
     """
-    OFFSET: ConfigurationRequestId
+    OFFSET: ConfigurationRequestId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given configuration request id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ConfigurationRequestId
+
+    """Starts the result set after the given configuration request id."""
+    OFFSET_AFTER: ConfigurationRequestId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -14819,7 +15061,12 @@ type Program {
   """
   resourceCount: NonNegInt!
 
-  """List of validation codes that have been dismissed for this program."""
+  """
+  List of validation codes that have been dismissed for this program.  An
+  observation with a warning that has not been dismissed cannot be made READY,
+  and a READY observation that picks one up reverts to DEFINED until it is
+  dismissed.
+  """
   dismissedWarnings: [ObservationValidationCode!]!
 
   """
@@ -15193,7 +15440,15 @@ type Query {
     WHERE: WhereCallForProposals
 
     """Starts the result set at (or after if not existent) the given id."""
-    OFFSET: CallForProposalsId
+    OFFSET: CallForProposalsId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given call for proposals id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: CallForProposalsId
+
+    """Starts the result set after the given call for proposals id."""
+    OFFSET_AFTER: CallForProposalsId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15251,9 +15506,17 @@ type Query {
     WHERE: WhereDataset
 
     """
-    Starts the result set at (or after if not existent) the given dataset id.
+    Starts the result set at (or after if not existent) the given dataset id. The id is unique.
     """
-    OFFSET: DatasetId
+    OFFSET: DatasetId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given dataset id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: DatasetId
+
+    """Starts the result set after the given dataset id."""
+    OFFSET_AFTER: DatasetId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15269,8 +15532,18 @@ type Query {
     """Filters the selection of chronicle entries."""
     WHERE: WhereDatasetChronicleEntry
 
-    """Starts the result set at (or after if not existent) the given id."""
-    OFFSET: ChronicleId
+    """
+    Starts the result set at (or after if not existent) the given id. The id is unique.
+    """
+    OFFSET: ChronicleId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given chronicle entry id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ChronicleId
+
+    """Starts the result set after the given chronicle entry id."""
+    OFFSET_AFTER: ChronicleId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15286,9 +15559,17 @@ type Query {
     WHERE: WhereExecutionEvent
 
     """
-    Starts the result set at (or after if not existent) the given execution event id.
+    Starts the result set at (or after if not existent) the given execution event id. The id is unique.
     """
-    OFFSET: ExecutionEventId
+    OFFSET: ExecutionEventId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given execution event id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ExecutionEventId
+
+    """Starts the result set after the given execution event id."""
+    OFFSET_AFTER: ExecutionEventId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15353,9 +15634,17 @@ type Query {
     WHERE: WhereObservation
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15374,9 +15663,17 @@ type Query {
     WHERE: WhereConfigurationRequest
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ConfigurationRequestId
+    OFFSET: ConfigurationRequestId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given configuration request id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ConfigurationRequestId
+
+    """Starts the result set after the given configuration request id."""
+    OFFSET_AFTER: ConfigurationRequestId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15437,9 +15734,17 @@ type Query {
     WHERE: WhereProgram
 
     """
-    Starts the result set at (or after if not existent) the given program id.
+    Starts the result set at (or after if not existent) the given program id. The id is unique.
     """
-    OFFSET: ProgramId
+    OFFSET: ProgramId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given program id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ProgramId
+
+    """Starts the result set after the given program id."""
+    OFFSET_AFTER: ProgramId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15462,7 +15767,15 @@ type Query {
     WHERE: WhereProgramNote
 
     """Starts the result set at (or after if no existent) the given note id."""
-    OFFSET: ProgramNoteId
+    OFFSET: ProgramNoteId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given program note id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ProgramNoteId
+
+    """Starts the result set after the given program note id."""
+    OFFSET_AFTER: ProgramNoteId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15488,7 +15801,15 @@ type Query {
     """
     Starts the result set at (or after, if no exact match) the given trigger id.
     """
-    OFFSET: TooTriggerId
+    OFFSET: TooTriggerId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given ToO trigger id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: TooTriggerId
+
+    """Starts the result set after the given ToO trigger id."""
+    OFFSET_AFTER: TooTriggerId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15504,7 +15825,15 @@ type Query {
     WHERE: WhereTooTriggerChronicleEntry
 
     """Starts the result set at (or after, if not existent) the given id."""
-    OFFSET: ChronicleId
+    OFFSET: ChronicleId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given chronicle entry id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ChronicleId
+
+    """Starts the result set after the given chronicle entry id."""
+    OFFSET_AFTER: ChronicleId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15521,7 +15850,17 @@ type Query {
     WHERE: WhereProgramUser
 
     """Starts the result set at (or after if not existent) the given user id."""
-    OFFSET: UserId
+    OFFSET: UserId @deprecated(reason: "Use `OFFSET_AT` with a program user id instead; user ids are not unique here.")
+
+    """
+    Starts the result set at the given program user id, or at the next one if it does not exist. Ordering is by program user id when `OFFSET` is not given.
+    """
+    OFFSET_AT: ProgramUserId
+
+    """
+    Starts the result set after the given program user id. Ordering is by program user id when `OFFSET` is not given.
+    """
+    OFFSET_AFTER: ProgramUserId
 
     """
     Limits the result to at most this number of matches (but never more than
@@ -15581,9 +15920,17 @@ type Query {
     WHERE: WhereTarget
 
     """
-    Starts the result set at (or after if not existent) the given target id.
+    Starts the result set at (or after if not existent) the given target id. The id is unique.
     """
-    OFFSET: TargetId
+    OFFSET: TargetId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given target id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: TargetId
+
+    """Starts the result set after the given target id."""
+    OFFSET_AFTER: TargetId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15693,9 +16040,17 @@ type ObservingModeGroup {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15779,9 +16134,17 @@ type ScienceRequirementsGroup {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -15896,6 +16259,37 @@ type SequenceDigest {
   the science sequence.
   """
   executionState: ExecutionState!
+
+  """
+  The instrument's exposure rules that steps of the sequence violate, errors
+  first.  Errors are exposures that cannot be taken; warnings are those merely
+  outside the recommended range, and are reported for science steps alone.
+  """
+  exposureTimeViolations: [ExposureTimeViolation!]!
+}
+
+"""
+Whether an exposure time violation means the exposure cannot be taken, or is
+merely outside the recommended range.
+"""
+enum ExposureTimeViolationSeverity {
+  """The exposure cannot be taken."""
+  ERROR
+
+  """The exposure is outside the recommended range."""
+  WARNING
+}
+
+"""An exposure rule that steps of a sequence violate."""
+type ExposureTimeViolation {
+  """Whether the violation is an error or a warning."""
+  severity: ExposureTimeViolationSeverity!
+
+  """
+  The rule violated, as a sentence, e.g. "Exposure times for GMOS North must be
+  at least 1 s."
+  """
+  description: String!
 }
 
 """
@@ -16877,7 +17271,15 @@ type StepRecord {
     """
     Starts the result set at (or after if not existent) the given dataset id.
     """
-    OFFSET: DatasetId
+    OFFSET: DatasetId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given dataset id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: DatasetId
+
+    """Starts the result set after the given dataset id."""
+    OFFSET_AFTER: DatasetId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -16890,7 +17292,15 @@ type StepRecord {
     """
     Starts the result set at (or after if not existent) the given execution event id.
     """
-    OFFSET: ExecutionEventId
+    OFFSET: ExecutionEventId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given execution event id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ExecutionEventId
+
+    """Starts the result set after the given execution event id."""
+    OFFSET_AFTER: ExecutionEventId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -17288,9 +17698,17 @@ type TargetGroup {
     includeDeleted: Boolean! = false
 
     """
-    Starts the result set at (or after if not existent) the given observation id.
+    Starts the result set at (or after if not existent) the given observation id. The id is unique.
     """
-    OFFSET: ObservationId
+    OFFSET: ObservationId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given observation id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ObservationId
+
+    """Starts the result set after the given observation id."""
+    OFFSET_AFTER: ObservationId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -17677,9 +18095,19 @@ type Visit {
   atomRecords(
     """
     Starts the result set at the given step index.  The atom record index is the
-    index of its first contained step.
+    index of its first contained step. Indices are unique within the observation.
     """
-    OFFSET: PosInt
+    OFFSET: PosInt @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given index, or at the next one if it does not exist. Indices are unique within the observation.
+    """
+    OFFSET_AT: PosInt
+
+    """
+    Starts the result set after the given index. Indices are unique within the observation.
+    """
+    OFFSET_AFTER: PosInt
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -17692,7 +18120,15 @@ type Visit {
     """
     Starts the result set at (or after if not existent) the given dataset id.
     """
-    OFFSET: DatasetId
+    OFFSET: DatasetId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given dataset id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: DatasetId
+
+    """Starts the result set after the given dataset id."""
+    OFFSET_AFTER: DatasetId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
@@ -17705,7 +18141,15 @@ type Visit {
     """
     Starts the result set at (or after if not existent) the given execution event id.
     """
-    OFFSET: ExecutionEventId
+    OFFSET: ExecutionEventId @deprecated(reason: "Use `OFFSET_AT` instead.")
+
+    """
+    Starts the result set at the given execution event id, or at the next one if it does not exist.
+    """
+    OFFSET_AT: ExecutionEventId
+
+    """Starts the result set after the given execution event id."""
+    OFFSET_AFTER: ExecutionEventId
 
     """
     Limits the result to at most this number of matches (but never more than 1000).
