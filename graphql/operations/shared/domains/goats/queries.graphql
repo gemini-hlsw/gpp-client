@@ -9,6 +9,7 @@ query GetGOATSPrograms {
       }
       proposalStatus
       type
+      tooActivationCeiling
     }
     hasMore
   }
@@ -59,26 +60,6 @@ query GetGOATSObservations($programId: ProgramId!) {
         fileName
         description
         updatedAt
-      }
-      timingWindows {
-        inclusion
-        startUtc
-        end {
-          ... on TimingWindowEndAt {
-            atUtc
-          }
-          ... on TimingWindowEndAfter {
-            after {
-              seconds
-            }
-            repeat {
-              period {
-                seconds
-              }
-              times
-            }
-          }
-        }
       }
       targetEnvironment {
         asterism {
@@ -1218,6 +1199,31 @@ query GetGOATSObservations($programId: ProgramId!) {
           }
         }
       }
+      schedulingConstraints {
+        schedulingMode
+        tooActivation
+        timingWindows {
+          inclusion
+          startUtc
+          end {
+            ... on TimingWindowEndAt {
+              atUtc
+            }
+            ... on TimingWindowEndAfter {
+              after {
+                seconds
+              }
+              repeat {
+                period {
+                  seconds
+                }
+                times
+              }
+            }
+          }
+        }
+      }
+      priority
     }
     hasMore
   }

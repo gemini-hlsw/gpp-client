@@ -671,6 +671,7 @@ class GraphQLClient(AsyncBaseClient):
                   }
                   proposalStatus
                   type
+                  tooActivationCeiling
                 }
                 hasMore
               }
@@ -736,27 +737,6 @@ class GraphQLClient(AsyncBaseClient):
                     fileName
                     description
                     updatedAt
-                  }
-                  timingWindows {
-                    inclusion
-                    startUtc
-                    end {
-                      __typename
-                      ... on TimingWindowEndAt {
-                        atUtc
-                      }
-                      ... on TimingWindowEndAfter {
-                        after {
-                          seconds
-                        }
-                        repeat {
-                          period {
-                            seconds
-                          }
-                          times
-                        }
-                      }
-                    }
                   }
                   targetEnvironment {
                     asterism {
@@ -1896,6 +1876,32 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
+                  schedulingConstraints {
+                    schedulingMode
+                    tooActivation
+                    timingWindows {
+                      inclusion
+                      startUtc
+                      end {
+                        __typename
+                        ... on TimingWindowEndAt {
+                          atUtc
+                        }
+                        ... on TimingWindowEndAfter {
+                          after {
+                            seconds
+                          }
+                          repeat {
+                            period {
+                              seconds
+                            }
+                            times
+                          }
+                        }
+                      }
+                    }
+                  }
+                  priority
                 }
                 hasMore
               }
