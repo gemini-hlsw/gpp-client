@@ -3,7 +3,7 @@ from typing import Any, Literal, Optional
 from pydantic import Field
 
 from .base_model import BaseModel
-from .enums import ProgramType, ProposalStatus
+from .enums import ProgramType, ProposalStatus, TooActivation
 
 
 class GetGOATSPrograms(BaseModel):
@@ -22,6 +22,9 @@ class GetGOATSProgramsProgramsMatches(BaseModel):
     reference: Optional["GetGOATSProgramsProgramsMatchesReference"]
     proposal_status: ProposalStatus = Field(alias="proposalStatus")
     type_: ProgramType = Field(alias="type")
+    too_activation_ceiling: Optional[TooActivation] = Field(
+        alias="tooActivationCeiling"
+    )
 
 
 class GetGOATSProgramsProgramsMatchesReference(BaseModel):

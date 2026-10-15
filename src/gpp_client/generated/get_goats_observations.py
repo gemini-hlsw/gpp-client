@@ -26,6 +26,7 @@ from .enums import (
     ImageQualityPreset,
     ImagingVariantType,
     Instrument,
+    ObservationPriority,
     ObservationValidationCode,
     ObservationWorkflowState,
     ObservingModeType,
@@ -33,6 +34,7 @@ from .enums import (
     PlanetSpectrum,
     PosAngleConstraintMode,
     QuasarSpectrum,
+    SchedulingMode,
     ScienceBand,
     ScienceMode,
     SkyBackground,
@@ -40,6 +42,7 @@ from .enums import (
     StellarLibrarySpectrum,
     TelescopeConfigGeneratorType,
     TimingWindowInclusion,
+    TooActivation,
     WaterVapor,
     WavelengthOrder,
 )
@@ -66,9 +69,6 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     )
     workflow: Optional["GetGOATSObservationsObservationsMatchesWorkflow"]
     attachments: list["GetGOATSObservationsObservationsMatchesAttachments"]
-    timing_windows: list["GetGOATSObservationsObservationsMatchesTimingWindows"] = (
-        Field(alias="timingWindows")
-    )
     target_environment: "GetGOATSObservationsObservationsMatchesTargetEnvironment" = (
         Field(alias="targetEnvironment")
     )
@@ -87,6 +87,10 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
         Field(alias="observingMode")
     )
     program: "GetGOATSObservationsObservationsMatchesProgram"
+    scheduling_constraints: "GetGOATSObservationsObservationsMatchesSchedulingConstraints" = Field(
+        alias="schedulingConstraints"
+    )
+    priority: ObservationPriority
 
 
 class GetGOATSObservationsObservationsMatchesReference(BaseModel):
@@ -149,56 +153,6 @@ class GetGOATSObservationsObservationsMatchesAttachments(BaseModel):
     file_name: Any = Field(alias="fileName")
     description: Optional[Any]
     updated_at: Any = Field(alias="updatedAt")
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindows(BaseModel):
-    inclusion: TimingWindowInclusion
-    start_utc: Any = Field(alias="startUtc")
-    end: Optional[
-        Annotated[
-            Union[
-                "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt",
-                "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter",
-            ],
-            Field(discriminator="typename__"),
-        ]
-    ]
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAt(
-    BaseModel
-):
-    typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
-    at_utc: Any = Field(alias="atUtc")
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter(
-    BaseModel
-):
-    typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
-    after: "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterAfter"
-    repeat: Optional[
-        "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat"
-    ]
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterAfter(
-    BaseModel
-):
-    seconds: Any
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat(
-    BaseModel
-):
-    period: "GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
-    times: Optional[Any]
-
-
-class GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
-    BaseModel
-):
-    seconds: Any
 
 
 class GetGOATSObservationsObservationsMatchesTargetEnvironment(BaseModel):
@@ -2614,6 +2568,66 @@ class GetGOATSObservationsObservationsMatchesProgramTimeChargeTimeProgram(BaseMo
     hours: Any
 
 
+class GetGOATSObservationsObservationsMatchesSchedulingConstraints(BaseModel):
+    scheduling_mode: SchedulingMode = Field(alias="schedulingMode")
+    too_activation: TooActivation = Field(alias="tooActivation")
+    timing_windows: list[
+        "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindows"
+    ] = Field(alias="timingWindows")
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindows(
+    BaseModel
+):
+    inclusion: TimingWindowInclusion
+    start_utc: Any = Field(alias="startUtc")
+    end: Optional[
+        Annotated[
+            Union[
+                "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAt",
+                "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter",
+            ],
+            Field(discriminator="typename__"),
+        ]
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAt(
+    BaseModel
+):
+    typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
+    at_utc: Any = Field(alias="atUtc")
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter(
+    BaseModel
+):
+    typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
+    after: "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter"
+    repeat: Optional[
+        "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat"
+    ]
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter(
+    BaseModel
+):
+    seconds: Any
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat(
+    BaseModel
+):
+    period: "GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
+    times: Optional[Any]
+
+
+class GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
+    BaseModel
+):
+    seconds: Any
+
+
 GetGOATSObservations.model_rebuild()
 GetGOATSObservationsObservations.model_rebuild()
 GetGOATSObservationsObservationsMatches.model_rebuild()
@@ -2621,9 +2635,6 @@ GetGOATSObservationsObservationsMatchesConstraintSet.model_rebuild()
 GetGOATSObservationsObservationsMatchesConstraintSetElevationRange.model_rebuild()
 GetGOATSObservationsObservationsMatchesWorkflow.model_rebuild()
 GetGOATSObservationsObservationsMatchesWorkflowValue.model_rebuild()
-GetGOATSObservationsObservationsMatchesTimingWindows.model_rebuild()
-GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfter.model_rebuild()
-GetGOATSObservationsObservationsMatchesTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironment.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentAsterism.model_rebuild()
 GetGOATSObservationsObservationsMatchesTargetEnvironmentFirstScienceTarget.model_rebuild()
@@ -2783,3 +2794,7 @@ GetGOATSObservationsObservationsMatchesProgram.model_rebuild()
 GetGOATSObservationsObservationsMatchesProgramAllocations.model_rebuild()
 GetGOATSObservationsObservationsMatchesProgramTimeCharge.model_rebuild()
 GetGOATSObservationsObservationsMatchesProgramTimeChargeTime.model_rebuild()
+GetGOATSObservationsObservationsMatchesSchedulingConstraints.model_rebuild()
+GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindows.model_rebuild()
+GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter.model_rebuild()
+GetGOATSObservationsObservationsMatchesSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()
