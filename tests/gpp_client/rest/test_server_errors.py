@@ -3,8 +3,7 @@ Tests that every REST failure is raised as a ``GPPError`` naming the
 environment.
 
 A local aiohttp server stands in for GPP, so the REST client runs its real
-HTTP code offline. The messages name the committed production schema's date,
-which the test reads from the client's own record of it.
+HTTP code offline.
 """
 
 from datetime import UTC, datetime
@@ -14,7 +13,6 @@ import pytest_asyncio
 from aiohttp import web
 
 from gpp_client import GPPClient
-from gpp_client.bundled_schemas import bundled_schema
 from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import GPPHttpError, GPPTransportError
 from gpp_client.rest import RESTClient
@@ -77,9 +75,8 @@ async def test_a_404_is_an_http_error_saying_the_path_may_not_be_served(
 
     assert raised.value.status_code == 404
     assert str(raised.value) == (
-        "GPP production answered HTTP 404 (the client was built from "
-        f"{bundled_schema(GPPEnvironment.PRODUCTION)}): Not Found; the path "
-        f"{path} may not be served on production"
+        f"GPP production answered HTTP 404: Not Found; the path {path} may not "
+        "be served on production"
     )
 
 
@@ -91,10 +88,7 @@ async def test_an_error_status_raises_with_the_status_and_body(served, call, pat
             await call(rest)
 
     assert raised.value.status_code == 500
-    assert str(raised.value) == (
-        "GPP production answered HTTP 500 (the client was built from "
-        f"{bundled_schema(GPPEnvironment.PRODUCTION)}): boom"
-    )
+    assert str(raised.value) == "GPP production answered HTTP 500: boom"
 
 
 @_CALLS
@@ -105,14 +99,11 @@ async def test_a_connection_failure_names_the_environment(served, call, path):
         with pytest.raises(GPPTransportError) as raised:
             await call(rest)
 
-    assert str(raised.value).startswith(
-        "GPP production could not be reached (the client was built from "
-        f"{bundled_schema(GPPEnvironment.PRODUCTION)}): "
-    )
+    assert str(raised.value).startswith("GPP production could not be reached: ")
 
 
 @pytest.mark.asyncio
-async def test_an_attachment_call_gpp_refuses_names_the_environment_and_schema(
+async def test_an_attachment_call_gpp_refuses_names_the_environment(
     served,
 ):
     client = GPPClient(environment="development", token="test-token")
@@ -123,6 +114,5 @@ async def test_an_attachment_call_gpp_refuses_names_the_environment_and_schema(
 
     assert raised.value.status_code == 404
     assert str(raised.value) == (
-        "GPP development answered HTTP 404 (the client was built from "
-        f"{bundled_schema(GPPEnvironment.DEVELOPMENT)}): attachment a-1 not found"
+        "GPP development answered HTTP 404: attachment a-1 not found"
     )

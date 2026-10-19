@@ -4,7 +4,6 @@ Tests for the client build pipeline, driven through ``build``.
 
 import asyncio
 import dataclasses
-import hashlib
 import importlib
 import json
 import pickle
@@ -1244,7 +1243,7 @@ def test_build_output_lists_every_alias_with_its_target(tmp_path):
     )
 
 
-def test_bundled_schemas_record_each_schema_date_and_digest(tmp_path):
+def test_the_build_records_no_schema_date(tmp_path):
     base = "type Query { program: String }\n"
     paths = _write_schemas(
         tmp_path, development="# schema-date: 2024-05-06\n" + base, production=base
@@ -1252,10 +1251,6 @@ def test_bundled_schemas_record_each_schema_date_and_digest(tmp_path):
 
     build(paths)
 
-    schemas = import_generated(paths, "bundled_schemas").SCHEMAS
-    assert schemas["development"]["date"] == "2024-05-06"
-    assert schemas["production"]["date"] is None
-    assert (
-        schemas["development"]["sha256"]
-        == hashlib.sha256(("# schema-date: 2024-05-06\n" + base).encode()).hexdigest()
+    assert not any(
+        "2024-05-06" in path.read_text() for path in paths.package_dir.rglob("*.py")
     )

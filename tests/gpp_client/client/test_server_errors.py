@@ -1,10 +1,8 @@
 """
 Tests that a raw document reaches GPP unchanged and that GPP's answer, when it
-is an error, is raised as a ``GPPError`` naming the environment and the
-bundled schema's date.
+is an error, is raised as a ``GPPError`` naming the environment.
 
-The client is built from fixture schemas with the real build, so the dates in
-the messages are the fixtures' own.
+The client is built from fixture schemas with the real build.
 """
 
 import json
@@ -74,7 +72,7 @@ class _GPP(httpx.MockTransport):
 
 
 @pytest.mark.asyncio
-async def test_raw_document_is_sent_unchanged_and_a_validation_error_names_the_environment_and_schema_date(
+async def test_raw_document_is_sent_unchanged_and_a_validation_error_names_the_environment(
     client_class,
 ):
     document = "query   anything {\n  program { id   nope }\n}"
@@ -95,9 +93,7 @@ async def test_raw_document_is_sent_unchanged_and_a_validation_error_names_the_e
     assert gpp.sent[0]["query"] == document
     assert gpp.sent[0]["variables"] == {"x": 1}
     assert str(raised.value) == (
-        "GPP development returned errors (the client was built from the "
-        "development schema of 2024-05-06): Cannot query field 'nope' on type "
-        "'Program'."
+        "GPP development returned errors: Cannot query field 'nope' on type 'Program'."
     )
 
 
@@ -157,10 +153,7 @@ async def test_an_http_error_names_the_environment_and_keeps_the_status(client_c
     assert raised.value.status_code == 503
     assert raised.value.response.status_code == 503
     assert isinstance(raised.value, GraphQLClientHttpError)
-    assert str(raised.value) == (
-        "GPP production answered HTTP 503 (the client was built from the "
-        "production schema of 2024-01-02)"
-    )
+    assert str(raised.value) == "GPP production answered HTTP 503"
 
 
 @pytest.mark.asyncio
@@ -180,8 +173,7 @@ async def test_a_connection_failure_names_the_environment(client_class):
     assert isinstance(raised.value, GraphQLClientError)
     assert isinstance(raised.value.__cause__, httpx.ConnectError)
     assert str(raised.value) == (
-        "GPP development could not be reached (the client was built from the "
-        "development schema of 2024-05-06): Connection refused"
+        "GPP development could not be reached: Connection refused"
     )
 
 
@@ -199,10 +191,7 @@ async def test_a_response_that_is_not_graphql_names_the_environment(client_class
         with pytest.raises(GPPTransportError) as raised:
             await client.get_program()
 
-    assert str(raised.value) == (
-        "GPP development sent a response that is not GraphQL (the client was "
-        "built from the development schema of 2024-05-06)"
-    )
+    assert str(raised.value) == "GPP development sent a response that is not GraphQL"
 
 
 @pytest.mark.asyncio
@@ -219,8 +208,7 @@ async def test_a_subscription_error_names_the_environment(client_class):
 
     assert [error.message for error in raised.value.errors] == ["draft: not authorised"]
     assert str(raised.value) == (
-        "GPP development returned errors (the client was built from the "
-        "development schema of 2024-05-06): draft: not authorised"
+        "GPP development returned errors: draft: not authorised"
     )
 
 
@@ -241,7 +229,4 @@ async def test_a_subscription_that_cannot_connect_names_the_environment(
         [event async for event in client.program_edit()]
 
     assert isinstance(raised.value.__cause__, OSError)
-    assert str(raised.value).startswith(
-        "GPP development could not be reached (the client was built from the "
-        "development schema of 2024-05-06): "
-    )
+    assert str(raised.value).startswith("GPP development could not be reached: ")

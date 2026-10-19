@@ -18,7 +18,6 @@ __all__ = [
 from collections.abc import Iterable
 from typing import Any, Literal
 
-from gpp_client.bundled_schemas import bundled_schema
 from gpp_client.environment import GPPEnvironment
 from gpp_client.generated.exceptions import (
     GraphQLClientError,
@@ -118,9 +117,8 @@ class GPPServerError(GPPError):
     """
     Raised when GPP answers a request with an error, or cannot be reached.
 
-    The message names the environment and the schema the client was built
-    from, so an install that is behind the server reads differently from
-    wrong data or the wrong environment.
+    The message names the environment, so the wrong environment reads
+    differently from wrong data.
 
     Parameters
     ----------
@@ -135,18 +133,13 @@ class GPPServerError(GPPError):
     Attributes
     ----------
     environment : GPPEnvironment
-    schema : BundledSchema
-        The environment's schema as the client was built from it.
     """
 
     def __init__(
         self, environment: GPPEnvironment, what: str, detail: str = ""
     ) -> None:
         self.environment = environment
-        self.schema = bundled_schema(environment)
-        message = (
-            f"GPP {environment.label} {what} (the client was built from {self.schema})"
-        )
+        message = f"GPP {environment.label} {what}"
         # The generated bases are in the hierarchy so consumers' isinstance
         # checks on them keep passing; their __init__ signatures take the raw
         # errors or response, which the subclasses already hold as attributes.
