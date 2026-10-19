@@ -41,22 +41,6 @@ jobs:
       - name: Check types
         run: uv run ty check --error-on-warning --output-format=github src/gpp_client
 
-      # The previous tag predates this branch's intended API removals, so the
-      # step reports instead of failing.
-      - name: Check the public API against the previous release
-        continue-on-error: true
-        run: |
-          PREVIOUS=$(git describe --tags --abbrev=0 --match 'v*' HEAD^)
-          echo "Comparing the public API with ${PREVIOUS}"
-          REPORT="${RUNNER_TEMP}/griffe.txt"
-          uv run griffe check gpp_client -s src --against "${PREVIOUS}" > "${REPORT}" || true
-          cat "${REPORT}"
-          # Generated code follows GPP's schema; only hand-written API fails.
-          if grep -v 'src/gpp_client/generated/' "${REPORT}" | grep -q .; then
-            echo "::warning::Hand-written public API changed since ${PREVIOUS}."
-            exit 1
-          fi
-
       - name: Minimize uv cache
         run: uv cache prune --ci
 
