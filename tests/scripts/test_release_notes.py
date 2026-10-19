@@ -118,7 +118,8 @@ def test_a_held_environment_is_named_with_the_commit_its_schema_is_from():
         "### Schema changes\n"
         "\n"
         "Production: changed\n"
-        "Development: held at `abc1234`; its introspected schema did not build\n"
+        "Development: unchanged (held at `abc1234`; its introspected schema did "
+        "not build)\n"
     )
 
 
@@ -169,7 +170,7 @@ def test_command_names_a_held_environment_at_the_commit_its_schema_is_from(
     result = CliRunner().invoke(app, ["v26.9.0", "--held", "development"])
 
     assert result.exit_code == 0, result.output
-    assert f"Development: held at `{commit}`" in result.output
+    assert f"Development: unchanged (held at `{commit}`" in result.output
 
 
 def test_command_names_a_ref_without_committed_schemas(tmp_path, monkeypatch):

@@ -6,7 +6,6 @@ __all__ = [
     "GPPError",
     "GPPClientError",
     "GPPAuthError",
-    "GPPResponseError",
     "GPPValidationError",
     "GPPRetryableError",
     "GPPServerError",
@@ -17,7 +16,7 @@ __all__ = [
 ]
 
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal
 
 from gpp_client.bundled_schemas import bundled_schema
 from gpp_client.environment import GPPEnvironment
@@ -69,39 +68,18 @@ class GPPAuthError(GPPError):
     pass
 
 
-class GPPResponseError(GPPError):
-    """
-    Raised when GPP refuses an attachment upload, download, update or delete.
-
-    Parameters
-    ----------
-    status_code : int
-        The HTTP status code returned by GPP.
-    message : str
-        The error message or description.
-    """
-
-    def __init__(self, status_code: int, message: str):
-        self.status_code = status_code
-        self.message = message
-        super().__init__(f"GPP returned {status_code}: {message}")
-
-
 class NotAvailable(GPPClientError):  # noqa: N818
     """
-    Raised when the selected environment lacks what a call needs.
+    Raised when the selected environment lacks the operation a call needs.
 
-    A generated operation the environment lacks raises it before anything is
-    sent; a REST path the environment does not serve raises it after GPP
-    answers 404.
+    It is raised before anything is sent.
 
     Parameters
     ----------
     item : str
-        The operation name, or the REST path.
-    kind : str
-        What ``item`` is, as the message reads it: ``"operation"`` or
-        ``"REST path"``.
+        The operation name.
+    kind : Literal["operation"]
+        What ``item`` is, as the message reads it.
     environment : GPPEnvironment
         The selected environment.
     available : Iterable[GPPEnvironment], optional
@@ -112,7 +90,7 @@ class NotAvailable(GPPClientError):  # noqa: N818
     Attributes
     ----------
     item : str
-    kind : str
+    kind : Literal["operation"]
     environment : GPPEnvironment
     available : tuple[GPPEnvironment, ...]
     """
@@ -120,7 +98,7 @@ class NotAvailable(GPPClientError):  # noqa: N818
     def __init__(
         self,
         item: str,
-        kind: str,
+        kind: Literal["operation"],
         environment: GPPEnvironment,
         available: Iterable[GPPEnvironment] = (),
         then: str = "Nothing was sent.",
@@ -169,6 +147,9 @@ class GPPServerError(GPPError):
         message = (
             f"GPP {environment.label} {what} (the client was built from {self.schema})"
         )
+        # The generated bases are in the hierarchy so consumers' isinstance
+        # checks on them keep passing; their __init__ signatures take the raw
+        # errors or response, which the subclasses already hold as attributes.
         Exception.__init__(self, f"{message}: {detail}" if detail else message)
 
     def __str__(self) -> str:

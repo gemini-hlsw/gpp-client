@@ -24,7 +24,7 @@ repos:
         args:
           - --branch=main
       - id: name-tests-test
-        exclude: ^tests/gpp_client/(fixture_build|schema_transport|subscription_server|domains/helpers)\.py$
+        exclude: ^tests/(gpp_client/(fixture_build|schema_transport|subscription_server|domains/helpers)|scripts/helpers)\.py$
         args:
           - --pytest-test-first
       - id: pretty-format-json

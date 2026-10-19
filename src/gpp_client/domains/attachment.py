@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from aiohttp import ClientHandlerType, ClientRequest, ClientResponse
 
 from gpp_client.domains.base import BaseDomain
-from gpp_client.exceptions import GPPClientError, GPPResponseError
+from gpp_client.exceptions import GPPClientError, GPPHttpError
 
 if TYPE_CHECKING:
     from gpp_client.generated.enums import AttachmentType
@@ -83,6 +83,8 @@ class AttachmentDomain(BaseDomain):
 
         Raises
         ------
+        GPPHttpError
+            If GPP refuses the upload; the message names the environment.
         GPPClientError
             If the upload fails or the response is invalid.
         GPPValidationError
@@ -121,7 +123,7 @@ class AttachmentDomain(BaseDomain):
                 logger.debug("Uploaded attachment id=%s", attachment_id)
                 return attachment_id
 
-        except GPPResponseError:
+        except GPPHttpError:
             raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
@@ -137,6 +139,8 @@ class AttachmentDomain(BaseDomain):
 
         Raises
         ------
+        GPPHttpError
+            If GPP refuses the deletion; the message names the environment.
         GPPClientError
             If the deletion fails.
         """
@@ -152,7 +156,7 @@ class AttachmentDomain(BaseDomain):
                     "Deleted attachment %s",
                     attachment_id,
                 )
-        except GPPResponseError:
+        except GPPHttpError:
             raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
@@ -184,6 +188,8 @@ class AttachmentDomain(BaseDomain):
 
         Raises
         ------
+        GPPHttpError
+            If GPP refuses the update; the message names the environment.
         GPPClientError
             If the update fails.
         GPPValidationError
@@ -205,7 +211,7 @@ class AttachmentDomain(BaseDomain):
                     "Updated attachment %s",
                     attachment_id,
                 )
-        except GPPResponseError:
+        except GPPHttpError:
             raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
@@ -232,7 +238,7 @@ class AttachmentDomain(BaseDomain):
             async with session.get(url) as response:
                 await self.raise_for_status(response, ok_statuses=DEFAULT_OK)
                 download_url = await response.text()
-        except GPPResponseError:
+        except GPPHttpError:
             raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc)
@@ -304,7 +310,7 @@ class AttachmentDomain(BaseDomain):
 
             return path
 
-        except GPPResponseError:
+        except GPPHttpError:
             raise
         except Exception as exc:
             self.raise_error(GPPClientError, exc, include_traceback=True)

@@ -51,9 +51,10 @@ def release_notes(
     Returns
     -------
     str
-        A "changed" or "unchanged" headline per environment, then for each
-        changed environment its "Breaking" and "Added or relaxed" lists, then
-        the aliases this release adds.
+        A "changed" or "unchanged" headline per environment, with the held
+        commit in parentheses for a held environment, then for each changed
+        environment its "Breaking" and "Added or relaxed" lists, then the
+        aliases this release adds.
     """
     previous_renames = _renames(previous)
     current_renames = _renames(current)
@@ -61,12 +62,12 @@ def release_notes(
     sections = []
     for environment in _HEADLINE_ORDER:
         changed = previous[environment] != current[environment]
+        headline = "changed" if changed else "unchanged"
         if held and environment in held:
-            headline = (
-                f"held at `{held[environment]}`; its introspected schema did not build"
+            headline += (
+                f" (held at `{held[environment]}`; its introspected schema did "
+                "not build)"
             )
-        else:
-            headline = "changed" if changed else "unchanged"
         headlines.append(f"{environment.capitalize()}: {headline}")
         # A dropped alias breaks imports on every environment; it is listed
         # under production because its promotion made the names equal.

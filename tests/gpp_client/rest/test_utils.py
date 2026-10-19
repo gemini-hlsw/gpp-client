@@ -7,9 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
+from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import (
     GPPClientError,
-    GPPResponseError,
+    GPPHttpError,
     GPPValidationError,
 )
 from gpp_client.rest.utils import raise_for_status, resolve_content
@@ -112,7 +113,9 @@ async def test_raise_for_status_allows_ok_status() -> None:
         text=None,
     )
 
-    await raise_for_status(response, ok_statuses={200, 201})
+    await raise_for_status(
+        response, environment=GPPEnvironment.PRODUCTION, ok_statuses={200, 201}
+    )
 
 
 @pytest.mark.asyncio
@@ -125,9 +128,12 @@ async def test_raise_for_status_uses_response_text(mocker) -> None:
         text=mocker.AsyncMock(return_value="Request failed"),
     )
 
-    with pytest.raises(GPPResponseError) as exc_info:
-        await raise_for_status(response, ok_statuses={200})
+    with pytest.raises(GPPHttpError) as exc_info:
+        await raise_for_status(
+            response, environment=GPPEnvironment.PRODUCTION, ok_statuses={200}
+        )
 
     assert exc_info.value.status_code == 500
-    assert exc_info.value.message == "Request failed"
+    assert exc_info.value.environment is GPPEnvironment.PRODUCTION
+    assert str(exc_info.value).endswith(": Request failed")
     response.text.assert_awaited_once_with()

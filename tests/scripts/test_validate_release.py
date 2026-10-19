@@ -2,7 +2,6 @@
 Tests for release validation, driven through ``validate_release``.
 """
 
-import shutil
 import sys
 from pathlib import Path
 
@@ -10,8 +9,7 @@ import pytest
 
 from scripts.build_client import BuildPaths, build
 from scripts.validate_release import ReleaseValidationError, main, validate_release
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.scripts.helpers import checkout
 
 _SCHEMA = "type Query { program: Program }\ntype Program { id: ID! name: String }\n"
 _OPERATION = "query getProgram { program { id name } }\n"
@@ -21,17 +19,7 @@ def _committed_build(root: Path) -> BuildPaths:
     """
     Return a checkout whose generated code is a fresh build of its schemas.
     """
-    schemas_dir = root / "src" / "gpp_client" / "schemas"
-    schemas_dir.mkdir(parents=True)
-    for environment in ("development", "production"):
-        (schemas_dir / f"{environment}.graphql").write_text(_SCHEMA)
-    operations_dir = root / "graphql" / "operations"
-    operations_dir.mkdir(parents=True)
-    (operations_dir / "operations.graphql").write_text(_OPERATION)
-    shutil.copyfile(
-        REPO_ROOT / "graphql" / "codegen.toml", root / "graphql" / "codegen.toml"
-    )
-    paths = BuildPaths.for_repo(root)
+    paths = checkout(root, sdl=_SCHEMA, operations=_OPERATION)
     build(paths)
     _bake_version(paths, "26.5.0")
     return paths

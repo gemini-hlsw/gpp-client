@@ -45,6 +45,7 @@ from graphql import (
     validate,
     visit,
 )
+from scripts.schema_merge import rename_named_types
 
 __all__ = ["EnvironmentOperations", "generated_operations", "trim_operations"]
 
@@ -122,7 +123,7 @@ def trim_operations(
     unavailable: list[str] = []
     stored_fragments: set[str] = set()
     for operation_str in operation_strs:
-        document = _rename_types(parse(operation_str), reverse or {})
+        document = rename_named_types(parse(operation_str), reverse or {})
         sources = {
             d.name.value: d
             for d in document.definitions
@@ -377,18 +378,6 @@ class _Trimmer(Visitor):
         if type_ is None:
             return False
         return parent is None or do_types_overlap(self.schema, parent, type_)
-
-
-def _rename_types(document: DocumentNode, reverse: Mapping[str, str]) -> DocumentNode:
-    if not reverse:
-        return document
-
-    class _Renamer(Visitor):
-        def enter_named_type(self, named: NamedTypeNode, *_args):
-            name = reverse.get(named.name.value)
-            return None if name is None else _copy(named, name=NameNode(value=name))
-
-    return visit(document, _Renamer())
 
 
 def _missing_root_fields(

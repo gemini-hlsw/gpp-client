@@ -2,8 +2,6 @@
 Tests for choosing the GPP environment when a ``GPPClient`` is built.
 """
 
-import asyncio
-import json
 import logging
 
 import httpx
@@ -13,8 +11,6 @@ from gpp_client import GPPClient
 from gpp_client.constants import DEVELOPMENT_URL, PRODUCTION_URL
 from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import GPPAuthError, GPPClientError
-from gpp_client.generated.trimmed import development as development_operations
-from gpp_client.trimmed_operations import operation_digest
 
 
 @pytest.fixture(autouse=True)
@@ -184,45 +180,3 @@ def test_one_log_line_names_the_environment_and_url(caplog) -> None:
     assert lines == [
         f"GPPClient using the development environment at {DEVELOPMENT_URL}/odb"
     ]
-
-
-@pytest.mark.asyncio
-async def test_two_clients_on_different_environments_at_once(
-    gpp_transport, monkeypatch
-) -> None:
-    generated = json.loads(
-        (await _send_ping(gpp_transport, environment="production", token="p")).content
-    )["query"]
-    # The committed schemas trim nothing yet, so store a copy that differs.
-    development_copy = "# development copy\n" + generated
-    monkeypatch.setitem(
-        development_operations.OPERATIONS,
-        operation_digest(generated),
-        ("GetObservationWorkflowStateById", development_copy, ()),
-    )
-    gpp_transport.respond({"observation": None})
-    gpp_transport.respond({"observation": None})
-
-    async with httpx.AsyncClient(transport=gpp_transport) as http_client:
-        development = GPPClient(
-            environment="development", token="d", http_client=http_client
-        )
-        production = GPPClient(
-            environment="production", token="p", http_client=http_client
-        )
-        await asyncio.gather(
-            development.workflow_state.get_by_id(observation_id="o-1"),
-            production.workflow_state.get_by_id(observation_id="o-1"),
-        )
-
-    sent = {
-        str(request.url): (
-            request.headers["Authorization"],
-            json.loads(request.content)["query"],
-        )
-        for request in gpp_transport.requests[1:]
-    }
-    assert sent == {
-        f"{DEVELOPMENT_URL}/odb": ("Bearer d", development_copy),
-        f"{PRODUCTION_URL}/odb": ("Bearer p", generated),
-    }

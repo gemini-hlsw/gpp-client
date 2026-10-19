@@ -13,9 +13,10 @@ import pytest
 import pytest_asyncio
 from aiohttp import web
 
+from gpp_client import GPPClient
 from gpp_client.bundled_schemas import bundled_schema
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import GPPHttpError, GPPTransportError, NotAvailable
+from gpp_client.exceptions import GPPHttpError, GPPTransportError
 from gpp_client.rest import RESTClient
 
 _CALLS = pytest.mark.parametrize(
@@ -67,17 +68,18 @@ def _rest(url: str) -> RESTClient:
 
 @_CALLS
 @pytest.mark.asyncio
-async def test_a_404_raises_not_available_naming_the_path(served, call, path):
+async def test_a_404_is_an_http_error_saying_the_path_may_not_be_served(
+    served, call, path
+):
     async with _rest(await served(404, "Not Found")) as rest:
-        with pytest.raises(NotAvailable) as raised:
+        with pytest.raises(GPPHttpError) as raised:
             await call(rest)
 
-    error = raised.value
-    assert error.item == path
-    assert error.environment is GPPEnvironment.PRODUCTION
-    assert error.available == ()
-    assert str(error) == (
-        f"The REST path {path} is not available on production. GPP answered 404."
+    assert raised.value.status_code == 404
+    assert str(raised.value) == (
+        "GPP production answered HTTP 404 (the client was built from "
+        f"{bundled_schema(GPPEnvironment.PRODUCTION)}): Not Found; the path "
+        f"{path} may not be served on production"
     )
 
 
@@ -106,4 +108,21 @@ async def test_a_connection_failure_names_the_environment(served, call, path):
     assert str(raised.value).startswith(
         "GPP production could not be reached (the client was built from "
         f"{bundled_schema(GPPEnvironment.PRODUCTION)}): "
+    )
+
+
+@pytest.mark.asyncio
+async def test_an_attachment_call_gpp_refuses_names_the_environment_and_schema(
+    served,
+):
+    client = GPPClient(environment="development", token="test-token")
+    client.rest.base_url = await served(404, "attachment a-1 not found")
+    async with client:
+        with pytest.raises(GPPHttpError) as raised:
+            await client.attachment.get_download_url_by_id("a-1")
+
+    assert raised.value.status_code == 404
+    assert str(raised.value) == (
+        "GPP development answered HTTP 404 (the client was built from "
+        f"{bundled_schema(GPPEnvironment.DEVELOPMENT)}): attachment a-1 not found"
     )

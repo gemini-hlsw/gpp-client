@@ -4,9 +4,10 @@ Utility functions for the GPP client.
 
 from pathlib import Path
 
+from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import (
     GPPClientError,
-    GPPResponseError,
+    GPPHttpError,
     GPPValidationError,
 )
 
@@ -73,6 +74,7 @@ def resolve_content(
 async def raise_for_status(
     response,
     *,
+    environment: GPPEnvironment,
     ok_statuses: set[int],
     default_message: str = "Request failed",
 ) -> None:
@@ -83,6 +85,8 @@ async def raise_for_status(
     ----------
     response : aiohttp.ClientResponse
         The HTTP response to check.
+    environment : GPPEnvironment
+        The environment that answered, which the error names.
     ok_statuses : set[int]
         Set of acceptable HTTP status codes.
     default_message : str, default="Request failed"
@@ -90,9 +94,11 @@ async def raise_for_status(
 
     Raises
     ------
-    GPPResponseError
+    GPPHttpError
         If the response status is not in ``ok_statuses``.
     """
     if response.status not in ok_statuses:
         text = await response.text()
-        raise GPPResponseError(response.status, text or default_message)
+        raise GPPHttpError(
+            environment, response.status, response, text or default_message
+        )

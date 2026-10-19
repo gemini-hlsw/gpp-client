@@ -17,7 +17,7 @@ import aiohttp
 import certifi
 
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import GPPHttpError, GPPTransportError, NotAvailable
+from gpp_client.exceptions import GPPHttpError, GPPTransportError
 
 logger = logging.getLogger(__name__)
 
@@ -155,29 +155,27 @@ class RESTClient:
 
         Raises
         ------
-        NotAvailable
-            If GPP answered 404: the environment does not serve the path.
         GPPHttpError
-            If GPP answered another error status.
+            If GPP answered an error status. A 404 adds that the path may not
+            be served on the environment.
         GPPTransportError
             If GPP could not be reached, or the request timed out.
         """
         session = await self.get_session()
         try:
             async with session.request(method, path, **kwargs) as response:
-                if response.status == 404:
-                    raise NotAvailable(
-                        path,
-                        "REST path",
-                        self.environment,
-                        then="GPP answered 404.",
-                    )
                 if response.status >= 400:
+                    detail = [await response.text()]
+                    if response.status == 404:
+                        detail.append(
+                            f"the path {path} may not be served on "
+                            f"{self.environment.label}"
+                        )
                     raise GPPHttpError(
                         self.environment,
                         response.status,
                         response,
-                        await response.text(),
+                        "; ".join(part for part in detail if part),
                     )
                 yield response
         except (aiohttp.ClientError, TimeoutError) as exc:
@@ -207,11 +205,9 @@ class RESTClient:
 
         Raises
         ------
-        NotAvailable
-            If the client's environment does not serve the path (404).
         GPPHttpError
-            If GPP rejects the observation IDs (400) or answers another error
-            status.
+            If GPP rejects the observation IDs (400), does not serve the path
+            on this environment (404) or answers another error status.
         GPPTransportError
             If GPP could not be reached, or the request timed out.
         """
@@ -254,10 +250,9 @@ class RESTClient:
 
         Raises
         ------
-        NotAvailable
-            If the client's environment does not serve the path (404).
         GPPHttpError
-            If GPP answers an error status.
+            If GPP answers an error status, 404 for a path the environment
+            does not serve included.
         GPPTransportError
             If GPP could not be reached, or the request timed out.
         """

@@ -7,6 +7,7 @@ __all__ = ["EnvironmentGraphQLClient", "GPPGraphQLClient"]
 from collections.abc import AsyncIterator
 from functools import cache
 from typing import TYPE_CHECKING, Any
+from weakref import WeakKeyDictionary
 
 import httpx
 from websockets.exceptions import WebSocketException
@@ -35,6 +36,13 @@ if TYPE_CHECKING:
     _GeneratedClient = AsyncBaseClient
 else:
     _GeneratedClient = object
+
+
+# Each response's parsed data, kept while the response is alive. ``execute``
+# must parse to raise GPP's answer for raw callers, and every generated method
+# then calls ``get_data`` on the same response; the cache keeps that one parse
+# without changing what either method returns.
+_parsed_data: WeakKeyDictionary[Any, dict[str, Any]] = WeakKeyDictionary()
 
 
 class EnvironmentGraphQLClient(_GeneratedClient):
@@ -119,7 +127,8 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         Returns
         -------
         Any
-            The raw HTTP response. ``get_data`` returns its ``data`` member.
+            The raw HTTP response. ``get_data`` returns its ``data`` member,
+            parsed once here.
 
         Raises
         ------
@@ -143,7 +152,7 @@ class EnvironmentGraphQLClient(_GeneratedClient):
             raise GPPTransportError(
                 self.environment, "could not be reached", str(exc)
             ) from exc
-        self.get_data(response)
+        _parsed_data[response] = self.get_data(response)
         return response
 
     def get_data(self, response: Any) -> dict[str, Any]:
@@ -169,6 +178,10 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         GPPTransportError
             If the response is not a GraphQL response.
         """
+        try:
+            return _parsed_data[response]
+        except KeyError:
+            pass
         try:
             return super().get_data(response)
         except GraphQLClientHttpError as exc:

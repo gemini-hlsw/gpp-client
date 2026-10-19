@@ -8,7 +8,6 @@ import hashlib
 import importlib
 import json
 import pickle
-import shutil
 import subprocess
 import sys
 import uuid
@@ -31,15 +30,17 @@ from scripts.build_client import (
     TypeConflict,
     build,
 )
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
-# Valid on any schema, so merge-only tests need no operations of their own.
-_TYPENAME_OPERATION = "query typenameOnly { __typename }\n"
+from tests.scripts.helpers import (
+    REPO_ROOT,
+    TYPENAME_OPERATION,
+    checkout,
+    import_generated,
+    send,
+)
 
 
 def _write_schemas(
-    root: Path, operations: str = _TYPENAME_OPERATION, **sdl_by_environment: str
+    root: Path, operations: str = TYPENAME_OPERATION, **sdl_by_environment: str
 ) -> BuildPaths:
     stem = uuid.uuid4().hex[:12]
     schemas_dir = root / "packages" / f"schemas_{stem}"
@@ -61,31 +62,6 @@ def _write_schemas(
 @pytest.fixture(autouse=True)
 def _generated_packages_importable(tmp_path, monkeypatch):
     monkeypatch.syspath_prepend(str(tmp_path / "packages"))
-
-
-def _import_generated(paths: BuildPaths, module: str = "client"):
-    return importlib.import_module(f"{paths.package_dir.name}.{module}")
-
-
-def _sent_query(paths: BuildPaths, method: str, response_data: dict, **kwargs):
-    """
-    Call a generated client method and return the query it sent.
-    """
-    sent = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        sent.append(json.loads(request.content)["query"])
-        return httpx.Response(200, json={"data": response_data})
-
-    module = _import_generated(paths)
-
-    async def call():
-        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
-            client = module.GraphQLClient(url="http://gpp.test/odb", http_client=http)
-            return await getattr(client, method)(**kwargs)
-
-    result = asyncio.run(call())
-    return sent[0], result
 
 
 def _trimmed(paths: BuildPaths, environment: str, query: str):
@@ -119,25 +95,6 @@ def test_field_only_on_production_is_nullable_and_marked(tmp_path):
     assert _environments(field.ast_node) == ["production"]
 
 
-def _write(path: Path, text: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
-
-
-def _checkout(
-    root: Path, schemas_dir: Path, sdl: str = "type Query { a: Int }\n"
-) -> None:
-    """
-    Lay out a checkout with one schema per environment under ``schemas_dir``.
-    """
-    for environment in ("development", "production"):
-        _write(schemas_dir / f"{environment}.graphql", sdl)
-    _write(root / "graphql" / "operations" / "operations.graphql", _TYPENAME_OPERATION)
-    shutil.copyfile(
-        REPO_ROOT / "graphql" / "codegen.toml", root / "graphql" / "codegen.toml"
-    )
-
-
 def _files(root: Path) -> set[Path]:
     return {
         path.relative_to(root)
@@ -150,8 +107,7 @@ def test_repo_build_writes_only_the_generated_package_and_the_differences_page(
     tmp_path,
 ):
     root = tmp_path / "repo"
-    _checkout(root, root / "src" / "gpp_client" / "schemas")
-    paths = BuildPaths.for_repo(root)
+    paths = checkout(root)
     before = _files(root)
 
     build(paths)
@@ -169,7 +125,7 @@ def test_repo_build_writes_only_the_generated_package_and_the_differences_page(
 
 def test_repo_build_ignores_schemas_at_the_old_location(tmp_path):
     root = tmp_path / "repo"
-    _checkout(root, root / "graphql" / "schemas")
+    checkout(root, schemas_dir=root / "graphql" / "schemas")
 
     with pytest.raises(
         BuildError, match=r"src/gpp_client/schemas/development\.graphql"
@@ -350,8 +306,8 @@ def test_pairing_follows_a_rename_into_the_renamed_type(tmp_path):
     )
 
     assert result.pairing.renames == (
-        Rename("Old", "New", ("Query.a",)),
-        Rename("OldInner", "NewInner", ("New.x",)),
+        Rename("Old", "New", ("Query.a",), "object"),
+        Rename("OldInner", "NewInner", ("New.x",), "object"),
     )
     assert {"Old", "OldInner"}.isdisjoint(schema.type_map)
     assert _environments(schema.type_map["NewInner"].ast_node) is None
@@ -493,9 +449,9 @@ def test_field_only_on_production_is_trimmed_from_other_environments(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(
-        paths, "get_program", {"program": {"id": "p-1", "reference": "G-1"}}
-    )
+    sent = send(paths, "get_program", {"program": {"id": "p-1", "reference": "G-1"}})[
+        0
+    ]["query"]
     development = _trimmed(paths, "development", sent)
     production = _trimmed(paths, "production", sent)
     assert development.document == "query getProgram {\n  program {\n    id\n  }\n}"
@@ -524,7 +480,7 @@ def test_copy_is_stored_only_where_it_differs_from_the_generated_string(tmp_path
     assert "count" not in stored["development"]
     assert "getProgram" not in stored["production"]
     assert "Details" not in stored["production"]
-    sent, _ = _sent_query(paths, "count", {"count": 1})
+    sent = send(paths, "count", {"count": 1})[0]["query"]
     assert _trimmed(paths, "development", sent) == TrimmedOperation(
         name="count", document=sent
     )
@@ -541,9 +497,9 @@ def test_argument_an_environment_lacks_is_removed_with_its_variable(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(
-        paths, "list_programs", {"programs": []}, limit=1, after="p-1"
-    )
+    sent = send(paths, "list_programs", {"programs": []}, limit=1, after="p-1")[0][
+        "query"
+    ]
     assert _trimmed(paths, "production", sent).document == (
         "query listPrograms($limit: Int) {\n  programs(limit: $limit)\n}"
     )
@@ -564,7 +520,7 @@ def test_inline_fragment_and_spread_on_a_missing_type_are_removed(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "items", {"items": []})
+    sent = send(paths, "items", {"items": []})[0]["query"]
     assert _trimmed(paths, "production", sent).document == (
         "query items {\n  items {\n    __typename\n    ... on A {\n      id\n    }\n"
         "  }\n}"
@@ -589,7 +545,7 @@ def test_selection_emptied_by_trimming_gets_typename(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "customized", {"execution": {"isCustomized": True}})
+    sent = send(paths, "customized", {"execution": {"isCustomized": True}})[0]["query"]
     assert _trimmed(paths, "production", sent).document == (
         "query customized {\n  execution {\n    __typename\n  }\n}"
     )
@@ -605,10 +561,10 @@ def test_only_environment_specific_fields_default_to_none(tmp_path):
 
     build(paths)
 
-    _, result = _sent_query(paths, "execution", {"execution": {"state": None}})
+    _, result = send(paths, "execution", {"execution": {"state": None}})
     assert result.execution.is_customized is None
     with pytest.raises(ValidationError, match="execution.state"):
-        _sent_query(paths, "execution", {"execution": {}})
+        send(paths, "execution", {"execution": {}})
 
 
 def test_operation_whose_root_field_is_missing_is_unavailable(tmp_path):
@@ -622,7 +578,7 @@ def test_operation_whose_root_field_is_missing_is_unavailable(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "clone_and_count", {"clone": None, "count": 1})
+    sent = send(paths, "clone_and_count", {"clone": None, "count": 1})[0]["query"]
     assert _trimmed(paths, "production", sent) == TrimmedOperation(
         name="cloneAndCount", document=None
     )
@@ -659,7 +615,7 @@ def test_operation_selecting_a_field_whose_type_differs_builds(tmp_path):
 
     build(paths)
 
-    _, result = _sent_query(paths, "ab", {"a": 1, "b": 2})
+    _, result = send(paths, "ab", {"a": 1, "b": 2})
     assert result.b == 2
 
 
@@ -693,8 +649,8 @@ def test_query_builder_call_reusing_an_operation_name_is_not_that_operation(
         production=query + "type Program { id: ID! }",
     )
     build(paths)
-    queries = _import_generated(paths, "custom_queries")
-    fields = _import_generated(paths, "custom_fields")
+    queries = import_generated(paths, "custom_queries")
+    fields = import_generated(paths, "custom_fields")
     sent = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -703,7 +659,7 @@ def test_query_builder_call_reusing_an_operation_name_is_not_that_operation(
 
     async def call():
         async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
-            client = _import_generated(paths).GraphQLClient(
+            client = import_generated(paths).GraphQLClient(
                 url="http://gpp.test/odb", http_client=http
             )
             await client.query(
@@ -730,8 +686,8 @@ def test_trimmed_fragment_is_stored_once_per_environment(tmp_path):
 
     build(paths)
 
-    one, _ = _sent_query(paths, "one", {"program": None})
-    many, _ = _sent_query(paths, "many", {"programs": []})
+    one = send(paths, "one", {"program": None})[0]["query"]
+    many = send(paths, "many", {"programs": []})[0]["query"]
     fragment = "fragment Details on Program {\n  id\n}"
     assert _trimmed(paths, "production", one).document.endswith(fragment)
     assert _trimmed(paths, "production", many).document.endswith(fragment)
@@ -788,7 +744,7 @@ def test_production_copy_carries_production_names_for_renamed_types(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "renamed", {"a": {"v": {"x": 1}}})
+    sent = send(paths, "renamed", {"a": {"v": {"x": 1}}})[0]["query"]
     assert _trimmed(paths, "production", sent).document == (
         "query renamed($w: OldW) {\n  a(w: $w) {\n    v {\n      ...F\n    }\n  }\n}"
         "\n\nfragment F on OldV {\n  x\n}"
@@ -809,7 +765,7 @@ def test_conflicts_are_excluded_from_the_development_copy(tmp_path):
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "ab", {"a": 1, "b": 2, "find": 3}, id=1)
+    sent = send(paths, "ab", {"a": 1, "b": 2, "find": 3}, id=1)[0]["query"]
     assert _trimmed(paths, "development", sent).document == (
         "query ab {\n  a\n  find(where: {page: 1})\n}"
     )
@@ -835,7 +791,7 @@ def test_input_literals_lose_fields_and_enum_values_the_environment_lacks(tmp_pa
 
     build(paths)
 
-    sent, _ = _sent_query(paths, "literals", {"obs": 1})
+    sent = send(paths, "literals", {"obs": 1})[0]["query"]
     assert _trimmed(paths, "development", sent).document == (
         "query literals {\n  obs(where: {nested: {}}, flags: [A])\n}"
     )
@@ -853,7 +809,7 @@ def test_fragments_on_a_type_the_union_lacks_are_removed(tmp_path):
 
     result = build(paths)
 
-    sent, _ = _sent_query(paths, "items", {"items": []})
+    sent = send(paths, "items", {"items": []})[0]["query"]
     assert _trimmed(paths, "production", sent).document == (
         "query items {\n  items {\n    __typename\n    ... on A {\n      id\n    }\n"
         "  }\n}"
@@ -901,6 +857,29 @@ def test_merge_summary_lists_renames_conflicts_and_refused_votes(tmp_path):
         "- Ambiguous `OldA: A2 (2), A1 (1)`; not renamed\n"
         "- Collision `OldB -> B`; not renamed\n"
         "- Collision `OldC -> B`; not renamed\n"
+    )
+
+
+def test_renamed_union_or_interface_is_flagged_as_needing_a_typename_map(
+    tmp_path,
+):
+    result, _ = _build_two(
+        tmp_path,
+        development="type A { x: Int }\ninterface Node { id: ID! }\n"
+        "union Item = A\ntype Query { item: Item node: Node }",
+        production="type A { x: Int }\ninterface OldNode { id: ID! }\n"
+        "union OldItem = A\ntype Query { item: OldItem node: OldNode }",
+    )
+
+    assert result.merge_summary == (
+        "### Merge summary\n"
+        "\n"
+        "- Renamed `OldItem` to `Item` (`Query.item`)\n"
+        "- Renamed `OldNode` to `Node` (`Query.node`)\n"
+        "- Warning: union `OldItem` was renamed; production answers "
+        "`__typename` with `OldItem`, so a `__typename` map is now needed\n"
+        "- Warning: interface `OldNode` was renamed; production answers "
+        "`__typename` with `OldNode`, so a `__typename` map is now needed\n"
     )
 
 
@@ -979,7 +958,7 @@ def test_trim_starts_from_the_text_the_generated_client_embeds(tmp_path, monkeyp
 
     build(rewriting)
 
-    sent, _ = _sent_query(rewriting, "count", {"count": 1})
+    sent = send(rewriting, "count", {"count": 1})[0]["query"]
     assert "# rewritten" in sent
     assert _trimmed(rewriting, "production", sent) == TrimmedOperation(
         name="count", document="query count {\n  count\n}"
@@ -1088,7 +1067,7 @@ def test_production_name_of_a_paired_input_type_is_a_warning_alias(tmp_path):
 
     build(paths)
 
-    inputs = _import_generated(paths, "input_types")
+    inputs = import_generated(paths, "input_types")
     with pytest.warns(DeprecationWarning, match="ImagingVariantInput") as warned:
         alias = inputs.GmosImagingVariantInput
     assert alias is inputs.ImagingVariantInput
@@ -1109,7 +1088,7 @@ def test_paired_enum_alias_is_in_the_package_all_and_lazy_imports(tmp_path):
     assert package._LAZY_IMPORTS["GmosMode"] == ".enums"
     with pytest.warns(DeprecationWarning, match="import Mode instead") as warned:
         from_package = package.GmosMode
-    assert from_package is _import_generated(paths, "enums").Mode
+    assert from_package is import_generated(paths, "enums").Mode
     assert from_package.FAST is from_package("FAST")
     assert len(warned) == 1
     assert warned[0].filename == __file__
@@ -1227,35 +1206,17 @@ def test_pickle_from_before_the_rename_loads_through_the_alias(tmp_path):
     with pytest.warns(DeprecationWarning):
         variant, mode = pickle.loads(dumped)
 
-    inputs = _import_generated(after, "input_types")
+    inputs = import_generated(after, "input_types")
     assert type(variant) is inputs.ImagingVariantInput
     assert variant.model_dump(by_alias=True) == {"bin": 1, "mode": "FAST"}
-    assert mode is _import_generated(after, "enums").Mode.FAST
-
-
-def _sent_body(paths: BuildPaths, method: str, response_data: dict, **kwargs):
-    sent = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        sent.append(json.loads(request.content))
-        return httpx.Response(200, json={"data": response_data})
-
-    module = _import_generated(paths)
-
-    async def call():
-        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
-            client = module.GraphQLClient(url="http://gpp.test/odb", http_client=http)
-            return await getattr(client, method)(**kwargs)
-
-    asyncio.run(call())
-    return sent[0]
+    assert mode is import_generated(after, "enums").Mode.FAST
 
 
 def test_input_built_through_the_alias_sends_the_same_document(tmp_path):
     paths = _renamed_input_paths(tmp_path)
     build(paths)
-    inputs = _import_generated(paths, "input_types")
-    enums = _import_generated(paths, "enums")
+    inputs = import_generated(paths, "input_types")
+    enums = import_generated(paths, "enums")
     with pytest.warns(DeprecationWarning):
         through_alias = inputs.Outer(
             inner=inputs.GmosImagingVariantInput(bin=1, mode=enums.GmosMode.FAST)
@@ -1264,8 +1225,8 @@ def test_input_built_through_the_alias_sends_the_same_document(tmp_path):
         inner=inputs.ImagingVariantInput(bin=1, mode=enums.Mode.FAST)
     )
 
-    sent_alias = _sent_body(paths, "find", {"find": 1}, outer=through_alias)
-    sent_class = _sent_body(paths, "find", {"find": 1}, outer=through_class)
+    sent_alias = send(paths, "find", {"find": 1}, outer=through_alias)[0]
+    sent_class = send(paths, "find", {"find": 1}, outer=through_class)[0]
 
     assert sent_alias == sent_class
     assert sent_alias["variables"] == {"outer": {"inner": {"bin": 1, "mode": "FAST"}}}
@@ -1375,7 +1336,7 @@ def test_bundled_schemas_record_each_schema_date_and_digest(tmp_path):
 
     build(paths)
 
-    schemas = _import_generated(paths, "bundled_schemas").SCHEMAS
+    schemas = import_generated(paths, "bundled_schemas").SCHEMAS
     assert schemas["development"]["date"] == "2024-05-06"
     assert schemas["production"]["date"] is None
     assert (

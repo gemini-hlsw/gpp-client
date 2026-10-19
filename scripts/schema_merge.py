@@ -73,6 +73,7 @@ __all__ = [
     "TypeConflict",
     "merge_schemas",
     "pair_types",
+    "rename_named_types",
 ]
 
 DEVELOPMENT = GPPEnvironment.DEVELOPMENT.label
@@ -132,11 +133,15 @@ class Rename:
         The type's name on development, which the merged schema uses.
     coordinates : tuple[str, ...]
         The coordinates that carry the type on both environments.
+    kind : str
+        The kind of type, as ``KindConflict`` names it: ``"union"``,
+        ``"interface"`` and so on.
     """
 
     production: str
     development: str
     coordinates: tuple[str, ...]
+    kind: str
 
 
 @dataclass(frozen=True)
@@ -266,7 +271,7 @@ def merge_schemas(*, development: str, production: str) -> MergedSchema:
     development_doc = _parse_schema(DEVELOPMENT, development)
     production_doc = _parse_schema(PRODUCTION, production)
     pairing = pair_types(production_doc, development_doc)
-    renamed = _apply_renames(production_doc, pairing.by_production_name)
+    renamed = rename_named_types(production_doc, pairing.by_production_name)
     return _Merger(development_doc, renamed, pairing).merge()
 
 
@@ -300,7 +305,7 @@ def pair_types(production: DocumentNode, development: DocumentNode) -> Pairing:
     collisions: dict[str, None] = {}
     while True:
         production_types = _type_definitions(
-            _apply_renames(
+            rename_named_types(
                 production, {r.production: r.development for r in renames.values()}
             )
         )
@@ -320,7 +325,14 @@ def pair_types(production: DocumentNode, development: DocumentNode) -> Pairing:
             if development_name in taken or wanted[development_name] > 1:
                 collisions[f"{production_name} -> {development_name}"] = None
                 continue
-            found.append(Rename(production_name, development_name, tuple(coordinates)))
+            found.append(
+                Rename(
+                    production_name,
+                    development_name,
+                    tuple(coordinates),
+                    _KIND_NAMES[type(production_types[production_name])],
+                )
+            )
         if not found:
             break
         renames.update({rename.production: rename for rename in found})
@@ -404,20 +416,40 @@ def _shared_type_refs(
                 )
 
 
-def _apply_renames(document: DocumentNode, renames: Mapping[str, str]) -> DocumentNode:
-    if not renames:
+def rename_named_types(
+    document: DocumentNode, mapping: Mapping[str, str]
+) -> DocumentNode:
+    """
+    Return the document with every type name in ``mapping`` replaced.
+
+    Both a type definition's own name and each reference to it are renamed, so
+    the same call serves a schema and an operation document.
+
+    Parameters
+    ----------
+    document : DocumentNode
+        A schema or operation document.
+    mapping : Mapping[str, str]
+        Each name to replace, with its replacement.
+
+    Returns
+    -------
+    DocumentNode
+        The renamed document, or ``document`` itself when ``mapping`` is empty.
+    """
+    if not mapping:
         return document
 
     class _Renamer(Visitor):
         def enter_named_type(self, node: NamedTypeNode, *_args):
-            new_name = renames.get(node.name.value)
+            new_name = mapping.get(node.name.value)
             return (
                 None if new_name is None else _copy(node, name=NameNode(value=new_name))
             )
 
         def enter(self, node, *_args):
             if isinstance(node, TypeDefinitionNode):
-                new_name = renames.get(node.name.value)
+                new_name = mapping.get(node.name.value)
                 if new_name is not None:
                     return _copy(node, name=NameNode(value=new_name))
             return None

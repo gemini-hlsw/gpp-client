@@ -7,7 +7,7 @@ environments that have it. Anything not listed is on every environment. The
 answers come from that table, so they need no network call.
 """
 
-__all__ = ["enum_values", "is_available"]
+__all__ = ["EnumT", "enum_values", "is_available"]
 
 from enum import Enum
 from typing import TypeVar
@@ -15,7 +15,7 @@ from typing import TypeVar
 from gpp_client.environment import GPPEnvironment
 from gpp_client.generated_tables import load_generated
 
-_EnumT = TypeVar("_EnumT", bound=Enum)
+EnumT = TypeVar("EnumT", bound=Enum)
 
 
 def is_available(
@@ -61,8 +61,8 @@ def is_available(
 
 
 def enum_values(
-    enum: type[_EnumT], environment: GPPEnvironment | str | None = None
-) -> list[_EnumT]:
+    enum: type[EnumT], environment: GPPEnvironment | str | None = None
+) -> list[EnumT]:
     """
     Return the members of a generated enum that an environment accepts.
 

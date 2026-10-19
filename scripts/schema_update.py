@@ -48,11 +48,9 @@ class UpdateResult:
 
     Parameters
     ----------
-    held : tuple[str, ...]
-        Environments whose committed schema was kept because the introspected
-        one does not build.
-    reasons : dict[str, str]
-        Why each held environment was held.
+    held : dict[str, str]
+        Each environment whose committed schema was kept because the
+        introspected one does not build, with why.
     changed : tuple[str, ...]
         Environments whose schema differs from the committed one apart from
         its date line, so the dated download is now the committed copy.
@@ -62,8 +60,7 @@ class UpdateResult:
         Whether the test suite passed on the built client.
     """
 
-    held: tuple[str, ...]
-    reasons: dict[str, str]
+    held: dict[str, str]
     changed: tuple[str, ...]
     build: BuildResult
     suite_passed: bool
@@ -84,8 +81,7 @@ class UpdateResult:
             label = environment.capitalize()
             if environment in self.held:
                 lines.append(
-                    f"- {label}: held at its committed schema; "
-                    f"{self.reasons[environment]}"
+                    f"- {label}: held at its committed schema; {self.held[environment]}"
                 )
             elif environment in self.changed:
                 lines.append(f"- {label}: changed")
@@ -160,8 +156,7 @@ def schema_update(
                 changed.append(environment)
     result = build(paths)
     return UpdateResult(
-        held=tuple(held),
-        reasons=held,
+        held=held,
         changed=tuple(changed),
         build=result,
         suite_passed=run_suite() == 0,

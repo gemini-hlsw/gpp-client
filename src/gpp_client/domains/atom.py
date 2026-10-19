@@ -36,10 +36,9 @@ class AtomDomain(BaseDomain):
 
         Raises
         ------
-        NotAvailable
-            If the selected environment does not serve the endpoint (404).
         GPPHttpError
-            If GPP rejects the observation IDs (400) or answers another error
+            If GPP rejects the observation IDs (400), does not serve the
+            endpoint on the selected environment (404) or answers another error
             status.
         GPPTransportError
             If GPP could not be reached, or the request timed out.

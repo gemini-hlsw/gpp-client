@@ -2,9 +2,7 @@
 Tests for the one-command schema update, with GPP mocked by an httpx transport.
 """
 
-import shutil
 from datetime import UTC, datetime
-from pathlib import Path
 
 import httpx
 import pytest
@@ -12,11 +10,9 @@ from typer.testing import CliRunner
 
 from graphql import build_schema, introspection_from_schema, print_schema
 from scripts import schema_update as schema_update_script
-from scripts.build_client import BuildPaths
 from scripts.download_schema import SchemaDownloadError
 from scripts.schema_update import schema_update
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from tests.scripts.helpers import checkout
 
 _SCHEMA = "type Query { program: Program }\ntype Program { id: ID! name: String }\n"
 _SCHEMA_WITH_REFERENCE = (
@@ -70,22 +66,8 @@ class _FakeGPP:
         return httpx.Client(transport=httpx.MockTransport(self))
 
 
-def _checkout(root: Path) -> BuildPaths:
-    """
-    Return a checkout whose committed schemas are ``_SCHEMA`` on both environments.
-    """
-    paths = BuildPaths.for_repo(root)
-    paths.schemas_dir.mkdir(parents=True)
-    for environment in ("development", "production"):
-        paths.schema_path(environment).write_text(_printed(_SCHEMA))
-    paths.operations_dir.mkdir(parents=True)
-    (paths.operations_dir / "operations.graphql").write_text(_OPERATION)
-    shutil.copyfile(REPO_ROOT / "graphql" / "codegen.toml", paths.codegen_config)
-    return paths
-
-
 def test_environment_whose_schema_does_not_build_is_held_and_named(tmp_path):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     gpp = _FakeGPP(
         development=_introspection_that_does_not_build(),
         production=_introspection(_SCHEMA_WITH_REFERENCE),
@@ -97,13 +79,13 @@ def test_environment_whose_schema_does_not_build_is_held_and_named(tmp_path):
 
     assert paths.schema_path("development").read_text() == _printed(_SCHEMA)
     assert paths.schema_path("production").read_text() == _dated(_SCHEMA_WITH_REFERENCE)
-    assert result.held == ("development",)
+    assert list(result.held) == ["development"]
     assert "Development: held" in result.summary
     assert "unknown type: Program" in result.summary
 
 
 def test_second_run_without_a_gpp_change_changes_nothing(tmp_path):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     gpp = _FakeGPP(
         development=_introspection(_SCHEMA_WITH_REFERENCE),
         production=_introspection(_SCHEMA),
@@ -127,7 +109,7 @@ def test_second_run_without_a_gpp_change_changes_nothing(tmp_path):
 
 
 def test_a_later_day_without_a_gpp_change_keeps_the_committed_schema_date(tmp_path):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     dated_earlier = "# schema-date: 2026-01-01\n" + _printed(_SCHEMA)
     paths.schema_path("production").write_text(dated_earlier)
     gpp = _FakeGPP(
@@ -144,7 +126,7 @@ def test_a_later_day_without_a_gpp_change_keeps_the_committed_schema_date(tmp_pa
 
 
 def test_runs_the_suite_on_the_built_client_and_reports_a_failure(tmp_path):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     gpp = _FakeGPP(
         development=_introspection(_SCHEMA), production=_introspection(_SCHEMA)
     )
@@ -163,7 +145,7 @@ def test_runs_the_suite_on_the_built_client_and_reports_a_failure(tmp_path):
 
 
 def test_command_updates_the_checkout_in_the_current_directory(tmp_path, monkeypatch):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     gpp = _FakeGPP(
         development=_introspection(_SCHEMA_WITH_REFERENCE),
         production=_introspection(_SCHEMA),
@@ -186,7 +168,7 @@ def test_command_updates_the_checkout_in_the_current_directory(tmp_path, monkeyp
 
 
 def test_a_refused_introspection_fails_the_update_instead_of_holding(tmp_path):
-    paths = _checkout(tmp_path)
+    paths = checkout(tmp_path, sdl=_printed(_SCHEMA), operations=_OPERATION)
     gpp = _FakeGPP(
         development=_introspection(_SCHEMA), production=_introspection(_SCHEMA)
     )

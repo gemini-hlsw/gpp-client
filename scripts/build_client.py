@@ -458,6 +458,15 @@ def _merge_summary(merged: MergedSchema, aliases: AliasReport) -> str:
         f"- Alias `{alias}` of `{target}` in `{module}`"
         for module, alias, target in aliases.placed
     ]
+    # Responses carry production's __typename, which nothing maps back to the
+    # merged name; a renamed union or interface is the trigger to add that map.
+    lines += [
+        f"- Warning: {rename.kind} `{rename.production}` was renamed; production "
+        f"answers `__typename` with `{rename.production}`, so a `__typename` map "
+        "is now needed"
+        for rename in merged.pairing.renames
+        if rename.kind in ("union", "interface")
+    ]
     lines += [
         f"- Conflict `{conflict.coordinate}`: {_on_each(conflict.types)}; "
         "production's type used"

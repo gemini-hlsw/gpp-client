@@ -10,7 +10,6 @@ from gpp_client.exceptions import (
     GPPError,
     GPPGraphQLError,
     GPPHttpError,
-    GPPResponseError,
     GPPRetryableError,
     GPPServerError,
     GPPTransportError,
@@ -64,18 +63,3 @@ def test_server_errors_are_still_the_generated_errors_consumers_catch() -> None:
     assert issubclass(GPPGraphQLError, GraphQLClientGraphQLMultiError)
     assert issubclass(GPPHttpError, GraphQLClientHttpError)
     assert issubclass(GPPTransportError, GraphQLClientError)
-
-
-def test_gpp_response_error_fields_and_message() -> None:
-    """
-    Test that GPPResponseError correctly stores status code and message,
-    and that its string representation is as expected.
-    """
-    exc = GPPResponseError(404, "Not Found")
-
-    assert exc.status_code == 404
-    assert exc.message == "Not Found"
-    assert str(exc) == "GPP returned 404: Not Found"
-
-    with pytest.raises(GPPResponseError):
-        raise exc

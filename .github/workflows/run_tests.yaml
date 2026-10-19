@@ -41,8 +41,8 @@ jobs:
       - name: Check types
         run: uv run ty check --error-on-warning --output-format=github src/gpp_client
 
-      # Reports only until the next release: the previous tag predates the
-      # removals this branch intends. Then drop continue-on-error.
+      # The previous tag predates this branch's intended API removals, so the
+      # step reports instead of failing.
       - name: Check the public API against the previous release
         continue-on-error: true
         run: |

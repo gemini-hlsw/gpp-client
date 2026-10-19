@@ -423,10 +423,9 @@ class SchedulerDomain(BaseDomain):
 
         Raises
         ------
-        NotAvailable
-            If the selected environment does not serve the endpoint (404).
         GPPHttpError
-            If GPP answers another error status.
+            If GPP answers an error status, 404 for an endpoint the selected
+            environment does not serve included.
         GPPTransportError
             If GPP could not be reached, or the request timed out.
         """

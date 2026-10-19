@@ -5,12 +5,12 @@ This module provides the main entry point for interacting with GPP.
 __all__ = ["GPPClient"]
 
 import logging
-from enum import Enum
-from typing import Any, Self, TypeVar
+from typing import Any, Self
 
 import httpx
 
 from gpp_client import availability
+from gpp_client.availability import EnumT
 from gpp_client.domains import (
     AtomDomain,
     AttachmentDomain,
@@ -30,8 +30,6 @@ from gpp_client.settings import GPPSettings
 from gpp_client.urls import get_graphql_url, get_ws_url
 
 logger = logging.getLogger(__name__)
-
-_EnumT = TypeVar("_EnumT", bound=Enum)
 
 # httpx defaults to 5 seconds, which is too aggressive for slow GPP operations
 # such as cloning observations.
@@ -294,7 +292,7 @@ class GPPClient:
         """
         return availability.is_available(model, field, self._settings.environment)
 
-    def enum_values(self, enum: type[_EnumT]) -> list[_EnumT]:
+    def enum_values(self, enum: type[EnumT]) -> list[EnumT]:
         """
         Return the members of a generated enum that this environment accepts.
 
