@@ -24,7 +24,12 @@ from graphql import (
     parse,
 )
 from scripts.build_client import BuildPaths
-from scripts.schema_merge import SchemaMergeError, merge_schemas
+from scripts.schema_merge import (
+    DEVELOPMENT,
+    PRODUCTION,
+    SchemaMergeError,
+    merge_schemas,
+)
 
 __all__ = ["release_notes"]
 
@@ -179,7 +184,10 @@ def _merged_in_checkout(paths: BuildPaths) -> str:
 
 def _merged(sdl_by_environment: dict[str, str]) -> str:
     try:
-        return merge_schemas(sdl_by_environment).sdl
+        return merge_schemas(
+            development=sdl_by_environment[DEVELOPMENT],
+            production=sdl_by_environment[PRODUCTION],
+        ).sdl
     except SchemaMergeError as exc:
         raise typer.BadParameter(str(exc)) from exc
 

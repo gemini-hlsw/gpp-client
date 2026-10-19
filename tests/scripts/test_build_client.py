@@ -18,8 +18,16 @@ from pydantic import ValidationError
 from gpp_client.environment import GPPEnvironment
 from gpp_client.generated_tables import use_generated_package
 from gpp_client.trimmed_operations import TrimmedOperation, find_trimmed_operation
-from graphql import build_schema
-from scripts.build_client import BuildError, BuildPaths, TypeConflict, build
+from graphql import GraphQLScalarType, build_schema
+from scripts.build_client import (
+    BuildError,
+    BuildPaths,
+    KindConflict,
+    Pairing,
+    Rename,
+    TypeConflict,
+    build,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -235,39 +243,188 @@ def test_availability_marks_root_operations_types_and_enum_values(tmp_path):
     assert _environments(schema.query_type.fields["a"].ast_node) is None
 
 
-def test_type_of_a_different_kind_fails_naming_type_and_environments(tmp_path):
-    paths = _write_schemas(
+def test_type_of_a_different_kind_takes_production_and_drops_development_uses(
+    tmp_path,
+):
+    result, schema = _build_two(
+        tmp_path,
+        development="type Query { a: Mode c: Mode find(mode: Mode): Int items: Item }\n"
+        "enum Mode { FAST }\ntype Thing { v: Int }\ntype Other { w: Int }\n"
+        "union Item = Thing | Other",
+        production="type Query { a: Mode find: Int items: Item }\n"
+        "scalar Mode\nscalar Thing\ntype Other { w: Int }\nunion Item = Other",
+    )
+
+    assert isinstance(schema.type_map["Mode"], GraphQLScalarType)
+    assert _environments(schema.type_map["Mode"].ast_node) == ["production"]
+    assert "c" not in schema.query_type.fields
+    assert "mode" not in schema.query_type.fields["find"].args
+    assert [t.name for t in schema.type_map["Item"].types] == ["Other"]
+    assert result.kind_conflicts == (
+        KindConflict(
+            name="Mode",
+            kinds=(("development", "enum"), ("production", "scalar")),
+            dropped=("Query.c", "Query.find(mode:)"),
+        ),
+        KindConflict(
+            name="Thing",
+            kinds=(("development", "object"), ("production", "scalar")),
+            dropped=("Item = Thing",),
+        ),
+    )
+
+
+def test_type_that_differs_takes_production_type_and_is_listed(tmp_path):
+    result, schema = _build_two(
+        tmp_path,
+        development="type Query { a: Int b: String find(id: ID!, where: Where): Int }\n"
+        "input Where { name: String! page: Int }",
+        production="type Query { a: Int b: Int! find(id: Int, where: Where): Int }\n"
+        "input Where { name: [String!] page: Int }",
+    )
+
+    query = schema.query_type
+    assert str(query.fields["b"].type) == "Int"
+    assert _environments(query.fields["b"].ast_node) == ["production"]
+    assert str(query.fields["find"].args["id"].type) == "Int"
+    assert _environments(query.fields["find"].args["id"].ast_node) == ["production"]
+    assert _environments(query.fields["find"].ast_node) is None
+    assert str(schema.type_map["Where"].fields["name"].type) == "[String!]"
+    assert _environments(schema.type_map["Where"].ast_node) is None
+    assert result.conflicts == (
+        TypeConflict("Query.b", (("development", "String"), ("production", "Int!"))),
+        TypeConflict(
+            "Query.find(id:)", (("development", "ID!"), ("production", "Int"))
+        ),
+        TypeConflict(
+            "Where.name", (("development", "String!"), ("production", "[String!]"))
+        ),
+    )
+
+
+def test_field_typed_by_a_kind_conflict_on_both_environments_is_production_only(
+    tmp_path,
+):
+    _, schema = _build_two(
         tmp_path,
         development="type Query { a: Mode }\nenum Mode { FAST }",
         production="type Query { a: Mode }\nscalar Mode",
     )
 
-    with pytest.raises(BuildError) as error:
-        build(paths)
-
-    message = str(error.value)
-    assert "'Mode'" in message
-    assert "enum on development" in message
-    assert "scalar on production" in message
+    assert _environments(schema.query_type.fields["a"].ast_node) == ["production"]
 
 
-def test_field_whose_type_differs_is_left_out_and_reported(tmp_path):
+def _variant_sdl(name: str) -> str:
+    return f"type Query {{ find(variant: {name}): Int }}\ninput {name} {{ bin: Int! }}"
+
+
+def test_renamed_input_type_is_paired_under_development_name(tmp_path):
     result, schema = _build_two(
         tmp_path,
-        development="type Query { a: Int b: String }",
-        production="type Query { a: Int b: Int }",
+        development=_variant_sdl("ImagingVariantInput"),
+        production=_variant_sdl("GmosImagingVariantInput"),
     )
 
-    assert "b" not in schema.query_type.fields
-    assert result.conflicts == (
-        TypeConflict(
-            coordinate="Query.b",
-            types=(
-                ("development", "String"),
-                ("production", "Int"),
-            ),
-        ),
+    assert "GmosImagingVariantInput" not in schema.type_map
+    variant = schema.type_map["ImagingVariantInput"]
+    assert _environments(variant.ast_node) is None
+    assert _environments(variant.fields["bin"].ast_node) is None
+    assert str(schema.query_type.fields["find"].args["variant"].type) == (
+        "ImagingVariantInput"
     )
+    assert result.pairing.reverse == {"ImagingVariantInput": "GmosImagingVariantInput"}
+
+
+def test_pairing_follows_a_rename_into_the_renamed_type(tmp_path):
+    result, schema = _build_two(
+        tmp_path,
+        development="type Query { a: New }\ntype New { x: NewInner }\n"
+        "type NewInner { v: Int }",
+        production="type Query { a: Old }\ntype Old { x: OldInner }\n"
+        "type OldInner { v: Int }",
+    )
+
+    assert result.pairing.renames == (
+        Rename("Old", "New", ("Query.a",)),
+        Rename("OldInner", "NewInner", ("New.x",)),
+    )
+    assert {"Old", "OldInner"}.isdisjoint(schema.type_map)
+    assert _environments(schema.type_map["NewInner"].ast_node) is None
+
+
+def test_no_rename_when_either_environment_still_has_the_other_name(tmp_path):
+    result, schema = _build_two(
+        tmp_path,
+        development="type Query { a: Kept b: Fresh }\ntype Kept { z: Int }\n"
+        "type Fresh { y: Int }\ntype Gone { y: Int }",
+        production="type Query { a: Old b: Gone }\ntype Old { x: Int }\n"
+        "type Kept { x: Int }\ntype Gone { y: Int }",
+    )
+
+    assert result.pairing == Pairing()
+    assert _environments(schema.query_type.fields["a"].ast_node) == ["production"]
+    assert _environments(schema.query_type.fields["b"].ast_node) == ["production"]
+    assert _environments(schema.type_map["Old"].ast_node) == ["production"]
+
+
+def test_no_rename_across_list_depth_or_kind(tmp_path):
+    result, _ = _build_two(
+        tmp_path,
+        development="type Query { a: [Deep] b: Shape }\ntype Deep { x: Int }\n"
+        "interface Shape { x: Int }",
+        production="type Query { a: OldDeep b: OldShape }\ntype OldDeep { x: Int }\n"
+        "type OldShape { x: Int }",
+    )
+
+    assert result.pairing == Pairing()
+
+
+def test_renames_never_chain(tmp_path):
+    result, _ = _build_two(
+        tmp_path,
+        development="type Query { a: B b: C }\ntype B { x: Int }\ntype C { x: Int }",
+        production="type Query { a: A b: B }\ntype A { x: Int }\ntype B { x: Int }",
+    )
+
+    assert result.pairing == Pairing()
+
+
+def test_ambiguous_votes_and_collisions_make_no_rename_and_are_listed(tmp_path):
+    result, schema = _build_two(
+        tmp_path,
+        development="type Query { a: A1 b: A2 c: A2 d: B e: B }\n"
+        "type A1 { x: Int }\ntype A2 { x: Int }\ntype B { x: Int }",
+        production="type Query { a: OldA b: OldA c: OldA d: OldB e: OldC }\n"
+        "type OldA { x: Int }\ntype OldB { x: Int }\ntype OldC { x: Int }",
+    )
+
+    assert result.pairing == Pairing(
+        renames=(),
+        ambiguous=("OldA: A2 (2), A1 (1)",),
+        collisions=("OldB -> B", "OldC -> B"),
+    )
+    assert {"OldA", "OldB", "OldC"} <= set(schema.type_map)
+
+
+def test_descriptions_come_from_development_where_it_has_the_element(tmp_path):
+    _, schema = _build_two(
+        tmp_path,
+        development='"Dev type." type Query { "Dev field." a: Int b: String '
+        'c(id: ID): Int }\n"Dev enum." enum Code { "Dev value." OK }',
+        production='"Prod type." type Query { "Prod field." a: Int '
+        '"Prod only." b: Int "Prod c." c("Prod arg." id: ID): Int }\n'
+        '"Prod enum." enum Code { "Prod value." OK "Prod warn." WARN }',
+    )
+
+    query = schema.query_type
+    assert query.description == "Dev type."
+    assert query.fields["a"].description == "Dev field."
+    assert query.fields["b"].description == "Prod only."
+    assert query.fields["c"].description is None
+    assert query.fields["c"].args["id"].description is None
+    assert schema.type_map["Code"].description == "Dev enum."
+    assert schema.type_map["Code"].values["OK"].description == "Dev value."
+    assert schema.type_map["Code"].values["WARN"].description == "Prod warn."
 
 
 def test_two_builds_write_identical_files(tmp_path):
@@ -485,7 +642,7 @@ def test_trimmed_copy_invalid_on_its_environment_fails_the_build(tmp_path):
     assert "on development" not in message
 
 
-def test_selecting_a_field_whose_type_differs_fails_naming_each_type(tmp_path):
+def test_operation_selecting_a_field_whose_type_differs_builds(tmp_path):
     paths = _write_schemas(
         tmp_path,
         operations="query ab { a b }",
@@ -493,13 +650,10 @@ def test_selecting_a_field_whose_type_differs_fails_naming_each_type(tmp_path):
         production="type Query { a: Int b: Int }",
     )
 
-    with pytest.raises(BuildError) as error:
-        build(paths)
+    build(paths)
 
-    assert str(error.value) == (
-        "Operations select fields whose type differs between environments:\n"
-        "  Query.b in ab: String on development, Int on production"
-    )
+    _, result = _sent_query(paths, "ab", {"a": 1, "b": 2})
+    assert result.b == 2
 
 
 def test_field_on_no_environment_fails_the_build(tmp_path):
@@ -594,6 +748,58 @@ def test_trim_summary_lists_what_each_environment_does_not_receive(tmp_path):
         "- Unavailable: `two`\n"
         "- `Program.reference` removed from `Details`\n"
         "- `Query.programs(after:)` removed from `one`\n"
+    )
+
+
+def test_merge_summary_lists_renames_conflicts_and_refused_votes(tmp_path):
+    result, _ = _build_two(
+        tmp_path,
+        development="type Query { find(variant: ImagingVariantInput): Int b: String "
+        "a: Mode c: Mode p: A1 q: A2 r: A2 s: B t: B }\n"
+        "input ImagingVariantInput { bin: Int! }\nenum Mode { FAST }\n"
+        "type A1 { x: Int }\ntype A2 { x: Int }\ntype B { x: Int }",
+        production="type Query { find(variant: GmosImagingVariantInput): Int b: Int "
+        "a: Mode p: OldA q: OldA r: OldA s: OldB t: OldC }\n"
+        "input GmosImagingVariantInput { bin: Int! }\nscalar Mode\n"
+        "type OldA { x: Int }\ntype OldB { x: Int }\ntype OldC { x: Int }",
+    )
+
+    assert result.merge_summary == (
+        "### Merge summary\n"
+        "\n"
+        "- Renamed `GmosImagingVariantInput` to `ImagingVariantInput` "
+        "(`Query.find(variant:)`)\n"
+        "- Conflict `Query.b`: String on development, Int on production; "
+        "production's type used\n"
+        "- Conflict `Query.a`: Mode on development, Mode on production; "
+        "production's type used\n"
+        "- Conflict `Query.p`: A1 on development, OldA on production; "
+        "production's type used\n"
+        "- Conflict `Query.q`: A2 on development, OldA on production; "
+        "production's type used\n"
+        "- Conflict `Query.r`: A2 on development, OldA on production; "
+        "production's type used\n"
+        "- Conflict `Query.s`: B on development, OldB on production; "
+        "production's type used\n"
+        "- Conflict `Query.t`: B on development, OldC on production; "
+        "production's type used\n"
+        "- Kind conflict `Mode`: enum on development, scalar on production; "
+        "production's definition used, dropped `Query.c`\n"
+        "- Ambiguous `OldA: A2 (2), A1 (1)`; not renamed\n"
+        "- Collision `OldB -> B`; not renamed\n"
+        "- Collision `OldC -> B`; not renamed\n"
+    )
+
+
+def test_merge_summary_without_differences_says_so(tmp_path):
+    result, _ = _build_two(
+        tmp_path,
+        development="type Query { a: Int }",
+        production="type Query { a: Int }",
+    )
+
+    assert result.merge_summary == (
+        "### Merge summary\n\nNo renames, conflicts or refused votes.\n"
     )
 
 

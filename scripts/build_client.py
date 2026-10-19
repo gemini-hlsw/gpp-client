@@ -19,7 +19,6 @@ from pathlib import Path
 import typer
 from ariadne_codegen.exceptions import CodeGenException
 from ariadne_codegen.main import client as run_ariadne_codegen
-from ariadne_codegen.schema import load_graphql_files_from_path
 from rich.markup import escape
 
 from custom_plugins.capture_operations import CAPTURE_KEY
@@ -27,19 +26,14 @@ from custom_plugins.environment_defaults import DEFAULTS_KEY, DefaultsReport
 from custom_plugins.environments import USER_ENVIRONMENTS
 from gpp_client.cli import output
 from gpp_client.trimmed_operations import lookup_trimmed_operation
-from graphql import (
-    FieldNode,
-    GraphQLError,
-    OperationDefinitionNode,
-    TypeInfo,
-    TypeInfoVisitor,
-    Visitor,
-    build_ast_schema,
-    parse,
-    visit,
-)
+from graphql import GraphQLError, OperationDefinitionNode, build_ast_schema, parse
 from scripts.schema_merge import (
+    DEVELOPMENT,
+    PRODUCTION,
+    KindConflict,
     MergedSchema,
+    Pairing,
+    Rename,
     SchemaMergeError,
     TypeConflict,
     merge_schemas,
@@ -54,6 +48,9 @@ __all__ = [
     "BuildError",
     "BuildPaths",
     "BuildResult",
+    "KindConflict",
+    "Pairing",
+    "Rename",
     "TypeConflict",
     "build",
     "schema_file",
@@ -158,14 +155,22 @@ class BuildResult:
     merged_sdl : str
         The merged schema the client was generated from, as SDL.
     conflicts : tuple[TypeConflict, ...]
-        Elements left out of the merged schema because their type differs
-        between environments.
+        Elements given production's type because theirs differs.
+    pairing : Pairing
+        The production types the merge renamed to their development names.
+    kind_conflicts : tuple[KindConflict, ...]
+        Type names whose kind differs, where production's definition won.
+    merge_summary : str
+        The renames, conflicts and refused votes, as Markdown for a PR body.
     trim_summary : str
         What each environment does not receive, as Markdown for a PR body.
     """
 
     merged_sdl: str
     conflicts: tuple[TypeConflict, ...]
+    pairing: Pairing
+    kind_conflicts: tuple[KindConflict, ...]
+    merge_summary: str
     trim_summary: str
 
 
@@ -186,15 +191,14 @@ def build(paths: BuildPaths) -> BuildResult:
     Raises
     ------
     BuildError
-        Raised when a schema file is missing, the schemas cannot be merged, an
-        operation selects a field whose type differs between environments or
-        that no environment has, codegen fails, an environment-specific field
+        Raised when a schema file is missing, an environment schema is invalid,
+        an operation selects a field no environment has, codegen fails, an
+        environment-specific field
         did not get a ``None`` default, a trimmed operation is invalid on its
         environment, or the trimmed lookup misses a query the generated client
         sends.
     """
     merged = _merge(paths)
-    _check_conflicting_selections(paths, merged)
     operation_strs, defaults = _run_codegen(paths, merged.sdl)
     _check_environment_defaults(paths.package_dir, defaults)
     schemas = {env: _environment_schema(paths, env) for env in USER_ENVIRONMENTS}
@@ -212,6 +216,9 @@ def build(paths: BuildPaths) -> BuildResult:
     return BuildResult(
         merged_sdl=merged.sdl,
         conflicts=merged.conflicts,
+        pairing=merged.pairing,
+        kind_conflicts=merged.kind_conflicts,
+        merge_summary=_merge_summary(merged),
         trim_summary=_trim_summary(trimmed),
     )
 
@@ -226,10 +233,8 @@ def _merge(paths: BuildPaths) -> MergedSchema:
         raise BuildError(f"Schema files not found: {', '.join(missing)}")
     try:
         return merge_schemas(
-            {
-                env: paths.schema_path(env).read_text(encoding="utf-8")
-                for env in USER_ENVIRONMENTS
-            }
+            development=paths.schema_path(DEVELOPMENT).read_text(encoding="utf-8"),
+            production=paths.schema_path(PRODUCTION).read_text(encoding="utf-8"),
         )
     except SchemaMergeError as exc:
         raise BuildError(str(exc)) from exc
@@ -239,49 +244,6 @@ def _environment_schema(paths: BuildPaths, environment: str):
     return build_ast_schema(
         parse(paths.schema_path(environment).read_text(encoding="utf-8"))
     )
-
-
-def _check_conflicting_selections(paths: BuildPaths, merged: MergedSchema) -> None:
-    """
-    Fail naming each selected field that rule 4 left out of the merged schema.
-    """
-    conflicts_by_field: dict[str, TypeConflict] = {}
-    for conflict in merged.conflicts:
-        conflicts_by_field.setdefault(conflict.coordinate.split("(")[0], conflict)
-    if not conflicts_by_field:
-        return
-    try:
-        document = parse(load_graphql_files_from_path(paths.operations_dir))
-    except (CodeGenException, GraphQLError) as exc:
-        raise BuildError(f"Operations could not be read: {exc}") from exc
-
-    found: list[str] = []
-    type_info = TypeInfo(build_ast_schema(merged.document))
-
-    class _Finder(Visitor):
-        definition = ""
-
-        def enter_operation_definition(self, node, *_args) -> None:
-            self.definition = node.name.value if node.name else "anonymous"
-
-        def enter_fragment_definition(self, node, *_args) -> None:
-            self.definition = node.name.value
-
-        def enter_field(self, node: FieldNode, *_args) -> None:
-            parent = type_info.get_parent_type()
-            if parent is None:
-                return
-            conflict = conflicts_by_field.get(f"{parent.name}.{node.name.value}")
-            if conflict is not None:
-                listed = ", ".join(f"{t} on {env}" for env, t in conflict.types)
-                found.append(f"  {conflict.coordinate} in {self.definition}: {listed}")
-
-    visit(document, TypeInfoVisitor(type_info, _Finder()))
-    if found:
-        raise BuildError(
-            "Operations select fields whose type differs between environments:\n"
-            + "\n".join(found)
-        )
 
 
 def _run_codegen(
@@ -432,6 +394,36 @@ def _operation_name(query: str) -> str:
     return "anonymous"
 
 
+def _merge_summary(merged: MergedSchema) -> str:
+    lines = [
+        f"- Renamed `{rename.production}` to `{rename.development}` "
+        f"({_names(rename.coordinates)})"
+        for rename in merged.pairing.renames
+    ]
+    lines += [
+        f"- Conflict `{conflict.coordinate}`: {_on_each(conflict.types)}; "
+        "production's type used"
+        for conflict in merged.conflicts
+    ]
+    for conflict in merged.kind_conflicts:
+        dropped = f", dropped {_names(conflict.dropped)}" if conflict.dropped else ""
+        lines.append(
+            f"- Kind conflict `{conflict.name}`: {_on_each(conflict.kinds)}; "
+            f"production's definition used{dropped}"
+        )
+    lines += [f"- Ambiguous `{vote}`; not renamed" for vote in merged.pairing.ambiguous]
+    lines += [
+        f"- Collision `{vote}`; not renamed" for vote in merged.pairing.collisions
+    ]
+    if not lines:
+        return "### Merge summary\n\nNo renames, conflicts or refused votes.\n"
+    return "### Merge summary\n\n" + "\n".join(lines) + "\n"
+
+
+def _on_each(by_environment: tuple[tuple[str, str], ...]) -> str:
+    return ", ".join(f"{what} on {env}" for env, what in by_environment)
+
+
 def _trim_summary(trimmed: list[EnvironmentOperations]) -> str:
     sections = []
     for environment in trimmed:
@@ -499,12 +491,9 @@ def main() -> None:
         output.fail(escape(str(exc)))
         raise typer.Exit(code=1) from exc
 
-    for conflict in result.conflicts:
-        types = ", ".join(f"{t} on {env}" for env, t in conflict.types)
-        output.warning(f"Left out {conflict.coordinate}: type differs ({types}).")
     output.success(f"Wrote {paths.package_dir}")
     # Plain text, so it pastes into a PR body unchanged.
-    typer.echo("\n" + result.trim_summary)
+    typer.echo("\n" + result.merge_summary + "\n" + result.trim_summary)
 
 
 if __name__ == "__main__":
