@@ -21,6 +21,7 @@ from ariadne_codegen.exceptions import CodeGenException
 from ariadne_codegen.main import client as run_ariadne_codegen
 from rich.markup import escape
 
+from custom_plugins.alias_names import ALIASES_KEY, AliasReport
 from custom_plugins.capture_operations import CAPTURE_KEY
 from custom_plugins.environment_defaults import DEFAULTS_KEY, DefaultsReport
 from custom_plugins.environments import USER_ENVIRONMENTS
@@ -161,7 +162,8 @@ class BuildResult:
     kind_conflicts : tuple[KindConflict, ...]
         Type names whose kind differs, where production's definition won.
     merge_summary : str
-        The renames, conflicts and refused votes, as Markdown for a PR body.
+        The renames, aliases, conflicts and refused votes, as Markdown for a
+        PR body.
     trim_summary : str
         What each environment does not receive, as Markdown for a PR body.
     """
@@ -199,7 +201,7 @@ def build(paths: BuildPaths) -> BuildResult:
         sends.
     """
     merged = _merge(paths)
-    operation_strs, defaults = _run_codegen(paths, merged.sdl)
+    operation_strs, defaults, aliases = _run_codegen(paths, merged)
     _check_environment_defaults(paths.package_dir, defaults)
     schemas = {env: _environment_schema(paths, env) for env in USER_ENVIRONMENTS}
     trimmed = [
@@ -218,7 +220,7 @@ def build(paths: BuildPaths) -> BuildResult:
         conflicts=merged.conflicts,
         pairing=merged.pairing,
         kind_conflicts=merged.kind_conflicts,
-        merge_summary=_merge_summary(merged),
+        merge_summary=_merge_summary(merged, aliases),
         trim_summary=_trim_summary(trimmed),
     )
 
@@ -247,20 +249,23 @@ def _environment_schema(paths: BuildPaths, environment: str):
 
 
 def _run_codegen(
-    paths: BuildPaths, merged_sdl: str
-) -> tuple[list[str], DefaultsReport]:
+    paths: BuildPaths, merged: MergedSchema
+) -> tuple[list[str], DefaultsReport, AliasReport]:
     """
     Generate the client from the merged schema.
 
-    Returns each embedded operation, and where ``None`` defaults went.
+    Returns each embedded operation, where ``None`` defaults went, and which
+    production names became aliases.
     """
     with paths.codegen_config.open("rb") as config_file:
         config = tomllib.load(config_file)
     captured: list[str] = []
     defaults = DefaultsReport()
+    aliases = AliasReport(renames=merged.pairing.by_production_name)
     config["tool"]["gpp-client"] = {
         CAPTURE_KEY: captured,
         DEFAULTS_KEY: defaults,
+        ALIASES_KEY: aliases,
     }
 
     if paths.package_dir.is_dir():
@@ -268,7 +273,7 @@ def _run_codegen(
     paths.package_dir.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="gpp-client-merged-") as scratch:
         merged_path = Path(scratch) / "merged.graphql"
-        merged_path.write_text(merged_sdl, encoding="utf-8")
+        merged_path.write_text(merged.sdl, encoding="utf-8")
         config["tool"]["ariadne-codegen"].update(
             schema_path=str(merged_path),
             queries_path=str(paths.operations_dir),
@@ -280,7 +285,7 @@ def _run_codegen(
                 run_ariadne_codegen(config)
         except (CodeGenException, GraphQLError) as exc:
             raise BuildError(f"Codegen failed: {exc}") from exc
-    return captured, defaults
+    return captured, defaults, aliases
 
 
 def _check_environment_defaults(package_dir: Path, report: DefaultsReport) -> None:
@@ -394,11 +399,15 @@ def _operation_name(query: str) -> str:
     return "anonymous"
 
 
-def _merge_summary(merged: MergedSchema) -> str:
+def _merge_summary(merged: MergedSchema, aliases: AliasReport) -> str:
     lines = [
         f"- Renamed `{rename.production}` to `{rename.development}` "
         f"({_names(rename.coordinates)})"
         for rename in merged.pairing.renames
+    ]
+    lines += [
+        f"- Alias `{alias}` of `{target}` in `{module}`"
+        for module, alias, target in aliases.placed
     ]
     lines += [
         f"- Conflict `{conflict.coordinate}`: {_on_each(conflict.types)}; "

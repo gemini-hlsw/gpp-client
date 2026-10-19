@@ -7,7 +7,10 @@ import asyncio
 import dataclasses
 import importlib
 import json
+import pickle
 import shutil
+import subprocess
+import sys
 import uuid
 from pathlib import Path
 
@@ -769,6 +772,8 @@ def test_merge_summary_lists_renames_conflicts_and_refused_votes(tmp_path):
         "\n"
         "- Renamed `GmosImagingVariantInput` to `ImagingVariantInput` "
         "(`Query.find(variant:)`)\n"
+        "- Alias `GmosImagingVariantInput` of `ImagingVariantInput` in "
+        "`input_types`\n"
         "- Conflict `Query.b`: String on development, Int on production; "
         "production's type used\n"
         "- Conflict `Query.a`: Mode on development, Mode on production; "
@@ -1037,3 +1042,235 @@ def test_environment_specific_enum_and_input_type_docstrings(tmp_path):
     inputs = _import_generated(paths, "input_types")
     assert enums.Mode.__doc__ == "Available on: development."
     assert "Available on" not in (inputs.Where.__doc__ or "")
+
+
+_FIND_OUTER = "query find($outer: Outer!) { find(outer: $outer) }"
+
+
+def _outer_sdl(input_name: str, enum_name: str) -> str:
+    """
+    Return a schema whose ``Outer`` input, shared by both environments, carries
+    an input type and an enum under the given names.
+    """
+    return (
+        "type Query { find(outer: Outer): Int }\n"
+        f"input Outer {{ inner: {input_name} }}\n"
+        f"input {input_name} {{ bin: Int! mode: {enum_name} }}\n"
+        f"enum {enum_name} {{ FAST }}"
+    )
+
+
+def _renamed_input_paths(tmp_path) -> BuildPaths:
+    """
+    Pair production's ``GmosImagingVariantInput`` and ``GmosMode`` to
+    development's ``ImagingVariantInput`` and ``Mode``.
+    """
+    return _write_schemas(
+        tmp_path,
+        operations=_FIND_OUTER,
+        development=_outer_sdl("ImagingVariantInput", "Mode"),
+        production=_outer_sdl("GmosImagingVariantInput", "GmosMode"),
+    )
+
+
+def test_production_name_of_a_paired_input_type_is_a_warning_alias(tmp_path):
+    paths = _renamed_input_paths(tmp_path)
+
+    build(paths)
+
+    inputs = _import_generated(paths, "input_types")
+    with pytest.warns(DeprecationWarning, match="ImagingVariantInput") as warned:
+        alias = inputs.GmosImagingVariantInput
+    assert alias is inputs.ImagingVariantInput
+    assert len(warned) == 1
+
+
+def test_paired_enum_alias_is_in_the_package_all_and_lazy_imports(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        development="type Query { find(mode: Mode): Int }\nenum Mode { FAST }",
+        production="type Query { find(mode: GmosMode): Int }\nenum GmosMode { FAST }",
+    )
+
+    build(paths)
+
+    package = importlib.import_module(paths.package_dir.name)
+    assert "GmosMode" in package.__all__
+    assert package._LAZY_IMPORTS["GmosMode"] == ".enums"
+    with pytest.warns(DeprecationWarning, match="import Mode instead") as warned:
+        from_package = package.GmosMode
+    assert from_package is _import_generated(paths, "enums").Mode
+    assert from_package.FAST is from_package("FAST")
+    assert len(warned) == 1
+    assert warned[0].filename == __file__
+
+
+def test_paired_object_type_gets_no_alias(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        development="type Query { a: New }\ntype New { x: Int }",
+        production="type Query { a: Old }\ntype Old { x: Int }",
+    )
+
+    result = build(paths)
+
+    assert result.pairing.by_production_name == {"Old": "New"}
+    package = importlib.import_module(paths.package_dir.name)
+    assert "Old" not in package.__all__
+    assert not any(
+        "_DEPRECATED_ALIASES" in path.read_text()
+        for path in paths.package_dir.glob("*.py")
+    )
+
+
+def test_pairing_without_renames_generates_no_alias_code(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        development="type Query { find(mode: Mode): Int }\nenum Mode { FAST }",
+        production="type Query { find(mode: Mode): Int }\nenum Mode { FAST }",
+    )
+
+    build(paths)
+
+    enums_source = (paths.package_dir / "enums.py").read_text()
+    assert "__getattr__" not in enums_source
+    assert "warnings" not in enums_source
+
+
+def _ty_diagnostics(root: Path, packages_dir: Path, code: str) -> str:
+    checked = root / "check.py"
+    checked.write_text(code)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ty",
+            "check",
+            "--project",
+            str(root),
+            "--python",
+            sys.prefix,
+            "--extra-search-path",
+            str(packages_dir),
+            "--output-format",
+            "concise",
+            str(checked),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout + result.stderr
+
+
+def test_ty_resolves_the_alias_to_its_class(tmp_path):
+    paths = _renamed_input_paths(tmp_path)
+    build(paths)
+    package = paths.package_dir.name
+
+    diagnostics = _ty_diagnostics(
+        tmp_path,
+        paths.package_dir.parent,
+        f"from {package}.input_types import GmosImagingVariantInput\n"
+        f"from {package} import GmosMode, ImagingVariantInput, Mode\n"
+        "variant: ImagingVariantInput = GmosImagingVariantInput(bin=1, mode=Mode.FAST)\n"
+        "mode: Mode = GmosMode.FAST\n"
+        "wrong: int = GmosMode.FAST\n"
+        f"from {package}.client import NoSuchName\n",
+    )
+
+    errors = [line for line in diagnostics.splitlines() if "error[" in line]
+    assert [line.split(":")[1] for line in errors] == ["5", "6"], diagnostics
+    assert "`Mode`" in errors[0]
+
+
+def test_pickle_from_before_the_rename_loads_through_the_alias(tmp_path):
+    before = _write_schemas(
+        tmp_path / "before",
+        operations=_FIND_OUTER,
+        development=_outer_sdl("GmosImagingVariantInput", "GmosMode"),
+        production=_outer_sdl("GmosImagingVariantInput", "GmosMode"),
+    )
+    build(before)
+    after = _renamed_input_paths(tmp_path)
+    after = dataclasses.replace(
+        after, package_dir=after.package_dir.with_name(before.package_dir.name)
+    )
+    build(after)
+    package = before.package_dir.name
+    dumped = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import pickle, sys\n"
+            f"from {package}.input_types import GmosImagingVariantInput\n"
+            f"from {package}.enums import GmosMode\n"
+            "sys.stdout.buffer.write(pickle.dumps(["
+            "GmosImagingVariantInput(bin=1, mode=GmosMode.FAST), GmosMode.FAST]))",
+        ],
+        env={"PYTHONPATH": str(before.package_dir.parent)},
+        capture_output=True,
+        check=True,
+    ).stdout
+
+    importlib.invalidate_caches()
+    with pytest.warns(DeprecationWarning):
+        variant, mode = pickle.loads(dumped)
+
+    inputs = _import_generated(after, "input_types")
+    assert type(variant) is inputs.ImagingVariantInput
+    assert variant.model_dump(by_alias=True) == {"bin": 1, "mode": "FAST"}
+    assert mode is _import_generated(after, "enums").Mode.FAST
+
+
+def _sent_body(paths: BuildPaths, method: str, response_data: dict, **kwargs):
+    sent = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.append(json.loads(request.content))
+        return httpx.Response(200, json={"data": response_data})
+
+    module = _import_generated(paths)
+
+    async def call():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as http:
+            client = module.GraphQLClient(url="http://gpp.test/odb", http_client=http)
+            return await getattr(client, method)(**kwargs)
+
+    asyncio.run(call())
+    return sent[0]
+
+
+def test_input_built_through_the_alias_sends_the_same_document(tmp_path):
+    paths = _renamed_input_paths(tmp_path)
+    build(paths)
+    inputs = _import_generated(paths, "input_types")
+    enums = _import_generated(paths, "enums")
+    with pytest.warns(DeprecationWarning):
+        through_alias = inputs.Outer(
+            inner=inputs.GmosImagingVariantInput(bin=1, mode=enums.GmosMode.FAST)
+        )
+    through_class = inputs.Outer(
+        inner=inputs.ImagingVariantInput(bin=1, mode=enums.Mode.FAST)
+    )
+
+    sent_alias = _sent_body(paths, "find", {"find": 1}, outer=through_alias)
+    sent_class = _sent_body(paths, "find", {"find": 1}, outer=through_class)
+
+    assert sent_alias == sent_class
+    assert sent_alias["variables"] == {"outer": {"inner": {"bin": 1, "mode": "FAST"}}}
+
+
+def test_build_output_lists_every_alias_with_its_target(tmp_path):
+    result = build(_renamed_input_paths(tmp_path))
+
+    assert result.merge_summary == (
+        "### Merge summary\n"
+        "\n"
+        "- Renamed `GmosImagingVariantInput` to `ImagingVariantInput` "
+        "(`Outer.inner`)\n"
+        "- Renamed `GmosMode` to `Mode` (`ImagingVariantInput.mode`)\n"
+        "- Alias `GmosImagingVariantInput` of `ImagingVariantInput` in "
+        "`input_types`\n"
+        "- Alias `GmosMode` of `Mode` in `enums`\n"
+    )

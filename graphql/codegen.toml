@@ -4,6 +4,7 @@
 client_name = "GraphQLClient"
 client_file_name = "client"
 plugins = [
+    "custom_plugins.AliasNamesPlugin",
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.TolerantEnumsPlugin",
     "custom_plugins.CaptureOperationsPlugin",
