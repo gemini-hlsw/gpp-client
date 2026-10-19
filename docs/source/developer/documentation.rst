@@ -84,8 +84,3 @@ To skip one block, for example a traceback, put this comment right above it:
 The README quickstart shows the lines of the Getting started example. Change
 both together, because ``tests/docs/test_readme.py`` fails when the README
 stops showing them.
-
-Keep the site self-contained. The ``tests/docs/test_docs_guard.py`` test fails
-when a page points to the maintainers' design notes: the ADR and agent folders
-under ``docs/``, or the glossary, architecture, overview and agent instruction
-``.md`` files.
