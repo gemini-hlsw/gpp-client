@@ -96,3 +96,19 @@ fragment ObservationDetails on Observation {
     }
   }
 }
+
+fragment ObservationAttachmentDetails on Observation {
+  attachments {
+    id
+    fileName
+    attachmentType
+    mask {
+      name
+      instrument
+      pixelScale
+      dispersionDirection
+      scienceSlitCount
+      acquisitionSlitCount
+    }
+  }
+}

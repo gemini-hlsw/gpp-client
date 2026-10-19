@@ -32,6 +32,7 @@ class GPPSettings(BaseSettings):
     -----
     Each setting comes from the first of: an argument, the environment
     variable, the ``.env`` file in the current folder, the default.
+
     Supported environment variables:
       - ``GPP_ENVIRONMENT``
       - ``GPP_TOKEN`` (production)

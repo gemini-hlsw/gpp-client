@@ -1,3 +1,4 @@
 # Collapsed in GitHub PR diffs: written by the schema download and codegen scripts, never by hand.
 src/gpp_client/generated/** linguist-generated=true
 src/gpp_client/schemas/*.graphql linguist-generated=true
+docs/source/what-differs-today.rst linguist-generated=true

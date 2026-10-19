@@ -6,9 +6,7 @@ URL and token variable. The CLI choices, the settings validation and the build
 scripts loop over ``GPPEnvironment``; URLs and token variable names come from
 ``_DETAILS``. The exception is the token settings: ``GPPSettings`` declares
 ``token`` and ``development_token`` by hand, so a new environment needs a new
-field there. The "leaving" checks in the release scripts name production and
-development on purpose, since leaving means on production but gone from
-development.
+field there.
 """
 
 __all__ = ["GPPEnvironment"]
