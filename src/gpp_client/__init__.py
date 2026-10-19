@@ -15,10 +15,12 @@ _FALLBACK_VERSION = "0.0.0"
 
 
 try:
-    __version__ = importlib.metadata.version(__name__)
-except importlib.metadata.PackageNotFoundError:
-    # Have fallback version for development environments.
-    __version__ = _FALLBACK_VERSION
+    from ._version import __version__
+except ImportError:
+    try:
+        __version__ = importlib.metadata.version(__name__)
+    except importlib.metadata.PackageNotFoundError:
+        __version__ = _FALLBACK_VERSION
 
 
 def __getattr__(name: str) -> Any:

@@ -17,10 +17,15 @@ from custom_plugins.environments import USER_ENVIRONMENTS
 from gpp_client.cli import output
 from gpp_client.environment import GPPEnvironment
 from gpp_client.urls import get_graphql_url
-from graphql import build_client_schema, get_introspection_query, print_schema
+from graphql import (
+    GraphQLError,
+    build_client_schema,
+    get_introspection_query,
+    print_schema,
+)
 from scripts.build_client import BuildPaths, schema_file
 
-__all__ = ["SchemaDownloadError", "download_schemas"]
+__all__ = ["SchemaDownloadError", "SchemaInvalidError", "download_schemas"]
 
 
 INTROSPECTION_QUERY = get_introspection_query(
@@ -40,6 +45,13 @@ app = typer.Typer(add_completion=False)
 class SchemaDownloadError(RuntimeError):
     """
     Raised when schema download fails.
+    """
+
+
+class SchemaInvalidError(SchemaDownloadError):
+    """
+    Raised when an environment answered introspection with a schema that does
+    not build.
     """
 
 
@@ -77,7 +89,8 @@ def download_schemas(
     ------
     SchemaDownloadError
         Raised for an unknown environment, a failed request, or a refusal when
-        the environment's token variable is unset.
+        the environment's token variable is unset; its subclass
+        ``SchemaInvalidError`` when the answer is a schema that does not build.
     """
     unknown = [env for env in environments if env not in USER_ENVIRONMENTS]
     if unknown:
@@ -118,7 +131,11 @@ def _download(client: httpx.Client, env: str, environ: Mapping[str, str]) -> str
             raise SchemaDownloadError(
                 f"{env} refused introspection with the token in {token_var}."
             ) from None
-    return print_schema(build_client_schema(data)) + "\n"
+    try:
+        schema = build_client_schema(data)
+    except (TypeError, GraphQLError) as exc:
+        raise SchemaInvalidError(f"{env}: schema does not build: {exc}") from exc
+    return print_schema(schema) + "\n"
 
 
 def _introspect(client: httpx.Client, env: str, headers: dict[str, str]) -> dict:

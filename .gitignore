@@ -8,6 +8,8 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+# Written by hatchling's version build hook on every build and uv sync.
+src/gpp_client/_version.py
 build/
 develop-eggs/
 dist/

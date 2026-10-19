@@ -49,6 +49,11 @@ fallback-version = "0.0.0"
 required-version = ">=0.11"
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true }}]
 
+# Bakes the version from the tag into the package on every build, editable
+# installs included; validate_release checks it against the release tag.
+[tool.hatch.build.hooks.version]
+path = "src/gpp_client/_version.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/gpp_client"]
 

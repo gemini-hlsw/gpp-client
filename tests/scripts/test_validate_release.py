@@ -33,7 +33,17 @@ def _committed_build(root: Path) -> BuildPaths:
     )
     paths = BuildPaths.for_repo(root)
     build(paths)
+    _bake_version(paths, "26.5.0")
     return paths
+
+
+def _bake_version(paths: BuildPaths, version: str) -> None:
+    """
+    Write the constant as hatchling's version build hook does on ``uv sync``.
+    """
+    (paths.package_dir.parent / "_version.py").write_text(
+        f"__version__ = VERSION = {version!r}\n"
+    )
 
 
 def test_accepts_a_tag_when_generated_code_matches_a_fresh_build(tmp_path):
@@ -82,6 +92,25 @@ def test_refuses_a_tag_that_is_not_calver(tmp_path, tag):
 
     with pytest.raises(ReleaseValidationError, match="Invalid release tag"):
         validate_release(tag, paths)
+
+
+def test_refuses_when_the_baked_version_differs_from_the_tag(tmp_path):
+    paths = _committed_build(tmp_path)
+    _bake_version(paths, "26.5.0.dev3")
+
+    with pytest.raises(ReleaseValidationError) as exc_info:
+        validate_release("v26.5.0", paths)
+
+    assert "26.5.0.dev3" in str(exc_info.value)
+    assert "uv sync" in str(exc_info.value)
+
+
+def test_refuses_when_no_version_is_baked(tmp_path):
+    paths = _committed_build(tmp_path)
+    (paths.package_dir.parent / "_version.py").unlink()
+
+    with pytest.raises(ReleaseValidationError, match="uv sync"):
+        validate_release("v26.5.0", paths)
 
 
 def test_refuses_when_a_schema_changed_without_rebuilding(tmp_path):

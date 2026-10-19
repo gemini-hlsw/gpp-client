@@ -2,11 +2,13 @@
 """
 Validate a release tag and that the committed client matches its schemas.
 
-A release is refused when its tag is not a CalVer release tag, or when the
-committed generated package differs from a fresh build of the committed
-environment schemas and operations.
+A release is refused when its tag is not a CalVer release tag, when the
+version baked into the package differs from the tag, or when the committed
+generated package differs from a fresh build of the committed environment
+schemas and operations.
 """
 
+import ast
 import filecmp
 import re
 import shutil
@@ -45,10 +47,12 @@ def validate_release(tag: str, paths: BuildPaths) -> None:
     Raises
     ------
     ReleaseValidationError
-        Raised if the tag is invalid, the build fails, or the committed
-        generated package differs from a fresh build.
+        Raised if the tag is invalid, the baked version differs from the tag,
+        the build fails, or the committed generated package differs from a
+        fresh build.
     """
     _check_tag(tag)
+    _check_baked_version(tag, paths.package_dir.parent / "_version.py")
     differences = _differences_from_fresh_build(paths)
     if differences:
         raise ReleaseValidationError(
@@ -69,6 +73,38 @@ def _check_tag(tag: str) -> None:
         raise ReleaseValidationError(
             f"Invalid release tag: {tag}. Expected format: v26.5.0."
         )
+
+
+def _check_baked_version(tag: str, version_file: Path) -> None:
+    """
+    Check the constant hatchling bakes on every build against the tag.
+
+    The constant comes from the tag on the commit, so it matches only once the
+    commit is tagged and the package is reinstalled.
+    """
+    remedy = (
+        f"Tag the commit with {tag}, run `uv sync` so the build hook rewrites "
+        f"{version_file.name}, and validate again."
+    )
+    if not version_file.is_file():
+        raise ReleaseValidationError(f"No baked version at {version_file}. {remedy}")
+    baked = _baked_version(version_file)
+    if baked != tag.removeprefix("v"):
+        raise ReleaseValidationError(
+            f"Baked version {baked} does not match tag {tag}. {remedy}"
+        )
+
+
+def _baked_version(version_file: Path) -> str | None:
+    for node in ast.parse(version_file.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__version__"
+            for target in node.targets
+        ):
+            value = node.value
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                return value.value
+    return None
 
 
 def _differences_from_fresh_build(paths: BuildPaths) -> list[str]:
