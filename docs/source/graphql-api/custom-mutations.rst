@@ -1,13 +1,10 @@
-Custom Mutations
+Custom mutations
 ================
 
-The ``gpp_client.generated.custom_mutations`` module provides helpers for
-building custom GraphQL mutations.
+This class has one builder method for each root field of ``Mutation``. To see
+how to use them, read :doc:`../guides/custom-queries`.
 
-Use these helpers when you need custom return fields or mutation shapes beyond
-the provided domain methods.
-
-API Reference
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.custom_mutations

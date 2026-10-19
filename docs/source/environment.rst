@@ -1,27 +1,29 @@
-Environment
-===========
+Settings and environments
+=========================
 
-This section documents environment and endpoint helpers used by the GPP client
-to resolve runtime environments and service URLs.
+These classes hold what :doc:`guides/configuration` and
+:doc:`guides/environments` describe: the settings a client resolves, the
+environments it can reach, and their URLs.
 
-These APIs support client configuration and endpoint selection.
+Settings
+--------
 
-Environment Configuration
--------------------------
+.. autoclass:: gpp_client.settings.GPPSettings
+   :members:
+   :show-inheritance:
+   :exclude-members: model_config
 
-The environment configuration defines the supported runtime environments for
-the GPP client.
+.. autofunction:: gpp_client.settings.get_config_path
+
+Environments
+------------
 
 .. autoclass:: gpp_client.environment.GPPEnvironment
    :members:
    :show-inheritance:
 
-
-Endpoint Utilities
-------------------
-
-The endpoint utilities provide helper functions for resolving GraphQL and
-WebSocket URLs for a given environment.
+Endpoints
+---------
 
 .. autoclass:: gpp_client.urls.Endpoint
    :members:

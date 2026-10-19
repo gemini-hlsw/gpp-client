@@ -1,0 +1,6 @@
+/* A touch screen has no hover, so the copy button would never appear. */
+@media (hover: none) {
+  button.copybtn {
+    opacity: 1;
+  }
+}

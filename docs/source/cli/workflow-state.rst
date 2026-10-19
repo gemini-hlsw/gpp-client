@@ -1,37 +1,12 @@
-Workflow State
-==============
+``gpp workflow-state``
+======================
 
-The ``gpp workflow-state`` command group provides access to observation workflow state.
-
-Quick Example
--------------
-
-Get workflow state:
-
-.. code-block:: bash
-
-   gpp workflow-state get --observation-id o-123
-
-Selecting Workflow State
-------------------------
-
-The ``get`` command requires exactly one selector:
-
-- ``--observation-id``
-- ``--observation-reference``
-
-.. warning::
-
-   Provide exactly one selector.
-
-Reference
----------
+This command group gets and sets an observation's workflow state. To do the
+same in Python, see :doc:`../domains/workflow-state`.
 
 .. typer:: gpp_client.cli.cli.app:workflow-state
    :prog: gpp workflow-state
    :make-sections:
    :show-nested:
+   :preferred: text
    :width: 80
-   :theme: dark
-
-See also: :doc:`../domains/workflow-state`

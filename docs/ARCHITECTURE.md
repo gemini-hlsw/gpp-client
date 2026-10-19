@@ -1,6 +1,6 @@
 # gpp-client architecture
 
-How the code is put together today. Goals and policy live in [OVERVIEW.md](OVERVIEW.md); terms in [GLOSSARY.md](GLOSSARY.md).
+How the code is put together. Goals and policy live in [OVERVIEW.md](OVERVIEW.md); terms in [GLOSSARY.md](GLOSSARY.md).
 
 ## Layers
 
@@ -16,68 +16,83 @@ GPPClient                     src/gpp_client/client.py
 ODB: /odb (GraphQL over HTTP), /ws (subscriptions), REST paths
 ```
 
-- **`GPPClient`** resolves settings and builds one generated GraphQL client (httpx) and one REST client (aiohttp) against the same base URL. It passes both to each GPP domain. Everything is async.
-- **Domains** (`client.program`, `client.observation`, `client.target`, `client.attachment`, `client.workflow_state`, `client.goats`, `client.scheduler`, `client.atom`, `client.site_status`) turn generated methods and REST calls into task-shaped methods. Most are thin. `scheduler` combines GraphQL with REST atom digests. `attachment` uses REST for file transfer. `site_status` scrapes gemini.edu, takes no clients, and does not touch GPP.
+- **`GPPClient`** resolves settings, including the environment, and builds one generated GraphQL client (httpx) and one REST client (aiohttp) against that environment's base URL. It passes both to each GPP domain. Everything is async. A caller can pass its own `httpx.AsyncClient` as `http_client`; `GPPClient` sends every GraphQL HTTP request through it, adding the auth header per request without changing the caller's client. `GPPClient.is_available` and `GPPClient.enum_values` answer availability questions for the client's environment.
+- **Domains** (`client.program`, `client.observation`, `client.target`, `client.attachment`, `client.workflow_state`, `client.goats`, `client.scheduler`, `client.atom`, `client.site_status`) turn generated methods and REST calls into task-shaped methods. Most are thin. `scheduler` combines GraphQL with REST atom digests. `attachment` uses REST for file transfer. `site_status` scrapes gemini.edu, takes no clients, and does not touch GPP. Domains and the CLI use only what both environments have.
 - **The CLI** (`gpp`, built on Typer, in `src/gpp_client/cli/`) is hand-written commands over the domains.
-- **The public API** is `GPPClient` and `__version__` (`src/gpp_client/__init__.py`). Generated models are importable from `gpp_client.generated` for custom calls.
+- **The public API** is `GPPClient`, `is_available` and `__version__` (`src/gpp_client/__init__.py`), plus `client.graphql` and `client.rest`. Generated models are importable from `gpp_client.generated` for custom calls. [CONSUMERS.md](CONSUMERS.md) lists who imports what.
 
 ## Code generation
 
 ariadne-codegen, a generator that turns a GraphQL schema plus operations into a typed Python client, produces everything in `src/gpp_client/generated/`. Nobody edits it by hand. ([ADR 0001](adr/0001-generated-code-committed.md))
 
 ```
-GPP server --download_schema.py--> graphql/schemas/<env>.graphql
-graphql/operations/**.graphql --run_codegen.py--> src/gpp_client/generated/
+GPP servers --schema_update--> src/gpp_client/schemas/<env>.graphql (development, production)
+src/gpp_client/schemas/<env>.graphql + graphql/operations/**.graphql --build_client-->
+    src/gpp_client/generated/                     (one ariadne-codegen run on the merged schema)
+    src/gpp_client/generated/trimmed/<env>.py     (each operation trimmed per environment)
+    src/gpp_client/generated/availability.py      (fields and enum values some environment lacks)
 ```
 
-- **Schemas** are downloaded with `scripts/download_schema.py <ENV>`. It uses introspection (asking the server to describe its own schema), configured by `graphql/schemas/<env>.toml`.
-- **Operations** are hand-written `.graphql` files grouped by domain under `graphql/operations/shared/domains/`. Operations that exist only on development go in `graphql/operations/development_only.graphql`, which must be additive: no name may collide with `shared/`.
-- **Codegen** runs `scripts/run_codegen.py <ENV>`, configured by `graphql/codegen/<env>.toml`:
-  1. It assembles `shared/`, plus `development_only.graphql` for development, into `build/`.
-  2. It deletes and regenerates `src/gpp_client/generated/`.
-  3. It writes `generated/package_environment.py`, recording which environment the code was built for.
-- **Codegen validates operations.** It fails with `InvalidOperationForSchema` when an operation asks for something the schema lacks.
-- **Plugin:** `src/custom_plugins/` holds one ariadne-codegen plugin. It wraps generated input-field aliases in `str()` so Pyright and VS Code type them correctly.
-- **`convert_to_snake_case` must stay on.** The scheduler depends on it (comment in `graphql/codegen/*.toml`).
+- **Schemas** are committed once each, inside the package, with descriptions (about 550 KB each), so installs carry them. `python -m scripts.schema_update` fetches both by introspection (asking the server to describe its own schema), holds an environment whose schema does not build, rebuilds and runs the suite; `python -m scripts.download_schema` is the download alone. The download asks anonymously, and uses an environment's token (`GPP_DEVELOPMENT_TOKEN`, `GPP_TOKEN`) only when that server refuses. It keeps `@oneOf`, `@specifiedBy` and deprecated input values, and writes `# schema-date: YYYY-MM-DD` as the first line, for whoever reads the file and for the schema update; a schema whose body is unchanged keeps its committed file and date.
+- **The build** is `python -m scripts.build_client`, whose `build()` is the pipeline's one entry point. It merges the schemas, runs codegen once, trims every operation per environment, writes the availability table, and prints a merge summary and a trim summary. `BuildResult` carries `merged_sdl`, `pairing`, `conflicts`, `kind_conflicts`, `merge_summary` and `trim_summary`.
+- **The merged schema** (`scripts/schema_merge.py`) is a build intermediate, never committed; `BuildResult.merged_sdl` carries it. The merge is three steps and never fails ([ADR 0006](adr/0006-merged-schema-runtime-environment.md)):
+  1. Pairing: when the same field, argument or input field carries, on each environment, a type of the same kind and list depth under a name the other environment lacks, the production type takes development's name. One vote per coordinate, iterated to a fixpoint; an ambiguous vote or a collision with a name another rename took makes no rename, and the build lists it. Renames never chain. `Pairing.renames` is the alias list; `Pairing.reverse` maps development names back to production's for the production trim.
+  2. Union with availability: every type, field, argument, input field and enum value not on both environments carries `@environments(names: [...])` and is nullable (output) or optional (input) in the merged schema. Differing nullability becomes the less strict of the two.
+  3. Production wins the rest: a field, argument or input field whose type still differs takes production's type, is marked production's, and is listed as a `TypeConflict`. A type name of a different kind on each environment takes production's definition, and development-only elements typed by that name are dropped and listed in a `KindConflict`. Descriptions come from development where it has the element, from production otherwise.
+- **Operations** are hand-written `.graphql` files grouped by domain under `graphql/operations/domains/`. Every operation is written once, against the merged schema; nothing is sorted by environment. Before codegen the build validates them against the merged schema with the existence rules only and fails listing every field, argument, type or value that no environment has.
+- **Codegen** is one ariadne-codegen run on the merged schema, configured by `graphql/codegen.toml`; the build fills in the paths. It deletes and regenerates `src/gpp_client/generated/`. Class names are development's.
+- **Trimmed operations** (`scripts/trim_operations.py`): the build reads every operation back from the generated client's `gql(...)` literals, failing if fewer come back than were written, and for each environment removes what that environment lacks: fields, arguments, fields and enum values inside input literals (walking through `NonNull`), inline fragments and fragment spreads on a type the environment lacks or that can never apply there, and the variables and fragments left unused; a selection left empty gets `__typename`. The development copy also drops every conflict coordinate, since the generated client carries production's type there. The production copy maps renamed types back to production's names in fragment conditions and variable types. An operation is unavailable on an environment when any of its root fields is missing there. The build never retypes a variable: a variable declared nullable where an environment requires it fails the build. Each copy is validated against that environment's schema, and any failure fails the build. `generated/trimmed/__init__.py` lists every generated operation in `GENERATED`, keyed by a whitespace-insensitive digest of the embedded query. `generated/trimmed/<env>.py` stores a copy only for an operation the environment receives differently: `OPERATIONS` (name, trimmed text or `None` when unavailable, fragment names) and the `FRAGMENTS` those use, each once. `gpp_client.trimmed_operations.find_trimmed_operation(environment, query)` returns the stored copy, the generated query unchanged when none is stored, `document=None` when unavailable, or `None` for a document that is not a generated operation.
+- **Availability table:** the build writes `generated/availability.py` from the merged schema: `FIELDS`, each result-model field `EnvironmentDefaultsPlugin` defaulted to `None`, by class and attribute, and `ENUM_VALUES`, each enum value, by enum and value, each with the environments that have it. Only environment-specific entries are listed. `gpp_client/availability.py` answers `is_available(model, field, environment)` and `enum_values(Enum, environment)` from it, through `generated_tables.load_generated`.
+- **Diffs:** `.gitattributes` marks `src/gpp_client/generated/**` and `src/gpp_client/schemas/*.graphql` as `linguist-generated`, so GitHub collapses them in PR diffs.
+- **Summaries:** the build prints a merge summary (renames with their coordinates, a warning for each renamed union or interface since responses carry production's `__typename` and nothing maps it, aliases with their targets and modules, conflicts, kind conflicts with what was dropped, refused votes) and a trim summary (per environment, the unavailable operations and each removed part with the operations and fragments it left), as Markdown for the schema-update PR body.
+- **Plugins:** `src/custom_plugins/` holds the ariadne-codegen plugins, registered in `graphql/codegen.toml`, in this order:
+  - `AliasNamesPlugin` adds production's name for each paired input type and enum as a deprecated alias of the development-named class, in `input_types.py` and `enums.py`: a `TYPE_CHECKING` assignment so type checkers resolve it, and a module `__getattr__` that returns the class and warns `DeprecationWarning` once per calling line, naming the target and the promotion. The alias is in the package's `__all__` and lazy import map. The alias list is the build's pairing; placed aliases appear in the merge summary. Object types get no alias. Because the module has a `__getattr__`, ty treats any name imported from `input_types` or `enums` as resolving, so a misspelled import is not flagged on a day the module carries an alias.
+  - `TolerantEnumsPlugin` bases every generated enum on `_TolerantEnum`, so an enum value GPP adds after the build parses as a member carrying the raw value instead of failing validation. Repeated unknown values return the same member.
+  - `EnvironmentDefaultsPlugin` gives a result field the default `None` when it is on fewer environments than its parent type, since an environment that lacks it sends no key, and reports each placement for the availability table. Every other field stays required. The build reads the generated models back and fails, naming each field, if an environment-specific selection did not get that default.
+  - `AliasStrWrapperPlugin` wraps generated input-field aliases in `str()` so Pyright and VS Code type them correctly.
+- **`convert_to_snake_case` must stay on.** The scheduler depends on it (comment in `graphql/codegen.toml`).
+- **`lazy_imports` is on**, so `gpp_client.generated` loads a module only when a name from it is used. Domains keep it that way: they import generated models under `TYPE_CHECKING`, or inside the method that builds one. A top-level import of `input_types` adds about 0.3 s to `import gpp_client.client`, more than the import itself.
 
 The step-by-step procedure is in [agents/schema-update.md](agents/schema-update.md).
 
 ## Environments and settings
 
-- `GPPEnvironment` (`src/gpp_client/environment.py`) has `DEVELOPMENT` and `PRODUCTION`, with URLs in `src/gpp_client/constants.py`. There is no staging entry.
-- The active environment comes from `generated/package_environment.py`, so the generated code and the default server are fixed when the package is built. ([ADR 0002](adr/0002-environment-fixed-at-build-time.md))
-- `GPPSettings.environment_override` (env var `GPP_ENVIRONMENT_OVERRIDE`) changes the server at runtime. It is meant for tooling: the generated code still matches the build, so it can disagree with the server it now talks to.
+- `GPPEnvironment` (`src/gpp_client/environment.py`) has `DEVELOPMENT` and `PRODUCTION`, in promotion order. Its one table gives each its base URL and token variable; settings, the CLI choices, the download script and the build derive their lists from it. `GPPEnvironment.label` is the lowercase name the generated package and messages use.
+- The environment is chosen when a `GPPClient` is built, in this order: `GPPClient(environment=...)`, `GPP_ENVIRONMENT`, `.env`, then production. Names ignore case and surrounding spaces. An empty value falls through to the next source; an unknown name raises `GPPClientError` listing the valid names. Only the CLI reads `environment` from `config.toml`: `open_client()` takes `--env`, then whatever the settings resolved from `GPP_ENVIRONMENT` or `.env`, then the stored default, then production. ([ADR 0006](adr/0006-merged-schema-runtime-environment.md))
+- `GPPGraphQLClient` (`src/gpp_client/graphql_client.py`) is `EnvironmentGraphQLClient` plus the generated `GraphQLClient`. `GPPClient` is not generic: `client.graphql` is typed `GPPGraphQLClient` on every environment. `EnvironmentGraphQLClient` sends the auth headers with every HTTP request and, over HTTP and websocket, replaces each generated operation with the selected environment's committed copy from `find_trimmed_operation`, sending only the variables that copy declares. So a field the environment lacks is never requested and reads `None`. An operation whose entry is `document=None` raises `NotAvailable` before anything is sent, naming the environments that have it. Any other document, a query-builder call or a raw `execute`, goes out unchanged. There is no pre-send input check and no schema built at runtime. Each client holds its own environment, so clients on different environments work side by side in one process.
+- Every error GPP answers with is raised as a `GPPError` subclass naming the environment: `GPPGraphQLError` (GraphQL errors, with `data` attached for a partial response), `GPPHttpError` (an HTTP error status) and `GPPTransportError` (unreachable, timed out, not GraphQL, or a dropped websocket). Each also subclasses the matching generated `GraphQLClient*` error, so consumers that catch those keep working. Every client-side error subclasses `GPPError` too.
+- `gpp_client/availability.py` answers `is_available` and `enum_values` from the generated availability table; `GPPClient.is_available` and `GPPClient.enum_values` pass the client's environment. Without an environment, the module-level functions use the one a bare `GPPClient` would.
+- `RESTClient` (`src/gpp_client/rest/client.py`) knows its environment and defaults to production. An error status raises `GPPHttpError`; on 404 the message adds that the path may not be served on the environment, since GPP sends no better reason. A connection failure raises `GPPTransportError`. Attachment REST calls in `domains/attachment.py` raise `GPPHttpError` through `BaseDomain.raise_for_status`, naming the REST client's environment; a 404 there means a missing attachment.
+- The client logs one INFO line at start naming the environment and its GraphQL URL.
+- The CLI (`src/gpp_client/cli/`, Typer) builds every client through `open_client()` in `cli/utils.py`, which passes the global `gpp --env` choice as `environment=`, falls back to the `config.toml` default, and prints `Environment: <name> (<url>)` to stderr. `--env` and `gpp set-default-env` offer development and production only. `set-default-env` writes `environment` into `config.toml` through `settings.set_default_environment`, creating the file if missing. It edits the file with tomlkit, a TOML library that keeps comments and layout, so only the top-level `environment` key changes; a file that is not valid TOML, or whose `environment` is not a string, is left alone.
 - `GPPSettings` (`src/gpp_client/settings.py`, pydantic-settings, prefix `GPP_`) reads its sources in this order, highest priority first:
   1. constructor arguments
   2. environment variables
   3. `.env`
-  4. the user's `config.toml` (path from `gpp get-config-path`)
-  5. file secrets
-- Tokens: `GPP_TOKEN` for production, `GPP_DEVELOPMENT_TOKEN` for development. `GPPClient(token=...)` fills whichever one the package's environment uses.
+  4. file secrets
+- Tokens: `GPP_TOKEN` for production, `GPP_DEVELOPMENT_TOKEN` for development. `GPPClient(token=...)` fills the selected environment's slot. A missing token raises `GPPAuthError` naming the variable to set.
 
 ## Releases
 
-- The `Create Release` workflow (`.github/workflows/create_release.yaml`, run by hand) takes a tag and:
-  1. checks the tag with `scripts/validate_release.py`
-  2. runs lint and tests
-  3. builds the package and smoke-tests the wheel
-  4. pushes the tag and drafts a GitHub release
-
-  Publishing that draft triggers `publish.yaml`, which uploads to PyPI.
-- `validate_release.py` requires the committed generated code to match the tag:
-
-  | Tag | Required generated code |
-  |---|---|
-  | `vYY.M.PATCH.devN` | `DEVELOPMENT` |
-  | `vYY.M.PATCH` | `PRODUCTION` |
-
-- Git history shows `main` carrying development code between releases (656c2c3 switched to production for 26.9.0; d37b443 switched back).
-- Docs build on ReadTheDocs from `docs/source/` (Sphinx).
+- Releases are manual, following `docs/source/developer/releases.rst`: run the schema update and merge it, check the release locally, preview the notes, run the `Create Release` workflow, publish the draft. The scheduled release job is deferred ([OVERVIEW.md](OVERVIEW.md#known-gaps)).
+- The version is baked at build time: hatchling's version hook (`[tool.hatch.build.hooks.version]` in `pyproject.toml`) writes `src/gpp_client/_version.py`, gitignored, from the uv-dynamic-versioning tag on every build, the editable install included, and `gpp_client.__version__` reads it.
+- `python -m scripts.validate_release <tag>` (`scripts/validate_release.py`) refuses a tag that is not `vYY.M.PATCH` (a `.devN` tag gets a message explaining the single stream), a baked version that differs from the tag, and a checkout whose `src/gpp_client/generated/` differs from a fresh build of the committed schemas and operations. It builds into a temporary folder, so the checkout is never changed.
+- `python -m scripts.release_notes <previous tag> [--held <env>]` (`scripts/release_notes.py`) reads each environment's committed schema at the previous tag with `git show` and compares it with the working copy using graphql-core's `find_breaking_changes` and `find_dangerous_changes`. It prints "Production: changed/unchanged" and "Development: changed/unchanged" headlines, then per changed environment a "Breaking" and an "Added or relaxed" list, the aliases the pairing adds, a dropped alias under production's "Breaking", and a held environment with the commit its schema is from.
+- The `Create Release` workflow (`.github/workflows/create_release.yaml`, run by hand) takes `tag` and `held`. It creates the tag locally first, so the baked version comes from it, then validates the release, runs lint and tests, generates the notes against the nearest earlier `v*` tag, builds and smoke-tests the wheel, pushes the tag and drafts a GitHub release whose notes are the generated notes followed by GitHub's. When there is no earlier tag, or it has no committed schemas, the draft has only GitHub's notes. Publishing the draft triggers `publish.yaml`, which uploads to PyPI.
+- Releases are one stream: every release reaches every environment.
+- Docs build on ReadTheDocs from `docs/source/` (Sphinx). `llms.txt` at the repo root is hand-edited and served at the docs root (`html_extra_path`).
 
 ## Tests
 
 - `tests/` mirrors `src/`. It uses pytest with pytest-asyncio and xdist, and every test mocks the network.
-- `run_tests.yaml` runs ruff and pytest on pull requests and pushes to `main`. Pushes run Python 3.11 to 3.14.
-- `check_codegen.yaml` runs both codegen targets on pushes to `main`, and on pull requests that change GraphQL or codegen inputs.
+- The runtime finds the generated package through `gpp_client.generated_tables`: `generated_package()` names it, `load_generated(module)` imports a table from it, and `use_generated_package(package)` is a context that points both at a fixture build. Tests of environment behavior build a small client from fixture schemas with `build_fixture` (`tests/gpp_client/fixture_build.py`) and read its tables inside its `tables()` context. They never rely on what is environment-specific in the committed schemas, since a schema update changes that whenever GPP promotes something; `GPPClient`-seam tests call the fixture's generated methods on a real `GPPClient`. The build itself is tested through `build()` in `tests/scripts/test_build_client.py`, with schemas written per test.
+- Runtime tests build a real `GPPClient` with the `gpp_client` and `gpp_transport` fixtures in `tests/gpp_client/conftest.py`: an httpx `MockTransport` that returns canned GraphQL responses and records each request. `test_workflow_state.py::test_get_by_id_sends_query_and_returns_model` is the pattern.
+- `tests/gpp_client/client/test_every_operation.py` runs every generated operation on every environment. Its fake GPP validates the document the client sent against that environment's committed schema, then answers with a response built from that schema, once with every nullable field null and once with every field filled; the client must parse both. It asserts nothing environment-specific, so it passes on any committed schemas. With ty, it is what keeps the domains and the CLI on what both environments have. Custom scalars are typed `Any` in the generated models, so a null where a model requires a custom scalar still parses; see [Known gaps](OVERVIEW.md#known-gaps).
+- Subscriptions run against `SubscriptionServer` (`tests/gpp_client/subscription_server.py`), a local `websockets` server speaking graphql-transport-ws, and REST against a local aiohttp server; `tests/gpp_client/domains/test_scheduler_environments.py` points a client's `graphql.ws_url` and `rest.base_url` at them.
+- `tests/docs/` type-checks every Python example on the docs site with ty, checks that the README quickstart shows the Getting started example, and fails when a page points at the repo docs outside the site.
+- `run_tests.yaml` runs ruff, ty (Astral's type checker, a dev dependency) on `src/gpp_client`, and pytest. ty fails on warnings too; `pyproject.toml` relaxes three of its rules for `generated/async_base_client.py`, which ariadne-codegen copies verbatim. Pushes run Python 3.11 to 3.14.
+- `pre_commit.yaml` runs every hook in `.pre-commit-config.yaml` on the files a pull request or push changes, skipping `no-commit-to-branch`, which only guards local commits.
+- `check_schema.yaml`, run by hand, downloads each environment's schema anonymously and fails when it differs from the committed file.
+- `check_codegen.yaml` runs the build on every pull request and push to `main`, and fails when the committed `src/gpp_client/generated/`, `src/gpp_client/schemas/` or `graphql/` differ from the build.
 
 The target testing policy is in [OVERVIEW.md](OVERVIEW.md#testing-policy).

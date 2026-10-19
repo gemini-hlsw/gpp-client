@@ -1,13 +1,10 @@
-Custom Queries
+Custom queries
 ==============
 
-The ``gpp_client.generated.custom_queries`` module provides helpers for
-building custom GraphQL queries.
+This class has one builder method for each root field of ``Query``. To see how
+to use them, read :doc:`../guides/custom-queries`.
 
-Use these helpers when the domain APIs do not match the exact query shape you
-need.
-
-API Reference
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.custom_queries

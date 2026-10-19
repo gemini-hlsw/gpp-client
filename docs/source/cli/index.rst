@@ -1,63 +1,44 @@
-CLI
-===
+Command reference
+=================
 
-The ``gpp`` command-line interface provides access to the Gemini Program
-Platform (GPP) from the command line.
-
-The CLI uses the same configuration and authentication rules as the Python
-client. See :doc:`../configuration` for details.
-
-Quick Example
--------------
-
-Check connectivity:
-
-.. code-block:: bash
-
-   gpp ping
-
-List attachments for a program:
-
-.. code-block:: bash
-
-   gpp attachment list --program-id p-123
-
-Command Reference
------------------
+This page lists every ``gpp`` command and option, generated from this
+release's code. To see how to use them, read :doc:`../guides/cli`.
 
 .. typer:: gpp_client.cli.cli:app
    :prog: gpp
    :make-sections:
+   :preferred: text
    :width: 80
-   :theme: dark
-
-.. tip::
-
-   Use ``--help`` with any command or subcommand for usage details.
 
 .. typer:: gpp_client.cli.cli:app:ping
    :prog: gpp ping
    :make-sections:
+   :preferred: text
    :width: 80
-   :theme: dark
 
 .. typer:: gpp_client.cli.cli:app:get-config-path
    :prog: gpp get-config-path
    :make-sections:
+   :preferred: text
    :width: 80
-   :theme: dark
 
-Commands
---------
+.. typer:: gpp_client.cli.cli:app:set-default-env
+   :prog: gpp set-default-env
+   :make-sections:
+   :preferred: text
+   :width: 80
+
+Command groups
+--------------
 
 .. toctree::
    :maxdepth: 1
 
    attachment
-   observation
-   target
-   program
-   site-status
-   workflow-state
-   scheduler
    goats
+   observation
+   program
+   scheduler
+   site-status
+   target
+   workflow-state

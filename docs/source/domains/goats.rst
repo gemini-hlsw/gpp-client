@@ -1,49 +1,31 @@
 GOATS
 =====
 
-The GOATS domain provides access to GOATS-specific data exposed through GraphQL.
+The ``client.goats`` domain runs the queries built for GOATS. They return:
 
-Use :attr:`~gpp_client.GPPClient.goats` to retrieve programs and observations
-used within GOATS workflows.
+- accepted programs
+- the observations in an accepted program
+- a program's approved configuration requests
+- the configuration options for an instrument
 
-Quick Example
--------------
-
-.. code-block:: python
-
-   async with GPPClient() as client:
-      programs = await client.goats.get_programs()
-
-
-Programs
---------
-
-Get all GOATS programs:
+This example lists the observations in the first three accepted programs:
 
 .. code-block:: python
 
-   result = await client.goats.get_programs()
+   goats = client.goats
+   accepted = await goats.get_programs()
+   for program in accepted.programs.matches[:3]:
+       result = await goats.get_observations_by_program_id(
+           program_id=program.id
+       )
+       for obs in result.observations.matches:
+           print(program.id, obs.id, obs.title)
+   # p-10a o-1a2 NGC 1068
 
+Each program takes one call, and the calls run one after another. So slice
+the list to the programs you need.
 
-Observations
-------------
-
-Get GOATS observations for a program:
-
-.. code-block:: python
-
-   result = await client.goats.get_observations_by_program_id("p-123")
-
-
-Notes
------
-
-All GOATS operations use GraphQL and return generated response models.
-
-Refer to the generated types for the full response structure.
-
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.domains.goats.GOATSDomain

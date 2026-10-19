@@ -1,15 +1,12 @@
-Transport Client
+:orphan:
+
+Transport client
 ================
 
-.. warning::
+This internal module sends each request to GPP. Its page exists so that type
+links on other pages resolve.
 
-   This is a low-level generated support module. It is documented primarily for
-   reference and type linking. Most users should not interact with it directly.
-
-The transport client provides the low-level asynchronous HTTP and WebSocket
-transport implementation used by the generated GraphQL client.
-
-API Reference
+API reference
 -------------
 
 .. automodule:: gpp_client.generated.async_base_client

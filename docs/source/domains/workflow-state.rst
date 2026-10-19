@@ -1,99 +1,98 @@
-Workflow State
+Workflow state
 ==============
 
-The workflow state domain provides access to observation workflow state queries
-and updates.
+The ``client.workflow_state`` domain reads and changes an observation's
+workflow. You can read the workflow by observation ID or reference, and change
+the workflow by observation ID.
 
-Use :attr:`~gpp_client.GPPClient.workflow_state` to inspect workflow state and
-transition observations through valid workflow stages.
+A workflow carries two states. The calculation state says whether GPP has
+finished its background work on the observation. The workflow state is where
+the observation stands, with the states it can move to next.
 
-Quick Example
--------------
+Read both states
+----------------
+
+This example reads both states, and the states the observation can move to:
 
 .. code-block:: python
 
-   from gpp_client.generated import ObservationWorkflowState
+   result = await client.workflow_state.get_by_id(
+       "o-1a2"
+   )
+   observation = result.observation
+   if observation is not None:
+       workflow = observation.workflow
+       if workflow is not None:
+           print(workflow.state)
+           print(workflow.value.state)
+           print(workflow.value.valid_transitions)
 
-   async with GPPClient() as client:
-      result = await client.workflow_state.update_by_id(
-         observation_id="o-123",
-         workflow_state=ObservationWorkflowState.READY,
-      )
+It prints the calculation state, the workflow state, and the states the
+observation can move to, something like:
 
+.. code-block:: text
 
-Retrieving Workflow State
+   CalculationState.READY
+   ObservationWorkflowState.DEFINED
+   [<ObservationWorkflowState.READY: 'READY'>]
+
+Change the workflow state
 -------------------------
 
-Get workflow state by observation ID:
+Before it sends a change, ``update_by_id`` checks the observation:
+
+- If there's no such observation, it raises ``GPPValidationError``.
+- If GPP returns no workflow, it raises ``GPPClientError``.
+- If the calculation isn't ready, it raises ``GPPRetryableError``.
+- If the observation is already in that state, it returns the current
+  workflow and sends nothing.
+- If the observation can't move to the new state, it raises
+  ``GPPValidationError``.
+
+.. warning::
+
+   This call changes data in GPP. Try it on development first, as described
+   in :ref:`try-on-development`.
+
+This example moves an observation to ``READY`` and handles the two errors you
+can act on:
 
 .. code-block:: python
 
-   result = await client.workflow_state.get_by_id("o-123")
-
-Get workflow state by observation reference:
-
-.. code-block:: python
-
-   result = await client.workflow_state.get_by_reference("GN-2026A-Q-1-1")
-
-
-Updating Workflow State
------------------------
-
-Update workflow state by observation ID:
-
-.. code-block:: python
-
-   result = await client.workflow_state.update_by_id(
-      observation_id="o-123",
-      workflow_state=workflow_state,
+   from gpp_client.exceptions import (
+       GPPRetryableError,
+       GPPValidationError,
+   )
+   from gpp_client.generated.enums import (
+       ObservationWorkflowState,
    )
 
-The domain validates that:
+   ready = ObservationWorkflowState.READY
+   try:
+       updated = await client.workflow_state.update_by_id(
+           "o-1a2", workflow_state=ready
+       )
+       print(updated.state)
+   except GPPRetryableError:
+       print("Still calculating. Try again shortly.")
+   except GPPValidationError as error:
+       print("Not allowed:", error)
+   # ObservationWorkflowState.READY
 
-- The observation calculation state is ready
-- The requested transition is valid
-- The workflow state is not already set
+On the result of ``update_by_id``, ``.state`` is the workflow state. On the
+result of ``get_by_id``, ``workflow.state`` is the calculation state, and the
+workflow state is ``workflow.value.state``.
 
+Retry while GPP calculates
+--------------------------
 
-Retrying Workflow Updates
--------------------------
+The ``update_by_id_with_retry`` method does the same, but waits and tries
+again while the calculation isn't ready. It retries only that case, up to
+``max_attempts`` times, with ``retry_delay`` seconds between tries. Other
+errors raise at once, and if the method runs out of attempts, it raises
+``GPPClientError``.
 
-Use ``update_by_id_with_retry`` to retry while background calculation is still
-in progress:
-
-.. code-block:: python
-
-   result = await client.workflow_state.update_by_id_with_retry(
-      observation_id="o-123",
-      workflow_state=workflow_state,
-      max_attempts=10,
-      retry_delay=1.0,
-   )
-
-This is useful when workflow updates depend on calculation state becoming ready.
-
-
-Error Handling
---------------
-
-Workflow state updates may raise:
-
-- ``GPPRetryableError`` when calculation state is not ready
-- ``GPPValidationError`` for invalid workflow transitions
-- ``GPPClientError`` for other client-side failures
-
-
-Notes
------
-
-All workflow state operations use GraphQL.
-
-The retry helper only retries the not-ready case. Validation and other client
-errors fail immediately.
-
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.domains.workflow_state.WorkflowStateDomain

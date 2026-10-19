@@ -1,137 +1,77 @@
 Program
 =======
 
-The program domain provides access to program queries, mutations, and
-subscriptions.
+The ``client.program`` domain reads and changes programs. You can look up a
+program by its ID, its program reference or its proposal reference. The
+examples below use the ID.
 
-Use :attr:`~gpp_client.GPPClient.program` to create, retrieve, update,
-delete, restore, and subscribe to programs.
-
-Quick Example
--------------
-
-.. code-block:: python
-
-   async with GPPClient() as client:
-      program = await client.program.get_by_id("p-123")
-
-
-Creating Programs
------------------
-
-Create a program:
-
-.. code-block:: python
-
-   result = await client.program.create(
-      properties=properties,
-      include_deleted=False,
-   )
-
-This method returns a generated GraphQL response model.
-
-
-Retrieving Programs
+Get a program by ID
 -------------------
 
-Get a program by ID:
+Pass the ID to ``get_by_id``. The result's ``program`` is ``None`` if no
+program has that ID:
 
 .. code-block:: python
 
-   result = await client.program.get_by_id("p-123")
+   result = await client.program.get_by_id("p-10a")
+   if result.program is not None:
+       print(result.program.name)
+   # Galaxy survey
 
-Get a program by program reference:
+Find programs with a filter
+---------------------------
 
-.. code-block:: python
-
-   result = await client.program.get_by_reference("GN-2026A-Q-1")
-
-Get a program by proposal reference:
-
-.. code-block:: python
-
-   result = await client.program.get_by_proposal_reference("GN-2026A-Q-1")
-
-Get multiple programs:
+To find programs that match a filter, pass a ``WhereProgram`` input as the
+``where`` argument. The result's ``has_more`` tells you whether more programs
+match than ``limit`` returned:
 
 .. code-block:: python
 
-   result = await client.program.get_all(
-      include_deleted=False,
-      where=where_input,
-      limit=50,
+   from gpp_client.generated.input_types import (
+       WhereOptionString,
+       WhereProgram,
    )
 
+   name = WhereOptionString(
+       like="%survey%",
+       match_case=False,
+   )
+   result = await client.program.get_all(
+       where=WhereProgram(name=name),
+       limit=10,
+   )
+   for program in result.programs.matches:
+       print(program.id, program.name)
+   # p-10a Galaxy survey
+   print(result.programs.has_more)
+   # False
 
-Updating Programs
+Get every program
 -----------------
 
-Update a single program by ID:
+To get every program, page through the results. Pass the last ID from one page
+as ``offset`` to get the next. Each new page starts with that same program, so
+the loop skips it:
 
 .. code-block:: python
 
-   result = await client.program.update_by_id(
-      "p-123",
-      properties=properties,
-      include_deleted=False,
-   )
+   offset = None
+   while True:
+       result = await client.program.get_all(
+           offset=offset,
+           limit=100,
+       )
+       matches = result.programs.matches
+       if offset is not None and matches:
+           if matches[0].id == offset:
+               matches = matches[1:]
+       for program in matches:
+           print(program.id, program.name)
+       if not result.programs.has_more or not matches:
+           break
+       offset = matches[-1].id
 
-Update multiple programs:
-
-.. code-block:: python
-
-   result = await client.program.update_all(
-      properties=properties,
-      where=where_input,
-      include_deleted=False,
-   )
-
-
-Delete and Restore
-------------------
-
-Delete a program by ID:
-
-.. code-block:: python
-
-   result = await client.program.delete_by_id("p-123")
-
-Restore a program by ID:
-
-.. code-block:: python
-
-   result = await client.program.restore_by_id("p-123")
-
-
-Subscriptions
--------------
-
-Subscribe to program edit events:
-
-.. code-block:: python
-
-   async for event in client.program.subscribe_to_edits():
-      print(event)
-
-Restrict the subscription to a single program:
-
-.. code-block:: python
-
-   async for event in client.program.subscribe_to_edits(
-      program_id="p-123"
-   ):
-      print(event)
-
-
-Notes
------
-
-All program operations use GraphQL and return generated response models.
-
-Subscription methods return asynchronous iterators.
-
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.domains.program.ProgramDomain

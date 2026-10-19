@@ -1,29 +1,47 @@
-Contributing and Feedback
-=========================
+Contributing
+============
 
-Reporting Bugs and Requesting Features
---------------------------------------
+Report a bug or ask for a feature
+---------------------------------
 
-We welcome your feedback!
+To report a bug or ask for a feature, file a ticket on the GPC board in Jira:
 
-If you encounter a bug or would like to request a feature:
+https://noirlab.atlassian.net/jira/software/projects/GPC/boards/162
 
-- **Jira**: Submit tickets at https://noirlab.atlassian.net/jira/software/projects/GPC/boards/162
-- **Slack**: Join the discussion in the ``#gpp-client`` channel on NOIRLab Slack.
+You can also ask in ``#gpp-client`` on NOIRLab Slack. Please don't file GitHub
+issues, because we track the work in Jira.
 
-.. note::
+Contribute code
+---------------
 
-   Please **do not file GitHub issues** at this time. The project is under rapid development,
-   and all tracking is being managed internally through Jira.
+A change goes from a fresh checkout to a pull request in these steps:
 
-Development Status
-------------------
+1. Set up a checkout, as described in :doc:`setup`.
+2. Make a branch. The commit hooks refuse a commit on ``main``:
 
-This client is currently in **beta**. The API and CLI interface are evolving rapidly and subject to change.
+   .. code-block:: bash
 
-Contribution Guidelines
------------------------
+      git switch -c <branch-name>
 
-Contribution instructions will be added after the first stable release.
+3. Make your change, following the :doc:`coding-standards`. To add or change a
+   call, follow :doc:`adding-a-call`. To bring in GPP's latest schema, follow
+   :doc:`updating-the-schema`. To understand the generated code, read
+   :doc:`how-the-client-is-built`.
+4. Run the checks described in :doc:`ci-checks`.
+5. Update the docs, following :doc:`documentation`.
+6. Open a pull request against ``main``, as described in :doc:`pull-requests`.
 
-Until then, please feel free to provide feedback or suggestions through Jira or Slack.
+To publish a new version, follow :doc:`releases`.
+
+.. toctree::
+   :hidden:
+
+   setup
+   coding-standards
+   adding-a-call
+   how-the-client-is-built
+   updating-the-schema
+   ci-checks
+   documentation
+   pull-requests
+   releases

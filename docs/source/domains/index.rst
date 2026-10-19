@@ -1,68 +1,48 @@
 Domains
 =======
 
-Domains provide the primary resource-oriented interface for interacting with GPP.
+Each domain groups the methods for one area of GPP. You reach a domain as an
+attribute of the client, such as ``client.program``.
 
-Each domain groups operations for a specific area of the API, such as programs,
-observations, targets, attachments, or workflow state.
+Most domain methods return a model generated for their query. If a lookup
+finds nothing, the model holds ``None`` in place of the item. When no domain
+method fits, write a custom query, as described in
+:doc:`../guides/custom-queries`.
 
-Domains are accessed from :class:`~gpp_client.GPPClient`:
+.. list-table::
+   :header-rows: 1
 
-.. code-block:: python
-
-   from gpp_client import GPPClient
-
-   async with GPPClient() as client:
-      program = await client.program.get_by_id("p-123")
-      observation = await client.observation.get_by_id("o-456")
-
-In most cases, domains should be preferred over direct use of the underlying
-GraphQL or REST clients.
-
-Design
-------
-
-Domains provide a stable, resource-oriented interface over generated GraphQL
-operations and supporting REST endpoints.
-
-Depending on the resource, a domain may use:
-
-- GraphQL only
-- REST only
-- Both GraphQL and REST
-
-.. tip::
-
-   Use domains for routine operations. Access the underlying clients only for
-   advanced workflows.
-
-Available Domains
------------------
-
-The following domains are available from :class:`~gpp_client.GPPClient`:
-
-- :attr:`~gpp_client.GPPClient.scheduler`
-- :attr:`~gpp_client.GPPClient.program`
-- :attr:`~gpp_client.GPPClient.observation`
-- :attr:`~gpp_client.GPPClient.target`
-- :attr:`~gpp_client.GPPClient.workflow_state`
-- :attr:`~gpp_client.GPPClient.atom`
-- :attr:`~gpp_client.GPPClient.attachment`
-- :attr:`~gpp_client.GPPClient.goats`
-- :attr:`~gpp_client.GPPClient.site_status`
-
-Domain Guides
--------------
+   * - Domain
+     - Use it to
+   * - :doc:`client.program <program>`
+     - Get, find and change programs.
+   * - :doc:`client.observation <observation>`
+     - Get, find and change observations.
+   * - :doc:`client.target <target>`
+     - Get, find and change targets.
+   * - :doc:`client.workflow_state <workflow-state>`
+     - Read and change an observation's workflow state.
+   * - :doc:`client.attachment <attachment>`
+     - Upload, list and download files attached to programs and observations.
+   * - :doc:`client.scheduler <scheduler>`
+     - Fetch the data the Gemini scheduler needs.
+   * - :doc:`client.atom <atom>`
+     - Fetch atom digests for the scheduler.
+   * - :doc:`client.goats <goats>`
+     - Run the queries built for GOATS.
+   * - :doc:`client.site_status <site-status>`
+     - Read the status of Gemini North or South.
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
+   program
+   observation
+   target
+   workflow-state
    attachment
+   scheduler
    atom
    goats
-   scheduler
-   observation
-   program
-   target
    site-status
-   workflow-state

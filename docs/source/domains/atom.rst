@@ -1,57 +1,29 @@
 Atom
 ====
 
-The atom domain provides access to scheduler atom digest data.
-
-Use :attr:`~gpp_client.GPPClient.atom` to request atom digests for one or more
-observations.
-
-Quick Example
--------------
-
-.. code-block:: python
-
-   async with GPPClient() as client:
-      tsv = await client.atom.get_digests(
-         observation_ids=["o-123", "o-456"]
-      )
-
-
-Getting Atom Digests
---------------------
-
-Request atom digests as TSV data:
+The ``client.atom`` domain fetches atom digests for the scheduler. Its
+``get_digests`` method returns them as one string of tab-separated values, with
+one row per line:
 
 .. code-block:: python
 
    tsv = await client.atom.get_digests(
-      observation_ids=["o-123"],
-      accept_gzip=True,
+       observation_ids=["o-1a2", "o-1a3"],
    )
+   for line in tsv.splitlines():
+       print(line.split("\t"))
 
-- Each observation ID is sent as a separate line in the request body
-- The response is returned as a string (TSV format)
+The ``get_digests`` method can raise these errors:
 
-.. tip::
+- ``GPPHttpError`` when GPP rejects the observation IDs, when the selected
+  environment doesn't serve atom digests (404), or for other HTTP errors,
+  such as a token without access. ``status_code`` tells which.
+- ``GPPTransportError`` when it can't connect.
 
-   Leave ``accept_gzip=True`` (default) for better performance on large responses.
+Each is a ``GPPError`` and names the environment. For more, see
+:doc:`../guides/errors`.
 
-
-Error Handling
---------------
-
-- ``ValueError`` → invalid observation IDs
-- ``aiohttp.ClientResponseError`` → authentication or HTTP errors
-
-
-Notes
------
-
-This endpoint uses a REST API and may return compressed (gzip) responses.
-Compression is handled automatically.
-
-
-API Reference
+API reference
 -------------
 
 .. autoclass:: gpp_client.domains.atom.AtomDomain
