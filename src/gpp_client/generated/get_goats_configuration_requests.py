@@ -4,6 +4,7 @@ from pydantic import Field
 
 from .base_model import BaseModel
 from .enums import (
+    ArcType,
     CloudExtinctionPreset,
     ConfigurationRequestStatus,
     GmosNorthFilter,
@@ -64,6 +65,9 @@ class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTarg
     coordinates: Optional[
         "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetCoordinates"
     ]
+    region: Optional[
+        "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegion"
+    ]
 
 
 class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetCoordinates(
@@ -81,6 +85,69 @@ class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTarg
 
 
 class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetCoordinatesDec(
+    BaseModel
+):
+    dms: Any
+    degrees: Any
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegion(
+    BaseModel
+):
+    right_ascension_arc: "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArc" = Field(
+        alias="rightAscensionArc"
+    )
+    declination_arc: "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArc" = Field(
+        alias="declinationArc"
+    )
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArc(
+    BaseModel
+):
+    type_: ArcType = Field(alias="type")
+    start: Optional[
+        "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArcStart"
+    ]
+    end: Optional[
+        "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArcEnd"
+    ]
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArcStart(
+    BaseModel
+):
+    hms: Any
+    degrees: Any
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArcEnd(
+    BaseModel
+):
+    hms: Any
+    degrees: Any
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArc(
+    BaseModel
+):
+    type_: ArcType = Field(alias="type")
+    start: Optional[
+        "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArcStart"
+    ]
+    end: Optional[
+        "GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArcEnd"
+    ]
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArcStart(
+    BaseModel
+):
+    dms: Any
+    degrees: Any
+
+
+class GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArcEnd(
     BaseModel
 ):
     dms: Any
@@ -136,4 +203,7 @@ GetGOATSConfigurationRequestsConfigurationRequestsMatches.model_rebuild()
 GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfiguration.model_rebuild()
 GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTarget.model_rebuild()
 GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetCoordinates.model_rebuild()
+GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegion.model_rebuild()
+GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionRightAscensionArc.model_rebuild()
+GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationTargetRegionDeclinationArc.model_rebuild()
 GetGOATSConfigurationRequestsConfigurationRequestsMatchesConfigurationObservingMode.model_rebuild()
