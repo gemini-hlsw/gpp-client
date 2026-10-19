@@ -5,11 +5,12 @@ CLI entry point for GPP Client.
 __all__ = ["app"]
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Annotated
 
 import typer
 
-from gpp_client import GPPClient, __version__
+from gpp_client import __version__, settings
 from gpp_client.cli import output
 from gpp_client.cli.commands import (
     attachment_app,
@@ -21,7 +22,9 @@ from gpp_client.cli.commands import (
     target_app,
     workflow_state_app,
 )
-from gpp_client.cli.utils import async_command
+from gpp_client.cli.utils import async_command, open_client
+from gpp_client.environment import GPPEnvironment
+from gpp_client.exceptions import GPPClientError
 from gpp_client.settings import get_config_path as _get_config_path
 
 
@@ -32,6 +35,15 @@ class CLIState:
     """
 
     debug: bool = False
+    environment: str | None = None
+
+
+CLIEnvironment = Enum(
+    "CLIEnvironment",
+    {env.name: env.label for env in GPPEnvironment},
+    type=str,
+)
+"""The environments offered to CLI users."""
 
 
 app = typer.Typer(
@@ -72,17 +84,28 @@ def main_callback(
             help="Show full exception tracebacks.",
         ),
     ] = False,
+    env: Annotated[
+        CLIEnvironment | None,
+        typer.Option(
+            "--env",
+            help=(
+                "GPP environment for this command. Overrides GPP_ENVIRONMENT "
+                "and config.toml."
+            ),
+            case_sensitive=False,
+        ),
+    ] = None,
 ):
     """Main entry point callback for GPP Client CLI."""
-    ctx.obj = CLIState(debug=debug)
+    ctx.obj = CLIState(debug=debug, environment=env.value if env else None)
 
 
 @app.command("ping")
 @async_command
 async def ping() -> None:
     """Ping GPP. Requires valid credentials."""
-    client = GPPClient()
-    success, error = await client.ping()
+    async with open_client() as client:
+        success, error = await client.ping()
     if not success:
         output.fail(f"Failed to reach GPP: {error}")
         raise typer.Exit(code=1)
@@ -96,6 +119,25 @@ def get_config_path() -> None:
 
     config_path = _get_config_path()
     output.info(f"{config_path.resolve()}")
+
+
+@app.command("set-default-env")
+def set_default_env(
+    env: Annotated[
+        CLIEnvironment,
+        typer.Argument(
+            help="Environment to use when none is given.", case_sensitive=False
+        ),
+    ],
+) -> None:
+    """Store the default GPP environment in the configuration file."""
+    try:
+        path = settings.set_default_environment(env.value)
+    except GPPClientError as exc:
+        output.fail(str(exc))
+        raise typer.Exit(code=1) from exc
+
+    output.success(f"Default environment set to {env.value} in {path}.")
 
 
 app.add_typer(observation_app)

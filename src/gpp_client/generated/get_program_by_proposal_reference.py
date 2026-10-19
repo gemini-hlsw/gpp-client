@@ -1,7 +1,14 @@
 from typing import Optional
 
 from .base_model import BaseModel
-from .fragments import ProgramDetail, ProgramGroupElements
+from .fragments import (  # noqa: F401
+    ProgramDetail,
+    ProgramDetailActive,
+    ProgramDetailPi,
+    ProgramDetailProposal,
+    ProgramGroupElements,
+    ProgramGroupElementsAllGroupElements,
+)
 
 
 class GetProgramByProposalReference(BaseModel):

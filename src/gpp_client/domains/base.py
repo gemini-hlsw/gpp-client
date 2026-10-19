@@ -2,11 +2,13 @@
 Module for base domain functionality and utilities.
 """
 
+from __future__ import annotations
+
 __all__ = ["BaseDomain"]
 
 import logging
 from pathlib import Path
-from typing import NoReturn
+from typing import TYPE_CHECKING, NoReturn
 
 from gpp_client.exceptions import (
     GPPClientError,
@@ -14,7 +16,10 @@ from gpp_client.exceptions import (
     GPPResponseError,
     GPPValidationError,
 )
-from gpp_client.generated.client import GraphQLClient
+
+if TYPE_CHECKING:
+    from gpp_client.generated.client import GraphQLClient
+
 from gpp_client.rest.client import RESTClient
 from gpp_client.settings import GPPSettings
 
@@ -134,19 +139,15 @@ class BaseDomain:
             If reading the file fails due to an unexpected I/O error.
         """
         try:
-            has_file_path = file_path is not None
-            has_content = content is not None
-
             # Validate exactly one source is provided.
-            if has_file_path == has_content:
+            if file_path is None and content is not None:
+                return content
+            if file_path is None or content is not None:
                 raise ValueError(
                     "Provide exactly one of 'file_path' or 'content', but not both."
                 )
 
-            if content is not None:
-                return content
-
-            path = Path(file_path).expanduser()  # type: ignore[arg-type]
+            path = Path(file_path).expanduser()
 
             # Validate the file exists and is a file.
             if not path.exists():

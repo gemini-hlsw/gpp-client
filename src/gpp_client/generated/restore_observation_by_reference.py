@@ -15,9 +15,6 @@ class RestoreObservationByReferenceUpdateObservations(BaseModel):
     observations: list["RestoreObservationByReferenceUpdateObservationsObservations"]
 
 
-class RestoreObservationByReferenceUpdateObservationsObservations(ObservationDetails):
-    pass
-
-
+RestoreObservationByReferenceUpdateObservationsObservations = ObservationDetails
 RestoreObservationByReference.model_rebuild()
 RestoreObservationByReferenceUpdateObservations.model_rebuild()

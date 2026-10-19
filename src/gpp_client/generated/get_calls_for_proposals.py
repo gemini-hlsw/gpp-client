@@ -15,9 +15,6 @@ class GetCallsForProposalsCallsForProposals(BaseModel):
     matches: list["GetCallsForProposalsCallsForProposalsMatches"]
 
 
-class GetCallsForProposalsCallsForProposalsMatches(CallForProposalsDetails):
-    pass
-
-
+GetCallsForProposalsCallsForProposalsMatches = CallForProposalsDetails
 GetCallsForProposals.model_rebuild()
 GetCallsForProposalsCallsForProposals.model_rebuild()

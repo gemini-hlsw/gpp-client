@@ -64,8 +64,7 @@ class GetSchedulerProgramsProgramsMatchesActive(BaseModel):
     end: Any
 
 
-class GetSchedulerProgramsProgramsMatchesProposal(SchedulerProposal):
-    pass
+GetSchedulerProgramsProgramsMatchesProposal = SchedulerProposal
 
 
 class GetSchedulerProgramsProgramsMatchesAllocations(BaseModel):

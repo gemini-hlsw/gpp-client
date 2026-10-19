@@ -4,13 +4,13 @@ URL endpoints for the GPP client.
 
 __all__ = ["get_graphql_url", "get_ws_url"]
 
-from enum import Enum
+from enum import StrEnum
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from gpp_client.environment import GPPEnvironment
 
 
-class Endpoint(str, Enum):
+class Endpoint(StrEnum):
     """
     API endpoints for the GPP client.
     """

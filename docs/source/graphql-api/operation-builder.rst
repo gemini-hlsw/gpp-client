@@ -16,3 +16,4 @@ API Reference
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: formatted_variables

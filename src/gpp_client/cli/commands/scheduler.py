@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client
 
 scheduler_app = typer.Typer(
     name="scheduler",
@@ -33,7 +32,7 @@ async def list_programs(
     List scheduler programs.
     """
     with output.status("Fetching scheduler programs..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.scheduler.get_programs(programs_list=programs_list)
 
     output.json_pydantic(result)
@@ -46,7 +45,7 @@ async def list_program_ids() -> None:
     List all scheduler program IDs.
     """
     with output.status("Fetching scheduler program IDs..."):
-        async with GPPClient() as client:
+        async with open_client() as client:
             result = await client.scheduler.get_program_ids()
 
     output.json_pydantic(result)

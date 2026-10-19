@@ -4,6 +4,7 @@ Utility helpers for the GPP Client CLI.
 
 __all__ = [
     "async_command",
+    "open_client",
     "truncate_string",
     "truncate_short",
     "truncate_long",
@@ -20,6 +21,7 @@ import typer
 from click import get_current_context
 
 from gpp_client.cli import output
+from gpp_client.client import GPPClient
 
 
 def async_command(func: Callable[..., Any]) -> Callable[..., None]:
@@ -54,6 +56,25 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
             raise typer.Exit(code=1) from exc
 
     return wrapper
+
+
+def open_client() -> GPPClient:
+    """
+    Build a client for the environment the command was given with ``--env``.
+
+    Without ``--env`` the client chooses as it does in Python. The environment
+    is printed to stderr so piped output stays clean.
+
+    Returns
+    -------
+    GPPClient
+        A client for the chosen environment.
+    """
+    ctx = get_current_context(silent=True)
+    environment = getattr(getattr(ctx, "obj", None), "environment", None)
+    client = GPPClient(environment=environment)
+    output.environment(client.settings.environment)
+    return client
 
 
 def truncate_string(value: str | None, max_length: int) -> str:

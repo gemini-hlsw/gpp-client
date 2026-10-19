@@ -2,32 +2,24 @@
 Module for retrieving scheduler information.
 """
 
+from __future__ import annotations
+
 __all__ = ["SchedulerDomain"]
 
+from collections.abc import AsyncIterator, Awaitable, Callable
 from datetime import datetime
-from typing import Any, AsyncIterator, Awaitable, Callable
+from typing import TYPE_CHECKING, Any
 
 from gpp_client.domains.base import BaseDomain
 from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
-from gpp_client.generated import (
-    SchedulerObservationsUpdates,
-    WhereOptionEqObservingModeType,
-)
-from gpp_client.generated.get_scheduler_all_programs_id import (
-    GetSchedulerAllProgramsId,
-)
-from gpp_client.generated.get_scheduler_programs import (
-    GetSchedulerPrograms,
-    GetSchedulerProgramsPrograms,
-)
-from gpp_client.generated.input_types import (
-    ObservationWorkflowState,
-    WhereCalculatedObservationWorkflow,
-    WhereObservation,
-    WhereOrderObservationWorkflowState,
-    WhereOrderProgramId,
-    WhereProgram,
-)
+
+if TYPE_CHECKING:
+    from gpp_client.generated import SchedulerObservationsUpdates
+    from gpp_client.generated.get_scheduler_all_programs_id import (
+        GetSchedulerAllProgramsId,
+    )
+    from gpp_client.generated.get_scheduler_programs import GetSchedulerPrograms
+
 
 # Each program carries its full group tree, so large pages are heavy for the ODB.
 PROGRAMS_PAGE_SIZE = 1000
@@ -117,6 +109,11 @@ class SchedulerDomain(BaseDomain):
                 programs_list=programs_list, offset=offset, limit=limit
             )
             return page.programs
+
+        from gpp_client.generated.get_scheduler_programs import (
+            GetSchedulerPrograms,
+            GetSchedulerProgramsPrograms,
+        )
 
         matches = await self._fetch_all_pages(fetch_page, page_size)
         return GetSchedulerPrograms(
@@ -318,6 +315,16 @@ class SchedulerDomain(BaseDomain):
                     pass
             program["root"] = root
 
+        from gpp_client.generated.input_types import (
+            ObservationWorkflowState,
+            WhereCalculatedObservationWorkflow,
+            WhereObservation,
+            WhereOptionEqObservingModeType,
+            WhereOrderObservationWorkflowState,
+            WhereOrderProgramId,
+            WhereProgram,
+        )
+
         where_observation = WhereObservation(
             program=WhereProgram(
                 id=WhereOrderProgramId(in_=[p["id"] for p in programs])
@@ -384,10 +391,15 @@ class SchedulerDomain(BaseDomain):
         -------
         list[tuple[str, str]]
             List of tuples containing the program reference label and ID.
+            Programs without a reference are left out.
         """
         today = datetime.today().date().isoformat() if date is None else date
         response = await self.get_program_ids(today=today)
-        return [(p.reference.label, p.id) for p in response.programs.matches]
+        return [
+            (p.reference.label, p.id)
+            for p in response.programs.matches
+            if p.reference is not None
+        ]
 
     async def get_visibility_changes(self, since: datetime) -> VisibilityChanges:
         """
@@ -411,8 +423,10 @@ class SchedulerDomain(BaseDomain):
 
         Raises
         ------
+        GPPEnvironmentError
+            If the selected environment does not serve the endpoint (404).
         aiohttp.ClientError
-            For HTTP errors, connection failures, or timeouts.
+            For other HTTP errors, connection failures, or timeouts.
         """
         body = await self._rest.get_visibility_changes(since)
         return parse_visibility_changes(body)

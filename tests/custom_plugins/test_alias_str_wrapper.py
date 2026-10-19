@@ -14,6 +14,8 @@ def plugin_manager(schema_str):
     return PluginManager(schema=schema, plugins_types=[AliasStrWrapperPlugin])
 
 
+# The fixture schema's deprecated inputs say nothing about the plugin under test.
+@pytest.mark.filterwarnings("ignore::DeprecationWarning:ariadne_codegen")
 def test_alias_str_wrapper(plugin_manager, schema_str):
     """
     Test wrapping the alias with 'str()' for IDE.

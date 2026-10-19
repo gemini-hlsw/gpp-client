@@ -8,10 +8,13 @@ import asyncio
 import gzip
 import logging
 import ssl
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import aiohttp
 import certifi
+
+from gpp_client.environment import GPPEnvironment
+from gpp_client.exceptions import EnvironmentItemKind, GPPEnvironmentError
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +39,24 @@ class RESTClient:
         GPP token to authenticate against the REST API. Same as GPPClient.
     timeout : float
         Timeout for REST API requests in seconds.
+    environment : GPPEnvironment | None, optional
+        The environment ``base_url`` belongs to. When given, a 404 from a REST
+        path raises ``GPPEnvironmentError`` naming it.
     """
 
     _DEFAULT_TIMEOUT = 30.0  # Seconds.
 
     def __init__(
-        self, base_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
+        self,
+        base_url: str,
+        gpp_token: str,
+        timeout: float = _DEFAULT_TIMEOUT,
+        *,
+        environment: GPPEnvironment | None = None,
     ) -> None:
         self.base_url = base_url
         self.gpp_token = gpp_token
+        self.environment = environment
         self._timeout = timeout
 
         self._session: aiohttp.ClientSession | None = None
@@ -116,6 +128,28 @@ class RESTClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
+    def _raise_if_not_served(self, response: aiohttp.ClientResponse) -> None:
+        """
+        Raise ``GPPEnvironmentError`` when the environment does not serve the path.
+
+        Parameters
+        ----------
+        response : aiohttp.ClientResponse
+            The response to a request for one of the client's fixed paths.
+
+        Raises
+        ------
+        GPPEnvironmentError
+            If the response is a 404 and the client knows its environment.
+        """
+        if response.status == 404 and self.environment is not None:
+            raise GPPEnvironmentError(
+                response.url.path,
+                EnvironmentItemKind.REST_PATH,
+                self.environment,
+                (),
+            )
+
     async def get_atom_digests(
         self, observation_ids: list[str], accept_gzip: bool = True
     ) -> str:
@@ -138,6 +172,8 @@ class RESTClient:
 
         Raises
         ------
+        GPPEnvironmentError
+            If the client's environment does not serve the path (404).
         aiohttp.ClientResponseError
             For HTTP error responses.
         aiohttp.ClientError
@@ -155,6 +191,7 @@ class RESTClient:
         async with session.post(
             "/scheduler/atoms", data=body, headers=headers
         ) as response:
+            self._raise_if_not_served(response)
             # Handle different response codes
             if response.status == 400:
                 error_text = await response.text()
@@ -198,19 +235,22 @@ class RESTClient:
 
         Raises
         ------
+        GPPEnvironmentError
+            If the client's environment does not serve the path (404).
         aiohttp.ClientResponseError
             For HTTP error responses.
         aiohttp.ClientError
             For connection or timeout failures.
         """
         if since.tzinfo is None:
-            since = since.replace(tzinfo=timezone.utc)
+            since = since.replace(tzinfo=UTC)
 
         session = await self.get_session()
 
         async with session.get(
             "/scheduler/visibility-changes",
-            params={"since": since.astimezone(timezone.utc).isoformat()},
+            params={"since": since.astimezone(UTC).isoformat()},
         ) as response:
+            self._raise_if_not_served(response)
             response.raise_for_status()
             return await response.text()

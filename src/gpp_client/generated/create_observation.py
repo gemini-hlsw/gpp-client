@@ -14,9 +14,6 @@ class CreateObservationCreateObservation(BaseModel):
     observation: "CreateObservationCreateObservationObservation"
 
 
-class CreateObservationCreateObservationObservation(ObservationDetails):
-    pass
-
-
+CreateObservationCreateObservationObservation = ObservationDetails
 CreateObservation.model_rebuild()
 CreateObservationCreateObservation.model_rebuild()

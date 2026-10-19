@@ -4,7 +4,10 @@ Tests for the CLI entry point and core commands.
 
 from types import SimpleNamespace
 
+import pytest
+
 from gpp_client.cli.cli import CLIState, main_callback
+from tests.gpp_client.cli.conftest import DummyAsyncClient
 
 
 def test_cli_help(runner, cli_app):
@@ -52,10 +55,9 @@ def test_ping_success(runner, cli_app, mocker) -> None:
     async def mock_ping():
         return True, None
 
-    mock_client = mocker.Mock()
-    mock_client.ping = mock_ping
+    mock_client = DummyAsyncClient(ping=mock_ping)
 
-    mocker.patch("gpp_client.cli.cli.GPPClient", return_value=mock_client)
+    mocker.patch("gpp_client.cli.utils.GPPClient", return_value=mock_client)
 
     result = runner.invoke(cli_app, ["ping"])
 
@@ -71,10 +73,9 @@ def test_ping_failure(runner, cli_app, mocker) -> None:
     async def mock_ping():
         return False, "bad token"
 
-    mock_client = mocker.Mock()
-    mock_client.ping = mock_ping
+    mock_client = DummyAsyncClient(ping=mock_ping)
 
-    mocker.patch("gpp_client.cli.cli.GPPClient", return_value=mock_client)
+    mocker.patch("gpp_client.cli.utils.GPPClient", return_value=mock_client)
 
     result = runner.invoke(cli_app, ["ping"])
 
@@ -90,14 +91,31 @@ def test_ping_calls_client_once(runner, cli_app, mocker) -> None:
     async def mock_ping():
         return True, None
 
-    mock_client = mocker.Mock()
-    mock_client.ping = mocker.AsyncMock(side_effect=mock_ping)
+    mock_client = DummyAsyncClient(ping=mocker.AsyncMock(side_effect=mock_ping))
 
-    mocker.patch("gpp_client.cli.cli.GPPClient", return_value=mock_client)
+    mocker.patch("gpp_client.cli.utils.GPPClient", return_value=mock_client)
 
     runner.invoke(cli_app, ["ping"])
 
     mock_client.ping.assert_called_once()
+
+
+@pytest.mark.parametrize("reachable", [True, False])
+def test_ping_closes_its_client(runner, cli_app, mocker, reachable) -> None:
+    closed = []
+
+    class Client(DummyAsyncClient):
+        async def ping(self):
+            return reachable, None if reachable else "bad token"
+
+        async def __aexit__(self, exc_type, exc, tb) -> None:
+            closed.append(True)
+
+    mocker.patch("gpp_client.cli.utils.GPPClient", return_value=Client())
+
+    runner.invoke(cli_app, ["ping"])
+
+    assert closed == [True]
 
 
 def test_registered_commands_exist(runner, cli_app) -> None:

@@ -12,10 +12,5 @@ class SetObservationWorkflowState(BaseModel):
     ] = Field(alias="setObservationWorkflowState")
 
 
-class SetObservationWorkflowStateSetObservationWorkflowState(
-    ObservationWorkflowDetails
-):
-    pass
-
-
+SetObservationWorkflowStateSetObservationWorkflowState = ObservationWorkflowDetails
 SetObservationWorkflowState.model_rebuild()

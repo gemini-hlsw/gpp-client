@@ -1,0 +1,21 @@
+# One ariadne-codegen run on the merged schema. scripts/build_client.py fills in
+# schema_path, queries_path, target_package_path and target_package_name.
+[tool.ariadne-codegen]
+client_name = "GraphQLClient"
+client_file_name = "client"
+plugins = [
+    "custom_plugins.AliasStrWrapperPlugin",
+    "custom_plugins.TolerantEnumsPlugin",
+    "custom_plugins.CaptureOperationsPlugin",
+    "custom_plugins.EnvironmentDefaultsPlugin",
+    # Listed so it runs before AvailabilityDocstringsPlugin; lazy_imports
+    # would otherwise append it last, above each method's docstring.
+    "ariadne_codegen.contrib.client_forward_refs.ClientForwardRefsPlugin",
+    "custom_plugins.AvailabilityDocstringsPlugin",
+]
+enable_custom_operations = true
+# DO NOT CHANGE: SCHEDULER NEEDS THIS ON
+convert_to_snake_case = true
+##########
+include_comments = "none"
+lazy_imports = true

@@ -17,11 +17,8 @@ class DeleteCallForProposalsByIdUpdateCallsForProposals(BaseModel):
     ] = Field(alias="callsForProposals")
 
 
-class DeleteCallForProposalsByIdUpdateCallsForProposalsCallsForProposals(
+DeleteCallForProposalsByIdUpdateCallsForProposalsCallsForProposals = (
     CallForProposalsDetails
-):
-    pass
-
-
+)
 DeleteCallForProposalsById.model_rebuild()
 DeleteCallForProposalsByIdUpdateCallsForProposals.model_rebuild()

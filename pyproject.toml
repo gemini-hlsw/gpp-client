@@ -27,7 +27,9 @@ dependencies = [
     "httpx>=0.23",
     "pydantic>=2.12.0",
     "pydantic-settings>=2.13.1",
+    "tomlkit>=0.15.1",
     "typer>=0.21.1",
+    "typing-extensions>=4.12.0",
     "websockets>=14.2",
 ]
 dynamic = ["version"]
@@ -44,6 +46,7 @@ metadata = false
 fallback-version = "0.0.0"
 
 [tool.uv]
+required-version = ">=0.11"
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true }}]
 
 [tool.hatch.build.targets.wheel]
@@ -72,6 +75,20 @@ docstring-code-line-length = "dynamic"
 # Ignore generated code.
 extend-exclude = ["generated"]
 
+[tool.ruff.lint]
+# Ruff's default rules, import sorting, and pyupgrade for the Python floor.
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+# ariadne-codegen copies this file verbatim from its package. Its suppressions
+# target other checkers, and its no-websockets fallback rebinds Origin to Any.
+[[tool.ty.overrides]]
+include = ["src/gpp_client/generated/async_base_client.py"]
+
+[tool.ty.overrides.rules]
+unused-ignore-comment = "ignore"
+unused-type-ignore-comment = "ignore"
+call-non-callable = "ignore"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-r A -v -n auto"
@@ -94,7 +111,7 @@ exclude = [
 
 [dependency-groups]
 codegen = [
-    "ariadne-codegen==0.18.0",
+    "ariadne-codegen==0.19.0",
 ]
 dev = [
     { include-group = "codegen" },
@@ -106,6 +123,7 @@ dev = [
     "pytest-remotedata>=0.4.1",
     "pytest-xdist>=3.8.0",
     "ruff>=0.15.12",
+    "ty>=0.0.84",
 ]
 docs = [
     "furo==2025.12.19",

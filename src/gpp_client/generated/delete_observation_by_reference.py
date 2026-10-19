@@ -15,9 +15,6 @@ class DeleteObservationByReferenceUpdateObservations(BaseModel):
     observations: list["DeleteObservationByReferenceUpdateObservationsObservations"]
 
 
-class DeleteObservationByReferenceUpdateObservationsObservations(ObservationDetails):
-    pass
-
-
+DeleteObservationByReferenceUpdateObservationsObservations = ObservationDetails
 DeleteObservationByReference.model_rebuild()
 DeleteObservationByReferenceUpdateObservations.model_rebuild()

@@ -2,7 +2,7 @@
 Tests for REST response models and parsers.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
 
@@ -21,7 +21,7 @@ def test_parse_mixed_observations_and_targets() -> None:
 
     assert result.observation_ids == frozenset({"o-123", "o-789"})
     assert result.target_ids == frozenset({"t-456"})
-    assert result.max_timestamp == datetime(2026, 7, 15, 11, 30, tzinfo=timezone.utc)
+    assert result.max_timestamp == datetime(2026, 7, 15, 11, 30, tzinfo=UTC)
 
 
 def test_parse_empty_body() -> None:
@@ -78,4 +78,4 @@ def test_parse_handles_offset_timestamps() -> None:
 
     result = parse_visibility_changes(body)
 
-    assert result.max_timestamp == datetime(2026, 7, 15, 10, 0, tzinfo=timezone.utc)
+    assert result.max_timestamp == datetime(2026, 7, 15, 10, 0, tzinfo=UTC)

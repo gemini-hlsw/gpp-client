@@ -1,7 +1,14 @@
 from typing import Optional
 
 from .base_model import BaseModel
-from .fragments import TargetDetails, TargetProgramSummary
+from .fragments import (  # noqa: F401
+    TargetDetails,
+    TargetDetailsNonsidereal,
+    TargetDetailsOpportunity,
+    TargetDetailsSidereal,
+    TargetProgramSummary,
+    TargetProgramSummaryProgram,
+)
 
 
 class GetTargetById(BaseModel):

@@ -83,25 +83,22 @@ def workflow_state_domain(domain_kwargs) -> WorkflowStateDomain:
 
 
 @pytest.mark.asyncio
-async def test_get_by_id_dispatches_correctly(
-    workflow_state_domain,
-    graphql,
-    mocker,
+async def test_get_by_id_sends_query_and_returns_model(
+    gpp_client,
+    gpp_transport,
 ) -> None:
     """
-    Ensure get_by_id dispatches to GraphQL.
+    Ensure get_by_id sends the observation ID and parses the response.
     """
-    result_model = object()
-    graphql.get_observation_workflow_state_by_id = mocker.AsyncMock(
-        return_value=result_model
-    )
+    gpp_transport.respond({"observation": None})
 
-    result = await workflow_state_domain.get_by_id(observation_id="o-1")
+    result = await gpp_client.workflow_state.get_by_id(observation_id="o-1")
 
-    assert result is result_model
-    graphql.get_observation_workflow_state_by_id.assert_called_once_with(
-        observation_id="o-1"
-    )
+    assert isinstance(result, GetObservationWorkflowStateById)
+    assert result.observation is None
+    [body] = gpp_transport.bodies
+    assert body["operationName"] == "getObservationWorkflowStateById"
+    assert body["variables"] == {"observationId": "o-1"}
 
 
 @pytest.mark.asyncio
@@ -520,3 +517,59 @@ async def test_update_by_id_with_retry_raises_client_error(
             observation_id="o-1",
             workflow_state=ObservationWorkflowState.ONGOING,
         )
+
+
+@pytest.mark.asyncio
+async def test_update_by_id_raises_validation_error_for_unknown_observation(
+    gpp_client,
+    gpp_transport,
+) -> None:
+    """
+    Ensure update_by_id names the observation when GPP does not find it.
+    """
+    gpp_transport.respond({"observation": None})
+
+    with pytest.raises(GPPValidationError, match="o-404"):
+        await gpp_client.workflow_state.update_by_id(
+            observation_id="o-404",
+            workflow_state=ObservationWorkflowState.ONGOING,
+        )
+
+    assert len(gpp_transport.requests) == 1
+
+
+@pytest.mark.asyncio
+async def test_update_by_id_raises_client_error_when_workflow_missing(
+    gpp_client,
+    gpp_transport,
+) -> None:
+    """
+    Ensure update_by_id raises a client error when GPP returns no workflow.
+    """
+    gpp_transport.respond(
+        {
+            "observation": {
+                "id": "o-1",
+                "existence": "PRESENT",
+                "reference": None,
+                "title": "Observation",
+                "instrument": None,
+                "calibrationRole": None,
+                "program": {
+                    "id": "p-1",
+                    "name": None,
+                    "existence": "PRESENT",
+                    "description": None,
+                },
+                "workflow": None,
+            }
+        }
+    )
+
+    with pytest.raises(GPPClientError, match="o-1"):
+        await gpp_client.workflow_state.update_by_id(
+            observation_id="o-1",
+            workflow_state=ObservationWorkflowState.ONGOING,
+        )
+
+    assert len(gpp_transport.requests) == 1

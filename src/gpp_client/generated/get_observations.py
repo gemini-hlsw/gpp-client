@@ -13,9 +13,6 @@ class GetObservationsObservations(BaseModel):
     matches: list["GetObservationsObservationsMatches"]
 
 
-class GetObservationsObservationsMatches(ObservationDetails):
-    pass
-
-
+GetObservationsObservationsMatches = ObservationDetails
 GetObservations.model_rebuild()
 GetObservationsObservations.model_rebuild()

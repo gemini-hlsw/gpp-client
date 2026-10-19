@@ -8,8 +8,5 @@ class GetObservation(BaseModel):
     observation: Optional["GetObservationObservation"]
 
 
-class GetObservationObservation(ObservationDetails):
-    pass
-
-
+GetObservationObservation = ObservationDetails
 GetObservation.model_rebuild()

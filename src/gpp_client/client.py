@@ -5,10 +5,9 @@ This module provides the main entry point for interacting with GPP.
 __all__ = ["GPPClient"]
 
 import logging
-from typing import Any, Optional
+from typing import Any, Self
 
 import httpx
-from typing_extensions import Self
 
 from gpp_client.domains import (
     AtomDomain,
@@ -22,10 +21,10 @@ from gpp_client.domains import (
     WorkflowStateDomain,
 )
 from gpp_client.environment import GPPEnvironment
-from gpp_client.generated.client import GraphQLClient
+from gpp_client.graphql_client import GPPGraphQLClient
 from gpp_client.logging_utils import _enable_dev_console_logging
 from gpp_client.rest import RESTClient
-from gpp_client.settings import GPPSettings, _get_packaged_environment
+from gpp_client.settings import GPPSettings
 from gpp_client.urls import get_graphql_url, get_ws_url
 
 logger = logging.getLogger(__name__)
@@ -41,13 +40,23 @@ class GPPClient:
 
     Parameters
     ----------
+    environment : GPPEnvironment | str, optional
+        The GPP environment to connect to, ``"development"`` or ``"production"``.
+        If not provided, ``GPP_ENVIRONMENT`` is used, then the ``.env`` file,
+        then ``environment`` in ``config.toml``, then production.
     token : str, optional
-        GPP API token to use for authentication. If not provided, the client will
-        attempt to resolve a token from environment variables or other configuration
-        sources.
+        GPP API token for the selected environment. If not provided, the token is
+        read from that environment's variable (``GPP_TOKEN`` for production,
+        ``GPP_DEVELOPMENT_TOKEN`` for development), the ``.env`` file or
+        ``config.toml``.
     debug : bool, optional
         Whether to enable debug logging for the client. If not provided, defaults to
         ``False``.
+    http_client : httpx.AsyncClient, optional
+        Client that sends every GraphQL HTTP request, for custom proxies, timeouts,
+        or transports. The ``Authorization`` header is sent with each request and
+        not stored on it. The caller owns it and closes it. If not provided, the
+        client builds its own.
     """
 
     scheduler: SchedulerDomain
@@ -80,22 +89,33 @@ class GPPClient:
     def __init__(
         self,
         *,
+        environment: GPPEnvironment | str | None = None,
         token: str | None = None,
         debug: bool | None = None,
+        http_client: httpx.AsyncClient | None = None,
     ) -> None:
-        self._settings = self._build_settings(token=token, debug=debug)
+        self._settings = self._build_settings(
+            environment=environment, token=token, debug=debug
+        )
         if self._settings.debug:
             self._enable_dev_logging()
 
         logger.debug("GPPClient initialized with settings: %s", self._settings)
 
-        self._graphql = self._build_graphql_client()
+        self._owns_http_client = http_client is None
+        self._graphql = self._build_graphql_client(http_client)
         self._rest = self._build_rest_client()
         self._init_domains()
+        logger.info(
+            "GPPClient using the %s environment at %s",
+            self._settings.environment.label,
+            self._graphql.url,
+        )
 
     def _build_settings(
         self,
         *,
+        environment: GPPEnvironment | str | None = None,
         token: str | None = None,
         debug: bool | None = None,
     ) -> GPPSettings:
@@ -104,8 +124,10 @@ class GPPClient:
 
         Parameters
         ----------
+        environment : GPPEnvironment | str | None, optional
+            Explicit environment; an empty value falls through to the next source.
         token : str | None, optional
-            Explicit token override.
+            Explicit token for the selected environment.
         debug : bool | None, optional
             Explicit debug override.
 
@@ -115,24 +137,28 @@ class GPPClient:
             Resolved client settings.
         """
         settings_kwargs: dict[str, Any] = {}
-        if token is not None:
-            environment = _get_packaged_environment()
-            if environment is GPPEnvironment.DEVELOPMENT:
-                settings_kwargs["development_token"] = token
-            else:
-                settings_kwargs["token"] = token
+        if environment:
+            settings_kwargs["environment"] = environment
         if debug is not None:
             settings_kwargs["debug"] = debug
 
-        return GPPSettings(**settings_kwargs)
+        settings = GPPSettings(**settings_kwargs)
+        return settings if token is None else settings.with_token(token)
 
-    def _build_graphql_client(self) -> GraphQLClient:
+    def _build_graphql_client(
+        self, http_client: httpx.AsyncClient | None = None
+    ) -> GPPGraphQLClient:
         """
         Build the GraphQL client.
 
+        Parameters
+        ----------
+        http_client : httpx.AsyncClient | None, optional
+            Caller-supplied HTTP client. If ``None``, a new one is built.
+
         Returns
         -------
-        GraphQLClient
+        GPPGraphQLClient
             Configured GraphQL client instance.
         """
         headers = {
@@ -143,12 +169,11 @@ class GPPClient:
 
         logger.debug("Initializing GraphQL client for %s", graphql_url)
 
-        return GraphQLClient(
+        return GPPGraphQLClient(
+            environment=self._settings.environment,
             url=graphql_url,
             headers=headers,
-            # The generated client only applies `headers` when it builds its own
-            # http client, so they must be set on the custom one as well.
-            http_client=httpx.AsyncClient(headers=headers, timeout=_HTTP_TIMEOUT),
+            http_client=http_client or httpx.AsyncClient(timeout=_HTTP_TIMEOUT),
             ws_url=ws_url,
             ws_headers=headers,
             ws_connection_init_payload=headers,
@@ -170,6 +195,7 @@ class GPPClient:
         return RESTClient(
             base_url=self._settings.environment.base_url,
             gpp_token=self._settings.resolved_token,
+            environment=self._settings.environment,
         )
 
     def _build_domain_kwargs(self) -> dict[str, Any]:
@@ -204,13 +230,13 @@ class GPPClient:
         self.attachment = AttachmentDomain(**domain_kwargs)
 
     @property
-    def graphql(self) -> GraphQLClient:
+    def graphql(self) -> GPPGraphQLClient:
         """
         Access the GraphQL client for making GraphQL requests.
 
         Returns
         -------
-        GraphQLClient
+        GPPGraphQLClient
             The GraphQL client instance.
         """
         return self._graphql
@@ -249,9 +275,13 @@ class GPPClient:
     async def close(self) -> None:
         """
         Close any underlying connections held by the client.
+
+        A caller-supplied ``http_client`` is left open.
         """
         logger.debug("Closing GPPClient connections")
         await self._rest.close()
+        if self._owns_http_client:
+            await self._graphql.http_client.aclose()
 
     async def __aenter__(self) -> Self:
         """
@@ -270,7 +300,7 @@ class GPPClient:
         """
         await self.close()
 
-    async def ping(self) -> tuple[bool, Optional[str]]:
+    async def ping(self) -> tuple[bool, str | None]:
         """
         Check if the GPP GraphQL endpoint is reachable and authenticated.
 
