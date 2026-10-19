@@ -1948,6 +1948,30 @@ class GraphQLClient(AsyncBaseClient):
                           degrees
                         }
                       }
+                      region {
+                        rightAscensionArc {
+                          type
+                          start {
+                            hms
+                            degrees
+                          }
+                          end {
+                            hms
+                            degrees
+                          }
+                        }
+                        declinationArc {
+                          type
+                          start {
+                            dms
+                            degrees
+                          }
+                          end {
+                            dms
+                            degrees
+                          }
+                        }
+                      }
                     }
                     observingMode {
                       instrument
