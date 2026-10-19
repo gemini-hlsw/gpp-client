@@ -35,8 +35,8 @@ jobs:
 
       - name: Fail if the committed generated code differs from the build
         run: |
-          git add --intent-to-add -- src/gpp_client/generated src/gpp_client/schemas graphql docs/source/what-differs-today.rst
-          git diff --exit-code --stat -- src/gpp_client/generated src/gpp_client/schemas graphql docs/source/what-differs-today.rst
+          git add --intent-to-add -- src/gpp_client/generated src/gpp_client/schemas graphql
+          git diff --exit-code --stat -- src/gpp_client/generated src/gpp_client/schemas graphql
 
       - name: Minimize uv cache
         run: uv cache prune --ci

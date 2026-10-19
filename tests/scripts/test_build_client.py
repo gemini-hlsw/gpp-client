@@ -103,9 +103,7 @@ def _files(root: Path) -> set[Path]:
     }
 
 
-def test_repo_build_writes_only_the_generated_package_and_the_differences_page(
-    tmp_path,
-):
+def test_repo_build_writes_only_the_generated_package(tmp_path):
     root = tmp_path / "repo"
     paths = checkout(root)
     before = _files(root)
@@ -114,12 +112,11 @@ def test_repo_build_writes_only_the_generated_package_and_the_differences_page(
 
     assert (paths.package_dir / "client.py").is_file()
     written = _files(root) - before
-    assert Path("docs/source/what-differs-today.rst") in written
+    assert written
     assert all(
-        path.is_relative_to(paths.package_dir.relative_to(root))
-        or path == Path("docs/source/what-differs-today.rst")
-        for path in written
+        path.is_relative_to(paths.package_dir.relative_to(root)) for path in written
     )
+    assert not (root / "docs").exists()
     assert not (paths.package_dir / "schemas").exists()
 
 
@@ -1244,87 +1241,6 @@ def test_build_output_lists_every_alias_with_its_target(tmp_path):
         "- Alias `GmosImagingVariantInput` of `ImagingVariantInput` in "
         "`input_types`\n"
         "- Alias `GmosMode` of `Mode` in `enums`\n"
-    )
-
-
-def test_what_differs_page_lists_each_alias_with_its_target(tmp_path):
-    page = tmp_path / "what-differs-today.rst"
-    paths = dataclasses.replace(_renamed_input_paths(tmp_path), what_differs=page)
-
-    build(paths)
-
-    text = page.read_text()
-    assert "``GmosImagingVariantInput`` is an alias of ``ImagingVariantInput``" in text
-    assert "``GmosMode`` is an alias of ``Mode``" in text
-
-
-def test_what_differs_page_lists_each_environment_only_part_and_conflict(tmp_path):
-    page = tmp_path / "what-differs-today.rst"
-    paths = dataclasses.replace(
-        _write_schemas(
-            tmp_path,
-            development="# schema-date: 2026-10-13\n"
-            "type Query { program: Program draft: Int }\n"
-            "type Program { id: ID! note: String! size: Int }\n"
-            "enum Mode { FAST SLOW }",
-            production="type Query { program: Program }\n"
-            "type Program { id: ID! reference: String! size: String }\n"
-            "enum Mode { FAST }",
-        ),
-        what_differs=page,
-    )
-
-    build(paths)
-
-    assert page.read_text() == (
-        "What differs today\n"
-        "==================\n"
-        "\n"
-        ".. Written by scripts.build_client from the committed schemas. "
-        "Do not edit.\n"
-        "\n"
-        "This page lists where the development and production schemas the "
-        "client was built from disagree. The reference pages show "
-        "development's names and shapes.\n"
-        "\n"
-        "- ``development`` schema of 2026-10-13\n"
-        "- ``production`` schema of an unknown date\n"
-        "\n"
-        "Production still lacks\n"
-        "----------------------\n"
-        "\n"
-        "Development has these and production doesn't. A result field reads "
-        "``None`` on production; an input field, argument or enum value sent "
-        "to production is refused by GPP.\n"
-        "\n"
-        "- ``Query.draft``\n"
-        "- ``Program.note``\n"
-        "- ``Mode.SLOW``\n"
-        "\n"
-        "Production still has\n"
-        "--------------------\n"
-        "\n"
-        "Production has these and development doesn't. A result field reads "
-        "``None`` on development; an input field, argument or enum value sent "
-        "to development is refused by GPP.\n"
-        "\n"
-        "- ``Program.reference``\n"
-        "\n"
-        "Types that differ\n"
-        "-----------------\n"
-        "\n"
-        "The generated client carries production's type for these. A result "
-        "field reads ``None`` on development.\n"
-        "\n"
-        "- ``Program.size``: Int on development, String on production\n"
-        "\n"
-        "Aliases\n"
-        "-------\n"
-        "\n"
-        "Production still uses an old name for these input types and enums, "
-        "which the generated code carries as a deprecated alias.\n"
-        "\n"
-        "None today.\n"
     )
 
 

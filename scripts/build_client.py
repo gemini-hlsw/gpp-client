@@ -32,15 +32,9 @@ from graphql import (
     EnumTypeDefinitionNode,
     FieldsOnCorrectTypeRule,
     GraphQLError,
-    InputObjectTypeDefinitionNode,
-    InterfaceTypeDefinitionNode,
     KnownArgumentNamesRule,
     KnownTypeNamesRule,
-    ObjectTypeDefinitionNode,
     OperationDefinitionNode,
-    ScalarTypeDefinitionNode,
-    TypeDefinitionNode,
-    UnionTypeDefinitionNode,
     ValuesOfCorrectTypeRule,
     build_ast_schema,
     parse,
@@ -118,16 +112,12 @@ class BuildPaths:
         The generated package, replaced on every build.
     codegen_config : Path
         The ariadne-codegen TOML config; the build fills in the paths.
-    what_differs : Path | None, optional
-        The docs page listing what the environments disagree on, written when
-        given.
     """
 
     schemas_dir: Path
     operations_dir: Path
     package_dir: Path
     codegen_config: Path
-    what_differs: Path | None = None
 
     @classmethod
     def for_repo(cls, root: Path) -> "BuildPaths":
@@ -149,7 +139,6 @@ class BuildPaths:
             operations_dir=root / "graphql" / "operations",
             package_dir=root / "src" / "gpp_client" / "generated",
             codegen_config=root / "graphql" / "codegen.toml",
-            what_differs=root / "docs" / "source" / "what-differs-today.rst",
         )
 
     def schema_path(self, environment: str) -> Path:
@@ -248,8 +237,6 @@ def build(paths: BuildPaths) -> BuildResult:
     _write_trimmed(paths.package_dir, generated_operations(operation_strs), trimmed)
     _write_availability(paths.package_dir, defaults, merged)
     _write_bundled_schemas(paths)
-    if paths.what_differs is not None:
-        _write_what_differs(paths.what_differs, paths, merged)
     return BuildResult(
         merged_sdl=merged.sdl,
         conflicts=merged.conflicts,
@@ -622,130 +609,6 @@ def _write_bundled_schemas(paths: BuildPaths) -> None:
         f"SCHEMAS = {_dict_lines(schemas.items())}\n",
         encoding="utf-8",
     )
-
-
-_KEYWORDS: dict[type, str] = {
-    ObjectTypeDefinitionNode: "type",
-    InterfaceTypeDefinitionNode: "interface",
-    UnionTypeDefinitionNode: "union",
-    EnumTypeDefinitionNode: "enum",
-    InputObjectTypeDefinitionNode: "input",
-    ScalarTypeDefinitionNode: "scalar",
-}
-
-
-def _write_what_differs(page: Path, paths: BuildPaths, merged: MergedSchema) -> None:
-    """
-    Write the docs page listing what the environments disagree on.
-
-    Each element on one environment only is listed under that environment,
-    from the merged schema's availability; an element whose type differs is
-    listed as a conflict with each environment's type; each alias from the
-    pairing is listed with its target.
-    """
-    only = _environment_only_parts(merged)
-    dates = {
-        env: _schema_date(paths.schema_path(env).read_text(encoding="utf-8"))
-        for env in USER_ENVIRONMENTS
-    }
-    conflicts = [
-        f"``{conflict.coordinate}``: {_on_each(conflict.types)}"
-        for conflict in merged.conflicts
-    ]
-    conflicts += [
-        f"``{conflict.name}``: {_on_each(conflict.kinds)}; "
-        f"development's uses dropped: {_names(conflict.dropped)}"
-        if conflict.dropped
-        else f"``{conflict.name}``: {_on_each(conflict.kinds)}"
-        for conflict in merged.kind_conflicts
-    ]
-    aliases = [
-        f"``{rename.production}`` is an alias of ``{rename.development}``; "
-        f"production adopts ``{rename.development}`` at its next promotion, "
-        "and the alias goes with it."
-        for rename in merged.pairing.renames
-    ]
-    sections = [
-        (
-            "Production still lacks",
-            "Development has these and production doesn't. A result field "
-            "reads ``None`` on production; an input field, argument or enum "
-            "value sent to production is refused by GPP.",
-            only[DEVELOPMENT],
-        ),
-        (
-            "Production still has",
-            "Production has these and development doesn't. A result field "
-            "reads ``None`` on development; an input field, argument or enum "
-            "value sent to development is refused by GPP.",
-            only[PRODUCTION],
-        ),
-        (
-            "Types that differ",
-            "The generated client carries production's type for these. A "
-            "result field reads ``None`` on development.",
-            conflicts,
-        ),
-        (
-            "Aliases",
-            "Production still uses an old name for these input types and "
-            "enums, which the generated code carries as a deprecated alias.",
-            aliases,
-        ),
-    ]
-    text = (
-        "What differs today\n"
-        "==================\n\n"
-        ".. Written by scripts.build_client from the committed schemas. "
-        "Do not edit.\n\n"
-        "This page lists where the development and production schemas the "
-        "client was built from disagree. The reference pages show "
-        "development's names and shapes.\n\n"
-        + "\n".join(
-            f"- ``{env}`` schema of {dates[env] or 'an unknown date'}"
-            for env in USER_ENVIRONMENTS
-        )
-        + "\n"
-    )
-    for title, lead, lines in sections:
-        text += f"\n{title}\n{'-' * len(title)}\n\n{lead}\n\n"
-        text += "\n".join(f"- {line}" for line in lines) if lines else "None today."
-        text += "\n"
-    page.parent.mkdir(parents=True, exist_ok=True)
-    page.write_text(text, encoding="utf-8")
-
-
-def _environment_only_parts(merged: MergedSchema) -> dict[str, list[str]]:
-    """
-    Return each element on one environment only, by environment.
-
-    An element is listed where its environments differ from its parent's, so a
-    type on one environment is listed once, not with each of its fields. A
-    conflict is production's in the merged schema but is not production-only,
-    so it is left out here.
-    """
-    conflicts = {conflict.coordinate for conflict in merged.conflicts}
-    parts: dict[str, list[str]] = {env: [] for env in USER_ENVIRONMENTS}
-
-    def add(coordinate: str, node, parent) -> None:
-        envs = environments(node)
-        if envs is None or envs == environments(parent) or coordinate in conflicts:
-            return
-        parts[envs[0]].append(f"``{coordinate}``")
-
-    for definition in merged.document.definitions:
-        if not isinstance(definition, TypeDefinitionNode):
-            continue
-        name = definition.name.value
-        add(f"{_KEYWORDS[type(definition)]} {name}", definition, None)
-        for field in getattr(definition, "fields", None) or ():
-            coordinate = f"{name}.{field.name.value}"
-            add(coordinate, field, definition)
-            for argument in getattr(field, "arguments", None) or ():
-                add(f"{coordinate}({argument.name.value}:)", argument, field)
-        for value in getattr(definition, "values", None) or ():
-            add(f"{name}.{value.name.value}", value, definition)
-    return parts
 
 
 def _dict_lines(items) -> str:
