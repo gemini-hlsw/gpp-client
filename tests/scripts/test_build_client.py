@@ -626,22 +626,24 @@ def test_operation_whose_root_field_is_missing_is_unavailable(tmp_path):
     assert _trimmed(paths, "development", sent).document is not None
 
 
-def test_trimmed_copy_invalid_on_its_environment_fails_the_build(tmp_path):
-    query = "type Query { find(where: Where): Int }\n"
+def test_variable_an_environment_requires_is_not_retyped_and_fails_the_build(
+    tmp_path,
+):
     paths = _write_schemas(
         tmp_path,
-        operations='query findSorted { find(where: {sort: "name"}) }',
-        development=query + "input Where { name: String sort: String }",
-        production=query + "input Where { name: String }",
+        operations="query findOne($a: Int) { find(a: $a) }",
+        development="type Query { find(a: Int): Int }",
+        production="type Query { find(a: Int!): Int }",
     )
 
     with pytest.raises(BuildError) as error:
         build(paths)
 
-    message = str(error.value)
-    assert "findSorted on production" in message
-    assert "'sort'" in message
-    assert "on development" not in message
+    assert str(error.value) == (
+        "Trimmed operations are invalid:\n"
+        "  findOne on production: Variable '$a' of type 'Int' used in position "
+        "expecting type 'Int!'."
+    )
 
 
 def test_operation_selecting_a_field_whose_type_differs_builds(tmp_path):
@@ -658,16 +660,23 @@ def test_operation_selecting_a_field_whose_type_differs_builds(tmp_path):
     assert result.b == 2
 
 
-def test_field_on_no_environment_fails_the_build(tmp_path):
+def test_selections_on_no_environment_fail_the_build_listing_each(tmp_path):
     paths = _write_schemas(
         tmp_path,
-        operations="query typo { a nmae }",
-        development="type Query { a: Int name: String }",
-        production="type Query { a: Int }",
+        operations="query typo { a nmae }\nquery other { ...Count }\n"
+        "fragment Count on Query { cuont }",
+        development="type Query { a: Int name: String count: Int }",
+        production="type Query { a: Int count: Int }",
     )
 
-    with pytest.raises(BuildError, match="Cannot query field 'nmae' on type 'Query'"):
+    with pytest.raises(BuildError) as error:
         build(paths)
+
+    assert str(error.value) == (
+        "Operations select what no environment has:\n"
+        "  typo: Cannot query field 'nmae' on type 'Query'. Did you mean 'name'?\n"
+        "  Count: Cannot query field 'cuont' on type 'Query'. Did you mean 'count'?"
+    )
 
 
 def test_query_builder_call_reusing_an_operation_name_is_not_that_operation(
@@ -748,9 +757,106 @@ def test_trim_summary_lists_what_each_environment_does_not_receive(tmp_path):
         "\n"
         "**production**\n"
         "- Unavailable: `two`\n"
+        "- `$after` removed from `one`\n"
         "- `Program.reference` removed from `Details`\n"
         "- `Query.programs(after:)` removed from `one`\n"
     )
+
+
+_RENAMED_OPERATION = (
+    "query renamed($w: NewW) { a(w: $w) { v { ...F } } }\nfragment F on NewV { x }"
+)
+
+
+def _renamed_sdl(input_name: str, type_name: str) -> str:
+    return (
+        f"type Query {{ a(w: {input_name}): A }}\ntype A {{ v: {type_name} }}\n"
+        f"type {type_name} {{ x: Int }}\ninput {input_name} {{ q: Int }}"
+    )
+
+
+def test_production_copy_carries_production_names_for_renamed_types(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        operations=_RENAMED_OPERATION,
+        development=_renamed_sdl("NewW", "NewV"),
+        production=_renamed_sdl("OldW", "OldV"),
+    )
+
+    build(paths)
+
+    sent, _ = _sent_query(paths, "renamed", {"a": {"v": {"x": 1}}})
+    assert _trimmed(paths, "production", sent).document == (
+        "query renamed($w: OldW) {\n  a(w: $w) {\n    v {\n      ...F\n    }\n  }\n}"
+        "\n\nfragment F on OldV {\n  x\n}"
+    )
+    assert _trimmed(paths, "development", sent).document == sent
+
+
+def test_conflicts_are_excluded_from_the_development_copy(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query ab($id: Int) "
+        '{ a b find(id: $id, where: {name: ["x"], page: 1}) }',
+        development="type Query { a: Int b: String find(id: ID, where: Where): Int }\n"
+        "input Where { name: String page: Int }",
+        production="type Query { a: Int b: Int! find(id: Int, where: Where): Int }\n"
+        "input Where { name: [String!] page: Int }",
+    )
+
+    build(paths)
+
+    sent, _ = _sent_query(paths, "ab", {"a": 1, "b": 2, "find": 3}, id=1)
+    assert _trimmed(paths, "development", sent).document == (
+        "query ab {\n  a\n  find(where: {page: 1})\n}"
+    )
+    assert _trimmed(paths, "production", sent).document == sent
+
+
+_LITERALS_SDL = (
+    "type Query { obs(where: Where, flags: [Flag!]!): Int }\n"
+    "input Where { flag: Flag nested: Inner! {extra} }\n"
+)
+
+
+def test_input_literals_lose_fields_and_enum_values_the_environment_lacks(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query literals { obs(where: {nested: {x: 1}, flag: B, "
+        "flags: [A, B]}, flags: [A, B]) }",
+        development=_LITERALS_SDL.replace("{extra}", "extra: Int")
+        + "input Inner { y: Int }\nenum Flag { A C }",
+        production=_LITERALS_SDL.replace("{extra}", "flags: [Flag!]")
+        + "input Inner { x: Int }\nenum Flag { A B }",
+    )
+
+    build(paths)
+
+    sent, _ = _sent_query(paths, "literals", {"obs": 1})
+    assert _trimmed(paths, "development", sent).document == (
+        "query literals {\n  obs(where: {nested: {}}, flags: [A])\n}"
+    )
+    assert _trimmed(paths, "production", sent).document == sent
+
+
+def test_fragments_on_a_type_the_union_lacks_are_removed(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query items { items { ... on A { id } ... on B { id } "
+        "...BFields } }\nfragment BFields on B { name }",
+        development=_ITEMS_SDL + "type B { id: ID! name: String }\nunion Item = A | B",
+        production=_ITEMS_SDL + "type B { id: ID! name: String }\nunion Item = A",
+    )
+
+    result = build(paths)
+
+    sent, _ = _sent_query(paths, "items", {"items": []})
+    assert _trimmed(paths, "production", sent).document == (
+        "query items {\n  items {\n    __typename\n    ... on A {\n      id\n    }\n"
+        "  }\n}"
+    )
+    assert "- `... on B` removed from `items`" in result.trim_summary
+    assert "- `...BFields` removed from `items`" in result.trim_summary
 
 
 def test_merge_summary_lists_renames_conflicts_and_refused_votes(tmp_path):
@@ -851,9 +957,7 @@ def _with_extra_plugin(
     return dataclasses.replace(paths, codegen_config=config_path)
 
 
-def test_generated_operation_the_lookup_cannot_find_fails_the_build(
-    tmp_path, monkeypatch
-):
+def test_trim_starts_from_the_text_the_generated_client_embeds(tmp_path, monkeypatch):
     paths = _write_schemas(
         tmp_path,
         operations="query count { count }",
@@ -867,15 +971,15 @@ def test_generated_operation_the_lookup_cannot_find_fails_the_build(
         "class ExtraPlugin(Plugin):\n"
         "    def generate_operation_str(self, operation_str, operation_definition):\n"
         "        return operation_str + '\\n# rewritten'\n",
-        after="CaptureOperationsPlugin",
+        after="EnvironmentDefaultsPlugin",
     )
 
-    with pytest.raises(BuildError) as error:
-        build(rewriting)
+    build(rewriting)
 
-    assert str(error.value) == (
-        "The generated client sends operations the trimmed lookup cannot find:\n"
-        "  count on development, production"
+    sent, _ = _sent_query(rewriting, "count", {"count": 1})
+    assert "# rewritten" in sent
+    assert _trimmed(rewriting, "production", sent) == TrimmedOperation(
+        name="count", document="query count {\n  count\n}"
     )
 
 
@@ -895,7 +999,7 @@ def test_generated_client_without_readable_queries_fails_the_build(
         "class ExtraPlugin(Plugin):\n"
         "    def generate_client_code(self, generated_code):\n"
         "        return generated_code.replace('gql(', 'str(')\n",
-        after="CaptureOperationsPlugin",
+        after="EnvironmentDefaultsPlugin",
     )
 
     with pytest.raises(BuildError, match="found 0 of 1 generated operations"):

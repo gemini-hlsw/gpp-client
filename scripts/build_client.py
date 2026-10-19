@@ -22,17 +22,21 @@ from ariadne_codegen.main import client as run_ariadne_codegen
 from rich.markup import escape
 
 from custom_plugins.alias_names import ALIASES_KEY, AliasReport
-from custom_plugins.capture_operations import CAPTURE_KEY
 from custom_plugins.environment_defaults import DEFAULTS_KEY, DefaultsReport
 from custom_plugins.environments import USER_ENVIRONMENTS, environments
 from gpp_client.cli import output
-from gpp_client.trimmed_operations import lookup_trimmed_operation
 from graphql import (
+    DocumentNode,
     EnumTypeDefinitionNode,
+    FieldsOnCorrectTypeRule,
     GraphQLError,
+    KnownArgumentNamesRule,
+    KnownTypeNamesRule,
     OperationDefinitionNode,
+    ValuesOfCorrectTypeRule,
     build_ast_schema,
     parse,
+    validate,
 )
 from scripts.schema_merge import (
     DEVELOPMENT,
@@ -201,26 +205,34 @@ def build(paths: BuildPaths) -> BuildResult:
     BuildError
         Raised when a schema file is missing, an environment schema is invalid,
         an operation selects a field no environment has, codegen fails, an
-        environment-specific field
-        did not get a ``None`` default, a trimmed operation is invalid on its
-        environment, or the trimmed lookup misses a query the generated client
-        sends.
+        environment-specific field did not get a ``None`` default, the
+        generated client embeds fewer operations than were written, or a
+        trimmed operation is invalid on its environment.
     """
     merged = _merge(paths)
-    operation_strs, defaults, aliases = _run_codegen(paths, merged)
+    operations = _check_selections_exist_somewhere(paths, merged)
+    defaults, aliases = _run_codegen(paths, merged)
     _check_environment_defaults(paths.package_dir, defaults)
+    operation_strs = _embedded_operations(paths, operations)
     schemas = {env: _environment_schema(paths, env) for env in USER_ENVIRONMENTS}
     trimmed = [
-        trim_operations(env, schemas[env], operation_strs) for env in USER_ENVIRONMENTS
+        trim_operations(
+            env,
+            schemas[env],
+            operation_strs,
+            excluded=frozenset(c.coordinate for c in merged.conflicts)
+            if env == DEVELOPMENT
+            else frozenset(),
+            reverse=merged.pairing.reverse if env == PRODUCTION else None,
+        )
+        for env in USER_ENVIRONMENTS
     ]
     errors = [error for environment in trimmed for error in environment.errors]
     if errors:
         raise BuildError(
             "Trimmed operations are invalid:\n" + "\n".join(f"  {e}" for e in errors)
         )
-    generated = generated_operations(operation_strs)
-    _check_lookup_finds_sent_operations(paths, generated, trimmed)
-    _write_trimmed(paths.package_dir, generated, trimmed)
+    _write_trimmed(paths.package_dir, generated_operations(operation_strs), trimmed)
     _write_availability(paths.package_dir, defaults, merged)
     return BuildResult(
         merged_sdl=merged.sdl,
@@ -249,6 +261,49 @@ def _merge(paths: BuildPaths) -> MergedSchema:
         raise BuildError(str(exc)) from exc
 
 
+_EXISTENCE_RULES = [
+    FieldsOnCorrectTypeRule,
+    KnownArgumentNamesRule,
+    KnownTypeNamesRule,
+    ValuesOfCorrectTypeRule,
+]
+
+
+def _check_selections_exist_somewhere(
+    paths: BuildPaths, merged: MergedSchema
+) -> DocumentNode:
+    """
+    Fail listing every field, argument, type or value that no environment has.
+
+    Codegen would stop at the first; a schema update that removed several
+    parts is fixed in one go when the build names them all. Returns the
+    operations as written.
+    """
+    sources = sorted(paths.operations_dir.rglob("*.graphql"))
+    if not sources:
+        return DocumentNode(definitions=())
+    document = parse("\n\n".join(p.read_text(encoding="utf-8") for p in sources))
+    errors = validate(build_ast_schema(merged.document), document, _EXISTENCE_RULES)
+    if errors:
+        raise BuildError(
+            "Operations select what no environment has:\n"
+            + "\n".join(
+                f"  {_definition_name(document, error)}: {error.message}"
+                for error in errors
+            )
+        )
+    return document
+
+
+def _definition_name(document: DocumentNode, error: GraphQLError) -> str:
+    start = error.nodes[0].loc.start if error.nodes and error.nodes[0].loc else -1
+    for definition in document.definitions:
+        if definition.loc and definition.loc.start <= start < definition.loc.end:
+            name = getattr(definition, "name", None)
+            return name.value if name else "anonymous"
+    return "anonymous"
+
+
 def _environment_schema(paths: BuildPaths, environment: str):
     return build_ast_schema(
         parse(paths.schema_path(environment).read_text(encoding="utf-8"))
@@ -257,23 +312,18 @@ def _environment_schema(paths: BuildPaths, environment: str):
 
 def _run_codegen(
     paths: BuildPaths, merged: MergedSchema
-) -> tuple[list[str], DefaultsReport, AliasReport]:
+) -> tuple[DefaultsReport, AliasReport]:
     """
     Generate the client from the merged schema.
 
-    Returns each embedded operation, where ``None`` defaults went, and which
-    production names became aliases.
+    Returns where ``None`` defaults went and which production names became
+    aliases.
     """
     with paths.codegen_config.open("rb") as config_file:
         config = tomllib.load(config_file)
-    captured: list[str] = []
     defaults = DefaultsReport()
     aliases = AliasReport(renames=merged.pairing.by_production_name)
-    config["tool"]["gpp-client"] = {
-        CAPTURE_KEY: captured,
-        DEFAULTS_KEY: defaults,
-        ALIASES_KEY: aliases,
-    }
+    config["tool"]["gpp-client"] = {DEFAULTS_KEY: defaults, ALIASES_KEY: aliases}
 
     if paths.package_dir.is_dir():
         shutil.rmtree(paths.package_dir)
@@ -292,7 +342,7 @@ def _run_codegen(
                 run_ariadne_codegen(config)
         except (CodeGenException, GraphQLError) as exc:
             raise BuildError(f"Codegen failed: {exc}") from exc
-    return captured, defaults, aliases
+    return defaults, aliases
 
 
 def _check_environment_defaults(package_dir: Path, report: DefaultsReport) -> None:
@@ -348,39 +398,22 @@ def _defaults_to_none(value: ast.expr | None) -> bool:
     return False
 
 
-def _check_lookup_finds_sent_operations(
-    paths: BuildPaths,
-    generated: dict[str, str],
-    trimmed: list[EnvironmentOperations],
-) -> None:
+def _embedded_operations(paths: BuildPaths, written: DocumentNode) -> list[str]:
     """
-    Fail naming each query in the generated client that the lookup misses.
+    Return each operation as the generated client embeds it.
 
-    The queries are read back from the generated client's source, so a change
-    in how ariadne-codegen embeds them can never send an untrimmed query.
+    The queries are read back from the generated client's source, so the
+    trimmed copies start from the exact text the client sends, whatever a
+    plugin did to it. Fails when fewer come back than operations were written.
     """
     queries = _embedded_queries(paths.package_dir / "client.py")
-    if len(queries) != len(generated):
+    expected = sum(isinstance(d, OperationDefinitionNode) for d in written.definitions)
+    if len(queries) != expected:
         raise BuildError(
             "Reading gql(...) queries back from the generated client found "
-            f"{len(queries)} of {len(generated)} generated operations."
+            f"{len(queries)} of {expected} generated operations."
         )
-    missing: dict[str, list[str]] = {}
-    for query in queries:
-        for environment in trimmed:
-            found = lookup_trimmed_operation(
-                generated, environment.operations, environment.fragments, query
-            )
-            if found is None:
-                missing.setdefault(_operation_name(query), []).append(
-                    environment.environment
-                )
-    if missing:
-        lines = [f"  {name} on {', '.join(envs)}" for name, envs in missing.items()]
-        raise BuildError(
-            "The generated client sends operations the trimmed lookup cannot find:\n"
-            + "\n".join(lines)
-        )
+    return queries
 
 
 def _embedded_queries(client_path: Path) -> list[str]:
@@ -397,13 +430,6 @@ def _embedded_queries_in(tree: ast.AST) -> list[str]:
         and node.args
         and isinstance(node.args[0], ast.Constant)
     ]
-
-
-def _operation_name(query: str) -> str:
-    for definition in parse(query).definitions:
-        if isinstance(definition, OperationDefinitionNode) and definition.name:
-            return definition.name.value
-    return "anonymous"
 
 
 def _merge_summary(merged: MergedSchema, aliases: AliasReport) -> str:

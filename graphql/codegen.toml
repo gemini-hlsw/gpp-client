@@ -7,7 +7,6 @@ plugins = [
     "custom_plugins.AliasNamesPlugin",
     "custom_plugins.AliasStrWrapperPlugin",
     "custom_plugins.TolerantEnumsPlugin",
-    "custom_plugins.CaptureOperationsPlugin",
     "custom_plugins.EnvironmentDefaultsPlugin",
     "ariadne_codegen.contrib.client_forward_refs.ClientForwardRefsPlugin",
 ]

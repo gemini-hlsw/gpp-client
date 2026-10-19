@@ -6,7 +6,7 @@ arguments, inline fragments and fragment spreads the environment lacks, and the
 variables only those used.
 """
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from copy import copy
 from dataclasses import dataclass
 from typing import TypeVar
@@ -14,21 +14,32 @@ from typing import TypeVar
 from gpp_client.trimmed_operations import operation_digest
 from graphql import (
     REMOVE,
+    ArgumentNode,
     DocumentNode,
+    EnumValueNode,
     FieldNode,
     FragmentDefinitionNode,
     FragmentSpreadNode,
+    GraphQLEnumType,
+    GraphQLInputType,
     GraphQLSchema,
     InlineFragmentNode,
+    ListValueNode,
     NamedTypeNode,
     NameNode,
     Node,
+    ObjectFieldNode,
     OperationDefinitionNode,
     SelectionSetNode,
     TypeInfo,
     TypeInfoVisitor,
+    ValueNode,
     VariableNode,
     Visitor,
+    do_types_overlap,
+    get_named_type,
+    is_enum_type,
+    is_input_object_type,
     parse,
     print_ast,
     validate,
@@ -60,8 +71,9 @@ class EnvironmentOperations:
     unavailable : tuple[str, ...]
         Operations the environment lacks a root field of, sorted.
     removed : dict[str, tuple[str, ...]]
-        Per removed part (``Type.field``, ``Type.field(arg:)``, ``... on Type``
-        or ``...Fragment``), the operations and fragments it was removed from.
+        Per removed part (``Type.field``, ``Type.field(arg:)``, ``... on Type``,
+        ``...Fragment`` or a ``$variable`` left unused), the operations and
+        fragments it was removed from.
     """
 
     environment: str
@@ -73,7 +85,12 @@ class EnvironmentOperations:
 
 
 def trim_operations(
-    environment: str, schema: GraphQLSchema, operation_strs: Iterable[str]
+    environment: str,
+    schema: GraphQLSchema,
+    operation_strs: Iterable[str],
+    *,
+    excluded: frozenset[str] = frozenset(),
+    reverse: Mapping[str, str] | None = None,
 ) -> EnvironmentOperations:
     """
     Trim each generated operation for one environment.
@@ -86,19 +103,26 @@ def trim_operations(
         The environment's schema.
     operation_strs : Iterable[str]
         Each operation with its fragments, as the generated client embeds it.
+    excluded : frozenset[str]
+        Coordinates (``Type.field``, ``Type.field(arg:)`` or ``Input.field``)
+        removed although the environment has them, because the merged schema
+        gives them another environment's type.
+    reverse : Mapping[str, str] | None
+        The environment's name for each type the merge renamed, applied to
+        every type name in the operation before trimming.
 
     Returns
     -------
     EnvironmentOperations
         The trimmed operations.
     """
-    trimmer = _EnvironmentTrimmer(schema)
+    trimmer = _EnvironmentTrimmer(schema, excluded)
     operations: dict[str, tuple[str, str | None, tuple[str, ...]]] = {}
     errors: list[str] = []
     unavailable: list[str] = []
     stored_fragments: set[str] = set()
     for operation_str in operation_strs:
-        document = parse(operation_str)
+        document = _rename_types(parse(operation_str), reverse or {})
         sources = {
             d.name.value: d
             for d in document.definitions
@@ -118,6 +142,11 @@ def trim_operations(
             [trimmed.selection_set]
             + [trimmer.fragments[name] for name in fragment_names]
         )
+        for definition in trimmed.variable_definitions or ():
+            if definition.variable.name.value not in used:
+                trimmer.record(
+                    f"${definition.variable.name.value}", operation.name.value
+                )
         trimmed = _copy(
             trimmed,
             variable_definitions=tuple(
@@ -182,8 +211,9 @@ def generated_operations(operation_strs: Iterable[str]) -> dict[str, str]:
 
 
 class _EnvironmentTrimmer:
-    def __init__(self, schema: GraphQLSchema) -> None:
+    def __init__(self, schema: GraphQLSchema, excluded: frozenset[str]) -> None:
         self.schema = schema
+        self.excluded = excluded
         self.fragments: dict[str, FragmentDefinitionNode | None] = {}
         """Each fragment trimmed once; ``None`` when its type is missing."""
         self.removed: dict[str, set[str]] = {}
@@ -196,14 +226,18 @@ class _EnvironmentTrimmer:
         type_info = TypeInfo(self.schema)
 
         def record(part: str) -> None:
-            self.removed.setdefault(part, set()).add(node.name.value)
+            self.record(part, node.name.value)
 
         return visit(
             node,
             TypeInfoVisitor(
-                type_info, _Trimmer(type_info, self.schema, sources, record)
+                type_info,
+                _Trimmer(type_info, self.schema, self.excluded, sources, record),
             ),
         )
+
+    def record(self, part: str, definition: str) -> None:
+        self.removed.setdefault(part, set()).add(definition)
 
     def fragment(
         self, name: str, sources: dict[str, FragmentDefinitionNode]
@@ -235,12 +269,14 @@ class _Trimmer(Visitor):
         self,
         type_info: TypeInfo,
         schema: GraphQLSchema,
+        excluded: frozenset[str],
         sources: dict[str, FragmentDefinitionNode],
         record: Callable[[str], None],
     ) -> None:
         super().__init__()
         self.type_info = type_info
         self.schema = schema
+        self.excluded = excluded
         self.sources = sources
         self.record = record
 
@@ -250,26 +286,72 @@ class _Trimmer(Visitor):
             return None
         parent = self.type_info.get_parent_type()
         coordinate = f"{parent.name}.{name}"
-        if name not in parent.fields:
+        if name not in parent.fields or coordinate in self.excluded:
             self.record(coordinate)
             return REMOVE
         arguments = parent.fields[name].args
-        kept = tuple(a for a in node.arguments or () if a.name.value in arguments)
+        kept = tuple(
+            a
+            for a in node.arguments or ()
+            if a.name.value in arguments
+            and f"{coordinate}({a.name.value}:)" not in self.excluded
+        )
         if len(kept) == len(node.arguments or ()):
             return None
         for argument in node.arguments:
-            if argument.name.value not in arguments:
+            if argument not in kept:
                 self.record(f"{coordinate}({argument.name.value}:)")
         return _copy(node, arguments=kept)
 
+    def enter_argument(self, node: ArgumentNode, *_args):
+        argument = self.type_info.get_argument()
+        if argument is not None and self._dead_value(node.value, argument.type):
+            field = self.type_info.get_field_def()
+            parent = self.type_info.get_parent_type()
+            self.record(
+                f"{parent.name}.{field.ast_node.name.value}({node.name.value}:) value"
+            )
+            return REMOVE
+        return None
+
+    def enter_object_field(self, node: ObjectFieldNode, *_args):
+        parent = get_named_type(self.type_info.get_parent_input_type())
+        if not is_input_object_type(parent):
+            return None
+        coordinate = f"{parent.name}.{node.name.value}"
+        field = parent.fields.get(node.name.value)
+        if field is None or coordinate in self.excluded:
+            self.record(coordinate)
+            return REMOVE
+        if self._dead_value(node.value, field.type):
+            self.record(f"{coordinate} value")
+            return REMOVE
+        return None
+
+    def enter_list_value(self, node: ListValueNode, *_args):
+        inner = get_named_type(self.type_info.get_input_type())
+        if not is_enum_type(inner):
+            return None
+        kept = tuple(v for v in node.values if not self._dead_value(v, inner))
+        if len(kept) == len(node.values):
+            return None
+        self.record(f"{inner.name} list value")
+        return _copy(node, values=kept)
+
+    def _dead_value(self, value: ValueNode, type_: GraphQLInputType) -> bool:
+        named = get_named_type(type_)
+        if isinstance(value, EnumValueNode) and isinstance(named, GraphQLEnumType):
+            return value.value not in named.values
+        return False
+
     def enter_inline_fragment(self, node: InlineFragmentNode, *_args):
-        if node.type_condition and not self._has_type(node.type_condition):
+        if node.type_condition and not self._applies(node.type_condition):
             self.record(f"... on {node.type_condition.name.value}")
             return REMOVE
         return None
 
     def enter_fragment_spread(self, node: FragmentSpreadNode, *_args):
-        if not self._has_type(self.sources[node.name.value].type_condition):
+        if not self._applies(self.sources[node.name.value].type_condition):
             self.record(f"...{node.name.value}")
             return REMOVE
         return None
@@ -286,8 +368,27 @@ class _Trimmer(Visitor):
             )
         )
 
-    def _has_type(self, named: NamedTypeNode) -> bool:
-        return named.name.value in self.schema.type_map
+    def _applies(self, condition: NamedTypeNode) -> bool:
+        """
+        Whether a fragment on ``condition`` can match here on this schema.
+        """
+        type_ = self.schema.get_type(condition.name.value)
+        parent = self.type_info.get_parent_type()
+        if type_ is None:
+            return False
+        return parent is None or do_types_overlap(self.schema, parent, type_)
+
+
+def _rename_types(document: DocumentNode, reverse: Mapping[str, str]) -> DocumentNode:
+    if not reverse:
+        return document
+
+    class _Renamer(Visitor):
+        def enter_named_type(self, named: NamedTypeNode, *_args):
+            name = reverse.get(named.name.value)
+            return None if name is None else _copy(named, name=NameNode(value=name))
+
+    return visit(document, _Renamer())
 
 
 def _missing_root_fields(
