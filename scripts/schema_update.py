@@ -26,6 +26,7 @@ from scripts.build_client import (
     BuildPaths,
     BuildResult,
     build,
+    schema_body,
     schema_file,
 )
 from scripts.download_schema import (
@@ -53,8 +54,8 @@ class UpdateResult:
     reasons : dict[str, str]
         Why each held environment was held.
     changed : tuple[str, ...]
-        Environments whose schema differs from the committed one, so the
-        download is now the committed copy.
+        Environments whose schema differs from the committed one apart from
+        its date line, so the dated download is now the committed copy.
     build : BuildResult
         What the build produced.
     suite_passed : bool
@@ -151,7 +152,10 @@ def schema_update(
                 continue
             sdl = schema_file(downloaded, environment).read_text(encoding="utf-8")
             committed = paths.schema_path(environment)
-            if not committed.is_file() or committed.read_text(encoding="utf-8") != sdl:
+            # The committed copy keeps its date while GPP's schema is the same.
+            if not committed.is_file() or schema_body(
+                committed.read_text(encoding="utf-8")
+            ) != schema_body(sdl):
                 committed.write_text(sdl, encoding="utf-8")
                 changed.append(environment)
     result = build(paths)

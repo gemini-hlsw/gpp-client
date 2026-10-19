@@ -7,12 +7,7 @@ from pathlib import Path
 import tomlkit
 import typer
 from pydantic import Field, SecretStr, field_validator
-from pydantic_settings import (
-    BaseSettings,
-    PydanticBaseSettingsSource,
-    SettingsConfigDict,
-    TomlConfigSettingsSource,
-)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from tomlkit.exceptions import TOMLKitError
 
 from gpp_client.constants import APP_NAME, CONFIG_FILE_NAME
@@ -35,13 +30,16 @@ class GPPSettings(BaseSettings):
 
     Notes
     -----
+    Each setting comes from the first of: an argument, the environment
+    variable, the ``.env`` file in the current folder, the default.
     Supported environment variables:
       - ``GPP_ENVIRONMENT``
       - ``GPP_TOKEN`` (production)
       - ``GPP_DEVELOPMENT_TOKEN``
       - ``GPP_DEBUG``
 
-    An empty value counts as unset.
+    An empty value counts as unset. The configuration file is the ``gpp``
+    command's: it holds the default environment for the command line only.
     """
 
     model_config = SettingsConfigDict(
@@ -76,14 +74,7 @@ class GPPSettings(BaseSettings):
             return value
         if isinstance(value, str) and not value.strip():
             return GPPEnvironment.PRODUCTION
-        try:
-            return GPPEnvironment(value)
-        except ValueError:
-            valid = ", ".join(env.label for env in GPPEnvironment)
-            # Not a ValueError, so pydantic raises it as is instead of wrapping it.
-            raise GPPClientError(
-                f"Unknown GPP environment {value!r}. Valid names: {valid}."
-            ) from None
+        return _environment_named(value)
 
     @property
     def resolved_token(self) -> str:
@@ -126,61 +117,6 @@ class GPPSettings(BaseSettings):
             update={_token_setting(self.environment): SecretStr(token)}
         )
 
-    @classmethod
-    def settings_customise_sources(
-        cls,
-        settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
-        env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
-    ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """
-        Customise the settings sources to ensure the expected precedence order.
-
-        Parameters
-        ----------
-        settings_cls : type[BaseSettings]
-            The settings class being constructed.
-        init_settings : PydanticBaseSettingsSource
-            Source for initialization parameters.
-        env_settings : PydanticBaseSettingsSource
-            Source for environment variables.
-        dotenv_settings : PydanticBaseSettingsSource
-            Source for dotenv file.
-        file_secret_settings : PydanticBaseSettingsSource
-            Source for file secrets.
-
-        Returns
-        -------
-        tuple[PydanticBaseSettingsSource, ...]
-            Ordered tuple of settings sources.
-
-        Notes
-        -----
-        The default precedence order is:
-            1. Initialization parameters
-            2. Environment variables
-            3. Dotenv file
-            4. App TOML file
-            5. File secrets
-        """
-        config_path = get_config_path()
-
-        toml_sources: tuple[PydanticBaseSettingsSource, ...] = ()
-        if config_path.is_file():
-            toml_sources = (
-                TomlConfigSettingsSource(settings_cls, toml_file=config_path.resolve()),
-            )
-
-        return (
-            init_settings,
-            env_settings,
-            dotenv_settings,
-            *toml_sources,
-            file_secret_settings,
-        )
-
 
 def get_config_path() -> Path:
     """
@@ -192,6 +128,45 @@ def get_config_path() -> Path:
         Path to the configuration file.
     """
     return Path(typer.get_app_dir(APP_NAME)) / CONFIG_FILE_NAME
+
+
+def get_default_environment() -> GPPEnvironment | None:
+    """
+    Return the default environment stored in the configuration file.
+
+    Only the ``gpp`` command reads it, after ``--env``, ``GPP_ENVIRONMENT``
+    and the ``.env`` file. An empty value counts as unset.
+
+    Returns
+    -------
+    GPPEnvironment | None
+        The stored environment, or ``None`` when the file or the key is
+        missing.
+
+    Raises
+    ------
+    GPPClientError
+        If the file is not valid TOML, its ``environment`` is not a single
+        name, or the name is not an environment.
+    """
+    path = get_config_path()
+    if not path.is_file():
+        return None
+    try:
+        document = tomlkit.parse(path.read_text(encoding="utf-8"))
+    except TOMLKitError as exc:
+        raise GPPClientError(
+            f"Cannot read {path}: it is not valid TOML ({exc})."
+        ) from None
+    value = document.get("environment")
+    if value is None or (isinstance(value, str) and not value.strip()):
+        return None
+    if not isinstance(value, str):
+        raise GPPClientError(
+            f"Cannot read {path}: environment must be a single name, "
+            'such as "development".'
+        )
+    return _environment_named(value)
 
 
 def set_default_environment(environment: GPPEnvironment | str) -> Path:
@@ -239,6 +214,20 @@ def set_default_environment(environment: GPPEnvironment | str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(tomlkit.dumps(document), encoding="utf-8")
     return path
+
+
+def _environment_named(value: object) -> GPPEnvironment:
+    """
+    Return the environment a name means, or raise naming the valid names.
+    """
+    try:
+        return GPPEnvironment(value)
+    except ValueError:
+        valid = ", ".join(env.label for env in GPPEnvironment)
+        # Not a ValueError, so pydantic raises it as is instead of wrapping it.
+        raise GPPClientError(
+            f"Unknown GPP environment {value!r}. Valid names: {valid}."
+        ) from None
 
 
 def _unwrap(secret: SecretStr | None) -> str | None:

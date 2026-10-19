@@ -128,6 +128,49 @@ def test_set_default_env_creates_config_used_by_later_commands(
     assert str(gpp_network.requests[-1].url) == f"{DEVELOPMENT_URL}/odb"
 
 
+def test_variable_beats_the_config_file(
+    runner, cli_app, gpp_network, config_path, monkeypatch
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text('environment = "development"\n')
+    monkeypatch.setenv("GPP_ENVIRONMENT", "production")
+    gpp_network.respond({"observation": None})
+
+    result = _read_workflow_state(runner, cli_app)
+
+    assert result.exit_code == 0, result.output
+    assert str(gpp_network.requests[-1].url) == f"{PRODUCTION_URL}/odb"
+
+
+def test_empty_config_value_means_production(
+    runner, cli_app, gpp_network, config_path
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text('environment = ""\n')
+    gpp_network.respond({"observation": None})
+
+    result = _read_workflow_state(runner, cli_app)
+
+    assert result.exit_code == 0, result.output
+    assert str(gpp_network.requests[-1].url) == f"{PRODUCTION_URL}/odb"
+
+
+def test_unknown_environment_in_config_fails_listing_valid_names(
+    runner, cli_app, gpp_network, config_path
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text('environment = "prodution"\n')
+
+    result = _read_workflow_state(runner, cli_app)
+
+    assert result.exit_code == 1
+    assert (
+        "Unknown GPP environment 'prodution'. Valid names: development, production."
+        in result.output
+    )
+    assert gpp_network.requests == []
+
+
 def test_set_default_env_keeps_other_settings(runner, cli_app, config_path) -> None:
     config_path.parent.mkdir(parents=True)
     config_path.write_text(

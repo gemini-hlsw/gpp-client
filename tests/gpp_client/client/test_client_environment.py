@@ -84,22 +84,10 @@ async def test_argument_beats_the_variable(gpp_transport, monkeypatch) -> None:
 
 
 @pytest.mark.asyncio
-async def test_config_file_chooses_the_environment(
+async def test_config_file_default_is_for_the_command_line_only(
     gpp_transport, _no_user_configuration
 ) -> None:
     _no_user_configuration.write_text('environment = "development"\n')
-
-    request = await _send_ping(gpp_transport, token="dev-token")
-
-    assert str(request.url) == f"{DEVELOPMENT_URL}/odb"
-
-
-@pytest.mark.asyncio
-async def test_variable_beats_the_config_file(
-    gpp_transport, monkeypatch, _no_user_configuration
-) -> None:
-    _no_user_configuration.write_text('environment = "development"\n')
-    monkeypatch.setenv("GPP_ENVIRONMENT", "production")
 
     request = await _send_ping(gpp_transport, token="prod-token")
 
@@ -107,39 +95,21 @@ async def test_variable_beats_the_config_file(
 
 
 @pytest.mark.asyncio
-async def test_empty_values_fall_through(
-    gpp_transport, monkeypatch, _no_user_configuration
-) -> None:
-    _no_user_configuration.write_text('environment = "development"\n')
+async def test_empty_values_fall_through(gpp_transport, monkeypatch) -> None:
     monkeypatch.setenv("GPP_ENVIRONMENT", "")
 
-    request = await _send_ping(gpp_transport, environment="", token="dev-token")
-
-    assert str(request.url) == f"{DEVELOPMENT_URL}/odb"
-
-
-@pytest.mark.asyncio
-async def test_empty_config_value_means_production(
-    gpp_transport, _no_user_configuration
-) -> None:
-    _no_user_configuration.write_text('environment = ""\n')
-
-    request = await _send_ping(gpp_transport, token="prod-token")
+    request = await _send_ping(gpp_transport, environment="", token="prod-token")
 
     assert str(request.url) == f"{PRODUCTION_URL}/odb"
 
 
-@pytest.mark.parametrize("source", ["argument", "variable", "config"])
-def test_unknown_environment_fails_listing_valid_names(
-    monkeypatch, _no_user_configuration, source
-) -> None:
+@pytest.mark.parametrize("source", ["argument", "variable"])
+def test_unknown_environment_fails_listing_valid_names(monkeypatch, source) -> None:
     kwargs = {}
     if source == "argument":
         kwargs["environment"] = "prodution"
-    elif source == "variable":
-        monkeypatch.setenv("GPP_ENVIRONMENT", "prodution")
     else:
-        _no_user_configuration.write_text('environment = "prodution"\n')
+        monkeypatch.setenv("GPP_ENVIRONMENT", "prodution")
 
     with pytest.raises(GPPClientError) as error:
         GPPClient(token="t", **kwargs)

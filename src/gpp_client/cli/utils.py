@@ -22,6 +22,7 @@ from click import get_current_context
 
 from gpp_client.cli import output
 from gpp_client.client import GPPClient
+from gpp_client.settings import GPPSettings, get_default_environment
 
 
 def async_command(func: Callable[..., Any]) -> Callable[..., None]:
@@ -62,8 +63,10 @@ def open_client() -> GPPClient:
     """
     Build a client for the environment the command was given with ``--env``.
 
-    Without ``--env`` the client chooses as it does in Python. The environment
-    is printed to stderr so piped output stays clean.
+    Without ``--env`` the environment comes from ``GPP_ENVIRONMENT`` or the
+    ``.env`` file as it does in Python, then from the default stored in the
+    configuration file, then production. The environment is printed to stderr
+    so piped output stays clean.
 
     Returns
     -------
@@ -72,6 +75,8 @@ def open_client() -> GPPClient:
     """
     ctx = get_current_context(silent=True)
     environment = getattr(getattr(ctx, "obj", None), "environment", None)
+    if environment is None and "environment" not in GPPSettings().model_fields_set:
+        environment = get_default_environment()
     client = GPPClient(environment=environment)
     output.environment(client.settings.environment)
     return client

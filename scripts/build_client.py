@@ -554,6 +554,24 @@ def _write_availability(
 _SCHEMA_DATE = re.compile(r"\A# schema-date: (\d{4}-\d{2}-\d{2})$", re.MULTILINE)
 
 
+def schema_body(text: str) -> str:
+    """
+    Return a schema file's text without its ``# schema-date`` line.
+
+    Parameters
+    ----------
+    text : str
+        The schema file's text.
+
+    Returns
+    -------
+    str
+        The schema itself, so two downloads of the same schema compare equal
+        whatever day they were made.
+    """
+    return _SCHEMA_DATE.sub("", text, count=1).lstrip("\n")
+
+
 def _write_bundled_schemas(paths: BuildPaths) -> None:
     """
     Write each environment schema's date and digest, for error messages.

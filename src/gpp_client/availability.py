@@ -36,7 +36,7 @@ def is_available(
     environment : GPPEnvironment | str | None, optional
         The environment to answer for. If not provided, the environment a
         ``GPPClient`` built without one would use: ``GPP_ENVIRONMENT``, then
-        the ``.env`` file, then ``config.toml``, then production.
+        the ``.env`` file, then production.
 
     Returns
     -------
@@ -77,7 +77,7 @@ def enum_values(
     environment : GPPEnvironment | str | None, optional
         The environment to answer for. If not provided, the environment a
         ``GPPClient`` built without one would use: ``GPP_ENVIRONMENT``, then
-        the ``.env`` file, then ``config.toml``, then production.
+        the ``.env`` file, then production.
 
     Returns
     -------

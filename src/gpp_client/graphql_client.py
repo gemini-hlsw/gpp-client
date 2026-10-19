@@ -5,6 +5,7 @@ GraphQL client behavior shared by every environment.
 __all__ = ["EnvironmentGraphQLClient", "GPPGraphQLClient"]
 
 from collections.abc import AsyncIterator
+from functools import cache
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -24,6 +25,7 @@ from gpp_client.generated.exceptions import (
     GraphQLClientHttpError,
 )
 from gpp_client.trimmed_operations import find_trimmed_operation
+from graphql import OperationDefinitionNode, parse
 
 if TYPE_CHECKING:
     from gpp_client.generated.async_base_client import AsyncBaseClient
@@ -39,9 +41,10 @@ class EnvironmentGraphQLClient(_GeneratedClient):
     """
     Mixin for a generated GraphQL client that targets one GPP environment.
 
-    It sends the environment's committed copy of every generated operation,
-    raises before sending one the environment lacks, passes any other document
-    through unchanged, and sends the client's headers with every HTTP request.
+    It sends the environment's committed copy of every generated operation
+    with only the variables that copy declares, raises before sending one the
+    environment lacks, passes any other document through unchanged, and sends
+    the client's headers with every HTTP request.
 
     Parameters
     ----------
@@ -62,9 +65,15 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         super().__init__(*args, **kwargs)
         self.environment = environment
 
-    def _document_to_send(self, query: str) -> str:
+    def _to_send(
+        self, query: str, variables: dict[str, Any] | None
+    ) -> tuple[str, dict[str, Any] | None]:
         """
-        Return the query as this environment receives it.
+        Return the query and variables as this environment receives them.
+
+        A generated operation goes out as the environment's committed copy,
+        with only the variables that copy still declares. Any other document
+        goes out unchanged.
 
         Raises
         ------
@@ -73,7 +82,7 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         """
         trimmed = find_trimmed_operation(self.environment, query)
         if trimmed is None:
-            return query
+            return query, variables
         if trimmed.document is None:
             raise NotAvailable(
                 trimmed.name,
@@ -81,7 +90,10 @@ class EnvironmentGraphQLClient(_GeneratedClient):
                 self.environment,
                 GPPEnvironment.where(lambda env: _sent(env, query) is not None),
             )
-        return trimmed.document
+        if trimmed.document != query and variables:
+            declared = _declared_variables(trimmed.document)
+            variables = {k: v for k, v in variables.items() if k in declared}
+        return trimmed.document, variables
 
     async def execute(
         self,
@@ -124,7 +136,7 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         # The generated client applies `headers` only to an http client it builds
         # itself; sending them per request leaves a caller's client untouched.
         kwargs["headers"] = {**(self.headers or {}), **(kwargs.get("headers") or {})}
-        query = self._document_to_send(query)
+        query, variables = self._to_send(query, variables)
         try:
             response = await super().execute(query, operation_name, variables, **kwargs)
         except httpx.HTTPError as exc:
@@ -204,7 +216,7 @@ class EnvironmentGraphQLClient(_GeneratedClient):
             If the connection fails or drops, or GPP sends a message the
             client cannot read.
         """
-        query = self._document_to_send(query)
+        query, variables = self._to_send(query, variables)
         try:
             async for data in super().execute_ws(
                 query, operation_name, variables, **kwargs
@@ -231,3 +243,13 @@ class GPPGraphQLClient(EnvironmentGraphQLClient, GraphQLClient):
 def _sent(environment: GPPEnvironment, query: str) -> str | None:
     trimmed = find_trimmed_operation(environment, query)
     return None if trimmed is None else trimmed.document
+
+
+@cache
+def _declared_variables(document: str) -> frozenset[str]:
+    return frozenset(
+        variable.variable.name.value
+        for definition in parse(document).definitions
+        if isinstance(definition, OperationDefinitionNode)
+        for variable in definition.variable_definitions
+    )

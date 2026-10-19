@@ -7,6 +7,7 @@ that environment's token from the environment variables.
 
 import os
 from collections.abc import Iterable, Mapping
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
 
@@ -69,6 +70,9 @@ def download_schemas(
     """
     Download environment schemas into ``<schemas_dir>/<environment>.graphql``.
 
+    Each file starts with ``# schema-date: YYYY-MM-DD``, the day (UTC) of the
+    download, which the build records for error messages.
+
     Parameters
     ----------
     schemas_dir : Path
@@ -101,11 +105,12 @@ def download_schemas(
 
     client = http_client or httpx.Client(timeout=TIMEOUT_SECONDS)
     schemas_dir.mkdir(parents=True, exist_ok=True)
+    header = f"# schema-date: {datetime.now(UTC).date().isoformat()}\n"
     written = []
     try:
         for env in environments:
             path = schema_file(schemas_dir, env)
-            path.write_text(_download(client, env, environ), encoding="utf-8")
+            path.write_text(header + _download(client, env, environ), encoding="utf-8")
             written.append(path)
     finally:
         if http_client is None:

@@ -47,12 +47,11 @@ class GPPClient:
     environment : GPPEnvironment | str, optional
         The GPP environment to connect to, ``"development"`` or ``"production"``.
         If not provided, ``GPP_ENVIRONMENT`` is used, then the ``.env`` file,
-        then ``environment`` in ``config.toml``, then production.
+        then production.
     token : str, optional
         GPP API token for the selected environment. If not provided, the token is
         read from that environment's variable (``GPP_TOKEN`` for production,
-        ``GPP_DEVELOPMENT_TOKEN`` for development), the ``.env`` file or
-        ``config.toml``.
+        ``GPP_DEVELOPMENT_TOKEN`` for development) or the ``.env`` file.
     debug : bool, optional
         Whether to enable debug logging for the client. If not provided, defaults to
         ``False``.

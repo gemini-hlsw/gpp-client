@@ -140,12 +140,20 @@ class SchemaTransport(httpx.MockTransport):
         The environment whose committed schema answers requests.
     nulls : bool, optional
         Whether every nullable field is null, rather than filled.
+    schema : GraphQLSchema | None, optional
+        The schema to answer from; the environment's committed schema by
+        default. A fixture build passes its own schema for the environment.
     """
 
-    def __init__(self, environment: GPPEnvironment, nulls: bool = False) -> None:
+    def __init__(
+        self,
+        environment: GPPEnvironment,
+        nulls: bool = False,
+        schema: GraphQLSchema | None = None,
+    ) -> None:
         super().__init__(self._handle)
         self.environment = environment
-        self.schema = SCHEMAS[environment]
+        self.schema = SCHEMAS[environment] if schema is None else schema
         self.nulls = nulls
         self.requests: list[httpx.Request] = []
 

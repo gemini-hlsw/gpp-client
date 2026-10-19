@@ -3,12 +3,13 @@ Tests for downloading environment schemas, with GPP mocked by an httpx transport
 """
 
 import json
+from datetime import UTC, datetime
 
 import httpx
 import pytest
 from typer.testing import CliRunner
 
-from graphql import build_schema, introspection_from_schema
+from graphql import build_schema, introspection_from_schema, print_schema
 from scripts import download_schema
 from scripts.download_schema import SchemaDownloadError, download_schemas
 
@@ -70,6 +71,18 @@ def test_downloads_development_and_production_anonymously_with_full_fidelity(tmp
     assert "@oneOf" in sdl
     assert '@specifiedBy(url: "https://example.com/email")' in sdl
     assert 'arcsec: Float @deprecated(reason: "Use degrees.")' in sdl
+
+
+def test_each_schema_starts_with_the_day_it_was_downloaded(tmp_path):
+    gpp = _FakeGPP()
+
+    written = download_schemas(tmp_path, http_client=gpp.client(), environ={})
+
+    today = datetime.now(UTC).date().isoformat()
+    for path in written:
+        first_line, body = path.read_text().split("\n", 1)
+        assert first_line == f"# schema-date: {today}"
+        assert body == print_schema(build_schema(FIXTURE_SDL)) + "\n"
 
 
 def test_falls_back_to_the_token_when_anonymous_introspection_is_refused(tmp_path):

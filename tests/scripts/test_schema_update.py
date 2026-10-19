@@ -3,6 +3,7 @@ Tests for the one-command schema update, with GPP mocked by an httpx transport.
 """
 
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -27,6 +28,13 @@ _OPERATION = "query getProgram { program { id name } }\n"
 
 def _printed(sdl: str) -> str:
     return print_schema(build_schema(sdl)) + "\n"
+
+
+def _dated(sdl: str) -> str:
+    """
+    Return ``sdl`` as a download writes it today.
+    """
+    return f"# schema-date: {datetime.now(UTC).date().isoformat()}\n" + _printed(sdl)
 
 
 def _introspection(sdl: str) -> dict:
@@ -88,9 +96,7 @@ def test_environment_whose_schema_does_not_build_is_held_and_named(tmp_path):
     )
 
     assert paths.schema_path("development").read_text() == _printed(_SCHEMA)
-    assert paths.schema_path("production").read_text() == _printed(
-        _SCHEMA_WITH_REFERENCE
-    )
+    assert paths.schema_path("production").read_text() == _dated(_SCHEMA_WITH_REFERENCE)
     assert result.held == ("development",)
     assert "Development: held" in result.summary
     assert "unknown type: Program" in result.summary
@@ -118,6 +124,23 @@ def test_second_run_without_a_gpp_change_changes_nothing(tmp_path):
     assert second.changed == ()
     assert {path: path.read_text() for path in before} == before
     assert "- Development: unchanged\n- Production: unchanged" in second.summary
+
+
+def test_a_later_day_without_a_gpp_change_keeps_the_committed_schema_date(tmp_path):
+    paths = _checkout(tmp_path)
+    dated_earlier = "# schema-date: 2026-01-01\n" + _printed(_SCHEMA)
+    paths.schema_path("production").write_text(dated_earlier)
+    gpp = _FakeGPP(
+        development=_introspection(_SCHEMA), production=_introspection(_SCHEMA)
+    )
+
+    result = schema_update(
+        paths, http_client=gpp.client(), environ={}, run_suite=lambda: 0
+    )
+
+    assert result.changed == ()
+    assert paths.schema_path("production").read_text() == dated_earlier
+    assert paths.schema_path("development").read_text() == _printed(_SCHEMA)
 
 
 def test_runs_the_suite_on_the_built_client_and_reports_a_failure(tmp_path):
@@ -153,7 +176,7 @@ def test_command_updates_the_checkout_in_the_current_directory(tmp_path, monkeyp
     result = CliRunner().invoke(schema_update_script.app, [])
 
     assert result.exit_code == 1, result.output
-    assert paths.schema_path("development").read_text() == _printed(
+    assert paths.schema_path("development").read_text() == _dated(
         _SCHEMA_WITH_REFERENCE
     )
     assert (paths.package_dir / "client.py").is_file()
