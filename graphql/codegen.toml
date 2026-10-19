@@ -9,10 +9,7 @@ plugins = [
     "custom_plugins.TolerantEnumsPlugin",
     "custom_plugins.CaptureOperationsPlugin",
     "custom_plugins.EnvironmentDefaultsPlugin",
-    # Listed so it runs before AvailabilityDocstringsPlugin; lazy_imports
-    # would otherwise append it last, above each method's docstring.
     "ariadne_codegen.contrib.client_forward_refs.ClientForwardRefsPlugin",
-    "custom_plugins.AvailabilityDocstringsPlugin",
 ]
 enable_custom_operations = true
 # DO NOT CHANGE: SCHEDULER NEEDS THIS ON

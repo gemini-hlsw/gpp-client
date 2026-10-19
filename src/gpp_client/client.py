@@ -5,10 +5,12 @@ This module provides the main entry point for interacting with GPP.
 __all__ = ["GPPClient"]
 
 import logging
-from typing import Any, Self
+from enum import Enum
+from typing import Any, Self, TypeVar
 
 import httpx
 
+from gpp_client import availability
 from gpp_client.domains import (
     AtomDomain,
     AttachmentDomain,
@@ -28,6 +30,8 @@ from gpp_client.settings import GPPSettings
 from gpp_client.urls import get_graphql_url, get_ws_url
 
 logger = logging.getLogger(__name__)
+
+_EnumT = TypeVar("_EnumT", bound=Enum)
 
 # httpx defaults to 5 seconds, which is too aggressive for slow GPP operations
 # such as cloning observations.
@@ -264,6 +268,52 @@ class GPPClient:
             The client's runtime settings.
         """
         return self._settings
+
+    def is_available(self, model: object, field: str) -> bool:
+        """
+        Return whether this environment has a generated model's field.
+
+        A field the environment lacks reads ``None``; this tells that apart
+        from a value GPP left null, without a network call.
+
+        Parameters
+        ----------
+        model : object
+            A generated result model, as an instance or a class.
+        field : str
+            The field's attribute name on the model.
+
+        Returns
+        -------
+        bool
+            ``True`` when the selected environment has the field.
+
+        Raises
+        ------
+        AttributeError
+            If the model has no such field.
+        """
+        return availability.is_available(model, field, self._settings.environment)
+
+    def enum_values(self, enum: type[_EnumT]) -> list[_EnumT]:
+        """
+        Return the members of a generated enum that this environment accepts.
+
+        A generated enum carries every environment's values; this gives the
+        ones the selected environment's schema declares, for a dropdown or a
+        check before sending.
+
+        Parameters
+        ----------
+        enum : type[Enum]
+            A generated enum, from ``gpp_client.generated.enums``.
+
+        Returns
+        -------
+        list[Enum]
+            The members the selected environment has, in declaration order.
+        """
+        return availability.enum_values(enum, self._settings.environment)
 
     def _enable_dev_logging(self) -> None:
         """

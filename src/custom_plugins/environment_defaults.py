@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ariadne_codegen.plugins.base import Plugin
 
-from custom_plugins.environments import environment_specific_selections
+from custom_plugins.environments import Selection, environment_specific_selections
 from graphql import (
     ExecutableDefinitionNode,
     FieldNode,
@@ -25,14 +25,13 @@ class DefaultsReport:
 
     Parameters
     ----------
-    expected : dict[int, str]
-        Each environment-specific selection by source offset, described as
-        ``Type.field in definition``.
+    expected : dict[int, Selection]
+        Each environment-specific selection by source offset.
     placed : list[tuple[int, str, str]]
         Each defaulted model field: source offset, class name, attribute name.
     """
 
-    expected: dict[int, str] = field(default_factory=dict)
+    expected: dict[int, Selection] = field(default_factory=dict)
     placed: list[tuple[int, str, str]] = field(default_factory=list)
 
 
@@ -51,10 +50,9 @@ class EnvironmentDefaultsPlugin(Plugin):
         self.report: DefaultsReport = sink if sink is not None else DefaultsReport()
         self._pending: dict[int, tuple[ast.AnnAssign, int]] = {}
         queries_path = config_dict["tool"]["ariadne-codegen"]["queries_path"]
-        for offset, selection in environment_specific_selections(
-            schema, Path(queries_path)
-        ).items():
-            self.report.expected[offset] = selection.description
+        self.report.expected.update(
+            environment_specific_selections(schema, Path(queries_path))
+        )
 
     def generate_result_field(
         self,

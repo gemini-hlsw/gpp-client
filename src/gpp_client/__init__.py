@@ -6,9 +6,10 @@ import importlib.metadata
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from .availability import is_available
     from .client import GPPClient
 
-__all__ = ["GPPClient", "__version__"]
+__all__ = ["GPPClient", "__version__", "is_available"]
 
 _FALLBACK_VERSION = "0.0.0"
 
@@ -43,5 +44,9 @@ def __getattr__(name: str) -> Any:
         from .client import GPPClient
 
         return GPPClient
+    if name == "is_available":
+        from .availability import is_available
+
+        return is_available
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

@@ -79,8 +79,6 @@ class GeminiCallForProposalsType(_TolerantEnum):
 
 
 class CloneSequenceMode(_TolerantEnum):
-    """Available on: development."""
-
     NONE = "NONE"
     ALL_STEPS = "ALL_STEPS"
     PENDING_STEPS = "PENDING_STEPS"
@@ -1164,7 +1162,6 @@ class ObservationValidationCode(_TolerantEnum):
     CONFIGURATION_WARNING = "CONFIGURATION_WARNING"
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
     CFP_WARNING = "CFP_WARNING"
-    "Available on: development."
 
 
 class ObserveClass(_TolerantEnum):

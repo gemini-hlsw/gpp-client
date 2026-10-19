@@ -24,10 +24,16 @@ from rich.markup import escape
 from custom_plugins.alias_names import ALIASES_KEY, AliasReport
 from custom_plugins.capture_operations import CAPTURE_KEY
 from custom_plugins.environment_defaults import DEFAULTS_KEY, DefaultsReport
-from custom_plugins.environments import USER_ENVIRONMENTS
+from custom_plugins.environments import USER_ENVIRONMENTS, environments
 from gpp_client.cli import output
 from gpp_client.trimmed_operations import lookup_trimmed_operation
-from graphql import GraphQLError, OperationDefinitionNode, build_ast_schema, parse
+from graphql import (
+    EnumTypeDefinitionNode,
+    GraphQLError,
+    OperationDefinitionNode,
+    build_ast_schema,
+    parse,
+)
 from scripts.schema_merge import (
     DEVELOPMENT,
     PRODUCTION,
@@ -215,6 +221,7 @@ def build(paths: BuildPaths) -> BuildResult:
     generated = generated_operations(operation_strs)
     _check_lookup_finds_sent_operations(paths, generated, trimmed)
     _write_trimmed(paths.package_dir, generated, trimmed)
+    _write_availability(paths.package_dir, defaults, merged)
     return BuildResult(
         merged_sdl=merged.sdl,
         conflicts=merged.conflicts,
@@ -316,8 +323,8 @@ def _check_environment_defaults(package_dir: Path, report: DefaultsReport) -> No
     }
     missing = sorted(
         {
-            description
-            for offset, description in report.expected.items()
+            selection.description
+            for offset, selection in report.expected.items()
             if offset not in defaulted
         }
     )
@@ -477,6 +484,42 @@ def _write_trimmed(
             f"OPERATIONS = {_dict_lines(operations)}\n",
             encoding="utf-8",
         )
+
+
+def _write_availability(
+    package_dir: Path, defaults: DefaultsReport, merged: MergedSchema
+) -> None:
+    """
+    Write the fields and enum values some environment lacks, with the
+    environments that have them.
+
+    ``is_available`` and ``enum_values`` read the table at runtime; anything
+    not listed is on every environment.
+    """
+    fields: dict[str, dict[str, tuple[str, ...]]] = {}
+    for offset, class_name, attribute in defaults.placed:
+        fields.setdefault(class_name, {})[attribute] = defaults.expected[
+            offset
+        ].environments
+    enum_values: dict[str, dict[str, tuple[str, ...]]] = {}
+    for definition in merged.document.definitions:
+        if not isinstance(definition, EnumTypeDefinitionNode):
+            continue
+        for value in definition.values or ():
+            envs = environments(value)
+            if envs is None:
+                envs = environments(definition)
+            if envs is not None:
+                enum_values.setdefault(definition.name.value, {})[value.name.value] = (
+                    envs
+                )
+    (package_dir / "availability.py").write_text(
+        '"""Fields and enum values some environment lacks. '
+        'Generated; do not edit."""\n\n'
+        f"FIELDS = {_dict_lines(sorted(fields.items()))}\n\n"
+        f"ENUM_VALUES = {_dict_lines(sorted(enum_values.items()))}\n",
+        encoding="utf-8",
+    )
 
 
 def _dict_lines(items) -> str:

@@ -2,7 +2,6 @@
 Tests for the client build pipeline, driven through ``build``.
 """
 
-import ast
 import asyncio
 import dataclasses
 import importlib
@@ -932,45 +931,8 @@ def test_environment_specific_field_without_none_default_fails_the_build(
     )
 
 
-def test_development_only_method_docstring_names_its_environments(tmp_path):
-    clone = "type Clone { id: ID! }\n"
-    paths = _write_schemas(
-        tmp_path,
-        operations="query cloneOne { clone { id } }\nquery count { count }",
-        development="type Query { clone: Clone count: Int }\n" + clone,
-        production="type Query { count: Int }",
-    )
-
-    build(paths)
-
-    client = _import_generated(paths).GraphQLClient
-    assert "Available on: development" in (client.clone_one.__doc__ or "")
-    assert "Available on" not in (client.count.__doc__ or "")
-
-
-def _attribute_docs(paths: BuildPaths) -> dict[tuple[str, str], str]:
-    """
-    Return each generated class attribute's docstring, as editors and Sphinx read it.
-    """
-    docs = {}
-    for module in paths.package_dir.glob("*.py"):
-        for node in ast.walk(ast.parse(module.read_text())):
-            if not isinstance(node, ast.ClassDef):
-                continue
-            for statement, following in zip(node.body, node.body[1:]):
-                target = getattr(statement, "target", None) or (
-                    statement.targets[0] if isinstance(statement, ast.Assign) else None
-                )
-                if (
-                    isinstance(target, ast.Name)
-                    and isinstance(following, ast.Expr)
-                    and isinstance(following.value, ast.Constant)
-                ):
-                    docs[node.name, target.id] = following.value.value
-    return docs
-
-
-def test_production_only_result_field_docstring_names_production(tmp_path):
+def test_generated_code_carries_no_availability_docstrings(tmp_path):
+    # ariadne-codegen warns at codegen time; the generated code says nothing.
     query = "type Query { program: Program }\n"
     paths = _write_schemas(
         tmp_path,
@@ -981,67 +943,8 @@ def test_production_only_result_field_docstring_names_production(tmp_path):
 
     build(paths)
 
-    docs = _attribute_docs(paths)
-    assert docs["GetProgramProgram", "reference"] == "Available on: production."
-    assert ("GetProgramProgram", "id") not in docs
-
-
-def test_input_field_and_enum_value_docstrings_name_their_environments(tmp_path):
-    query = "type Query { find(where: Where, code: Code): Int }\n"
-    paths = _write_schemas(
-        tmp_path,
-        operations="query find($where: Where, $code: Code) "
-        "{ find(where: $where, code: $code) }",
-        development=query + "input Where { name: String sort: String }\n"
-        "enum Code { OK WARN }",
-        production=query + "input Where { name: String }\nenum Code { OK }",
-    )
-
-    build(paths)
-
-    docs = _attribute_docs(paths)
-    assert docs["Where", "sort"] == "Available on: development."
-    assert docs["Code", "WARN"] == "Available on: development."
-    assert ("Where", "name") not in docs
-    assert ("Code", "OK") not in docs
-
-
-def test_availability_joins_the_schema_description_in_one_docstring(tmp_path):
-    query = "type Query { find(where: Where): Int }\n"
-    described = query + 'input Where { name: String\n "Sort key." sort: String }'
-    paths = _write_schemas(
-        tmp_path,
-        operations="query find($where: Where) { find(where: $where) }",
-        development=described,
-        production=query + "input Where { name: String }",
-    )
-
-    build(paths)
-
-    assert _attribute_docs(paths)["Where", "sort"] == (
-        "Available on: development.\n\nSort key."
-    )
-
-
-def test_environment_specific_enum_and_input_type_docstrings(tmp_path):
-    query = "type Query { find(where: Where): Int }\n"
-    development = (
-        "type Query { find(where: Where, mode: Mode): Int }\n"
-        "input Where { name: String }\nenum Mode { ALL NONE }"
-    )
-    paths = _write_schemas(
-        tmp_path,
-        operations="query find($where: Where) { find(where: $where) }",
-        development=development,
-        production=query + "input Where { name: String }",
-    )
-
-    build(paths)
-
-    enums = _import_generated(paths, "enums")
-    inputs = _import_generated(paths, "input_types")
-    assert enums.Mode.__doc__ == "Available on: development."
-    assert "Available on" not in (inputs.Where.__doc__ or "")
+    sources = [path.read_text() for path in paths.package_dir.rglob("*.py")]
+    assert not any("Available on" in source for source in sources)
 
 
 _FIND_OUTER = "query find($outer: Outer!) { find(outer: $outer) }"
