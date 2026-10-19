@@ -4,6 +4,7 @@ Tests for the client build pipeline, driven through ``build``.
 
 import asyncio
 import dataclasses
+import hashlib
 import importlib
 import json
 import pickle
@@ -88,7 +89,7 @@ def _sent_query(paths: BuildPaths, method: str, response_data: dict, **kwargs):
 
 
 def _trimmed(paths: BuildPaths, environment: str, query: str):
-    with use_generated_package(paths.package_dir.name, paths.schemas_dir.name):
+    with use_generated_package(paths.package_dir.name):
         return find_trimmed_operation(GPPEnvironment(environment), query)
 
 
@@ -1280,4 +1281,21 @@ def test_build_output_lists_every_alias_with_its_target(tmp_path):
         "- Alias `GmosImagingVariantInput` of `ImagingVariantInput` in "
         "`input_types`\n"
         "- Alias `GmosMode` of `Mode` in `enums`\n"
+    )
+
+
+def test_bundled_schemas_record_each_schema_date_and_digest(tmp_path):
+    base = "type Query { program: String }\n"
+    paths = _write_schemas(
+        tmp_path, development="# schema-date: 2024-05-06\n" + base, production=base
+    )
+
+    build(paths)
+
+    schemas = _import_generated(paths, "bundled_schemas").SCHEMAS
+    assert schemas["development"]["date"] == "2024-05-06"
+    assert schemas["production"]["date"] is None
+    assert (
+        schemas["development"]["sha256"]
+        == hashlib.sha256(("# schema-date: 2024-05-06\n" + base).encode()).hexdigest()
     )

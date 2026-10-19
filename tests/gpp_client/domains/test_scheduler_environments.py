@@ -15,7 +15,7 @@ from aiohttp import web
 
 from gpp_client import GPPClient
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import GPPEnvironmentError
+from gpp_client.exceptions import NotAvailable
 from tests.gpp_client.conftest import TEST_TOKEN, RecordingTransport
 from tests.gpp_client.subscription_server import SubscriptionServer, ws_url
 
@@ -98,7 +98,7 @@ async def test_a_rest_path_the_environment_lacks_raises_naming_it(
     environment, http_client, rest_url
 ):
     async with _client(environment, http_client, rest_url=rest_url) as client:
-        with pytest.raises(GPPEnvironmentError) as raised:
+        with pytest.raises(NotAvailable) as raised:
             await client.rest.get_atom_digests(["o-1"])
 
     assert raised.value.environment is environment

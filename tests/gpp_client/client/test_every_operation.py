@@ -17,7 +17,7 @@ from pydantic import BaseModel
 
 from gpp_client import GPPClient
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import EnvironmentItemKind, GPPEnvironmentError
+from gpp_client.exceptions import NotAvailable
 from gpp_client.generated.client import GraphQLClient
 from tests.gpp_client.conftest import TEST_TOKEN
 from tests.gpp_client.schema_transport import (
@@ -87,8 +87,7 @@ async def test_query_or_mutation_parses_on_every_environment(
         method = getattr(client.graphql, operation)
         try:
             await method(**_required_arguments(method))
-        except GPPEnvironmentError as error:
-            assert error.kind is EnvironmentItemKind.OPERATION
+        except NotAvailable:
             assert transport.requests == []
 
 
@@ -112,8 +111,7 @@ async def test_subscription_parses_on_every_environment(
                 events = [
                     event async for event in method(**_required_arguments(method))
                 ]
-            except GPPEnvironmentError as error:
-                assert error.kind is EnvironmentItemKind.OPERATION
+            except NotAvailable:
                 assert subscription_server.connections == 0
             else:
                 assert len(events) == 1

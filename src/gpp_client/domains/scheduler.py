@@ -423,10 +423,12 @@ class SchedulerDomain(BaseDomain):
 
         Raises
         ------
-        GPPEnvironmentError
+        NotAvailable
             If the selected environment does not serve the endpoint (404).
-        aiohttp.ClientError
-            For other HTTP errors, connection failures, or timeouts.
+        GPPHttpError
+            If GPP answers another error status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         body = await self._rest.get_visibility_changes(since)
         return parse_visibility_changes(body)

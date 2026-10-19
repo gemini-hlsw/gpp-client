@@ -4,16 +4,26 @@ GraphQL client behavior shared by every environment.
 
 __all__ = ["EnvironmentGraphQLClient", "GPPGraphQLClient"]
 
-from collections.abc import AsyncIterator, Callable
-from functools import lru_cache, partial
+from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any
 
-from gpp_client.document_checks import check_document
+import httpx
+from websockets.exceptions import WebSocketException
+
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import EnvironmentItemKind, GPPEnvironmentError
+from gpp_client.exceptions import (
+    GPPGraphQLError,
+    GPPHttpError,
+    GPPTransportError,
+    NotAvailable,
+)
 from gpp_client.generated.client import GraphQLClient
+from gpp_client.generated.exceptions import (
+    GraphQLClientError,
+    GraphQLClientGraphQLMultiError,
+    GraphQLClientHttpError,
+)
 from gpp_client.trimmed_operations import find_trimmed_operation
-from graphql import OperationDefinitionNode, parse
 
 if TYPE_CHECKING:
     from gpp_client.generated.async_base_client import AsyncBaseClient
@@ -29,9 +39,9 @@ class EnvironmentGraphQLClient(_GeneratedClient):
     """
     Mixin for a generated GraphQL client that targets one GPP environment.
 
-    It checks every call against the environment before sending, sends the
-    environment's trimmed copy of every generated operation, and sends the
-    client's headers with every HTTP request.
+    It sends the environment's committed copy of every generated operation,
+    raises before sending one the environment lacks, passes any other document
+    through unchanged, and sends the client's headers with every HTTP request.
 
     Parameters
     ----------
@@ -52,39 +62,26 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         super().__init__(*args, **kwargs)
         self.environment = environment
 
-    def _document_and_variables_to_send(
-        self, query: str, operation_name: str | None, variables: dict[str, Any] | None
-    ) -> tuple[str, dict[str, Any] | None]:
+    def _document_to_send(self, query: str) -> str:
         """
-        Return the query and variables to send, raising if the environment lacks
-        what they use.
+        Return the query as this environment receives it.
+
+        Raises
+        ------
+        NotAvailable
+            If the environment lacks the generated operation.
         """
         trimmed = find_trimmed_operation(self.environment, query)
-        document = query
-        sent: Callable[[GPPEnvironment], str | None] | None = None
-        if trimmed is not None:
-            if trimmed.document is None:
-                raise GPPEnvironmentError(
-                    trimmed.name,
-                    EnvironmentItemKind.OPERATION,
-                    self.environment,
-                    GPPEnvironment.where(lambda env: _sent(env, query) is not None),
-                )
-            document = trimmed.document
-            sent = partial(_sent, query=query)
-        check_document(
-            self.environment,
-            query,
-            operation_name,
-            self._convert_dict_to_json_serializable(variables or {}),
-            sent=sent,
-        )
-        if variables and document != query:
-            # Trimming drops the variables only the removed parts used; sending
-            # them anyway would rely on GPP ignoring undeclared variables.
-            declared = _declared_variables(document)
-            variables = {k: v for k, v in variables.items() if k in declared}
-        return document, variables
+        if trimmed is None:
+            return query
+        if trimmed.document is None:
+            raise NotAvailable(
+                trimmed.name,
+                "operation",
+                self.environment,
+                GPPEnvironment.where(lambda env: _sent(env, query) is not None),
+            )
+        return trimmed.document
 
     async def execute(
         self,
@@ -110,15 +107,66 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         Returns
         -------
         Any
-            The raw HTTP response.
+            The raw HTTP response. ``get_data`` returns its ``data`` member.
+
+        Raises
+        ------
+        NotAvailable
+            If the environment lacks the generated operation; nothing is sent.
+        GPPTransportError
+            If GPP could not be reached, or answered with something that is
+            not GraphQL.
+        GPPHttpError
+            If GPP answered with an HTTP error status.
+        GPPGraphQLError
+            If GPP returned errors for the request.
         """
         # The generated client applies `headers` only to an http client it builds
         # itself; sending them per request leaves a caller's client untouched.
         kwargs["headers"] = {**(self.headers or {}), **(kwargs.get("headers") or {})}
-        query, variables = self._document_and_variables_to_send(
-            query, operation_name, variables
-        )
-        return await super().execute(query, operation_name, variables, **kwargs)
+        query = self._document_to_send(query)
+        try:
+            response = await super().execute(query, operation_name, variables, **kwargs)
+        except httpx.HTTPError as exc:
+            raise GPPTransportError(
+                self.environment, "could not be reached", str(exc)
+            ) from exc
+        self.get_data(response)
+        return response
+
+    def get_data(self, response: Any) -> dict[str, Any]:
+        """
+        Return the ``data`` member of a GraphQL response.
+
+        Parameters
+        ----------
+        response : Any
+            The HTTP response ``execute`` returned.
+
+        Returns
+        -------
+        dict[str, Any]
+            The response's ``data``.
+
+        Raises
+        ------
+        GPPHttpError
+            If the response status is not a success.
+        GPPGraphQLError
+            If the response holds GraphQL errors.
+        GPPTransportError
+            If the response is not a GraphQL response.
+        """
+        try:
+            return super().get_data(response)
+        except GraphQLClientHttpError as exc:
+            raise GPPHttpError(self.environment, exc.status_code, response) from exc
+        except GraphQLClientGraphQLMultiError as exc:
+            raise GPPGraphQLError(self.environment, exc.errors, exc.data) from exc
+        except GraphQLClientError as exc:
+            raise GPPTransportError(
+                self.environment, "sent a response that is not GraphQL"
+            ) from exc
 
     async def execute_ws(
         self,
@@ -145,14 +193,33 @@ class EnvironmentGraphQLClient(_GeneratedClient):
         ------
         dict[str, Any]
             Each message's data.
+
+        Raises
+        ------
+        NotAvailable
+            If the environment lacks the subscription; nothing is sent.
+        GPPGraphQLError
+            If GPP answers the subscription with errors.
+        GPPTransportError
+            If the connection fails or drops, or GPP sends a message the
+            client cannot read.
         """
-        query, variables = self._document_and_variables_to_send(
-            query, operation_name, variables
-        )
-        async for data in super().execute_ws(
-            query, operation_name, variables, **kwargs
-        ):
-            yield data
+        query = self._document_to_send(query)
+        try:
+            async for data in super().execute_ws(
+                query, operation_name, variables, **kwargs
+            ):
+                yield data
+        except GraphQLClientGraphQLMultiError as exc:
+            raise GPPGraphQLError(self.environment, exc.errors, exc.data) from exc
+        except GraphQLClientError as exc:
+            raise GPPTransportError(
+                self.environment, "sent a message that is not GraphQL", str(exc)
+            ) from exc
+        except (OSError, WebSocketException) as exc:
+            raise GPPTransportError(
+                self.environment, "could not be reached", str(exc)
+            ) from exc
 
 
 class GPPGraphQLClient(EnvironmentGraphQLClient, GraphQLClient):
@@ -164,13 +231,3 @@ class GPPGraphQLClient(EnvironmentGraphQLClient, GraphQLClient):
 def _sent(environment: GPPEnvironment, query: str) -> str | None:
     trimmed = find_trimmed_operation(environment, query)
     return None if trimmed is None else trimmed.document
-
-
-@lru_cache(maxsize=256)
-def _declared_variables(document: str) -> frozenset[str]:
-    return frozenset(
-        variable.variable.name.value
-        for definition in parse(document).definitions
-        if isinstance(definition, OperationDefinitionNode)
-        for variable in definition.variable_definitions or ()
-    )

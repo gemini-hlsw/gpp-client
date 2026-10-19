@@ -13,11 +13,17 @@ class SubscriptionServer:
     A graphql-transport-ws server that answers each subscription with one event.
 
     The event's data is ``data`` itself, or ``data`` called with the
-    subscribe payload.
+    subscribe payload. With ``errors``, the server answers the subscription
+    with those GraphQL errors instead of an event.
     """
 
-    def __init__(self, data: dict | Callable[[dict], dict]) -> None:
+    def __init__(
+        self,
+        data: dict | Callable[[dict], dict],
+        errors: list[dict] | None = None,
+    ) -> None:
         self.data = data
+        self.errors = errors
         self.connections = 0
         self.subscribed: list[dict] = []
 
@@ -29,6 +35,14 @@ class SubscriptionServer:
         message = json.loads(await websocket.recv())
         assert message["type"] == "subscribe"
         self.subscribed.append(message["payload"])
+        if self.errors is not None:
+            await websocket.send(
+                json.dumps(
+                    {"id": message["id"], "type": "error", "payload": self.errors}
+                )
+            )
+            await websocket.wait_closed()
+            return
         data = self.data(message["payload"]) if callable(self.data) else self.data
         await websocket.send(
             json.dumps({"id": message["id"], "type": "next", "payload": {"data": data}})

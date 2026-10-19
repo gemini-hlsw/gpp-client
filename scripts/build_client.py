@@ -9,7 +9,9 @@ package. The merged schema is a build intermediate and is never committed.
 
 import ast
 import contextlib
+import hashlib
 import io
+import re
 import shutil
 import tempfile
 import tomllib
@@ -234,6 +236,7 @@ def build(paths: BuildPaths) -> BuildResult:
         )
     _write_trimmed(paths.package_dir, generated_operations(operation_strs), trimmed)
     _write_availability(paths.package_dir, defaults, merged)
+    _write_bundled_schemas(paths)
     return BuildResult(
         merged_sdl=merged.sdl,
         conflicts=merged.conflicts,
@@ -544,6 +547,35 @@ def _write_availability(
         'Generated; do not edit."""\n\n'
         f"FIELDS = {_dict_lines(sorted(fields.items()))}\n\n"
         f"ENUM_VALUES = {_dict_lines(sorted(enum_values.items()))}\n",
+        encoding="utf-8",
+    )
+
+
+_SCHEMA_DATE = re.compile(r"\A# schema-date: (\d{4}-\d{2}-\d{2})$", re.MULTILINE)
+
+
+def _write_bundled_schemas(paths: BuildPaths) -> None:
+    """
+    Write each environment schema's date and digest, for error messages.
+
+    The date is the ``# schema-date: YYYY-MM-DD`` comment on the schema's
+    first line, which the schema update writes when it introspects the
+    environment; a schema without one records ``None``. The digest is the
+    SHA-256 of the file, so a build from the same schemas writes the same
+    module.
+    """
+    schemas = {}
+    for environment in USER_ENVIRONMENTS:
+        text = paths.schema_path(environment).read_text(encoding="utf-8")
+        match = _SCHEMA_DATE.match(text)
+        schemas[environment] = {
+            "date": None if match is None else match.group(1),
+            "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        }
+    (paths.package_dir / "bundled_schemas.py").write_text(
+        '"""The date and digest of each environment schema the client was '
+        'built from. Generated; do not edit."""\n\n'
+        f"SCHEMAS = {_dict_lines(schemas.items())}\n",
         encoding="utf-8",
     )
 

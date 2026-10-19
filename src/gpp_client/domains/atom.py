@@ -36,10 +36,13 @@ class AtomDomain(BaseDomain):
 
         Raises
         ------
-        aiohttp.ClientResponseError
-            For HTTP errors.
-        ValueError
-            For invalid observation IDs.
+        NotAvailable
+            If the selected environment does not serve the endpoint (404).
+        GPPHttpError
+            If GPP rejects the observation IDs (400) or answers another error
+            status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         return await self._rest.get_atom_digests(
             observation_ids=observation_ids, accept_gzip=accept_gzip

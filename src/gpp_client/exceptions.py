@@ -9,23 +9,29 @@ __all__ = [
     "GPPResponseError",
     "GPPValidationError",
     "GPPRetryableError",
-    "EnvironmentItemKind",
-    "GPPEnvironmentError",
+    "GPPServerError",
+    "GPPGraphQLError",
+    "GPPHttpError",
+    "GPPTransportError",
+    "NotAvailable",
 ]
 
 from collections.abc import Iterable
-from enum import StrEnum
+from typing import Any
 
+from gpp_client.bundled_schemas import bundled_schema
 from gpp_client.environment import GPPEnvironment
+from gpp_client.generated.exceptions import (
+    GraphQLClientError,
+    GraphQLClientGraphQLError,
+    GraphQLClientGraphQLMultiError,
+    GraphQLClientHttpError,
+)
 
 
 class GPPError(Exception):
     """
-    Base class for the client's own errors.
-
-    Some calls raise other errors: errors GPP returns for a GraphQL call raise
-    the generated ``GraphQLClientError`` subclasses, and some REST and web
-    calls raise their HTTP library's errors or ``ValueError``.
+    Base class for every error the client raises.
     """
 
     pass
@@ -81,107 +87,181 @@ class GPPResponseError(GPPError):
         super().__init__(f"GPP returned {status_code}: {message}")
 
 
-class EnvironmentItemKind(StrEnum):
+class NotAvailable(GPPClientError):  # noqa: N818
     """
-    What a ``GPPEnvironmentError`` is about. Each value reads as it does in the
-    error message.
-    """
+    Raised when the selected environment lacks what a call needs.
 
-    OPERATION = "operation"
-    FIELD = "field"
-    ARGUMENT = "argument"
-    INPUT_FIELD = "input field"
-    ENUM_VALUE = "enum value"
-    REST_PATH = "REST path"
-
-
-class GPPEnvironmentError(GPPClientError):
-    """
-    Raised when a call does not fit the selected environment.
-
-    The call uses an operation, field, argument, input field or enum value the
-    environment lacks, or leaves unset an argument or input field it requires.
-    A REST path the environment does not serve raises it too, after GPP returns
-    404.
+    A generated operation the environment lacks raises it before anything is
+    sent; a REST path the environment does not serve raises it after GPP
+    answers 404.
 
     Parameters
     ----------
     item : str
-        The operation name, or the schema coordinate of the field
-        (``Type.field``), argument (``Type.field(arg:)``), input field
-        (``Input.field``) or enum value (``Enum.VALUE``), or the REST path.
-    kind : EnvironmentItemKind
-        What ``item`` is.
+        The operation name, or the REST path.
+    kind : str
+        What ``item`` is, as the message reads it: ``"operation"`` or
+        ``"REST path"``.
     environment : GPPEnvironment
         The selected environment.
-    available : Iterable[GPPEnvironment]
-        The environments where the call works as written. When none does, the
-        environments that have the item, or, when ``required``, those where it
-        may be left unset. Empty for a REST path.
-    required : bool, optional
-        Whether the environment requires the item and it was not set.
-    works_there : bool, optional
-        Whether the call as written works on the ``available`` environments.
-        When it doesn't, the message doesn't suggest selecting one of them.
+    available : Iterable[GPPEnvironment], optional
+        The environments that have the item, when known.
+    then : str, optional
+        The message's last sentence, saying what happened.
 
     Attributes
     ----------
     item : str
-    kind : EnvironmentItemKind
+    kind : str
     environment : GPPEnvironment
     available : tuple[GPPEnvironment, ...]
-    required : bool
-    works_there : bool
     """
 
     def __init__(
         self,
         item: str,
-        kind: EnvironmentItemKind,
+        kind: str,
         environment: GPPEnvironment,
-        available: Iterable[GPPEnvironment],
-        *,
-        required: bool = False,
-        works_there: bool = True,
+        available: Iterable[GPPEnvironment] = (),
+        then: str = "Nothing was sent.",
     ) -> None:
         self.item = item
         self.kind = kind
         self.environment = environment
         self.available = tuple(available)
-        self.required = required
-        self.works_there = works_there
-        super().__init__(self._message())
+        message = f"The {kind} {item} is not available on {environment.label}."
+        if self.available:
+            names = " or ".join(env.label for env in self.available)
+            message += f" It is available on {names}."
+        super().__init__(f"{message} {then}")
 
-    def _message(self) -> str:
-        selected = self.environment.label
-        if self.kind is EnvironmentItemKind.REST_PATH:
-            # Nothing tells which environment serves the path, so none is named.
-            return (
-                f"The REST path {self.item} is not served on {selected}: "
-                f"GPP answered 404. Check the path, or wait until {selected} "
-                "serves it."
-            )
-        names = " or ".join(env.label for env in self.available)
-        if self.required:
-            problem = f"The {self.kind} {self.item} is required on {selected}."
-            fix = "Set it"
-            where = ", where it is optional,"
-        else:
-            problem = f"The {self.kind} {self.item} is not available on {selected}." + (
-                f" It is available on {names}." if names else ""
-            )
-            fix = {
-                EnvironmentItemKind.OPERATION: "Do not call it",
-                EnvironmentItemKind.FIELD: "Do not select it",
-                EnvironmentItemKind.ENUM_VALUE: "Use another value",
-            }.get(self.kind, "Leave it unset")
-            fix = f"{fix} on {selected}" if names else fix
-            where = ""
-        if not names or not self.works_there:
-            return f"{problem} {fix}. Nothing was sent."
-        first = self.available[0].label
-        return (
-            f"{problem} {fix}, or select {first}{where} with "
-            f'GPPClient(environment="{first}") or GPP_ENVIRONMENT={first}. '
-            "Nothing was sent."
+
+class GPPServerError(GPPError):
+    """
+    Raised when GPP answers a request with an error, or cannot be reached.
+
+    The message names the environment and the schema the client was built
+    from, so an install that is behind the server reads differently from
+    wrong data or the wrong environment.
+
+    Parameters
+    ----------
+    environment : GPPEnvironment
+        The environment the request went to.
+    what : str
+        What went wrong, following the environment's name in the message,
+        such as ``"returned errors"``.
+    detail : str, optional
+        What GPP said, after a colon at the end of the message.
+
+    Attributes
+    ----------
+    environment : GPPEnvironment
+    schema : BundledSchema
+        The environment's schema as the client was built from it.
+    """
+
+    def __init__(
+        self, environment: GPPEnvironment, what: str, detail: str = ""
+    ) -> None:
+        self.environment = environment
+        self.schema = bundled_schema(environment)
+        message = (
+            f"GPP {environment.label} {what} (the client was built from {self.schema})"
         )
+        Exception.__init__(self, f"{message}: {detail}" if detail else message)
+
+    def __str__(self) -> str:
+        return self.args[0]
+
+
+class GPPGraphQLError(GPPServerError, GraphQLClientGraphQLMultiError):
+    """
+    Raised when GPP returns GraphQL errors for a call or a subscription.
+
+    Parameters
+    ----------
+    environment : GPPEnvironment
+        The environment that answered.
+    errors : list[GraphQLClientGraphQLError]
+        The errors GPP returned.
+    data : dict[str, Any] | None, optional
+        The ``data`` GPP returned next to the errors, for a partial response.
+
+    Attributes
+    ----------
+    errors : list[GraphQLClientGraphQLError]
+    data : dict[str, Any] | None
+    """
+
+    def __init__(
+        self,
+        environment: GPPEnvironment,
+        errors: list[GraphQLClientGraphQLError],
+        data: dict[str, Any] | None = None,
+    ) -> None:
+        self.errors = errors
+        self.data = data
+        super().__init__(
+            environment,
+            "returned errors",
+            "; ".join(error.message for error in errors),
+        )
+
+
+class GPPHttpError(GPPServerError, GraphQLClientHttpError):
+    """
+    Raised when GPP answers a request with an HTTP error status.
+
+    Parameters
+    ----------
+    environment : GPPEnvironment
+        The environment that answered.
+    status_code : int
+        The HTTP status.
+    response : Any
+        The HTTP response, as the HTTP library returned it.
+    detail : str, optional
+        The response body, when it says why.
+
+    Attributes
+    ----------
+    status_code : int
+    response : Any
+    """
+
+    def __init__(
+        self,
+        environment: GPPEnvironment,
+        status_code: int,
+        response: Any,
+        detail: str = "",
+    ) -> None:
+        self.status_code = status_code
+        self.response = response
+        super().__init__(environment, f"answered HTTP {status_code}", detail)
+
+
+class GPPTransportError(GPPServerError, GraphQLClientError):
+    """
+    Raised when GPP cannot be reached, or answers with something that is not
+    GraphQL.
+
+    A connection failure, a timeout, a dropped websocket, a response that is
+    not JSON, or a websocket message the client cannot read all raise it.
+    ``__cause__`` holds the HTTP or websocket library's own error.
+
+    Parameters
+    ----------
+    environment : GPPEnvironment
+        The environment the request went to.
+    what : str
+        What went wrong, following the environment's name in the message.
+    detail : str, optional
+        The library's own message.
+    """
+
+    def __init__(
+        self, environment: GPPEnvironment, what: str, detail: str = ""
+    ) -> None:
+        super().__init__(environment, what, detail)

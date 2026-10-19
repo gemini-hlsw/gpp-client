@@ -8,13 +8,16 @@ import asyncio
 import gzip
 import logging
 import ssl
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from typing import Any
 
 import aiohttp
 import certifi
 
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import EnvironmentItemKind, GPPEnvironmentError
+from gpp_client.exceptions import GPPHttpError, GPPTransportError, NotAvailable
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +42,9 @@ class RESTClient:
         GPP token to authenticate against the REST API. Same as GPPClient.
     timeout : float
         Timeout for REST API requests in seconds.
-    environment : GPPEnvironment | None, optional
-        The environment ``base_url`` belongs to. When given, a 404 from a REST
-        path raises ``GPPEnvironmentError`` naming it.
+    environment : GPPEnvironment, optional
+        The environment ``base_url`` belongs to; production by default, like
+        ``GPPClient``. Every error names it.
     """
 
     _DEFAULT_TIMEOUT = 30.0  # Seconds.
@@ -52,7 +55,7 @@ class RESTClient:
         gpp_token: str,
         timeout: float = _DEFAULT_TIMEOUT,
         *,
-        environment: GPPEnvironment | None = None,
+        environment: GPPEnvironment = GPPEnvironment.PRODUCTION,
     ) -> None:
         self.base_url = base_url
         self.gpp_token = gpp_token
@@ -128,27 +131,59 @@ class RESTClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
-    def _raise_if_not_served(self, response: aiohttp.ClientResponse) -> None:
+    @asynccontextmanager
+    async def _request(
+        self, method: str, path: str, **kwargs: Any
+    ) -> AsyncIterator[aiohttp.ClientResponse]:
         """
-        Raise ``GPPEnvironmentError`` when the environment does not serve the path.
+        Send a request to one of the client's fixed paths, raising for any
+        failure.
 
         Parameters
         ----------
-        response : aiohttp.ClientResponse
-            The response to a request for one of the client's fixed paths.
+        method : str
+            The HTTP method.
+        path : str
+            The path under ``base_url``.
+        **kwargs : Any
+            Arguments for the session's request.
+
+        Yields
+        ------
+        aiohttp.ClientResponse
+            A response with a success status.
 
         Raises
         ------
-        GPPEnvironmentError
-            If the response is a 404 and the client knows its environment.
+        NotAvailable
+            If GPP answered 404: the environment does not serve the path.
+        GPPHttpError
+            If GPP answered another error status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
-        if response.status == 404 and self.environment is not None:
-            raise GPPEnvironmentError(
-                response.url.path,
-                EnvironmentItemKind.REST_PATH,
-                self.environment,
-                (),
-            )
+        session = await self.get_session()
+        try:
+            async with session.request(method, path, **kwargs) as response:
+                if response.status == 404:
+                    raise NotAvailable(
+                        path,
+                        "REST path",
+                        self.environment,
+                        then="GPP answered 404.",
+                    )
+                if response.status >= 400:
+                    raise GPPHttpError(
+                        self.environment,
+                        response.status,
+                        response,
+                        await response.text(),
+                    )
+                yield response
+        except (aiohttp.ClientError, TimeoutError) as exc:
+            raise GPPTransportError(
+                self.environment, "could not be reached", str(exc)
+            ) from exc
 
     async def get_atom_digests(
         self, observation_ids: list[str], accept_gzip: bool = True
@@ -172,12 +207,13 @@ class RESTClient:
 
         Raises
         ------
-        GPPEnvironmentError
+        NotAvailable
             If the client's environment does not serve the path (404).
-        aiohttp.ClientResponseError
-            For HTTP error responses.
-        aiohttp.ClientError
-            For connection or timeout failures.
+        GPPHttpError
+            If GPP rejects the observation IDs (400) or answers another error
+            status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         headers = {}
         if accept_gzip:
@@ -186,26 +222,9 @@ class RESTClient:
         # Prepare body - one observation ID per line.
         body = "\n".join(observation_ids)
 
-        session = await self.get_session()
-
-        async with session.post(
-            "/scheduler/atoms", data=body, headers=headers
+        async with self._request(
+            "POST", "/scheduler/atoms", data=body, headers=headers
         ) as response:
-            self._raise_if_not_served(response)
-            # Handle different response codes
-            if response.status == 400:
-                error_text = await response.text()
-                raise ValueError(f"Invalid observation IDs: {error_text}")
-            elif response.status == 403:
-                raise aiohttp.ClientResponseError(
-                    request_info=response.request_info,
-                    history=response.history,
-                    status=response.status,
-                    message="Access forbidden - check authentication and permissions",
-                )
-            elif response.status != 200:
-                response.raise_for_status()
-
             # Handle gzipped response
             content_encoding = response.headers.get("Content-Encoding", "").lower()
             if content_encoding == "gzip":
@@ -235,22 +254,19 @@ class RESTClient:
 
         Raises
         ------
-        GPPEnvironmentError
+        NotAvailable
             If the client's environment does not serve the path (404).
-        aiohttp.ClientResponseError
-            For HTTP error responses.
-        aiohttp.ClientError
-            For connection or timeout failures.
+        GPPHttpError
+            If GPP answers an error status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         if since.tzinfo is None:
             since = since.replace(tzinfo=UTC)
 
-        session = await self.get_session()
-
-        async with session.get(
+        async with self._request(
+            "GET",
             "/scheduler/visibility-changes",
             params={"since": since.astimezone(UTC).isoformat()},
         ) as response:
-            self._raise_if_not_served(response)
-            response.raise_for_status()
             return await response.text()

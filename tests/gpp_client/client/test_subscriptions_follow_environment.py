@@ -10,7 +10,6 @@ with the real build.
 import pytest
 
 from gpp_client.environment import GPPEnvironment
-from gpp_client.exceptions import GPPEnvironmentError
 from tests.gpp_client.fixture_build import build_fixture
 from tests.gpp_client.subscription_server import SubscriptionServer, ws_url
 
@@ -77,54 +76,3 @@ async def test_development_subscribes_with_its_trimmed_copy(client_class):
     )
     assert events[0].program_edit.id == "p-1"
     assert events[0].program_edit.reference is None
-
-
-@pytest.mark.asyncio
-async def test_production_raises_before_connecting_for_a_development_only_subscription(
-    client_class,
-):
-    gpp = SubscriptionServer({"draftEdit": {"id": "p-1"}})
-    async with gpp() as server:
-        client = client_class(
-            environment=GPPEnvironment.PRODUCTION, ws_url=ws_url(server)
-        )
-        with pytest.raises(GPPEnvironmentError) as raised:
-            [event async for event in client.draft_edit()]
-
-    assert gpp.connections == 0
-    assert raised.value.item == "draftEdit"
-    assert raised.value.kind == "operation"
-    assert raised.value.available == (GPPEnvironment.DEVELOPMENT,)
-
-
-@pytest.mark.asyncio
-async def test_production_raises_before_connecting_for_a_development_only_argument(
-    client_class,
-):
-    gpp = SubscriptionServer({"programEdit": {"id": "p-1"}})
-    async with gpp() as server:
-        client = client_class(
-            environment=GPPEnvironment.PRODUCTION, ws_url=ws_url(server)
-        )
-        with pytest.raises(GPPEnvironmentError) as raised:
-            [event async for event in client.program_edit(include_deleted=True)]
-
-    assert gpp.connections == 0
-    assert raised.value.item == "Subscription.programEdit(includeDeleted:)"
-    assert raised.value.kind == "argument"
-
-
-@pytest.mark.asyncio
-async def test_production_does_not_subscribe_with_a_variable_its_copy_dropped(
-    client_class,
-):
-    gpp = SubscriptionServer({"programEdit": {"id": "p-1", "reference": "G-1"}})
-    async with gpp() as server:
-        client = client_class(
-            environment=GPPEnvironment.PRODUCTION, ws_url=ws_url(server)
-        )
-        events = [event async for event in client.program_edit(include_deleted=None)]
-
-    assert "variables" not in gpp.subscribed[0]
-    assert "includeDeleted" not in gpp.subscribed[0]["query"]
-    assert events[0].program_edit.reference == "G-1"

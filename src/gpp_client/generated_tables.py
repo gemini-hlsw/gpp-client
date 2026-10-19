@@ -1,18 +1,13 @@
 """
-Locate the generated package and the committed schemas.
+Locate the generated package.
 
-The runtime reads trimmed operations from ``gpp_client.generated`` and each
-environment's schema from ``gpp_client.schemas``. Tests build small clients
-from fixture schemas into other packages, and point the runtime at them with
+The runtime reads the trimmed operations, the availability table and the
+schema record from ``gpp_client.generated``. Tests build small clients from
+fixture schemas into other packages, and point the runtime at them with
 ``use_generated_package``.
 """
 
-__all__ = [
-    "generated_package",
-    "load_generated",
-    "schemas_package",
-    "use_generated_package",
-]
+__all__ = ["generated_package", "load_generated", "use_generated_package"]
 
 import importlib
 from collections.abc import Iterator
@@ -20,7 +15,6 @@ from contextlib import contextmanager
 from types import ModuleType
 
 _package = "gpp_client.generated"
-_schemas = "gpp_client.schemas"
 
 
 def generated_package() -> str:
@@ -33,18 +27,6 @@ def generated_package() -> str:
         The package name, ``"gpp_client.generated"`` outside tests.
     """
     return _package
-
-
-def schemas_package() -> str:
-    """
-    Return the package holding one ``<environment>.graphql`` per environment.
-
-    Returns
-    -------
-    str
-        The package name, ``"gpp_client.schemas"`` outside tests.
-    """
-    return _schemas
 
 
 def load_generated(module: str) -> ModuleType:
@@ -65,25 +47,23 @@ def load_generated(module: str) -> ModuleType:
 
 
 @contextmanager
-def use_generated_package(package: str, schemas: str) -> Iterator[None]:
+def use_generated_package(package: str) -> Iterator[None]:
     """
-    Read the tables and schemas from other packages while the block runs.
+    Read the tables from another package while the block runs.
 
     Parameters
     ----------
     package : str
         An importable package written by the build.
-    schemas : str
-        An importable package holding the schemas that build read.
 
     Yields
     ------
     None
     """
-    global _package, _schemas
-    previous = _package, _schemas
-    _package, _schemas = package, schemas
+    global _package
+    previous = _package
+    _package = package
     try:
         yield
     finally:
-        _package, _schemas = previous
+        _package = previous
