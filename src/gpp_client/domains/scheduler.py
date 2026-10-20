@@ -189,6 +189,25 @@ class SchedulerDomain(BaseDomain):
 
         return obs_atoms_mapping
 
+    @staticmethod
+    def _move_timing_windows_to_root(obs: dict[str, Any]) -> dict[str, Any]:
+        """
+        Move the timing windows out of the scheduling constraints to the root of
+        the observation, where the scheduler reads them.
+
+        Parameters
+        ----------
+        obs : dict[str, Any]
+            Dumped observation holding ``scheduling_constraints``.
+
+        Returns
+        -------
+        dict[str, Any]
+            The same observation, with ``timing_windows`` at its root.
+        """
+        obs["timing_windows"] = obs["scheduling_constraints"].pop("timing_windows")
+        return obs
+
     def _traverse_for_observation(
         self,
         node: dict[str, Any],
@@ -348,7 +367,9 @@ class SchedulerDomain(BaseDomain):
         obs_matches = await self._fetch_all_pages(
             fetch_observations_page, OBSERVATIONS_PAGE_SIZE
         )
-        obs_mapping = {o.id: o.model_dump() for o in obs_matches}
+        obs_mapping = {
+            o.id: self._move_timing_windows_to_root(o.model_dump()) for o in obs_matches
+        }
 
         # Get sequence for filtered observations (READY/ONGOING)
         if obs_mapping:

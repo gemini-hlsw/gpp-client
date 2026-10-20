@@ -91,24 +91,26 @@ subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
           }
         }
       }
-      timingWindows {
-        #...TimingWindowDetails
-        inclusion
-        startUtc
-        end {
-          __typename
-          ... on TimingWindowEndAt {
-            atUtc
-          }
-          ... on TimingWindowEndAfter {
-            after {
-              seconds
+      schedulingConstraints {
+        timingWindows {
+          #...TimingWindowDetails
+          inclusion
+          startUtc
+          end {
+            __typename
+            ... on TimingWindowEndAt {
+              atUtc
             }
-            repeat {
-              period {
+            ... on TimingWindowEndAfter {
+              after {
                 seconds
               }
-              times
+              repeat {
+                period {
+                  seconds
+                }
+                times
+              }
             }
           }
         }

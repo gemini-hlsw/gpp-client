@@ -3325,6 +3325,14 @@ type Mutation {
   deleteSequence(input: DeleteSequenceInput!): DeleteSequenceResult!
 
   """
+  Inserts the GCAL steps corresponding to one or more smart GCAL types (e.g.,
+  an arc and/or a flat) into a sequence.  The sequence is materialized first,
+  if necessary, and is afterwards considered customized.  Prior to execution a
+  PI may make this edit, afterwards it requires staff (or better) access.
+  """
+  insertSmartGcal(input: InsertSmartGcalInput!): InsertSmartGcalResult!
+
+  """
   Ties a specific user to an existing ProgramUser, which must not already be
   associated with any user.
   """
@@ -4749,6 +4757,60 @@ input DeleteSequenceInput {
   observationReference: ObservationReferenceLabel
 }
 
+"""
+Input parameters for inserting smart GCAL steps into a sequence.  Select one of
+`observationId` or `observationReference`.
+"""
+input InsertSmartGcalInput {
+  observationId: ObservationId
+  observationReference: ObservationReferenceLabel
+
+  """The sequence into which the steps are inserted.  Defaults to SCIENCE."""
+  sequenceType: SequenceType! = SCIENCE
+
+  """
+  The smart GCAL steps to insert, in order.  Each is replaced by the GCAL
+  step(s) that the smart GCAL lookup produces for the instrument configuration
+  of the reference step (see `referenceStepId`).  A type may be repeated, in
+  which case its GCAL step(s) are inserted once per occurrence (e.g.,
+  `[ARC, ARC]` inserts the arc(s) twice).  From 1 to 10 types may be given,
+  and it is an error if there is no smart GCAL mapping for any of them.
+  """
+  smartGcalTypes: [SmartGcalType!]!
+
+  """
+  The step whose instrument configuration the new steps are based upon, and
+  whose telescope offset they keep.  It may be any step of the sequence,
+  executed or not.  When not specified, the most recently executed (or
+  executing) step is used or, if nothing has been executed, the first step.
+  """
+  referenceStepId: StepId
+
+  """
+  The new steps are inserted immediately after this step.  If it has not
+  started executing, they join its atom.  Otherwise it must be the most
+  recently executed (or executing) step, which is the same as not specifying
+  it.
+  
+  When not specified, the new steps become the next steps to execute, placed
+  after the most recently executed (or executing) step.
+  """
+  afterStepId: StepId
+}
+
+"""The result of inserting smart GCAL steps into a sequence."""
+type InsertSmartGcalResult {
+  """The observation whose sequence was edited."""
+  observation: Observation!
+
+  """
+  Ids of the inserted GCAL steps, in the order in which they appear in the
+  sequence.  The last may be used as the `afterStepId` of a subsequent
+  `insertSmartGcal` in order to add more steps after these.
+  """
+  stepIds: [StepId!]!
+}
+
 """The result of deleting a materialized sequence."""
 type DeleteSequenceResult {
   """The observation whose sequence was deleted."""
@@ -5068,6 +5130,11 @@ type SmartGcal implements StepConfig {
 """Edit or create an observation's observing mode"""
 input ObservingModeInput @oneOf {
   """
+  Daytime calibration mode (staff only). It cannot be unset with a null value.
+  """
+  daytimeCalibration: DaytimeCalibrationInput
+
+  """
   An exchange instrument mode (Keck/Subaru). It cannot be unset with a null value.
   """
   exchange: ExchangeInput
@@ -5189,6 +5256,27 @@ type Visitor {
 
   """Optional total requested observing time."""
   totalRequestTime: TimeSpan
+}
+
+"""
+Daytime calibration mode: a staff-created calibration with no target, ITC,
+guide star or acquisition.  The instrument is the only parameter.  Every step
+of its sequence must be a DAY_CAL with guiding disabled.
+"""
+type DaytimeCalibration {
+  mode: DaytimeCalibrationObservingModeType!
+
+  """Instrument of the calibration."""
+  instrument: Instrument!
+}
+
+"""Daytime calibration mode input.  Staff only."""
+input DaytimeCalibrationInput {
+  """
+  Instrument of the calibration: FLAMINGOS2, GMOS_NORTH, GMOS_SOUTH, GNIRS
+  or IGRINS2.
+  """
+  instrument: Instrument!
 }
 
 input ExchangeInput {
@@ -7205,6 +7293,12 @@ enum ObservingModeType {
   ALOPEKE_WIDE_FIELD
 
   """
+  ObservingModeType DaytimeCalibration.  A staff-created calibration with no
+  target; the instrument is a parameter of the mode.
+  """
+  DAYTIME_CALIBRATION
+
+  """
   ObservingModeType ExchangeKeck.  Refers to an observation executed at the
   Keck observatory.
   """
@@ -7295,6 +7389,11 @@ enum VisitorObservingModeType {
 enum ExchangeObservingModeType {
   EXCHANGE_KECK
   EXCHANGE_SUBARU
+}
+
+"""DaytimeCalibrationObservingModeType"""
+enum DaytimeCalibrationObservingModeType {
+  DAYTIME_CALIBRATION
 }
 
 type ConstraintSet {
@@ -7911,6 +8010,11 @@ type Execution {
   timeCharge: CategorizedTime!
 
   """
+  When execution events were recorded for this observation, and when it completed.
+  """
+  timestamps: ExecutionTimestamps!
+
+  """
   Whether the science sequence has been materialized.
   This will happen when the sequence is executed or if it is manually edited.
   """
@@ -7936,6 +8040,38 @@ type Execution {
   `regenerate` set.
   """
   acquisitionSequenceIsCustomized: Boolean!
+}
+
+"""
+Execution event times for an observation, across all of its visits, derived
+from the events available in `Execution.events`.  Every event counts, slews
+included.  All fields are null until the first event is recorded.
+"""
+type ExecutionTimestamps {
+  """
+  Time of the observation's earliest execution event, across all of its
+  visits (ordinarily in the first visit).  The earliest and latest events
+  generally fall in different visits, so `lastEventTime - firstEventTime` is not
+  the execution time.
+  """
+  firstEventTime: Timestamp
+
+  """
+  Time of the observation's latest execution event, across all of its visits
+  (ordinarily in the most recent visit).  The earliest and latest events
+  generally fall in different visits, so `lastEventTime - firstEventTime` is not
+  the execution time.
+  """
+  lastEventTime: Timestamp
+
+  """
+  Time of the observation's last execution event, once its execution state is
+  `COMPLETED` or `DECLARED_COMPLETE`, and null otherwise.  Declaring an
+  observation complete does not itself set the time, so a declared-complete
+  observation without any events has no completion time.  The value follows
+  any events recorded after completion.
+  """
+  completionTime: Timestamp
 }
 
 """
@@ -15977,6 +16113,9 @@ type ObservingMode {
   """Mode type"""
   mode: ObservingModeType!
 
+  """Daytime calibration mode (staff only)."""
+  daytimeCalibration: DaytimeCalibration
+
   """Observations executed at Keck or Subaru."""
   exchange: Exchange
 
@@ -17462,6 +17601,9 @@ enum CalibrationRole {
 
   """CalibrationRole DaytimePinhole"""
   DAYTIME_PINHOLE
+
+  """CalibrationRole DaytimeCalibration"""
+  DAYTIME_CALIBRATION
 }
 
 """Target description"""
@@ -17592,8 +17734,10 @@ type TargetEnvironment {
 
   """First, perhaps only, science target in the asterism"""
   firstScienceTarget(
-    """Set to true to include deleted values"""
-    includeDeleted: Boolean! = false
+    """
+    Ignored: the first science target is always the first present asterism member.
+    """
+    includeDeleted: Boolean! = false @deprecated(reason: "Has no effect; deleted targets are never returned.")
   ): Target
 
   """

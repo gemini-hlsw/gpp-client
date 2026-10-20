@@ -53,12 +53,14 @@ from .enums import (
     Instrument,
     KeckInstrument,
     MosDispersionDirection,
+    ObservationPriority,
     ObservationValidationCode,
     ObservationWorkflowState,
     Observatory,
     ObservingModeType,
     ProgramType,
     ProposalStatus,
+    SchedulingMode,
     ScienceBand,
     ScienceMode,
     ScienceSubtype,
@@ -68,6 +70,7 @@ from .enums import (
     SubaruInstrument,
     TelluricTag,
     TimingWindowInclusion,
+    TooActivation,
     VisitorObservingModeType,
     WaterVapor,
 )
@@ -803,6 +806,7 @@ class ObservationCore(BaseModel):
     title: Any
     instrument: Optional[Instrument]
     calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
+    priority: ObservationPriority
 
 
 class ObservationCoreReference(BaseModel):
@@ -1573,6 +1577,61 @@ class ProgramCore(BaseModel):
     name: Optional[Any]
     existence: Existence
     description: Optional[Any]
+    too_activation_ceiling: Optional[TooActivation] = Field(
+        alias="tooActivationCeiling"
+    )
+
+
+class SchedulingConstraintsDetails(BaseModel):
+    too_activation: TooActivation = Field(alias="tooActivation")
+    scheduling_mode: SchedulingMode = Field(alias="schedulingMode")
+    timing_windows: list["SchedulingConstraintsDetailsTimingWindows"] = Field(
+        alias="timingWindows"
+    )
+
+
+class SchedulingConstraintsDetailsTimingWindows(BaseModel):
+    inclusion: TimingWindowInclusion
+    start_utc: Any = Field(alias="startUtc")
+    end: Optional[
+        Annotated[
+            Union[
+                "SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAt",
+                "SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfter",
+            ],
+            Field(discriminator="typename__"),
+        ]
+    ]
+
+
+class SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAt(BaseModel):
+    typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
+    at_utc: Any = Field(alias="atUtc")
+
+
+class SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfter(BaseModel):
+    typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
+    after: "SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterAfter"
+    repeat: Optional[
+        "SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterRepeat"
+    ]
+
+
+class SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterAfter(BaseModel):
+    seconds: Any
+
+
+class SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterRepeat(BaseModel):
+    period: (
+        "SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
+    )
+    times: Optional[Any]
+
+
+class SchedulingConstraintsDetailsTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
+    BaseModel
+):
+    seconds: Any
 
 
 class ScienceRequirementsDetails(BaseModel):
@@ -1742,6 +1801,9 @@ class ObservationDetails(ObservationCore):
     target_environment: "ObservationDetailsTargetEnvironment" = Field(
         alias="targetEnvironment"
     )
+    scheduling_constraints: "ObservationDetailsSchedulingConstraints" = Field(
+        alias="schedulingConstraints"
+    )
     execution: "ObservationDetailsExecution"
     attachments: list["ObservationDetailsAttachments"]
 
@@ -1771,6 +1833,10 @@ class ObservationDetailsTimingWindows(TimingWindowDetails):
 
 
 class ObservationDetailsTargetEnvironment(TargetEnvironmentDetails):
+    pass
+
+
+class ObservationDetailsSchedulingConstraints(SchedulingConstraintsDetails):
     pass
 
 
@@ -2112,6 +2178,7 @@ GmosSouthIfuDetails.model_rebuild()
 GmosSouthMosDetails.model_rebuild()
 ObservingModeDetails.model_rebuild()
 ProgramCore.model_rebuild()
+SchedulingConstraintsDetails.model_rebuild()
 ScienceRequirementsDetails.model_rebuild()
 SiderealTargetDetails.model_rebuild()
 TargetEnvironmentDetails.model_rebuild()

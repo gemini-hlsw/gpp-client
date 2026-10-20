@@ -44,13 +44,18 @@ def _programs_page(ids: list[str], has_more: bool) -> GetSchedulerPrograms:
 
 def _observations_page(ids: list[str], has_more: bool) -> SimpleNamespace:
     """
-    Build an observations page whose matches dump to their ID only.
+    Build an observations page whose matches dump to their ID and empty
+    scheduling constraints.
     """
     return SimpleNamespace(
         observations=SimpleNamespace(
             matches=[
                 SimpleNamespace(
-                    id=obs_id, model_dump=lambda obs_id=obs_id: {"id": obs_id}
+                    id=obs_id,
+                    model_dump=lambda obs_id=obs_id: {
+                        "id": obs_id,
+                        "scheduling_constraints": {"timing_windows": []},
+                    },
                 )
                 for obs_id in ids
             ],
@@ -150,6 +155,60 @@ async def test_get_all_skips_excluded_programs(
     )
 
     get_programs.assert_awaited_once_with(programs_list=["p-1", "p-2"])
+
+
+@pytest.mark.asyncio
+async def test_get_all_moves_timing_windows_to_observation_root(
+    scheduler_domain: SchedulerDomain,
+    rest,
+    graphql,
+    mocker,
+) -> None:
+    """
+    Ensure each observation carries its scheduling-constraint timing windows at
+    the root, replacing the deprecated root field.
+    """
+    window = {"inclusion": "INCLUDE", "start_utc": "2026-10-19 00:00:00", "end": None}
+    observation = SimpleNamespace(
+        id="o-1",
+        model_dump=lambda: {
+            "id": "o-1",
+            "timing_windows": [],
+            "scheduling_constraints": {
+                "too_activation": "NONE",
+                "timing_windows": [window],
+            },
+        },
+    )
+    program = {
+        "id": "p-1",
+        "all_group_elements": [
+            {"parent_group_id": None, "observation": {"id": "o-1"}},
+        ],
+    }
+    mocker.patch.object(
+        scheduler_domain,
+        "get_programs",
+        mocker.AsyncMock(
+            return_value=mocker.Mock(
+                model_dump=mocker.Mock(
+                    return_value={"programs": {"matches": [program]}}
+                )
+            )
+        ),
+    )
+    graphql.get_observations = mocker.AsyncMock(
+        return_value=SimpleNamespace(
+            observations=SimpleNamespace(matches=[observation], has_more=False)
+        )
+    )
+    rest.get_atom_digests = mocker.AsyncMock(return_value="")
+
+    result = await scheduler_domain.get_all(programs_list=["p-1"])
+
+    obs = result[0]["root"]["elements"][0]["observation"]
+    assert obs["timing_windows"] == [window]
+    assert obs["scheduling_constraints"] == {"too_activation": "NONE"}
 
 
 @pytest.mark.asyncio
