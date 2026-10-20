@@ -2469,6 +2469,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -2496,6 +2497,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -2597,6 +2601,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -3479,6 +3511,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -3506,6 +3539,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -3607,6 +3643,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -4490,6 +4554,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -4517,6 +4582,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -4618,6 +4686,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -5503,6 +5599,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -5530,6 +5627,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -5631,6 +5731,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -6519,6 +6647,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -6546,6 +6675,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -6647,6 +6779,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -7535,6 +7695,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -7562,6 +7723,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -7663,6 +7827,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -8548,6 +8740,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -8575,6 +8768,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -8676,6 +8872,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -9561,6 +9785,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -9588,6 +9813,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -9689,6 +9917,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -10574,6 +10830,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -10601,6 +10858,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -10702,6 +10962,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -11588,6 +11876,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -11615,6 +11904,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -11716,6 +12008,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -12609,6 +12929,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ObservationDetails on Observation {
@@ -12636,6 +12957,9 @@ class GraphQLClient(AsyncBaseClient):
               }
               targetEnvironment {
                 ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
               }
               execution {
                 digest {
@@ -12737,6 +13061,34 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
             }
 
             fragment ScienceRequirementsDetails on ScienceRequirements {
@@ -13403,6 +13755,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13504,6 +13857,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13606,6 +13960,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13727,6 +14082,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13819,6 +14175,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13885,6 +14242,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -13976,6 +14334,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -14070,6 +14429,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -14177,6 +14537,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment ProgramDetail on Program {
@@ -14407,7 +14768,7 @@ class GraphQLClient(AsyncBaseClient):
         query = gql("""
             query GetSchedulerAllProgramsId($today: Date) {
               programs(
-                WHERE: {activeEnd: {GTE: $today}, activeStart: {LT: $today}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
+                WHERE: {activeEnd: {GTE: $today}, activeStart: {LT: $today}, status: {EQ: ACTIVE}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
               ) {
                 matches {
                   reference {
@@ -14518,23 +14879,25 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
-                  timingWindows {
-                    inclusion
-                    startUtc
-                    end {
-                      __typename
-                      ... on TimingWindowEndAt {
-                        atUtc
-                      }
-                      ... on TimingWindowEndAfter {
-                        after {
-                          seconds
+                  schedulingConstraints {
+                    timingWindows {
+                      inclusion
+                      startUtc
+                      end {
+                        __typename
+                        ... on TimingWindowEndAt {
+                          atUtc
                         }
-                        repeat {
-                          period {
+                        ... on TimingWindowEndAfter {
+                          after {
                             seconds
                           }
-                          times
+                          repeat {
+                            period {
+                              seconds
+                            }
+                            times
+                          }
                         }
                       }
                     }
@@ -14605,6 +14968,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -14707,6 +15071,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -14811,6 +15176,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -14915,6 +15281,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -15023,6 +15390,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -15128,6 +15496,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -15408,6 +15777,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -15515,6 +15885,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment SiderealTargetDetails on Sidereal {
@@ -15678,6 +16049,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ProgramCore on Program {
@@ -15685,6 +16057,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment WorkflowCore on CalculatedObservationWorkflow {
@@ -15738,6 +16111,7 @@ class GraphQLClient(AsyncBaseClient):
               title
               instrument
               calibrationRole
+              priority
             }
 
             fragment ProgramCore on Program {
@@ -15745,6 +16119,7 @@ class GraphQLClient(AsyncBaseClient):
               name
               existence
               description
+              tooActivationCeiling
             }
 
             fragment WorkflowCore on CalculatedObservationWorkflow {

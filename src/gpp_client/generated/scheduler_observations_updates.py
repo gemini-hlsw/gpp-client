@@ -48,9 +48,9 @@ class SchedulerObservationsUpdatesObscalcUpdateValue(BaseModel):
     constraint_set: "SchedulerObservationsUpdatesObscalcUpdateValueConstraintSet" = (
         Field(alias="constraintSet")
     )
-    timing_windows: list[
-        "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindows"
-    ] = Field(alias="timingWindows")
+    scheduling_constraints: "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraints" = Field(
+        alias="schedulingConstraints"
+    )
     instrument: Optional[Instrument]
 
 
@@ -221,51 +221,59 @@ class SchedulerObservationsUpdatesObscalcUpdateValueConstraintSetElevationRangeH
     max_hours: Any = Field(alias="maxHours")
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindows(BaseModel):
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraints(BaseModel):
+    timing_windows: list[
+        "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindows"
+    ] = Field(alias="timingWindows")
+
+
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindows(
+    BaseModel
+):
     inclusion: TimingWindowInclusion
     start_utc: Any = Field(alias="startUtc")
     end: Optional[
         Annotated[
             Union[
-                "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAt",
-                "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfter",
+                "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAt",
+                "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter",
             ],
             Field(discriminator="typename__"),
         ]
     ]
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAt(
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAt(
     BaseModel
 ):
     typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
     at_utc: Any = Field(alias="atUtc")
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfter(
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter(
     BaseModel
 ):
     typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
-    after: "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterAfter"
+    after: "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter"
     repeat: Optional[
-        "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterRepeat"
+        "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat"
     ]
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterAfter(
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter(
     BaseModel
 ):
     seconds: Any
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterRepeat(
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat(
     BaseModel
 ):
-    period: "SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
+    period: "SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
     times: Optional[Any]
 
 
-class SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
+class SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
     BaseModel
 ):
     seconds: Any
@@ -286,6 +294,7 @@ SchedulerObservationsUpdatesObscalcUpdateValueTargetEnvironmentAsterismSidereal.
 SchedulerObservationsUpdatesObscalcUpdateValueTargetEnvironmentExplicitBase.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValueConstraintSet.model_rebuild()
 SchedulerObservationsUpdatesObscalcUpdateValueConstraintSetElevationRange.model_rebuild()
-SchedulerObservationsUpdatesObscalcUpdateValueTimingWindows.model_rebuild()
-SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfter.model_rebuild()
-SchedulerObservationsUpdatesObscalcUpdateValueTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()
+SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraints.model_rebuild()
+SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindows.model_rebuild()
+SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter.model_rebuild()
+SchedulerObservationsUpdatesObscalcUpdateValueSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat.model_rebuild()

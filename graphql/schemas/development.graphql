@@ -5273,8 +5273,8 @@ type DaytimeCalibration {
 """Daytime calibration mode input.  Staff only."""
 input DaytimeCalibrationInput {
   """
-  Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,
-  GNIRS or IGRINS2.
+  Instrument of the calibration: FLAMINGOS2, GMOS_NORTH, GMOS_SOUTH, GNIRS
+  or IGRINS2.
   """
   instrument: Instrument!
 }
