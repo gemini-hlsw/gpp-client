@@ -14765,7 +14765,7 @@ class GraphQLClient(AsyncBaseClient):
         query = gql("""
             query GetSchedulerAllProgramsId($today: Date) {
               programs(
-                WHERE: {activeEnd: {GTE: $today}, activeStart: {LT: $today}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
+                WHERE: {activeEnd: {GTE: $today}, activeStart: {LT: $today}, status: {EQ: ACTIVE}, OR: [{proposalStatus: {EQ: ACCEPTED}}, {type: {IN: [CALIBRATION, ENGINEERING]}}]}
               ) {
                 matches {
                   reference {
@@ -14876,23 +14876,25 @@ class GraphQLClient(AsyncBaseClient):
                       }
                     }
                   }
-                  timingWindows {
-                    inclusion
-                    startUtc
-                    end {
-                      __typename
-                      ... on TimingWindowEndAt {
-                        atUtc
-                      }
-                      ... on TimingWindowEndAfter {
-                        after {
-                          seconds
+                  schedulingConstraints {
+                    timingWindows {
+                      inclusion
+                      startUtc
+                      end {
+                        __typename
+                        ... on TimingWindowEndAt {
+                          atUtc
                         }
-                        repeat {
-                          period {
+                        ... on TimingWindowEndAfter {
+                          after {
                             seconds
                           }
-                          times
+                          repeat {
+                            period {
+                              seconds
+                            }
+                            times
+                          }
                         }
                       }
                     }
