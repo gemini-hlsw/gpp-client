@@ -2117,7 +2117,7 @@ class DaytimeCalibrationInput(BaseModel):
     """Daytime calibration mode input.  Staff only."""
 
     instrument: Instrument
-    "Instrument of the calibration: FLAMINGOS2, GMOS_NORTH, GMOS_SOUTH, GNIRS\nor IGRINS2."
+    "Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,\nGNIRS or IGRINS2."
 
 
 class ExchangeInput(BaseModel):
