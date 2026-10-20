@@ -101,7 +101,6 @@ from .custom_typing_fields import (
     DatasetReferenceGraphQLField,
     DatasetSelectResultGraphQLField,
     DateIntervalGraphQLField,
-    DaytimeCalibrationGraphQLField,
     DeclinationArcGraphQLField,
     DeclinationGraphQLField,
     DeclineTooTriggerResultGraphQLField,
@@ -126,8 +125,8 @@ from .custom_typing_fields import (
     ExecutionEventGraphQLField,
     ExecutionEventSelectResultGraphQLField,
     ExecutionGraphQLField,
-    ExecutionTimestampsGraphQLField,
     ExposureTimeModeGraphQLField,
+    ExposureTimeViolationGraphQLField,
     FastTurnaroundGraphQLField,
     Flamingos2AtomGraphQLField,
     Flamingos2CustomMaskGraphQLField,
@@ -244,7 +243,6 @@ from .custom_typing_fields import (
     ImagingConfigOptionGraphQLField,
     ImagingScienceRequirementsGraphQLField,
     ImagingVariantGraphQLField,
-    InsertSmartGcalResultGraphQLField,
     InterleavedImagingVariantGraphQLField,
     ItcFlamingos2ImagingGraphQLField,
     ItcFlamingos2ImagingResultSetGraphQLField,
@@ -371,7 +369,6 @@ from .custom_typing_fields import (
     StepEventGraphQLField,
     StepRecordGraphQLField,
     StepRecordSelectResultGraphQLField,
-    StepViolationGraphQLField,
     SubaruCallPropertiesGraphQLField,
     SubaruProgramReferenceGraphQLField,
     SubaruProposalTypeGraphQLField,
@@ -3534,29 +3531,6 @@ class DateIntervalFields(GraphQLField):
         return self
 
 
-class DaytimeCalibrationFields(GraphQLField):
-    """Daytime calibration mode: a staff-created calibration with no target, ITC,
-    guide star or acquisition.  The instrument is the only parameter.  Every step
-    of its sequence must be a DAY_CAL with guiding disabled."""
-
-    mode: "DaytimeCalibrationGraphQLField" = DaytimeCalibrationGraphQLField("mode")
-    instrument: "DaytimeCalibrationGraphQLField" = DaytimeCalibrationGraphQLField(
-        "instrument"
-    )
-    "Instrument of the calibration."
-
-    def fields(
-        self, *subfields: DaytimeCalibrationGraphQLField
-    ) -> "DaytimeCalibrationFields":
-        """Subfields should come from the DaytimeCalibrationFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "DaytimeCalibrationFields":
-        self._alias = alias
-        return self
-
-
 class DeclinationFields(GraphQLField):
     dms: "DeclinationGraphQLField" = DeclinationGraphQLField("dms")
     "Declination in DD:MM:SS.SS format"
@@ -4137,11 +4111,6 @@ class ExecutionFields(GraphQLField):
         """Time accounting calculation for this observation."""
         return CategorizedTimeFields("timeCharge")
 
-    @classmethod
-    def timestamps(cls) -> "ExecutionTimestampsFields":
-        """When execution events were recorded for this observation, and when it completed."""
-        return ExecutionTimestampsFields("timestamps")
-
     science_sequence_is_materialized: "ExecutionGraphQLField" = ExecutionGraphQLField(
         "scienceSequenceIsMaterialized"
     )
@@ -4168,7 +4137,6 @@ class ExecutionFields(GraphQLField):
             "CategorizedTimeFields",
             "DatasetSelectResultFields",
             "ExecutionEventSelectResultFields",
-            "ExecutionTimestampsFields",
             "ObservationTimeEstimateFields",
             "VisitSelectResultFields",
         ],
@@ -4380,36 +4348,6 @@ class ExecutionEventSelectResultFields(GraphQLField):
         return self
 
 
-class ExecutionTimestampsFields(GraphQLField):
-    """Execution event times for an observation, across all of its visits, derived
-    from the events available in `Execution.events`.  Every event counts, slews
-    included.  All fields are null until the first event is recorded."""
-
-    first_event_time: "ExecutionTimestampsGraphQLField" = (
-        ExecutionTimestampsGraphQLField("firstEventTime")
-    )
-    "Time of the observation's earliest execution event, across all of its\nvisits (ordinarily in the first visit).  The earliest and latest events\ngenerally fall in different visits, so `lastEventTime - firstEventTime` is not\nthe execution time."
-    last_event_time: "ExecutionTimestampsGraphQLField" = (
-        ExecutionTimestampsGraphQLField("lastEventTime")
-    )
-    "Time of the observation's latest execution event, across all of its visits\n(ordinarily in the most recent visit).  The earliest and latest events\ngenerally fall in different visits, so `lastEventTime - firstEventTime` is not\nthe execution time."
-    completion_time: "ExecutionTimestampsGraphQLField" = (
-        ExecutionTimestampsGraphQLField("completionTime")
-    )
-    "Time of the observation's last execution event, once its execution state is\n`COMPLETED` or `DECLARED_COMPLETE`, and null otherwise.  Declaring an\nobservation complete does not itself set the time, so a declared-complete\nobservation without any events has no completion time.  The value follows\nany events recorded after completion."
-
-    def fields(
-        self, *subfields: ExecutionTimestampsGraphQLField
-    ) -> "ExecutionTimestampsFields":
-        """Subfields should come from the ExecutionTimestampsFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "ExecutionTimestampsFields":
-        self._alias = alias
-        return self
-
-
 class ExposureTimeModeFields(GraphQLField):
     """Exposure time mode, either signal to noise or fixed"""
 
@@ -4436,6 +4374,30 @@ class ExposureTimeModeFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ExposureTimeModeFields":
+        self._alias = alias
+        return self
+
+
+class ExposureTimeViolationFields(GraphQLField):
+    """An exposure rule that steps of a sequence violate."""
+
+    severity: "ExposureTimeViolationGraphQLField" = ExposureTimeViolationGraphQLField(
+        "severity"
+    )
+    "Whether the violation is an error or a warning."
+    description: "ExposureTimeViolationGraphQLField" = (
+        ExposureTimeViolationGraphQLField("description")
+    )
+    'The rule violated, as a sentence, e.g. "Exposure times for GMOS North must be\nat least 1 s."'
+
+    def fields(
+        self, *subfields: ExposureTimeViolationGraphQLField
+    ) -> "ExposureTimeViolationFields":
+        """Subfields should come from the ExposureTimeViolationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ExposureTimeViolationFields":
         self._alias = alias
         return self
 
@@ -5640,7 +5602,7 @@ class GhostIfuFields(GraphQLField):
 
 class GhostIfuMappingFields(GraphQLField):
     """Describes how the target(s) and sky position (if any) are mapped to the GHOST
-    IFUs.  If the `mappingType` is `NO_TARGET` then all other fields will be
+    IFUs.  If the `mappingType` is `NONSIDEREAL` then all other fields will be
     `null`.  Otherwise, there will be a single non-null field that corresponds to
     the `mappingType`."""
 
@@ -9671,31 +9633,6 @@ class ImagingVariantFields(GraphQLField):
         return self
 
 
-class InsertSmartGcalResultFields(GraphQLField):
-    """The result of inserting smart GCAL steps into a sequence."""
-
-    @classmethod
-    def observation(cls) -> "ObservationFields":
-        """The observation whose sequence was edited."""
-        return ObservationFields("observation")
-
-    step_ids: "InsertSmartGcalResultGraphQLField" = InsertSmartGcalResultGraphQLField(
-        "stepIds"
-    )
-    "Ids of the inserted GCAL steps, in the order in which they appear in the\nsequence.  The last may be used as the `afterStepId` of a subsequent\n`insertSmartGcal` in order to add more steps after these."
-
-    def fields(
-        self, *subfields: Union[InsertSmartGcalResultGraphQLField, "ObservationFields"]
-    ) -> "InsertSmartGcalResultFields":
-        """Subfields should come from the InsertSmartGcalResultFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "InsertSmartGcalResultFields":
-        self._alias = alias
-        return self
-
-
 class InterleavedImagingVariantFields(GraphQLField):
     """When doing "interleaved" filter imaging, the sequence repeatedly alternates
     through the set of filters in use."""
@@ -10093,12 +10030,6 @@ class ItcResultFields(GraphQLField):
     coadds: "ItcResultGraphQLField" = ItcResultGraphQLField("coadds")
     "Coadds per frame.  Chosen by the ITC in signal-to-noise mode, the requested\nvalue in time-and-count mode, and 1 for instruments without coadds."
     exposure_count: "ItcResultGraphQLField" = ItcResultGraphQLField("exposureCount")
-    gnirs_read_mode: "ItcResultGraphQLField" = ItcResultGraphQLField("gnirsReadMode")
-    "The GNIRS read mode this result was computed with: chosen by the ITC in\nsignal-to-noise mode, the requested one in time-and-count mode. Null for\nother instruments and for results stored before this field was implemented."
-    flamingos_2_read_mode: "ItcResultGraphQLField" = ItcResultGraphQLField(
-        "flamingos2ReadMode"
-    )
-    "The Flamingos 2 read mode this result was computed with: chosen by the ITC in\nsignal-to-noise mode, the requested one in time-and-count mode. Null for\nother instruments and for results stored before this field was implemented."
 
     @classmethod
     def signal_to_noise_at(cls) -> "SignalToNoiseAtFields":
@@ -10941,11 +10872,6 @@ class ObservingModeFields(GraphQLField):
     "Mode type"
 
     @classmethod
-    def daytime_calibration(cls) -> "DaytimeCalibrationFields":
-        """Daytime calibration mode (staff only)."""
-        return DaytimeCalibrationFields("daytimeCalibration")
-
-    @classmethod
     def exchange(cls) -> "ExchangeFields":
         """Observations executed at Keck or Subaru."""
         return ExchangeFields("exchange")
@@ -11043,7 +10969,6 @@ class ObservingModeFields(GraphQLField):
         self,
         *subfields: Union[
             ObservingModeGraphQLField,
-            "DaytimeCalibrationFields",
             "ExchangeFields",
             "Flamingos2ImagingFields",
             "Flamingos2LongSlitFields",
@@ -12762,22 +12687,19 @@ class SequenceDigestFields(GraphQLField):
     "Execution state for the sequence. Note, acquisition sequences are never\n'COMPLETED'.  The execution state for the observation as a whole is that of\nthe science sequence."
 
     @classmethod
-    def step_violations(cls) -> "StepViolationFields":
-        """The problems found in steps of the sequence, errors first, each reported once
-        however many steps share it.  They include the instrument's exposure rules
-        that steps violate (CONFIGURATION_ERROR for exposures that cannot be taken,
-        EXPOSURE_TIME_WARNING for those merely outside the recommended range, which
-        are reported for science steps alone) and, for GMOS spectroscopy, science
-        steps exposed to second order light (SECOND_ORDER_OVERLAP)."""
-        return StepViolationFields("stepViolations")
+    def exposure_time_violations(cls) -> "ExposureTimeViolationFields":
+        """The instrument's exposure rules that steps of the sequence violate, errors
+        first.  Errors are exposures that cannot be taken; warnings are those merely
+        outside the recommended range, and are reported for science steps alone."""
+        return ExposureTimeViolationFields("exposureTimeViolations")
 
     def fields(
         self,
         *subfields: Union[
             SequenceDigestGraphQLField,
             "CategorizedTimeFields",
+            "ExposureTimeViolationFields",
             "StepDigestsFields",
-            "StepViolationFields",
             "TelescopeConfigFields",
         ],
     ) -> "SequenceDigestFields":
@@ -14001,25 +13923,6 @@ class StepRecordSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "StepRecordSelectResultFields":
-        self._alias = alias
-        return self
-
-
-class StepViolationFields(GraphQLField):
-    """A problem found in steps of a sequence, as the observation validation it
-    raises."""
-
-    code: "StepViolationGraphQLField" = StepViolationGraphQLField("code")
-    "The validation code reported for the problem."
-    message: "StepViolationGraphQLField" = StepViolationGraphQLField("message")
-    'The problem as a sentence, e.g. "Exposure times for GMOS North must be at\nleast 1 s."'
-
-    def fields(self, *subfields: StepViolationGraphQLField) -> "StepViolationFields":
-        """Subfields should come from the StepViolationFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "StepViolationFields":
         self._alias = alias
         return self
 
