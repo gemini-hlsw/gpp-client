@@ -475,6 +475,7 @@ class CloudExtinctionPreset(str, Enum):
 class ObservingModeType(str, Enum):
     ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
     ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
     EXCHANGE_KECK = "EXCHANGE_KECK"
     EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
     FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
@@ -513,6 +514,10 @@ class VisitorObservingModeType(str, Enum):
 class ExchangeObservingModeType(str, Enum):
     EXCHANGE_KECK = "EXCHANGE_KECK"
     EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
+
+
+class DaytimeCalibrationObservingModeType(str, Enum):
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
 
 
 class CoolStarTemperature(str, Enum):
@@ -1501,6 +1506,7 @@ class CalibrationRole(str, Enum):
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
     TELLURIC = "TELLURIC"
     DAYTIME_PINHOLE = "DAYTIME_PINHOLE"
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
 
 
 class ArcType(str, Enum):

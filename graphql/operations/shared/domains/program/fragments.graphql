@@ -3,6 +3,7 @@ fragment ProgramCore on Program {
   name
   existence
   description
+  tooActivationCeiling
 }
 
 fragment ProgramDetail on Program {
