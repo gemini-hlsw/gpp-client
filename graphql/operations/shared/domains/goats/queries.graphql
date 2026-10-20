@@ -26,6 +26,9 @@ query GetGOATSObservations($programId: ProgramId!) {
       }
       instrument
       calibrationRole
+      configurationRequests {
+        id
+      }
       title
       subtitle
       constraintSet {

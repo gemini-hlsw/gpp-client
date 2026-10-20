@@ -62,6 +62,9 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
     reference: Optional["GetGOATSObservationsObservationsMatchesReference"]
     instrument: Optional[Instrument]
     calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
+    configuration_requests: list[
+        "GetGOATSObservationsObservationsMatchesConfigurationRequests"
+    ] = Field(alias="configurationRequests")
     title: Any
     subtitle: Optional[Any]
     constraint_set: "GetGOATSObservationsObservationsMatchesConstraintSet" = Field(
@@ -95,6 +98,10 @@ class GetGOATSObservationsObservationsMatches(BaseModel):
 
 class GetGOATSObservationsObservationsMatchesReference(BaseModel):
     label: Any
+
+
+class GetGOATSObservationsObservationsMatchesConfigurationRequests(BaseModel):
+    id: Any
 
 
 class GetGOATSObservationsObservationsMatchesConstraintSet(BaseModel):

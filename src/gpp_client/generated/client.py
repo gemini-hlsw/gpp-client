@@ -703,6 +703,9 @@ class GraphQLClient(AsyncBaseClient):
                   }
                   instrument
                   calibrationRole
+                  configurationRequests {
+                    id
+                  }
                   title
                   subtitle
                   constraintSet {
