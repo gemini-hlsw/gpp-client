@@ -128,7 +128,6 @@ from .custom_typing_fields import (
     ExecutionGraphQLField,
     ExecutionTimestampsGraphQLField,
     ExposureTimeModeGraphQLField,
-    ExposureTimeViolationGraphQLField,
     FastTurnaroundGraphQLField,
     Flamingos2AtomGraphQLField,
     Flamingos2CustomMaskGraphQLField,
@@ -372,6 +371,7 @@ from .custom_typing_fields import (
     StepEventGraphQLField,
     StepRecordGraphQLField,
     StepRecordSelectResultGraphQLField,
+    StepViolationGraphQLField,
     SubaruCallPropertiesGraphQLField,
     SubaruProgramReferenceGraphQLField,
     SubaruProposalTypeGraphQLField,
@@ -4440,30 +4440,6 @@ class ExposureTimeModeFields(GraphQLField):
         return self
 
 
-class ExposureTimeViolationFields(GraphQLField):
-    """An exposure rule that steps of a sequence violate."""
-
-    severity: "ExposureTimeViolationGraphQLField" = ExposureTimeViolationGraphQLField(
-        "severity"
-    )
-    "Whether the violation is an error or a warning."
-    description: "ExposureTimeViolationGraphQLField" = (
-        ExposureTimeViolationGraphQLField("description")
-    )
-    'The rule violated, as a sentence, e.g. "Exposure times for GMOS North must be\nat least 1 s."'
-
-    def fields(
-        self, *subfields: ExposureTimeViolationGraphQLField
-    ) -> "ExposureTimeViolationFields":
-        """Subfields should come from the ExposureTimeViolationFields class"""
-        self._subfields.extend(subfields)
-        return self
-
-    def alias(self, alias: str) -> "ExposureTimeViolationFields":
-        self._alias = alias
-        return self
-
-
 class FastTurnaroundFields(GraphQLField):
     """Proposal properties for Fast Turnaround CallForProposals."""
 
@@ -5664,7 +5640,7 @@ class GhostIfuFields(GraphQLField):
 
 class GhostIfuMappingFields(GraphQLField):
     """Describes how the target(s) and sky position (if any) are mapped to the GHOST
-    IFUs.  If the `mappingType` is `NONSIDEREAL` then all other fields will be
+    IFUs.  If the `mappingType` is `NO_TARGET` then all other fields will be
     `null`.  Otherwise, there will be a single non-null field that corresponds to
     the `mappingType`."""
 
@@ -10117,6 +10093,12 @@ class ItcResultFields(GraphQLField):
     coadds: "ItcResultGraphQLField" = ItcResultGraphQLField("coadds")
     "Coadds per frame.  Chosen by the ITC in signal-to-noise mode, the requested\nvalue in time-and-count mode, and 1 for instruments without coadds."
     exposure_count: "ItcResultGraphQLField" = ItcResultGraphQLField("exposureCount")
+    gnirs_read_mode: "ItcResultGraphQLField" = ItcResultGraphQLField("gnirsReadMode")
+    "The GNIRS read mode this result was computed with: chosen by the ITC in\nsignal-to-noise mode, the requested one in time-and-count mode. Null for\nother instruments and for results stored before this field was implemented."
+    flamingos_2_read_mode: "ItcResultGraphQLField" = ItcResultGraphQLField(
+        "flamingos2ReadMode"
+    )
+    "The Flamingos 2 read mode this result was computed with: chosen by the ITC in\nsignal-to-noise mode, the requested one in time-and-count mode. Null for\nother instruments and for results stored before this field was implemented."
 
     @classmethod
     def signal_to_noise_at(cls) -> "SignalToNoiseAtFields":
@@ -12780,19 +12762,22 @@ class SequenceDigestFields(GraphQLField):
     "Execution state for the sequence. Note, acquisition sequences are never\n'COMPLETED'.  The execution state for the observation as a whole is that of\nthe science sequence."
 
     @classmethod
-    def exposure_time_violations(cls) -> "ExposureTimeViolationFields":
-        """The instrument's exposure rules that steps of the sequence violate, errors
-        first.  Errors are exposures that cannot be taken; warnings are those merely
-        outside the recommended range, and are reported for science steps alone."""
-        return ExposureTimeViolationFields("exposureTimeViolations")
+    def step_violations(cls) -> "StepViolationFields":
+        """The problems found in steps of the sequence, errors first, each reported once
+        however many steps share it.  They include the instrument's exposure rules
+        that steps violate (CONFIGURATION_ERROR for exposures that cannot be taken,
+        EXPOSURE_TIME_WARNING for those merely outside the recommended range, which
+        are reported for science steps alone) and, for GMOS spectroscopy, science
+        steps exposed to second order light (SECOND_ORDER_OVERLAP)."""
+        return StepViolationFields("stepViolations")
 
     def fields(
         self,
         *subfields: Union[
             SequenceDigestGraphQLField,
             "CategorizedTimeFields",
-            "ExposureTimeViolationFields",
             "StepDigestsFields",
+            "StepViolationFields",
             "TelescopeConfigFields",
         ],
     ) -> "SequenceDigestFields":
@@ -14016,6 +14001,25 @@ class StepRecordSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "StepRecordSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class StepViolationFields(GraphQLField):
+    """A problem found in steps of a sequence, as the observation validation it
+    raises."""
+
+    code: "StepViolationGraphQLField" = StepViolationGraphQLField("code")
+    "The validation code reported for the problem."
+    message: "StepViolationGraphQLField" = StepViolationGraphQLField("message")
+    'The problem as a sentence, e.g. "Exposure times for GMOS North must be at\nleast 1 s."'
+
+    def fields(self, *subfields: StepViolationGraphQLField) -> "StepViolationFields":
+        """Subfields should come from the StepViolationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "StepViolationFields":
         self._alias = alias
         return self
 

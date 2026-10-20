@@ -686,6 +686,7 @@ class GhostIfuMappingType(str, Enum):
     TARGET_PLUS_SKY = "TARGET_PLUS_SKY"
     SKY_PLUS_TARGET = "SKY_PLUS_TARGET"
     DUAL_TARGET = "DUAL_TARGET"
+    NO_TARGET = "NO_TARGET"
 
 
 class SlitOffsetMode(str, Enum):
@@ -1165,6 +1166,7 @@ class ObservationValidationCode(str, Enum):
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
     CFP_WARNING = "CFP_WARNING"
     EXPOSURE_TIME_WARNING = "EXPOSURE_TIME_WARNING"
+    SECOND_ORDER_OVERLAP = "SECOND_ORDER_OVERLAP"
 
 
 class ObserveClass(str, Enum):
@@ -1256,11 +1258,6 @@ class SequenceCommand(str, Enum):
     PAUSE = "PAUSE"
     START = "START"
     STOP = "STOP"
-
-
-class ExposureTimeViolationSeverity(str, Enum):
-    ERROR = "ERROR"
-    WARNING = "WARNING"
 
 
 class SequenceType(str, Enum):

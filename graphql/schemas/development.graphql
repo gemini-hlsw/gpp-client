@@ -9668,11 +9668,14 @@ enum GhostIfuMappingType {
   TARGET_PLUS_SKY
   SKY_PLUS_TARGET
   DUAL_TARGET
+
+  """No IFU is assigned a target. Used by daytime calibrations."""
+  NO_TARGET
 }
 
 """
 Describes how the target(s) and sky position (if any) are mapped to the GHOST
-IFUs.  If the `mappingType` is `NONSIDEREAL` then all other fields will be
+IFUs.  If the `mappingType` is `NO_TARGET` then all other fields will be
 `null`.  Otherwise, there will be a single non-null field that corresponds to
 the `mappingType`.
 """
@@ -13556,6 +13559,20 @@ type ItcResult {
   """
   coadds: PosInt!
   exposureCount: NonNegInt! @deprecated(reason: "Use `frameCount`.")
+
+  """
+  The GNIRS read mode this result was computed with: chosen by the ITC in
+  signal-to-noise mode, the requested one in time-and-count mode. Null for
+  other instruments and for results stored before this field was implemented.
+  """
+  gnirsReadMode: GnirsReadMode
+
+  """
+  The Flamingos 2 read mode this result was computed with: chosen by the ITC in
+  signal-to-noise mode, the requested one in time-and-count mode. Null for
+  other instruments and for results stored before this field was implemented.
+  """
+  flamingos2ReadMode: Flamingos2ReadMode
   signalToNoiseAt: SignalToNoiseAt
 
   """
@@ -14935,6 +14952,13 @@ enum ObservationValidationCode {
   CONFIGURATION_ERROR instead.
   """
   EXPOSURE_TIME_WARNING
+
+  """
+  Second order light overlaps the first order spectrum of a GMOS spectroscopy
+  step: the step's wavelength coverage reaches past twice the shortest
+  wavelength reaching the grating.  An order-blocking filter may be needed.
+  """
+  SECOND_ORDER_OVERLAP
 }
 
 """
@@ -16400,35 +16424,29 @@ type SequenceDigest {
   executionState: ExecutionState!
 
   """
-  The instrument's exposure rules that steps of the sequence violate, errors
-  first.  Errors are exposures that cannot be taken; warnings are those merely
-  outside the recommended range, and are reported for science steps alone.
+  The problems found in steps of the sequence, errors first, each reported once
+  however many steps share it.  They include the instrument's exposure rules
+  that steps violate (CONFIGURATION_ERROR for exposures that cannot be taken,
+  EXPOSURE_TIME_WARNING for those merely outside the recommended range, which
+  are reported for science steps alone) and, for GMOS spectroscopy, science
+  steps exposed to second order light (SECOND_ORDER_OVERLAP).
   """
-  exposureTimeViolations: [ExposureTimeViolation!]!
+  stepViolations: [StepViolation!]!
 }
 
 """
-Whether an exposure time violation means the exposure cannot be taken, or is
-merely outside the recommended range.
+A problem found in steps of a sequence, as the observation validation it
+raises.
 """
-enum ExposureTimeViolationSeverity {
-  """The exposure cannot be taken."""
-  ERROR
-
-  """The exposure is outside the recommended range."""
-  WARNING
-}
-
-"""An exposure rule that steps of a sequence violate."""
-type ExposureTimeViolation {
-  """Whether the violation is an error or a warning."""
-  severity: ExposureTimeViolationSeverity!
+type StepViolation {
+  """The validation code reported for the problem."""
+  code: ObservationValidationCode!
 
   """
-  The rule violated, as a sentence, e.g. "Exposure times for GMOS North must be
-  at least 1 s."
+  The problem as a sentence, e.g. "Exposure times for GMOS North must be at
+  least 1 s."
   """
-  description: String!
+  message: String!
 }
 
 """

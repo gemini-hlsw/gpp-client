@@ -2303,8 +2303,8 @@ class SequenceDigestGraphQLField(GraphQLField):
         return self
 
 
-class ExposureTimeViolationGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ExposureTimeViolationGraphQLField":
+class StepViolationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "StepViolationGraphQLField":
         self._alias = alias
         return self
 
