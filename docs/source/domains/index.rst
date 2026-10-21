@@ -12,7 +12,7 @@ Domains are accessed from :class:`~gpp_client.GPPClient`:
 
    from gpp_client import GPPClient
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       program = await client.program.get_by_id("p-123")
       observation = await client.observation.get_by_id("o-456")
 

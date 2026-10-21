@@ -8,128 +8,123 @@ Overview
 
 The client uses ``pydantic-settings`` to resolve configuration at runtime.
 
-Configuration is:
-
-- Environment-aware
-- Strictly validated
-- Resolved from multiple sources
+Configuration is strictly validated and resolved from several sources.
 
 
-Environment Model
------------------
+Choosing an Environment
+-----------------------
 
-The active environment is determined by the installed package:
+One install reaches both GPP environments, development and production, and you
+select one each time you create a client. The client takes the first of these
+that is set:
 
-- Development builds → development environment
-- Production builds → production environment
+1. The ``environment`` argument, such as
+   ``GPPClient(environment="development")``.
+2. The ``GPP_ENVIRONMENT`` environment variable.
+3. ``GPP_ENVIRONMENT`` in the ``.env`` file of the current folder.
+4. ``environment`` in the configuration file described below.
 
-The environment cannot be changed at runtime.
+Names ignore case, and an empty value counts as unset. An unknown name raises
+:class:`~gpp_client.exceptions.GPPClientError`, which lists the valid names.
 
-.. note::
+If none of them is set, the client uses production and emits a
+``FutureWarning``, because a future release will raise an error instead. Set
+the environment explicitly so that your code keeps working.
 
-   The ``environment_override`` option exists for internal tooling
-   (e.g., code generation) and should not be used in normal client usage.
+When the client starts, it logs at INFO level which environment it uses, where
+that choice came from, and the URL it sends to. ``repr(client)`` shows the
+environment as well.
+
+The ``gpp`` command follows the same order, but its ``--env`` option comes
+before everything else. Without any of them, the command uses production and
+prints a warning to stderr.
+
+
+When the Environments Differ
+----------------------------
+
+Changes reach development first and production later, so at any moment one
+environment can have a field, an enum value, or an operation that the other
+lacks. The client is generated from both schemas at once, and the request it
+sends is trimmed to what the selected environment has:
+
+- A result field that the selected environment lacks is ``None``. Call
+  ``client.is_available(Model, "field")`` to tell that apart from a value that
+  GPP left empty.
+- ``client.enum_values(Enum)`` lists the members that the selected environment
+  accepts.
+- Calling an operation that the selected environment lacks raises
+  :class:`~gpp_client.exceptions.NotAvailable` before anything is sent.
 
 
 Authentication
 --------------
 
-Authentication is environment-specific.
+Each environment has its own token:
 
-- Development requires ``GPP_DEVELOPMENT_TOKEN``
-- Production requires ``GPP_TOKEN``
+- Development reads ``GPP_DEVELOPMENT_TOKEN``.
+- Production reads ``GPP_TOKEN``.
 
 .. code-block:: bash
 
    export GPP_DEVELOPMENT_TOKEN=...
    export GPP_TOKEN=...
 
-An explicit token may also be provided when creating the client:
+You can also pass a token when you create the client, and it applies to the
+selected environment:
 
 .. code-block:: python
 
-   client = GPPClient(token="my-token")
-
-The token is applied to the active environment.
-
-.. note::
-
-   When passing ``token=`` explicitly:
-
-   - In development builds, the token is used as ``development_token``
-   - In production builds, the token is used as ``token``
-
-   This allows the same code to work across environments without modification.
+   client = GPPClient(environment="development", token="my-token")
 
 .. warning::
 
-   Tokens are not interchangeable. A development client will **not**
-   use ``GPP_TOKEN`` and will fail if ``GPP_DEVELOPMENT_TOKEN`` is not set.
+   Tokens are not interchangeable. A development client never reads
+   ``GPP_TOKEN``, and it raises :class:`~gpp_client.exceptions.GPPAuthError`,
+   naming the variable to set, when it has no development token.
 
 
 Configuration Sources
 ---------------------
 
-Settings are resolved using the following precedence:
+Each setting is resolved independently, from the first of these that sets it:
 
-1. Initialization parameters
+1. Arguments to ``GPPClient``
 2. Environment variables
-3. ``.env`` file
-4. Application config file
+3. The ``.env`` file
+4. The configuration file
 5. Model defaults
-
-Each field is resolved independently.
-
-.. tip::
-
-   Different fields may come from different sources. For example:
-
-   - ``token`` from environment variables
-   - ``debug`` from a TOML config file
 
 
 Configuration File
 ------------------
 
-An optional TOML configuration file may be used.
+An optional TOML configuration file can hold your environment, your tokens,
+and the debug setting. Both the Python client and the ``gpp`` command read it.
 
 The directory is determined using :func:`typer.get_app_dir` and follows
-platform-specific conventions.
-
-Typical locations:
+platform-specific conventions. Typical locations are:
 
 - macOS:
-  ``~/Library/Application Support/<App Name>``
+  ``~/Library/Application Support/gpp-client``
 - Linux:
-  ``~/.config/<app-name>``
+  ``~/.config/gpp-client``
 - Windows:
-  ``C:\Users\<user>\AppData\Roaming\<App Name>``
+  ``C:\Users\<user>\AppData\Roaming\gpp-client``
 
-The full path is:
-
-.. code-block:: text
-
-   <app-dir>/<config-file-name>
-
-Example:
-
-.. code-block:: text
-
-   ~/.config/gpp-client/settings.toml
-
-The file is only used if it exists.
-
-Example contents:
+The file is ``config.toml`` in that directory, and it's only used if it
+exists:
 
 .. code-block:: toml
 
+   environment = "development"
    token = "prod-token"
    development_token = "dev-token"
    debug = true
 
 .. tip::
 
-   To see the exact path used on your system:
+   To see the exact path used on your system, run ``gpp get-config-path`` or:
 
    .. code-block:: python
 

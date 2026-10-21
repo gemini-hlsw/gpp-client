@@ -23,13 +23,13 @@ Builds are triggered when:
 
 Read the Docs provides separate builds for:
 
-- ``stable`` (latest production release)
-- ``latest`` (latest development release)
-- Tagged releases (production and development)
+- ``stable`` (the newest release)
+- ``latest`` (the main branch)
+- Tagged releases
 - Pull request previews
 
-The documentation UI may display a banner indicating whether the current build
-corresponds to a stable release, a development release, or a pull request preview.
+The ``latest`` build shows a banner saying that it follows the main branch,
+which may be ahead of the newest release.
 These banners are configured dynamically in ``conf.py`` using environment
 variables provided by Read the Docs.
 

@@ -6,7 +6,7 @@ The primary entry point for interacting with the GPP API.
 The :class:`~gpp_client.GPPClient` provides:
 
 - Authenticated GraphQL and REST clients
-- Environment-aware configuration
+- Configuration for the environment you select
 - Access to domain-specific interfaces for GPP resources
 
 
@@ -17,7 +17,7 @@ Quick Example
 
    from gpp_client import GPPClient
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       programs = await client.program.get_all()
 
 
@@ -46,46 +46,43 @@ Each resource is accessed through a domain:
 Authentication
 --------------
 
-Authentication is resolved automatically based on the active environment.
+Each environment has its own token, which the client reads for the
+environment you select:
 
-- Development environment → requires ``GPP_DEVELOPMENT_TOKEN``
-- Production environment → requires ``GPP_TOKEN``
+- Development reads ``GPP_DEVELOPMENT_TOKEN``.
+- Production reads ``GPP_TOKEN``.
 
 .. code-block:: bash
 
    export GPP_DEVELOPMENT_TOKEN=...
    export GPP_TOKEN=...
 
-You may also pass a token explicitly:
+You may also pass a token explicitly, and it applies to the selected
+environment:
 
 .. code-block:: python
 
-   client = GPPClient(token="my-token")
-
-.. note::
-
-   The provided token is applied to the active environment automatically.
+   client = GPPClient(environment="development", token="my-token")
 
 
 Creating a Client
 -----------------
 
-Basic usage:
+Select the environment when you create the client:
 
 .. code-block:: python
 
-   client = GPPClient()
+   client = GPPClient(environment="development")
 
-Enable debug logging:
+You can also set ``GPP_ENVIRONMENT`` instead, as :ref:`configuration`
+describes. To enable debug logging:
 
 .. code-block:: python
 
-   client = GPPClient(debug=True)
+   client = GPPClient(environment="development", debug=True)
 
-The client will automatically resolve:
-
-- The correct API endpoints
-- The appropriate authentication token
+The client then resolves the API endpoints and the token for that
+environment.
 
 
 Available Domains
@@ -134,7 +131,7 @@ The client also supports async context management:
 
 .. code-block:: python
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       ...
 
 

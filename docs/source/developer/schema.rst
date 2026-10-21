@@ -1,62 +1,27 @@
 Schema Management
 =================
 
-The GPP Client depends on the GPP GraphQL schema. Schema files must stay current
-so generated models, enums, input types, and operations match the target GPP
-environment.
+The GPP Client depends on the GPP GraphQL schema of each environment. The
+committed schemas in ``graphql/schemas/`` must stay current so the generated
+models, enums, input types, and operations match what GPP serves.
 
-Downloading a Schema
---------------------
+Downloading the Schemas
+-----------------------
 
-Use the schema download script with a target environment:
-
-.. code-block:: bash
-
-   uv run --group schema python scripts/download_schema.py DEVELOPMENT
-
-or:
+To download both schemas:
 
 .. code-block:: bash
 
-   uv run --group schema python scripts/download_schema.py PRODUCTION
+   uv run --group schema python -m scripts.download_schema
 
-The environment argument is case-insensitive and must match a valid
-``GPPEnvironment``.
+Pass ``development`` or ``production`` to download only that environment.
+Introspection is anonymous. If a server refuses it, the script retries with the
+environment's token, so set ``GPP_DEVELOPMENT_TOKEN`` or ``GPP_TOKEN``.
 
-Schema Configuration
---------------------
+Each downloaded file starts with a comment line that gives the GPP commit the
+server reported at ``/health``. The build records that commit, so error
+messages can name it. If the server's commit changes during the download, the
+script stops, and you should run it again.
 
-The script uses environment-specific Ariadne Codegen schema configuration files:
-
-.. code-block:: text
-
-   graphql/schemas/development.toml
-   graphql/schemas/production.toml
-
-Each TOML file defines how the schema is downloaded and where it is written.
-
-Authentication
---------------
-
-The required token depends on the selected environment:
-
-.. list-table::
-   :header-rows: 1
-
-   * - Environment
-     - Required token
-   * - ``DEVELOPMENT``
-     - ``GPP_DEVELOPMENT_TOKEN``
-   * - ``PRODUCTION``
-     - ``GPP_TOKEN``
-
-If the required token is not set, the script exits before attempting to download
-the schema.
-
-Generated Schema Files
-----------------------
-
-Downloaded schemas are written according to the matching Ariadne Codegen schema
-configuration.
-
-After downloading a schema, regenerate the client code if the schema changed.
+After downloading the schemas, rebuild the client as described in
+:doc:`codegen`.

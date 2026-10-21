@@ -80,11 +80,10 @@ if os.environ.get("READTHEDOCS") == "True":
 
     announcement = ""
 
-    # Development builds: either .devN or 'latest'.
-    if (version_type == "tag" and ".dev" in version_slug) or version_slug == "latest":
+    if version_slug == "latest":
         announcement = (
-            "<strong>Development Build:</strong> Intended for GPP development "
-            "environments; production compatibility not guaranteed."
+            "<strong>Latest:</strong> These docs follow the main branch, which "
+            "may be ahead of the newest release."
         )
 
     if announcement:

@@ -12,13 +12,8 @@ Examples:
 - ``26.5.0``
 - ``26.5.1``
 
-Development Releases
---------------------
-
-Development releases use the same format with a ``.devN`` suffix:
-
-- ``26.5.0.dev1``
-- ``26.5.0.dev2``
+Every release reaches both environments, so there are no pre-releases, and the
+release workflow refuses a tag such as ``v26.5.0.dev1``.
 
 Version Source
 --------------
@@ -31,7 +26,6 @@ process.
 Examples:
 
 - Git tag ``v26.5.0`` produces package version ``26.5.0``
-- Git tag ``v26.5.0.dev1`` produces package version ``26.5.0.dev1``
 
 Version values are not manually updated in ``pyproject.toml``.
 
@@ -40,13 +34,7 @@ Creating a Release
 
 All releases are created through the ``Create Release`` GitHub Actions workflow.
 
-Development prerelease example:
-
-.. code-block:: text
-
-   v26.5.0.dev1
-
-Production release example:
+Release tag example:
 
 .. code-block:: text
 

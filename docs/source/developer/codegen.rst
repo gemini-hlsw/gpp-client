@@ -10,129 +10,67 @@ All generated code lives in:
 ``src/gpp_client/generated/``
 
 
-GraphQL Operations Structure
-----------------------------
+GraphQL Operations
+------------------
 
-GraphQL operations are organized to support both shared and environment-specific behavior.
-
-Directory layout:
-
-- ``graphql/operations/shared/``
-  Contains operations and fragments used in both development and production.
-
-- ``graphql/operations/development_only.graphql``
-  Contains operations and fragments that exist only in the development schema.
-
-Behavior:
-
-- **Production**
-  Uses only ``shared/``.
-
-- **Development**
-  Uses ``shared/`` + ``development_only.graphql``.
-
-During code generation, these are assembled into a temporary build directory
-and passed to ``ariadne-codegen``.
-
-Rules:
-
-- ``development_only.graphql`` must be **additive only**.
-- Operation and fragment names must not collide with anything in ``shared/``.
-- Violations will fail code generation.
-- Empty or missing ``development_only.graphql`` is ignored.
-
-Guidelines:
-
-- Use ``shared/`` for stable operations supported in both environments.
-- Use ``development_only.graphql`` for experimental or unreleased schema usage.
-- When promoting operations to production, move them into ``shared/``.
+Operations and fragments live in ``graphql/operations/shared/``. Each one is
+written once and serves both environments, so a field that only development
+has goes into the same query as everything else. The build trims it from the
+copy that production receives, and it reads ``None`` there.
 
 
 Running Codegen
 ---------------
 
-Use the provided script:
+Run the build from the repository root:
 
 .. code-block:: bash
 
-   uv run --group codegen python scripts/run_codegen.py PRODUCTION
+   uv run --group codegen python -m scripts.run_codegen
 
-Or for development:
-
-.. code-block:: bash
-
-   uv run --group codegen python scripts/run_codegen.py DEVELOPMENT
-
-The environment argument is case-insensitive and must match a valid ``GPPEnvironment``.
+The build doesn't need a token, because it reads only the committed schemas.
 
 
-What the Script Does
---------------------
+What the Build Does
+-------------------
 
-The codegen script performs the following steps:
+1. It merges ``graphql/schemas/development.graphql`` and
+   ``graphql/schemas/production.graphql`` into one schema. The merged schema is
+   development's schema plus everything production still has. A type that the
+   two environments name differently keeps development's name, and
+   production's name stays importable as a deprecated alias. Where a field's
+   type differs, production's type wins. The merged schema is never committed.
+2. It fails, listing every case, when an operation selects something that
+   neither environment has.
+3. It runs ``ariadne-codegen`` once on the merged schema.
+4. It trims every operation to each environment, checks each copy against
+   that environment's schema, and writes the copies to ``generated/trimmed/``.
+   At runtime the client sends the copy for the selected environment.
+5. It writes ``generated/availability.py``, which lists the fields and enum
+   values that some environment lacks, and ``generated/schema_commits.py``,
+   which records the GPP commit each schema was downloaded at.
 
-1. Resolves the config file at:
-
-   ``graphql/codegen/<environment>.toml``
-
-2. Assembles GraphQL operations:
-
-   - Copies ``shared/`` into a temporary build directory.
-   - Adds ``development_only.graphql`` for development.
-
-3. Cleans previous artifacts:
-
-   - Removes the ``build/`` directory.
-   - Removes the generated package directory.
-
-4. Runs ``ariadne-codegen``.
-
-5. Writes a generated module:
-
-   ``package_environment.py``
-
-   into the generated package.
-
-
-Generated Package Environment
------------------------------
-
-After code generation completes, the script writes:
-
-``src/gpp_client/generated/package_environment.py``
-
-This module contains:
-
-.. code-block:: python
-
-   PACKAGE_ENVIRONMENT = "PRODUCTION"
-
-or:
-
-.. code-block:: python
-
-   PACKAGE_ENVIRONMENT = "DEVELOPMENT"
-
-This allows the generated package to retain knowledge of the environment it was built against.
+The build prints a merge summary and a trim summary. Paste them into the pull
+request so reviewers can see what differs between the environments.
 
 
 Codegen Configuration
 ---------------------
 
-Code generation is configured per environment:
-
-- ``graphql/codegen/development.toml``
-- ``graphql/codegen/production.toml``
+Code generation is configured in ``graphql/codegen.toml``. The build fills in
+the schema, operations, and package paths itself.
 
 
 Custom Plugins
 --------------
 
-The project currently uses:
+The build uses these plugins from ``src/custom_plugins/``:
 
-``custom_plugins.AliasStrWrapperPlugin``
-
-This plugin corrects alias behavior for wrapped scalar types in the generated code.
+- ``AliasNamesPlugin`` keeps production's name for a renamed input type or enum
+  as a deprecated alias.
+- ``EnvironmentDefaultsPlugin`` gives a field that only some environments have
+  a ``None`` default.
+- ``AliasStrWrapperPlugin`` corrects alias behavior for wrapped scalar types.
 
 
 Why Codegen Is Required

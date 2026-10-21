@@ -12,7 +12,7 @@ Quick Example
 
 .. code-block:: python
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       status = await client.site_status.get_by_id("north")
 
 
