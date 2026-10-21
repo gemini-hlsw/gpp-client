@@ -1846,26 +1846,6 @@ class DeleteSequenceInput(BaseModel):
     )
 
 
-class InsertSmartGcalInput(BaseModel):
-    """Input parameters for inserting smart GCAL steps into a sequence.  Select one of
-    `observationId` or `observationReference`."""
-
-    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
-    observation_reference: Optional[Any] = Field(
-        alias=str("observationReference"), default=None
-    )
-    sequence_type: SequenceType = Field(
-        alias=str("sequenceType"), default=SequenceType.SCIENCE
-    )
-    "The sequence into which the steps are inserted.  Defaults to SCIENCE."
-    smart_gcal_types: list[SmartGcalType] = Field(alias=str("smartGcalTypes"))
-    "The smart GCAL steps to insert, in order.  Each is replaced by the GCAL\nstep(s) that the smart GCAL lookup produces for the instrument configuration\nof the reference step (see `referenceStepId`).  A type may be repeated, in\nwhich case its GCAL step(s) are inserted once per occurrence (e.g.,\n`[ARC, ARC]` inserts the arc(s) twice).  From 1 to 10 types may be given,\nand it is an error if there is no smart GCAL mapping for any of them."
-    reference_step_id: Optional[Any] = Field(alias=str("referenceStepId"), default=None)
-    "The step whose instrument configuration the new steps are based upon, and\nwhose telescope offset they keep.  It may be any step of the sequence,\nexecuted or not.  When not specified, the most recently executed (or\nexecuting) step is used or, if nothing has been executed, the first step."
-    after_step_id: Optional[Any] = Field(alias=str("afterStepId"), default=None)
-    "The new steps are inserted immediately after this step.  If it has not\nstarted executing, they join its atom.  Otherwise it must be the most\nrecently executed (or executing) step, which is the same as not specifying\nit.\n\nWhen not specified, the new steps become the next steps to execute, placed\nafter the most recently executed (or executing) step."
-
-
 class PoorWeatherInput(BaseModel):
     """Input for a poor weather proposal.  There are no fields to further specify a
     poor weather proposal but GraphQL requires at least one field.  Therefore this
@@ -2020,10 +2000,6 @@ class RightAscensionInput(BaseModel):
 class ObservingModeInput(BaseModel):
     """Edit or create an observation's observing mode"""
 
-    daytime_calibration: Optional["DaytimeCalibrationInput"] = Field(
-        alias=str("daytimeCalibration"), default=None
-    )
-    "Daytime calibration mode (staff only). It cannot be unset with a null value."
     exchange: Optional["ExchangeInput"] = None
     "An exchange instrument mode (Keck/Subaru). It cannot be unset with a null value."
     flamingos_2_imaging: Optional["Flamingos2ImagingInput"] = Field(
@@ -2111,13 +2087,6 @@ class VisitorInput(BaseModel):
         alias=str("totalRequestTime"), default=None
     )
     "Optional total requested observing time."
-
-
-class DaytimeCalibrationInput(BaseModel):
-    """Daytime calibration mode input.  Staff only."""
-
-    instrument: Instrument
-    "Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,\nGNIRS or IGRINS2."
 
 
 class ExchangeInput(BaseModel):

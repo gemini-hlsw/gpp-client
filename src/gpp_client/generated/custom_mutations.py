@@ -27,7 +27,6 @@ from .custom_fields import (
     DeleteProgramUserResultFields,
     DeleteProposalResultFields,
     DeleteSequenceResultFields,
-    InsertSmartGcalResultFields,
     LinkUserResultFields,
     ObservationWorkflowFields,
     RecordDatasetResultFields,
@@ -93,7 +92,6 @@ from .input_types import (
     DeleteProgramUserInput,
     DeleteProposalInput,
     DeleteSequenceInput,
-    InsertSmartGcalInput,
     LinkUserInput,
     RecordDatasetInput,
     RecordFlamingos2VisitInput,
@@ -497,24 +495,6 @@ class Mutation:
         }
         return DeleteSequenceResultFields(
             field_name="deleteSequence", arguments=cleared_arguments
-        )
-
-    @classmethod
-    def insert_smart_gcal(
-        cls, input: InsertSmartGcalInput
-    ) -> InsertSmartGcalResultFields:
-        """Inserts the GCAL steps corresponding to one or more smart GCAL types (e.g.,
-        an arc and/or a flat) into a sequence.  The sequence is materialized first,
-        if necessary, and is afterwards considered customized.  Prior to execution a
-        PI may make this edit, afterwards it requires staff (or better) access."""
-        arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "InsertSmartGcalInput!", "value": input}
-        }
-        cleared_arguments = {
-            key: value for key, value in arguments.items() if value["value"] is not None
-        }
-        return InsertSmartGcalResultFields(
-            field_name="insertSmartGcal", arguments=cleared_arguments
         )
 
     @classmethod
