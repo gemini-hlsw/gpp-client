@@ -5,13 +5,10 @@ This module provides the main entry point for interacting with GPP.
 __all__ = ["GPPClient"]
 
 import logging
-import os
 import warnings
-from collections.abc import Mapping
 from typing import Any, Optional
 
 import httpx
-from dotenv import dotenv_values
 from typing_extensions import Self
 
 from gpp_client import availability
@@ -31,7 +28,7 @@ from gpp_client.environment import GPPEnvironment
 from gpp_client.graphql_client import GPPGraphQLClient
 from gpp_client.logging_utils import _enable_dev_console_logging
 from gpp_client.rest import RESTClient
-from gpp_client.settings import GPPSettings
+from gpp_client.settings import GPPSettings, SettingSource, settings_with_sources
 from gpp_client.urls import get_graphql_url, get_ws_url
 
 logger = logging.getLogger(__name__)
@@ -41,32 +38,13 @@ logger = logging.getLogger(__name__)
 _HTTP_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 
-_DEFAULT_SOURCE = "the default"
-
-
-def _environment_source(
-    environment: GPPEnvironment | str | None, settings: GPPSettings
-) -> str:
-    """
-    Name where the client's environment came from, for the log and the warning.
-    """
-    if environment is not None:
-        return "the environment argument"
-    if "environment" not in settings.model_fields_set:
-        return _DEFAULT_SOURCE
-    # pydantic-settings matches variable names in any case.
-    if _names_environment(os.environ):
-        return "GPP_ENVIRONMENT"
-    if _names_environment(dotenv_values(".env")):
-        return "the .env file"
-    return "the configuration file"
-
-
-def _names_environment(variables: Mapping[str, str | None]) -> bool:
-    return any(
-        name.upper() == "GPP_ENVIRONMENT" and value and value.strip()
-        for name, value in variables.items()
-    )
+_ENVIRONMENT_SOURCE_NAMES = {
+    SettingSource.ARGUMENT: "the environment argument",
+    SettingSource.VARIABLE: "GPP_ENVIRONMENT",
+    SettingSource.DOTENV: "the .env file",
+    SettingSource.CONFIG_FILE: "the configuration file",
+    SettingSource.DEFAULT: "the default",
+}
 
 
 class GPPClient:
@@ -131,11 +109,10 @@ class GPPClient:
     ) -> None:
         if isinstance(environment, str):
             environment = environment.strip() or None
-        self._settings = self._build_settings(
+        self._settings, source = self._build_settings(
             environment=environment, token=token, debug=debug
         )
-        source = _environment_source(environment, self._settings)
-        if source == _DEFAULT_SOURCE:
+        if source is SettingSource.DEFAULT:
             warnings.warn(
                 "No GPP environment set, so using production. Pass environment= "
                 "or set GPP_ENVIRONMENT; a future release will raise an error "
@@ -155,7 +132,7 @@ class GPPClient:
         logger.info(
             "GPPClient using the %s environment, from %s, at %s",
             self._settings.environment.label,
-            source,
+            _ENVIRONMENT_SOURCE_NAMES[source],
             self._graphql.url,
         )
 
@@ -168,9 +145,9 @@ class GPPClient:
         environment: GPPEnvironment | str | None = None,
         token: str | None = None,
         debug: bool | None = None,
-    ) -> GPPSettings:
+    ) -> tuple[GPPSettings, SettingSource]:
         """
-        Build the effective runtime settings.
+        Build the effective runtime settings and say where the environment came from.
 
         Parameters
         ----------
@@ -183,8 +160,8 @@ class GPPClient:
 
         Returns
         -------
-        GPPSettings
-            Resolved client settings.
+        tuple[GPPSettings, SettingSource]
+            Resolved client settings, and the source of their environment.
         """
         settings_kwargs: dict[str, Any] = {}
         if environment is not None:
@@ -192,8 +169,10 @@ class GPPClient:
         if debug is not None:
             settings_kwargs["debug"] = debug
 
-        settings = GPPSettings(**settings_kwargs)
-        return settings if token is None else settings.with_token(token)
+        settings, sources = settings_with_sources(**settings_kwargs)
+        if token is not None:
+            settings = settings.with_token(token)
+        return settings, sources["environment"]
 
     def _build_graphql_client(
         self, http_client: httpx.AsyncClient | None = None

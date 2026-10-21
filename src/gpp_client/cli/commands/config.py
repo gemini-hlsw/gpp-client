@@ -12,14 +12,6 @@ import tomlkit
 import tomlkit.exceptions
 import typer
 from pydantic import SecretStr, TypeAdapter, ValidationError
-from pydantic_settings import (
-    BaseSettings,
-    DotEnvSettingsSource,
-    EnvSettingsSource,
-    InitSettingsSource,
-    PydanticBaseSettingsSource,
-    TomlConfigSettingsSource,
-)
 from rich.table import Table
 from tomlkit import TOMLDocument
 
@@ -28,7 +20,12 @@ from gpp_client.cli import output
 from gpp_client.cli.console import console
 from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import GPPClientError
-from gpp_client.settings import GPPSettings, _environment_named, _token_setting
+from gpp_client.settings import (
+    GPPSettings,
+    SettingSource,
+    _environment_named,
+    _token_setting,
+)
 
 _TOKEN_KEYS = {_token_setting(env): env for env in GPPEnvironment}
 
@@ -172,45 +169,21 @@ def _settings_with_sources(
 ) -> tuple[GPPSettings, dict[str, str]]:
     """
     Build the settings and name the source of each one.
-
-    The sources come from ``GPPSettings`` itself, so the order shown is the
-    order the client uses.
     """
-    built: list[PydanticBaseSettingsSource] = []
-
-    class _Traced(GPPSettings):
-        @classmethod
-        def settings_customise_sources(
-            cls, settings_cls: type[BaseSettings], **sources: PydanticBaseSettingsSource
-        ) -> tuple[PydanticBaseSettingsSource, ...]:
-            built.extend(super().settings_customise_sources(settings_cls, **sources))
-            return tuple(built)
-
     arguments = {} if environment is None else {"environment": environment}
-    effective = _Traced(**arguments)
-    names = {key: "default" for key in GPPSettings.model_fields}
-    for source in reversed(built):
-        for key in source():
-            if key in names:
-                names[key] = _source_name(source, key)
-    return effective, names
+    effective, sources = settings.settings_with_sources(**arguments)
+    return effective, {key: _source_name(src, key) for key, src in sources.items()}
 
 
-def _source_name(source: PydanticBaseSettingsSource, key: str) -> str:
+def _source_name(source: SettingSource, key: str) -> str:
     """
     Name a settings source the way a user would recognize it.
     """
-    inner = getattr(source, "_source", source)
-    # Subclasses first: the TOML source is an init source, and .env an env one.
-    if isinstance(inner, TomlConfigSettingsSource):
-        return "configuration file"
-    if isinstance(inner, DotEnvSettingsSource):
-        return ".env file"
-    if isinstance(inner, EnvSettingsSource):
-        return f"variable {inner.env_prefix.upper()}{key.upper()}"
-    if isinstance(inner, InitSettingsSource):
+    if source is SettingSource.VARIABLE:
+        return f"variable {settings._ENV_PREFIX}{key.upper()}"
+    if source is SettingSource.ARGUMENT:
         return "--env"
-    return type(inner).__name__
+    return source.value
 
 
 def _shown(value: object) -> str:

@@ -3,6 +3,7 @@ Runtime settings for the installed GPP client package.
 """
 
 import tomllib
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,9 @@ from pydantic import Field, SecretStr, field_validator
 from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
+    DotEnvSettingsSource,
+    EnvSettingsSource,
+    InitSettingsSource,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
     TomlConfigSettingsSource,
@@ -202,6 +206,78 @@ class _BlankEnvironmentIsUnset(PydanticBaseSettingsSource):
         if isinstance(value, str) and not value.strip():
             return {k: v for k, v in data.items() if k != "environment"}
         return data
+
+
+class SettingSource(Enum):
+    """
+    Where a setting's value came from.
+    """
+
+    ARGUMENT = "argument"
+    VARIABLE = "variable"
+    DOTENV = ".env file"
+    CONFIG_FILE = "configuration file"
+    DEFAULT = "default"
+
+
+def settings_with_sources(
+    **arguments: Any,
+) -> tuple[GPPSettings, dict[str, SettingSource]]:
+    """
+    Build the settings and say where each one came from.
+
+    The sources come from ``GPPSettings`` itself, so the attribution always
+    follows the order the settings are read in.
+
+    Parameters
+    ----------
+    **arguments : Any
+        Arguments to ``GPPSettings``, which beat every other source.
+
+    Returns
+    -------
+    tuple[GPPSettings, dict[str, SettingSource]]
+        The settings, and the source of each setting by name.
+    """
+    built: list[PydanticBaseSettingsSource] = []
+
+    class _Traced(GPPSettings):
+        @classmethod
+        def settings_customise_sources(
+            cls, settings_cls: type[BaseSettings], **sources: PydanticBaseSettingsSource
+        ) -> tuple[PydanticBaseSettingsSource, ...]:
+            built.extend(super().settings_customise_sources(settings_cls, **sources))
+            return tuple(built)
+
+    traced = _Traced(**arguments)
+    found = {key: SettingSource.DEFAULT for key in GPPSettings.model_fields}
+    for source in reversed(built):
+        for key in source():
+            kind = _source_kind(source)
+            if key in found and kind is not None:
+                found[key] = kind
+    # A plain GPPSettings, so the local subclass never shows in a repr.
+    settings = GPPSettings.model_construct(
+        _fields_set=traced.model_fields_set, **dict(traced)
+    )
+    return settings, found
+
+
+def _source_kind(source: PydanticBaseSettingsSource) -> SettingSource | None:
+    """
+    Classify a settings source, or return ``None`` for one users never set.
+    """
+    inner = getattr(source, "_source", source)
+    # Subclasses first: the TOML source is an init source, and .env an env one.
+    if isinstance(inner, TomlConfigSettingsSource):
+        return SettingSource.CONFIG_FILE
+    if isinstance(inner, DotEnvSettingsSource):
+        return SettingSource.DOTENV
+    if isinstance(inner, EnvSettingsSource):
+        return SettingSource.VARIABLE
+    if isinstance(inner, InitSettingsSource):
+        return SettingSource.ARGUMENT
+    return None
 
 
 def get_config_path() -> Path:

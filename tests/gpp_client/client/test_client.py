@@ -9,6 +9,7 @@ import pytest
 from gpp_client.client import _HTTP_TIMEOUT, GPPClient
 from gpp_client.constants import DEVELOPMENT_URL, PRODUCTION_URL
 from gpp_client.environment import GPPEnvironment
+from gpp_client.settings import SettingSource
 from gpp_client.urls import get_graphql_url
 
 
@@ -47,7 +48,7 @@ def test_init_builds_settings_and_core_clients(
     build_settings = mocker.patch.object(
         GPPClient,
         "_build_settings",
-        return_value=mock_settings,
+        return_value=(mock_settings, SettingSource.ARGUMENT),
     )
     build_graphql = mocker.patch.object(
         GPPClient,
@@ -85,7 +86,7 @@ def test_init_enables_dev_logging_when_debug_true(
     mocker.patch.object(
         GPPClient,
         "_build_settings",
-        return_value=mock_settings,
+        return_value=(mock_settings, SettingSource.ARGUMENT),
     )
     mocker.patch.object(
         GPPClient,
