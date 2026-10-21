@@ -4,10 +4,9 @@ Python client for GPP, whose GraphQL schema changes almost daily. Most of the cl
 
 ## Read first
 
-- Direction, goals, users, principles, release contract, testing policy, known gaps: `docs/OVERVIEW.md`.
-- Code changes - layers, codegen, environments, releases: `docs/ARCHITECTURE.md`.
-- Codegen, schema updates, release prep: follow `docs/agents/schema-update.md`.
-- Terms and past decisions: `docs/agents/domain.md` (glossary and ADRs).
+- Codegen and the per-environment build: `docs/source/developer/codegen.rst`.
+- Schema updates: `docs/source/developer/schema.rst`.
+- Releases: `docs/source/developer/releases.rst`.
 
 ## Commands
 
