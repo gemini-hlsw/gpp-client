@@ -43,7 +43,7 @@ def test_get_workflow_state_dispatches_correctly(
     getattr(workflow_state, method_name).return_value = result_model
 
     mocker.patch(
-        "gpp_client.cli.commands.workflow_state.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(workflow_state=workflow_state),
     )
     json_pydantic_mock = mocker.patch(

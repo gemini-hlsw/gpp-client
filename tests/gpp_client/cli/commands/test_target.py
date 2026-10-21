@@ -19,7 +19,7 @@ def test_get_target_dispatches_correctly(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.target.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(target=target),
     )
     json_pydantic_mock = mocker.patch(
@@ -52,7 +52,7 @@ def test_get_target_dispatches_with_include_deleted(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.target.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(target=target),
     )
     json_pydantic_mock = mocker.patch(
@@ -98,7 +98,7 @@ def test_list_targets_dispatches_correctly(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.target.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(target=target),
     )
     json_pydantic_mock = mocker.patch(

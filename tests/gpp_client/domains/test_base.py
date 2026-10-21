@@ -8,9 +8,10 @@ from types import SimpleNamespace
 import pytest
 
 from gpp_client.domains.base import BaseDomain
+from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import (
     GPPClientError,
-    GPPResponseError,
+    GPPHttpError,
     GPPValidationError,
 )
 
@@ -70,18 +71,20 @@ async def test_raise_for_status_allows_ok_status(dummy_domain, mocker) -> None:
 
 
 @pytest.mark.asyncio
-async def test_raise_for_status_uses_response_text(dummy_domain, mocker) -> None:
+async def test_raise_for_status_uses_response_text(dummy_domain, rest, mocker) -> None:
     """Ensure raise_for_status uses the response text when available."""
+    rest.environment = GPPEnvironment.PRODUCTION
     response = SimpleNamespace(
         status=500,
         text=mocker.AsyncMock(return_value="server exploded"),
     )
 
-    with pytest.raises(GPPResponseError) as exc_info:
+    with pytest.raises(GPPHttpError) as exc_info:
         await dummy_domain.raise_for_status(response, ok_statuses={200})
 
     assert exc_info.value.status_code == 500
-    assert exc_info.value.message == "server exploded"
+    assert exc_info.value.environment is GPPEnvironment.PRODUCTION
+    assert str(exc_info.value).endswith(": server exploded")
 
 
 def test_resolve_content_returns_direct_content(dummy_domain) -> None:

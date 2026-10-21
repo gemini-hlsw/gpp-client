@@ -1,727 +1,630 @@
-#!/usr/bin/env python3
 """
-Run Ariadne code generation for a specific GPP environment.
+Build the client from the committed environment schemas.
+
+The build merges the development and production schemas committed in
+``graphql/schemas/``, runs ariadne-codegen once on the merged schema, and
+writes a trimmed copy of every operation per environment into the generated
+package. The merged schema is a build intermediate and is never committed.
 """
 
+import ast
+import contextlib
+import io
+import re
 import shutil
-import subprocess
+import tempfile
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Any
 
 import typer
+from ariadne_codegen.exceptions import CodeGenException
+from ariadne_codegen.main import client as run_ariadne_codegen
+from rich.markup import escape
 
+from custom_plugins.alias_names import ALIASES_KEY, AliasReport
+from custom_plugins.environment_defaults import DEFAULTS_KEY, DefaultsReport
+from custom_plugins.environments import USER_ENVIRONMENTS, environments
 from gpp_client.cli import output
-from gpp_client.environment import GPPEnvironment
-from graphql import DocumentNode, FragmentDefinitionNode, OperationDefinitionNode, parse
-from graphql.language.ast import FragmentSpreadNode, SelectionSetNode
-from graphql.language.printer import print_ast
+from graphql import (
+    DocumentNode,
+    EnumTypeDefinitionNode,
+    FieldsOnCorrectTypeRule,
+    GraphQLError,
+    KnownArgumentNamesRule,
+    KnownTypeNamesRule,
+    OperationDefinitionNode,
+    ValuesOfCorrectTypeRule,
+    build_ast_schema,
+    parse,
+    validate,
+)
+from scripts.schema_merge import (
+    DEVELOPMENT,
+    PRODUCTION,
+    KindConflict,
+    MergedSchema,
+    Pairing,
+    Rename,
+    SchemaMergeError,
+    TypeConflict,
+    merge_schemas,
+)
+from scripts.trim_operations import (
+    EnvironmentOperations,
+    generated_operations,
+    trim_operations,
+)
+
+__all__ = [
+    "BuildError",
+    "BuildPaths",
+    "BuildResult",
+    "KindConflict",
+    "Pairing",
+    "Rename",
+    "TypeConflict",
+    "build",
+    "schema_file",
+]
 
 app = typer.Typer(add_completion=False)
 
 
-class CodegenError(RuntimeError):
+def schema_file(schemas_dir: Path, environment: str) -> Path:
     """
-    Raised when codegen preparation or execution fails.
+    Return one environment's schema file in a schemas directory.
+
+    Parameters
+    ----------
+    schemas_dir : Path
+        Directory holding one schema per environment.
+    environment : str
+        Environment name, such as ``"production"``.
+
+    Returns
+    -------
+    Path
+        The environment's schema file.
+    """
+    return schemas_dir / f"{environment}.graphql"
+
+
+class BuildError(RuntimeError):
+    """
+    Raised when the build cannot complete.
     """
 
 
 @dataclass(frozen=True)
-class CodegenPaths:
+class BuildPaths:
     """
-    Repository paths used by the codegen workflow.
+    Files the build reads and writes.
 
     Parameters
     ----------
-    root : Path
-        Repository root directory.
-    """
-
-    root: Path
-
-    @property
-    def graphql_dir(self) -> Path:
-        """
-        Return the GraphQL root directory.
-
-        Returns
-        -------
-        Path
-            GraphQL root directory.
-        """
-        return self.root / "graphql"
-
-    @property
-    def codegen_dir(self) -> Path:
-        """
-        Return the codegen config directory.
-
-        Returns
-        -------
-        Path
-            Codegen config directory.
-        """
-        return self.graphql_dir / "codegen"
-
-    @property
-    def operations_dir(self) -> Path:
-        """
-        Return the GraphQL operations directory.
-
-        Returns
-        -------
-        Path
-            Operations directory.
-        """
-        return self.graphql_dir / "operations"
-
-    @property
-    def shared_operations_dir(self) -> Path:
-        """
-        Return the shared operations directory.
-
-        Returns
-        -------
-        Path
-            Shared operations directory.
-        """
-        return self.operations_dir / "shared"
-
-    @property
-    def development_only_path(self) -> Path:
-        """
-        Return the development-only GraphQL file path.
-
-        Returns
-        -------
-        Path
-            Development-only GraphQL file path.
-        """
-        return self.operations_dir / "development_only.graphql"
-
-    @property
-    def build_dir(self) -> Path:
-        """
-        Return the build directory root.
-
-        Returns
-        -------
-        Path
-            Build directory root.
-        """
-        return self.root / "build"
-
-    def codegen_toml_path(self, env: GPPEnvironment) -> Path:
-        """
-        Return the codegen TOML path for an environment.
-
-        Parameters
-        ----------
-        env : GPPEnvironment
-            Target environment.
-
-        Returns
-        -------
-        Path
-            Codegen TOML path.
-        """
-        return self.codegen_dir / f"{env.value.lower()}.toml"
-
-    def build_operations_dir(self, env: GPPEnvironment) -> Path:
-        """
-        Return the assembled operations directory for an environment.
-
-        Parameters
-        ----------
-        env : GPPEnvironment
-            Target environment.
-
-        Returns
-        -------
-        Path
-            Assembled operations directory.
-        """
-        return self.build_dir / "graphql" / env.value.lower()
-
-
-def _load_codegen_config(toml_path: Path) -> dict[str, Any]:
-    """
-    Load an ariadne-codegen TOML configuration file.
-
-    Parameters
-    ----------
-    toml_path : Path
-        Path to the TOML configuration file.
-
-    Returns
-    -------
-    dict[str, Any]
-        Parsed TOML configuration.
-    """
-    with toml_path.open("rb") as f:
-        return tomllib.load(f)
-
-
-def _get_codegen_settings(config: dict[str, Any]) -> dict[str, Any]:
-    """
-    Return the ``tool.ariadne-codegen`` settings block.
-
-    Parameters
-    ----------
-    config : dict[str, Any]
-        Parsed TOML configuration.
-
-    Returns
-    -------
-    dict[str, Any]
-        Ariadne codegen settings.
-
-    Raises
-    ------
-    CodegenError
-        Raised if the required settings block is missing.
-    """
-    try:
-        return config["tool"]["ariadne-codegen"]
-    except KeyError as exc:
-        raise CodegenError(
-            "Missing [tool.ariadne-codegen] section in codegen config."
-        ) from exc
-
-
-def _get_target_package_dir(
-    *,
-    repo_root: Path,
-    codegen_settings: dict[str, Any],
-) -> Path:
-    """
-    Resolve the generated package directory from codegen settings.
-
-    Parameters
-    ----------
-    repo_root : Path
-        Repository root directory.
-    codegen_settings : dict[str, Any]
-        Ariadne codegen settings.
-
-    Returns
-    -------
-    Path
-        Absolute path to the generated package directory.
-
-    Raises
-    ------
-    CodegenError
-        Raised if required package path settings are missing.
-    """
-    target_package_path = codegen_settings.get("target_package_path")
-    target_package_name = codegen_settings.get("target_package_name")
-
-    if not target_package_path:
-        raise CodegenError("Missing 'target_package_path' in codegen config.")
-
-    if not target_package_name:
-        raise CodegenError("Missing 'target_package_name' in codegen config.")
-
-    return (repo_root / target_package_path / target_package_name).resolve()
-
-
-def _write_package_environment(package_dir: Path, env: GPPEnvironment) -> None:
-    """
-    Write the package environment module into the generated package.
-
-    Parameters
-    ----------
+    schemas_dir : Path
+        Directory holding ``<environment>.graphql`` per environment.
+    operations_dir : Path
+        Directory holding the ``.graphql`` operations, searched recursively.
     package_dir : Path
-        Path to the generated package directory.
-    env : GPPEnvironment
-        Active package environment.
+        The generated package, replaced on every build.
+    codegen_config : Path
+        The ariadne-codegen TOML config; the build fills in the paths.
+    """
+
+    schemas_dir: Path
+    operations_dir: Path
+    package_dir: Path
+    codegen_config: Path
+
+    @classmethod
+    def for_repo(cls, root: Path) -> "BuildPaths":
+        """
+        Return the paths used in a gpp-client checkout.
+
+        Parameters
+        ----------
+        root : Path
+            Repository root.
+
+        Returns
+        -------
+        BuildPaths
+            Paths under ``root``.
+        """
+        return cls(
+            schemas_dir=root / "graphql" / "schemas",
+            operations_dir=root / "graphql" / "operations",
+            package_dir=root / "src" / "gpp_client" / "generated",
+            codegen_config=root / "graphql" / "codegen.toml",
+        )
+
+    def schema_path(self, environment: str) -> Path:
+        """
+        Return one environment's schema file.
+
+        Parameters
+        ----------
+        environment : str
+            Environment name, such as ``"production"``.
+
+        Returns
+        -------
+        Path
+            The environment's schema file.
+        """
+        return schema_file(self.schemas_dir, environment)
+
+
+@dataclass(frozen=True)
+class BuildResult:
+    """
+    What a build produced.
+
+    Parameters
+    ----------
+    merged_sdl : str
+        The merged schema the client was generated from, as SDL.
+    conflicts : tuple[TypeConflict, ...]
+        Elements given production's type because theirs differs.
+    pairing : Pairing
+        The production types the merge renamed to their development names.
+    kind_conflicts : tuple[KindConflict, ...]
+        Type names whose kind differs, where production's definition won.
+    merge_summary : str
+        The renames, aliases, conflicts and refused votes, as Markdown for a
+        PR body.
+    trim_summary : str
+        What each environment does not receive, as Markdown for a PR body.
+    """
+
+    merged_sdl: str
+    conflicts: tuple[TypeConflict, ...]
+    pairing: Pairing
+    kind_conflicts: tuple[KindConflict, ...]
+    merge_summary: str
+    trim_summary: str
+
+
+def build(paths: BuildPaths) -> BuildResult:
+    """
+    Run the build pipeline.
+
+    Parameters
+    ----------
+    paths : BuildPaths
+        Files to read and write.
+
+    Returns
+    -------
+    BuildResult
+        What the build produced.
 
     Raises
     ------
-    CodegenError
-        Raised if the target package directory does not exist.
+    BuildError
+        Raised when a schema file is missing, an environment schema is invalid,
+        an operation selects a field no environment has, codegen fails, an
+        environment-specific field did not get a ``None`` default, the
+        generated client embeds fewer operations than were written, or a
+        trimmed operation is invalid on its environment.
     """
-    if not package_dir.exists():
-        raise CodegenError(f"Generated package directory not found at {package_dir}")
-
-    module_path = package_dir / "package_environment.py"
-    module_contents = f'''"""
-Package-level environment constant for generated client code.
-"""
-
-PACKAGE_ENVIRONMENT = "{env.value}"
-'''
-    module_path.write_text(module_contents, encoding="utf-8")
-    output.info(f"Wrote package environment module to {module_path}")
-
-
-def _file_has_content(path: Path) -> bool:
-    """
-    Return whether a file exists and contains non-whitespace content.
-
-    Parameters
-    ----------
-    path : Path
-        Path to the file.
-
-    Returns
-    -------
-    bool
-        True if the file exists and contains non-whitespace content.
-    """
-    return path.exists() and bool(path.read_text(encoding="utf-8").strip())
-
-
-def _iter_graphql_files(root_dir: Path) -> list[Path]:
-    """
-    Return all GraphQL files under a directory.
-
-    Parameters
-    ----------
-    root_dir : Path
-        Root directory to search.
-
-    Returns
-    -------
-    list[Path]
-        Sorted list of GraphQL files.
-    """
-    if not root_dir.exists():
-        return []
-
-    return sorted(
-        path
-        for pattern in ("*.graphql", "*.gql")
-        for path in root_dir.rglob(pattern)
-        if path.is_file()
+    merged = _merge(paths)
+    operations = _check_selections_exist_somewhere(paths, merged)
+    defaults, aliases = _run_codegen(paths, merged)
+    _check_environment_defaults(paths.package_dir, defaults)
+    operation_strs = _embedded_operations(paths, operations)
+    schemas = {env: _environment_schema(paths, env) for env in USER_ENVIRONMENTS}
+    trimmed = [
+        trim_operations(
+            env,
+            schemas[env],
+            operation_strs,
+            excluded=frozenset(c.coordinate for c in merged.conflicts)
+            if env == DEVELOPMENT
+            else frozenset(),
+            reverse=merged.pairing.reverse if env == PRODUCTION else None,
+        )
+        for env in USER_ENVIRONMENTS
+    ]
+    errors = [error for environment in trimmed for error in environment.errors]
+    if errors:
+        raise BuildError(
+            "Trimmed operations are invalid:\n" + "\n".join(f"  {e}" for e in errors)
+        )
+    _write_trimmed(paths.package_dir, generated_operations(operation_strs), trimmed)
+    _write_availability(paths.package_dir, defaults, merged)
+    _write_schema_commits(paths)
+    return BuildResult(
+        merged_sdl=merged.sdl,
+        conflicts=merged.conflicts,
+        pairing=merged.pairing,
+        kind_conflicts=merged.kind_conflicts,
+        merge_summary=_merge_summary(merged, aliases),
+        trim_summary=_trim_summary(trimmed),
     )
 
 
-def _parse_graphql_file(path: Path) -> DocumentNode:
-    """
-    Parse a GraphQL document file.
-
-    Parameters
-    ----------
-    path : Path
-        Path to the GraphQL file.
-
-    Returns
-    -------
-    DocumentNode
-        Parsed GraphQL document AST.
-
-    Raises
-    ------
-    CodegenError
-        Raised if the file cannot be parsed.
-    """
+def _merge(paths: BuildPaths) -> MergedSchema:
+    missing = [
+        str(paths.schema_path(env))
+        for env in USER_ENVIRONMENTS
+        if not paths.schema_path(env).is_file()
+    ]
+    if missing:
+        raise BuildError(f"Schema files not found: {', '.join(missing)}")
     try:
-        return parse(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        raise CodegenError(f"Failed to parse GraphQL file: {path}\n{exc}") from exc
+        return merge_schemas(
+            development=paths.schema_path(DEVELOPMENT).read_text(encoding="utf-8"),
+            production=paths.schema_path(PRODUCTION).read_text(encoding="utf-8"),
+        )
+    except SchemaMergeError as exc:
+        raise BuildError(str(exc)) from exc
 
 
-def _collect_definition_names(file_paths: list[Path]) -> dict[str, Path]:
+_EXISTENCE_RULES = [
+    FieldsOnCorrectTypeRule,
+    KnownArgumentNamesRule,
+    KnownTypeNamesRule,
+    ValuesOfCorrectTypeRule,
+]
+
+
+def _check_selections_exist_somewhere(
+    paths: BuildPaths, merged: MergedSchema
+) -> DocumentNode:
     """
-    Collect named GraphQL operations and fragments from files.
+    Fail listing every field, argument, type or value that no environment has.
 
-    Parameters
-    ----------
-    file_paths : list[Path]
-        GraphQL files to inspect.
-
-    Returns
-    -------
-    dict[str, Path]
-        Mapping of definition name to defining file.
-
-    Raises
-    ------
-    CodegenError
-        Raised if duplicate names are found within the given files.
+    Codegen would stop at the first; a schema update that removed several
+    parts is fixed in one go when the build names them all. Returns the
+    operations as written.
     """
-    names_to_paths: dict[str, Path] = {}
-
-    for file_path in file_paths:
-        document = _parse_graphql_file(file_path)
-
-        for definition in document.definitions:
-            definition_name: str | None = None
-
-            if isinstance(definition, OperationDefinitionNode) and definition.name:
-                definition_name = definition.name.value
-            elif isinstance(definition, FragmentDefinitionNode):
-                definition_name = definition.name.value
-
-            if not definition_name:
-                continue
-
-            if definition_name in names_to_paths:
-                raise CodegenError(
-                    "Duplicate GraphQL definition name found:\n"
-                    f"  Name: {definition_name}\n"
-                    f"  First file: {names_to_paths[definition_name]}\n"
-                    f"  Second file: {file_path}"
-                )
-
-            names_to_paths[definition_name] = file_path
-
-    return names_to_paths
+    sources = sorted(paths.operations_dir.rglob("*.graphql"))
+    if not sources:
+        return DocumentNode(definitions=())
+    document = parse("\n\n".join(p.read_text(encoding="utf-8") for p in sources))
+    errors = validate(build_ast_schema(merged.document), document, _EXISTENCE_RULES)
+    if errors:
+        raise BuildError(
+            "Operations select what no environment has:\n"
+            + "\n".join(
+                f"  {_definition_name(document, error)}: {error.message}"
+                for error in errors
+            )
+        )
+    return document
 
 
-def _collect_spread_names(node: Any) -> set[str]:
-    """
-    Recursively collect all fragment spread names from a GraphQL AST node.
-
-    Parameters
-    ----------
-    node : Any
-        A graphql-core AST node or selection set.
-
-    Returns
-    -------
-    set[str]
-        All fragment spread names found in the node and its descendants.
-    """
-    names: set[str] = set()
-    if isinstance(node, FragmentSpreadNode):
-        names.add(node.name.value)
-    for attr in ("selections", "selection_set"):
-        val = getattr(node, attr, None)
-        if isinstance(val, (tuple, list)):
-            for child in val:
-                names |= _collect_spread_names(child)
-        elif val is not None and hasattr(val, "selections"):
-            names |= _collect_spread_names(val)
-    return names
+def _definition_name(document: DocumentNode, error: GraphQLError) -> str:
+    start = error.nodes[0].loc.start if error.nodes and error.nodes[0].loc else -1
+    for definition in document.definitions:
+        if definition.loc and definition.loc.start <= start < definition.loc.end:
+            name = getattr(definition, "name", None)
+            return name.value if name else "anonymous"
+    return "anonymous"
 
 
-def _validate_development_only_is_additive(paths: CodegenPaths) -> None:
-    """
-    Ensure development-only GraphQL definitions do not collide with shared ones.
-
-    Parameters
-    ----------
-    paths : CodegenPaths
-        Repository path configuration.
-
-    Raises
-    ------
-    CodegenError
-        Raised if development-only definitions reuse names from shared.
-    """
-    # Skip validation if the development-only file is missing or empty.
-    if not _file_has_content(paths.development_only_path):
-        return
-
-    shared_definitions = _collect_definition_names(
-        _iter_graphql_files(paths.shared_operations_dir)
+def _environment_schema(paths: BuildPaths, environment: str):
+    return build_ast_schema(
+        parse(paths.schema_path(environment).read_text(encoding="utf-8"))
     )
-    dev_definitions = _collect_definition_names([paths.development_only_path])
-
-    collisions = {
-        name: (shared_definitions[name], dev_path)
-        for name, dev_path in dev_definitions.items()
-        if name in shared_definitions
-    }
-
-    if not collisions:
-        return
-
-    lines = ["Development-only GraphQL must be additive. Name collisions found:"]
-    for name, (shared_path, dev_path) in sorted(collisions.items()):
-        lines.append(f"  {name}")
-        lines.append(f"    shared: {shared_path}")
-        lines.append(f"    dev:    {dev_path}")
-
-    raise CodegenError("\n".join(lines))
 
 
-def _assemble_operations(paths: CodegenPaths, env: GPPEnvironment) -> Path:
+def _run_codegen(
+    paths: BuildPaths, merged: MergedSchema
+) -> tuple[DefaultsReport, AliasReport]:
     """
-    Assemble the effective GraphQL operations tree for an environment.
+    Generate the client from the merged schema.
 
-    Parameters
-    ----------
-    paths : CodegenPaths
-        Repository path configuration.
-    env : GPPEnvironment
-        Environment to assemble operations for.
-
-    Returns
-    -------
-    Path
-        Path to the assembled operations directory.
-
-    Raises
-    ------
-    CodegenError
-        Raised if the shared operations directory is missing.
+    Returns where ``None`` defaults went and which production names became
+    aliases.
     """
-    assembled_dir = paths.build_operations_dir(env)
+    with paths.codegen_config.open("rb") as config_file:
+        config = tomllib.load(config_file)
+    defaults = DefaultsReport()
+    aliases = AliasReport(renames=merged.pairing.by_production_name)
+    config["tool"]["gpp-client"] = {DEFAULTS_KEY: defaults, ALIASES_KEY: aliases}
 
-    assembled_dir.mkdir(parents=True, exist_ok=True)
-
-    if not paths.shared_operations_dir.exists():
-        raise CodegenError(
-            f"Shared operations directory not found at {paths.shared_operations_dir}"
+    if paths.package_dir.is_dir():
+        shutil.rmtree(paths.package_dir)
+    paths.package_dir.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="gpp-client-merged-") as scratch:
+        merged_path = Path(scratch) / "merged.graphql"
+        merged_path.write_text(merged.sdl, encoding="utf-8")
+        config["tool"]["ariadne-codegen"].update(
+            schema_path=str(merged_path),
+            queries_path=str(paths.operations_dir),
+            target_package_path=str(paths.package_dir.parent),
+            target_package_name=paths.package_dir.name,
         )
-
-    # Copy the shared operations.
-    for item in paths.shared_operations_dir.iterdir():
-        destination_item = assembled_dir / item.name
-
-        if item.is_dir():
-            shutil.copytree(item, destination_item, dirs_exist_ok=True)
-        else:
-            destination_item.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, destination_item)
-
-    # Copy the development-only file.
-    if env is GPPEnvironment.DEVELOPMENT and _file_has_content(
-        paths.development_only_path
-    ):
-        shutil.copy2(
-            paths.development_only_path,
-            assembled_dir / paths.development_only_path.name,
-        )
-
-        # Inject dev-only fragment spreads into root shared fragment definitions.
-        _inject_dev_only_fragments(
-            assembled_dir,
-            assembled_dir / paths.development_only_path.name,
-        )
-
-    output.info(f"Assembled operations into {assembled_dir}")
-    return assembled_dir
-
-
-def _inject_dev_only_fragments(assembled_dir: Path, dev_only_path: Path) -> None:
-    """
-    Inline dev-only field selections into root shared fragment definitions.
-
-    For each "top-level" fragment defined in the dev-only file (i.e. not
-    referenced by another dev-only fragment), this function finds the "root"
-    shared fragment(s) with the same GraphQL type condition and appends the
-    dev-only fragment's own selections directly to their selection sets,
-    rather than inserting a named fragment spread causing cycle issues with Grakle.
-
-    Inlining the field selections (instead of inserting a
-    ``RootShared { ...DevFragment }`` spread) avoids a same-type direct
-    fragment spread, Grackle incorrectly flags as a fragment cycle.
-
-    Parameters
-    ----------
-    assembled_dir : Path
-        Directory containing the fully assembled GraphQL operations.
-    dev_only_path : Path
-        Path to the development-only GraphQL file inside ``assembled_dir``.
-    """
-    if not dev_only_path.exists():
-        return
-
-    dev_doc = _parse_graphql_file(dev_only_path)
-
-    dev_frag_defs: dict[str, FragmentDefinitionNode] = {
-        defn.name.value: defn
-        for defn in dev_doc.definitions
-        if isinstance(defn, FragmentDefinitionNode)
-    }
-
-    if not dev_frag_defs:
-        return
-
-    # Fragments referenced by other dev-only fragments are sub-fragments — skip.
-    dev_internal_spreads: set[str] = set()
-    for defn in dev_frag_defs.values():
-        dev_internal_spreads |= _collect_spread_names(defn.selection_set)
-
-    top_level_dev_frags = {
-        name: defn
-        for name, defn in dev_frag_defs.items()
-        if name not in dev_internal_spreads
-    }
-
-    if not top_level_dev_frags:
-        return
-
-    # Map: type_condition -> [top-level dev fragment names to inject]
-    dev_frags_by_type: dict[str, list[str]] = {}
-    for name, defn in top_level_dev_frags.items():
-        tc = defn.type_condition.name.value
-        dev_frags_by_type.setdefault(tc, []).append(name)
-
-    # Parse all assembled shared files (skip the dev-only file itself).
-    shared_files: list[tuple[Path, DocumentNode]] = []
-    shared_frag_type: dict[str, str] = {}  # frag_name -> type_condition
-
-    for fpath in sorted(assembled_dir.rglob("*.graphql")):
-        if fpath == dev_only_path:
-            continue
-        doc = _parse_graphql_file(fpath)
-        shared_files.append((fpath, doc))
-        for defn in doc.definitions:
-            if isinstance(defn, FragmentDefinitionNode):
-                shared_frag_type[defn.name.value] = defn.type_condition.name.value
-
-    # Find shared fragments that are spread by another shared fragment with the
-    # SAME type condition: these are sub-fragments, not injection targets.
-    sub_frags: set[str] = set()
-    for _fpath, doc in shared_files:
-        for defn in doc.definitions:
-            if not isinstance(defn, FragmentDefinitionNode):
-                continue
-            parent_type = defn.type_condition.name.value
-            for spread_name in _collect_spread_names(defn.selection_set):
-                if shared_frag_type.get(spread_name) == parent_type:
-                    sub_frags.add(spread_name)
-
-    # Inline dev-only selections into the root shared fragments.
-    for fpath, doc in shared_files:
-        new_definitions = list(doc.definitions)
-        modified = False
-
-        for i, defn in enumerate(new_definitions):
-            if not isinstance(defn, FragmentDefinitionNode):
-                continue
-            frag_name = defn.name.value
-            type_cond = defn.type_condition.name.value
-
-            if frag_name in sub_frags or type_cond not in dev_frags_by_type:
-                continue
-
-            # Inline the selections from each top-level dev-only fragment
-            # rather than inserting a named fragment spread.  This prevents
-            # same-type direct spreads (both the shared fragment and the
-            # dev-only fragment are on the same type T), which some servers
-            # incorrectly flag as a fragment cycle.
-            inlined: tuple = ()
-            for name in dev_frags_by_type[type_cond]:
-                inlined += tuple(top_level_dev_frags[name].selection_set.selections)
-
-            new_selection_set = SelectionSetNode(
-                selections=tuple(defn.selection_set.selections) + inlined
-            )
-            new_definitions[i] = FragmentDefinitionNode(
-                name=defn.name,
-                type_condition=defn.type_condition,
-                selection_set=new_selection_set,
-                directives=defn.directives,
-                variable_definitions=defn.variable_definitions,
-            )
-            modified = True
-
-        if modified:
-            new_doc = DocumentNode(definitions=tuple(new_definitions))
-            fpath.write_text(print_ast(new_doc), encoding="utf-8")
-
-    output.info("Inlined dev-only selections into assembled shared fragments.")
-
-
-def _remove_dir(path: Path, *, label: str) -> None:
-    """
-    Remove a directory if it exists, with output.
-
-    Parameters
-    ----------
-    path : Path
-        Directory path to remove.
-    label : str
-        Label for output messages.
-    """
-    if path.is_dir():
-        shutil.rmtree(path)
-        output.info(f"Removed {label} at {path}")
-
-
-def _run_codegen(toml_path: Path) -> None:
-    """
-    Run Ariadne codegen with a specific TOML config.
-
-    Parameters
-    ----------
-    toml_path : Path
-        Path to the codegen TOML file.
-
-    Raises
-    ------
-    CodegenError
-        Raised if Ariadne codegen fails.
-    """
-    with output.status("Running codegen..."):
         try:
-            process = subprocess.run(
-                ["ariadne-codegen", "--config", str(toml_path)],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            if process.stdout:
-                output.dim_info(process.stdout)
-        except subprocess.CalledProcessError as exc:
-            if exc.stdout:
-                output.dim_info(exc.stdout)
-            raise CodegenError(exc.stderr) from exc
+            with contextlib.redirect_stdout(io.StringIO()):
+                run_ariadne_codegen(config)
+        except (CodeGenException, GraphQLError) as exc:
+            raise BuildError(f"Codegen failed: {exc}") from exc
+    return defaults, aliases
 
 
-def _run(env: GPPEnvironment) -> None:
+def _check_environment_defaults(package_dir: Path, report: DefaultsReport) -> None:
     """
-    Execute the full codegen workflow for an environment.
+    Fail naming each environment-specific selection whose model lacks a None default.
+
+    Read from the generated source, so a field the plugin matched wrongly, or a
+    default a later plugin removed, cannot pass unnoticed.
+    """
+    fields: dict[tuple[str, str], list[ast.expr | None]] = {}
+    for module in package_dir.glob("*.py"):
+        # The custom_* query-builder modules reuse result class names.
+        if module.name.startswith("custom_"):
+            continue
+        for node in ast.walk(ast.parse(module.read_text(encoding="utf-8"))):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            for statement in node.body:
+                if isinstance(statement, ast.AnnAssign) and isinstance(
+                    statement.target, ast.Name
+                ):
+                    fields.setdefault((node.name, statement.target.id), []).append(
+                        statement.value
+                    )
+
+    defaulted = {
+        offset
+        for offset, class_name, attribute in report.placed
+        if fields.get((class_name, attribute))
+        and all(_defaults_to_none(value) for value in fields[class_name, attribute])
+    }
+    missing = sorted(
+        {
+            selection.description
+            for offset, selection in report.expected.items()
+            if offset not in defaulted
+        }
+    )
+    if missing:
+        raise BuildError(
+            "Environment-specific fields did not get a None default:\n"
+            + "\n".join(f"  {description}" for description in missing)
+        )
+
+
+def _defaults_to_none(value: ast.expr | None) -> bool:
+    if isinstance(value, ast.Constant):
+        return value.value is None
+    if isinstance(value, ast.Call):
+        return any(
+            keyword.arg == "default"
+            and isinstance(keyword.value, ast.Constant)
+            and keyword.value.value is None
+            for keyword in value.keywords
+        )
+    return False
+
+
+def _embedded_operations(paths: BuildPaths, written: DocumentNode) -> list[str]:
+    """
+    Return each operation as the generated client embeds it.
+
+    The queries are read back from the generated client's source, so the
+    trimmed copies start from the exact text the client sends, whatever a
+    plugin did to it. Fails when fewer come back than operations were written.
+    """
+    queries = _embedded_queries(paths.package_dir / "client.py")
+    expected = sum(isinstance(d, OperationDefinitionNode) for d in written.definitions)
+    if len(queries) != expected:
+        raise BuildError(
+            "Reading gql(...) queries back from the generated client found "
+            f"{len(queries)} of {expected} generated operations."
+        )
+    return queries
+
+
+def _embedded_queries(client_path: Path) -> list[str]:
+    return _embedded_queries_in(ast.parse(client_path.read_text(encoding="utf-8")))
+
+
+def _embedded_queries_in(tree: ast.AST) -> list[str]:
+    return [
+        node.args[0].value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "gql"
+        and node.args
+        and isinstance(node.args[0], ast.Constant)
+    ]
+
+
+def _merge_summary(merged: MergedSchema, aliases: AliasReport) -> str:
+    lines = [
+        f"- Renamed `{rename.production}` to `{rename.development}` "
+        f"({_names(rename.coordinates)})"
+        for rename in merged.pairing.renames
+    ]
+    lines += [
+        f"- Alias `{alias}` of `{target}` in `{module}`"
+        for module, alias, target in aliases.placed
+    ]
+    # Responses carry production's __typename, which nothing maps back to the
+    # merged name; a renamed union or interface is the trigger to add that map.
+    lines += [
+        f"- Warning: {rename.kind} `{rename.production}` was renamed; production "
+        f"answers `__typename` with `{rename.production}`, so a `__typename` map "
+        "is now needed"
+        for rename in merged.pairing.renames
+        if rename.kind in ("union", "interface")
+    ]
+    lines += [
+        f"- Conflict `{conflict.coordinate}`: {_on_each(conflict.types)}; "
+        "production's type used"
+        for conflict in merged.conflicts
+    ]
+    for conflict in merged.kind_conflicts:
+        dropped = f", dropped {_names(conflict.dropped)}" if conflict.dropped else ""
+        lines.append(
+            f"- Kind conflict `{conflict.name}`: {_on_each(conflict.kinds)}; "
+            f"production's definition used{dropped}"
+        )
+    lines += [f"- Ambiguous `{vote}`; not renamed" for vote in merged.pairing.ambiguous]
+    lines += [
+        f"- Collision `{vote}`; not renamed" for vote in merged.pairing.collisions
+    ]
+    if not lines:
+        return "### Merge summary\n\nNo renames, conflicts or refused votes.\n"
+    return "### Merge summary\n\n" + "\n".join(lines) + "\n"
+
+
+def _on_each(by_environment: tuple[tuple[str, str], ...]) -> str:
+    return ", ".join(f"{what} on {env}" for env, what in by_environment)
+
+
+def _trim_summary(trimmed: list[EnvironmentOperations]) -> str:
+    sections = []
+    for environment in trimmed:
+        lines = []
+        if environment.unavailable:
+            lines.append(f"- Unavailable: {_names(environment.unavailable)}")
+        lines += [
+            f"- `{part}` removed from {_names(definitions)}"
+            for part, definitions in environment.removed.items()
+        ]
+        if lines:
+            sections.append(f"**{environment.environment}**\n" + "\n".join(lines))
+        else:
+            sections.append(f"**{environment.environment}**: nothing trimmed.")
+    return "### Trim summary\n\n" + "\n\n".join(sections) + "\n"
+
+
+def _names(names: tuple[str, ...]) -> str:
+    return ", ".join(f"`{name}`" for name in names)
+
+
+def _write_trimmed(
+    package_dir: Path,
+    generated: dict[str, str],
+    trimmed: list[EnvironmentOperations],
+) -> None:
+    trimmed_dir = package_dir / "trimmed"
+    trimmed_dir.mkdir()
+    (trimmed_dir / "__init__.py").write_text(
+        '"""Operations trimmed per environment. Generated; do not edit."""\n\n'
+        f"GENERATED = {_dict_lines(generated.items())}\n",
+        encoding="utf-8",
+    )
+    for environment in trimmed:
+        operations = sorted(
+            environment.operations.items(), key=lambda item: (item[1][0], item[0])
+        )
+        (trimmed_dir / f"{environment.environment}.py").write_text(
+            f'"""Operations as {environment.environment} receives them. '
+            'Generated; do not edit."""\n\n'
+            f"FRAGMENTS = {_dict_lines(environment.fragments.items())}\n\n"
+            f"OPERATIONS = {_dict_lines(operations)}\n",
+            encoding="utf-8",
+        )
+
+
+def _write_availability(
+    package_dir: Path, defaults: DefaultsReport, merged: MergedSchema
+) -> None:
+    """
+    Write the fields and enum values some environment lacks, with the
+    environments that have them.
+
+    ``is_available`` and ``enum_values`` read the table at runtime; anything
+    not listed is on every environment.
+    """
+    fields: dict[str, dict[str, tuple[str, ...]]] = {}
+    for offset, class_name, attribute in defaults.placed:
+        fields.setdefault(class_name, {})[attribute] = defaults.expected[
+            offset
+        ].environments
+    enum_values: dict[str, dict[str, tuple[str, ...]]] = {}
+    for definition in merged.document.definitions:
+        if not isinstance(definition, EnumTypeDefinitionNode):
+            continue
+        for value in definition.values or ():
+            envs = environments(value)
+            if envs is None:
+                envs = environments(definition)
+            if envs is not None:
+                enum_values.setdefault(definition.name.value, {})[value.name.value] = (
+                    envs
+                )
+    (package_dir / "availability.py").write_text(
+        '"""Fields and enum values some environment lacks. '
+        'Generated; do not edit."""\n\n'
+        f"FIELDS = {_dict_lines(sorted(fields.items()))}\n\n"
+        f"ENUM_VALUES = {_dict_lines(sorted(enum_values.items()))}\n",
+        encoding="utf-8",
+    )
+
+
+def _write_schema_commits(paths: BuildPaths) -> None:
+    """
+    Write the GPP commit each environment schema was downloaded at, or
+    ``None`` for a schema without a ``# schema-commit`` line, for error
+    messages.
+    """
+    commits = {}
+    for environment in USER_ENVIRONMENTS:
+        text = paths.schema_path(environment).read_text(encoding="utf-8")
+        commits[environment] = schema_commit(text)
+    (paths.package_dir / "schema_commits.py").write_text(
+        '"""The GPP commit each environment schema was downloaded at. '
+        'Generated; do not edit."""\n\n'
+        f"COMMITS = {_dict_lines(commits.items())}\n",
+        encoding="utf-8",
+    )
+
+
+_SCHEMA_COMMIT = re.compile(r"\A# schema-commit: (\S+)$", re.MULTILINE)
+
+
+def schema_commit(text: str) -> str | None:
+    """
+    Return the GPP commit a schema file's ``# schema-commit`` line names.
 
     Parameters
     ----------
-    env : GPPEnvironment
-        Target environment.
+    text : str
+        The schema file's text.
+
+    Returns
+    -------
+    str | None
+        The commit, or ``None`` when the file has no such line.
     """
-    paths = CodegenPaths(root=Path.cwd())
+    match = _SCHEMA_COMMIT.match(text)
+    return None if match is None else match.group(1)
 
-    output.info(f"Running codegen for environment: {env.value}")
 
-    toml_path = paths.codegen_toml_path(env)
-    if not toml_path.exists():
-        raise CodegenError(f"Codegen config file not found at {toml_path}")
-
-    config = _load_codegen_config(toml_path)
-    codegen_settings = _get_codegen_settings(config)
-    package_dir = _get_target_package_dir(
-        repo_root=paths.root,
-        codegen_settings=codegen_settings,
-    )
-
-    if env is GPPEnvironment.DEVELOPMENT:
-        _validate_development_only_is_additive(paths)
-
-    _remove_dir(paths.build_dir, label="build directory")
-    _assemble_operations(paths, env)
-    _remove_dir(package_dir, label="generated package")
-    _run_codegen(toml_path)
-    _write_package_environment(package_dir, env)
+def _dict_lines(items) -> str:
+    """
+    Return a dict literal with one entry per line, so schema PRs diff per entry.
+    """
+    lines = "".join(f"    {key!r}: {value!r},\n" for key, value in items)
+    return "{\n" + lines + "}"
 
 
 @app.command()
-def main(
-    env: Annotated[
-        GPPEnvironment,
-        typer.Argument(help="Environment to run codegen for.", case_sensitive=False),
-    ],
-) -> None:
+def main() -> None:
     """
-    Run code generation for a specific GPP environment.
-
-    The following environment variables must be set:
-    - DEVELOPMENT: GPP_DEVELOPMENT_TOKEN
-    - PRODUCTION: GPP_TOKEN
+    Build the generated client and the trimmed operations from the schemas.
     """
+    paths = BuildPaths.for_repo(Path.cwd())
     try:
-        _run(env)
-    except CodegenError as exc:
-        output.fail(str(exc))
+        with output.status("Building..."):
+            result = build(paths)
+    except BuildError as exc:
+        output.fail(escape(str(exc)))
         raise typer.Exit(code=1) from exc
 
-    output.success("Codegen completed successfully")
+    output.success(f"Wrote {paths.package_dir}")
+    # Plain text, so it pastes into a PR body unchanged.
+    typer.echo("\n" + result.merge_summary + "\n" + result.trim_summary)
 
 
 if __name__ == "__main__":

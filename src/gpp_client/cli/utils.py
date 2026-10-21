@@ -4,6 +4,7 @@ Utility helpers for the GPP Client CLI.
 
 __all__ = [
     "async_command",
+    "open_client",
     "truncate_string",
     "truncate_short",
     "truncate_long",
@@ -13,18 +14,25 @@ __all__ = [
 
 import asyncio
 import functools
+import inspect
 from collections.abc import Callable
 from typing import Any
 
 import typer
-from click import get_current_context
 
 from gpp_client.cli import output
+from gpp_client.cli.console import error_console
+from gpp_client.client import GPPClient
+from gpp_client.environment import GPPEnvironment
+from gpp_client.settings import GPPSettings
 
 
 def async_command(func: Callable[..., Any]) -> Callable[..., None]:
     """
     Decorator to run async Typer commands using ``asyncio.run()``.
+
+    The command must take a ``typer.Context`` parameter. The decorator reads
+    ``--debug`` from it to decide whether a failure prints the full traceback.
 
     Parameters
     ----------
@@ -35,7 +43,24 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
     -------
     Callable[..., None]
         Wrapped synchronous callable for Typer.
+
+    Raises
+    ------
+    TypeError
+        Raised if ``func`` has no ``typer.Context`` parameter.
     """
+    context_name = next(
+        (
+            name
+            for name, param in inspect.signature(func, eval_str=True).parameters.items()
+            if param.annotation is typer.Context
+        ),
+        None,
+    )
+    if context_name is None:
+        raise TypeError(
+            f"{func.__name__} must take a typer.Context parameter for --debug."
+        )
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs) -> Any:
@@ -44,7 +69,7 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
         except typer.Exit:
             raise
         except Exception as exc:
-            ctx = get_current_context(silent=True)
+            ctx = kwargs.get(context_name)
             debug = bool(getattr(getattr(ctx, "obj", None), "debug", False))
             if debug:
                 output.print_exception()
@@ -54,6 +79,39 @@ def async_command(func: Callable[..., Any]) -> Callable[..., None]:
             raise typer.Exit(code=1) from exc
 
     return wrapper
+
+
+def open_client(ctx: typer.Context) -> GPPClient:
+    """
+    Build a client for the environment the command was given with ``--env``.
+
+    Without ``--env`` the environment comes from ``GPP_ENVIRONMENT`` or the
+    ``.env`` file as it does in Python, then from the default stored in the
+    configuration file, then production with a warning. The environment is
+    printed to stderr so piped output stays clean.
+
+    Parameters
+    ----------
+    ctx : typer.Context
+        The running command's context, which holds the ``--env`` choice.
+
+    Returns
+    -------
+    GPPClient
+        A client for the chosen environment.
+    """
+    environment = getattr(getattr(ctx, "obj", None), "environment", None)
+    if environment is None and "environment" not in GPPSettings().model_fields_set:
+        error_console.print(
+            f"{output.ICON_WARNING} No GPP environment set, so using production. "
+            "Pass --env, or set GPP_ENVIRONMENT or environment in the "
+            "configuration file; a future release will fail instead.",
+            soft_wrap=True,
+        )
+        environment = GPPEnvironment.PRODUCTION
+    client = GPPClient(environment=environment)
+    output.environment(client.settings.environment)
+    return client
 
 
 def truncate_string(value: str | None, max_length: int) -> str:

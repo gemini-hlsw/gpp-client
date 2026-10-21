@@ -5,11 +5,12 @@ CLI entry point for GPP Client.
 __all__ = ["app"]
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Annotated
 
 import typer
 
-from gpp_client import GPPClient, __version__
+from gpp_client import __version__
 from gpp_client.cli import output
 from gpp_client.cli.commands import (
     attachment_app,
@@ -21,7 +22,8 @@ from gpp_client.cli.commands import (
     target_app,
     workflow_state_app,
 )
-from gpp_client.cli.utils import async_command
+from gpp_client.cli.utils import async_command, open_client
+from gpp_client.environment import GPPEnvironment
 from gpp_client.settings import get_config_path as _get_config_path
 
 
@@ -32,6 +34,15 @@ class CLIState:
     """
 
     debug: bool = False
+    environment: str | None = None
+
+
+CLIEnvironment = Enum(
+    "CLIEnvironment",
+    {env.name: env.label for env in GPPEnvironment},
+    type=str,
+)
+"""The environments offered to CLI users."""
 
 
 app = typer.Typer(
@@ -72,17 +83,28 @@ def main_callback(
             help="Show full exception tracebacks.",
         ),
     ] = False,
+    env: Annotated[
+        CLIEnvironment | None,
+        typer.Option(
+            "--env",
+            help=(
+                "GPP environment for this command. Overrides GPP_ENVIRONMENT "
+                "and config.toml."
+            ),
+            case_sensitive=False,
+        ),
+    ] = None,
 ):
     """Main entry point callback for GPP Client CLI."""
-    ctx.obj = CLIState(debug=debug)
+    ctx.obj = CLIState(debug=debug, environment=env.value if env else None)
 
 
 @app.command("ping")
 @async_command
-async def ping() -> None:
+async def ping(ctx: typer.Context) -> None:
     """Ping GPP. Requires valid credentials."""
-    client = GPPClient()
-    success, error = await client.ping()
+    async with open_client(ctx) as client:
+        success, error = await client.ping()
     if not success:
         output.fail(f"Failed to reach GPP: {error}")
         raise typer.Exit(code=1)

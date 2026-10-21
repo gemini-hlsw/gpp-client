@@ -8,6 +8,7 @@ __all__ = [
     "success",
     "warning",
     "fail",
+    "environment",
     "panel",
     "confirm_prompt",
     "print_exception",
@@ -30,6 +31,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 
 from gpp_client.cli.console import console, error_console
+from gpp_client.environment import GPPEnvironment
 
 ICON_BULLET = "[bold white]•[/]"
 ICON_SUCCESS = "[bold green]✔[/]"
@@ -122,6 +124,22 @@ def fail(msg: RenderableType) -> None:
         Error message text.
     """
     error_console.print(f"{ICON_ERROR} {msg}")
+
+
+def environment(env: GPPEnvironment) -> None:
+    """
+    Print the environment a command uses to stderr.
+
+    Parameters
+    ----------
+    env : GPPEnvironment
+        The environment the client was built for.
+    """
+    error_console.print(
+        f"Environment: {env.label} ({env.base_url})",
+        style="dim",
+        soft_wrap=True,
+    )
 
 
 def procedure(msg: RenderableType) -> None:

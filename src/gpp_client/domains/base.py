@@ -11,7 +11,7 @@ from typing import NoReturn
 from gpp_client.exceptions import (
     GPPClientError,
     GPPError,
-    GPPResponseError,
+    GPPHttpError,
     GPPValidationError,
 )
 from gpp_client.generated.client import GraphQLClient
@@ -97,12 +97,18 @@ class BaseDomain:
 
         Raises
         ------
-        GPPResponseError
-            If the response status is not in ``ok_statuses``.
+        GPPHttpError
+            If the response status is not in ``ok_statuses``; it names the
+            REST client's environment.
         """
         if response.status not in ok_statuses:
             text = await response.text()
-            raise GPPResponseError(response.status, text or default_message)
+            raise GPPHttpError(
+                self._rest.environment,
+                response.status,
+                response,
+                text or default_message,
+            )
 
     def resolve_content(
         self,

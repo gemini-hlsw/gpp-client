@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command, require_exactly_one
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client, require_exactly_one
 from gpp_client.generated import ObservationWorkflowState
 
 workflow_state_app = typer.Typer(
@@ -22,6 +21,7 @@ workflow_state_app = typer.Typer(
 @workflow_state_app.command("get")
 @async_command
 async def get_workflow_state(
+    ctx: typer.Context,
     observation_id: Annotated[
         str | None,
         typer.Option(
@@ -46,7 +46,7 @@ async def get_workflow_state(
     )
 
     with output.status("Fetching workflow state..."):
-        async with GPPClient() as client:
+        async with open_client(ctx) as client:
             match selector_name:
                 case "observation_id":
                     result = await client.workflow_state.get_by_id(
@@ -65,6 +65,7 @@ async def get_workflow_state(
 @workflow_state_app.command("set")
 @async_command
 async def set_workflow_state(
+    ctx: typer.Context,
     observation_id: Annotated[
         str,
         typer.Argument(
@@ -88,7 +89,7 @@ async def set_workflow_state(
     """
     Set workflow state.
     """
-    async with GPPClient() as client:
+    async with open_client(ctx) as client:
         try:
             workflow_state_enum = ObservationWorkflowState[workflow_state]
         except ValueError:

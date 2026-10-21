@@ -15,7 +15,8 @@ from gpp_client.domains.attachment import (
     _remove_headers_middleware,
     _resolve_download_dir,
 )
-from gpp_client.exceptions import GPPClientError, GPPResponseError
+from gpp_client.environment import GPPEnvironment
+from gpp_client.exceptions import GPPClientError, GPPHttpError
 from gpp_client.generated.enums import AttachmentType
 
 
@@ -229,7 +230,7 @@ async def test_upload_reraises_response_error(
     mocker,
 ) -> None:
     """
-    Ensure upload re-raises GPPResponseError unchanged.
+    Ensure upload re-raises GPPHttpError unchanged.
     """
     response = SimpleNamespace()
     session = SimpleNamespace(
@@ -240,10 +241,12 @@ async def test_upload_reraises_response_error(
     mocker.patch.object(
         attachment_domain,
         "raise_for_status",
-        new=mocker.AsyncMock(side_effect=GPPResponseError(500, "boom")),
+        new=mocker.AsyncMock(
+            side_effect=GPPHttpError(GPPEnvironment.PRODUCTION, 500, None, "boom")
+        ),
     )
 
-    with pytest.raises(GPPResponseError):
+    with pytest.raises(GPPHttpError):
         await attachment_domain.upload(
             "p-1",
             attachment_type=AttachmentType.FINDER,

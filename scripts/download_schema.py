@@ -1,23 +1,46 @@
-#!/usr/bin/env python3
 """
-Download the GraphQL schema for a specific GPP environment.
+Download each GPP environment's GraphQL schema by introspection.
+
+Introspection is anonymous. When a server refuses it, the download retries with
+that environment's token from the environment variables.
 """
 
 import os
-import subprocess
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Annotated
+from urllib.parse import urljoin
 
+import httpx
 import typer
 
+from custom_plugins.environments import USER_ENVIRONMENTS
 from gpp_client.cli import output
-from gpp_client.constants import DEVELOPMENT_TOKEN_ENV_VAR, TOKEN_ENV_VAR
 from gpp_client.environment import GPPEnvironment
-
-app = typer.Typer(
-    add_completion=False,
+from gpp_client.urls import get_graphql_url
+from graphql import (
+    GraphQLError,
+    build_client_schema,
+    get_introspection_query,
+    print_schema,
 )
+from scripts.run_codegen import BuildPaths, schema_file
+
+__all__ = ["SchemaDownloadError", "SchemaInvalidError", "download_schemas"]
+
+
+INTROSPECTION_QUERY = get_introspection_query(
+    descriptions=True,
+    specified_by_url=True,
+    directive_is_repeatable=True,
+    schema_description=False,
+    input_value_deprecation=True,
+    input_object_one_of=True,
+)
+
+TIMEOUT_SECONDS = 30
+
+app = typer.Typer(add_completion=False)
 
 
 class SchemaDownloadError(RuntimeError):
@@ -26,184 +49,184 @@ class SchemaDownloadError(RuntimeError):
     """
 
 
-@dataclass(frozen=True)
-class SchemaPaths:
+class SchemaInvalidError(SchemaDownloadError):
     """
-    Repository paths used by the schema download workflow.
+    Raised when an environment answered introspection with a schema that does
+    not build.
+    """
+
+
+class _Refused(Exception):
+    pass
+
+
+def download_schemas(
+    schemas_dir: Path,
+    environments: Iterable[str] = USER_ENVIRONMENTS,
+    *,
+    http_client: httpx.Client | None = None,
+    environ: Mapping[str, str] = os.environ,
+) -> list[Path]:
+    """
+    Download environment schemas into ``<schemas_dir>/<environment>.graphql``.
+
+    Each file starts with ``# schema-commit: <sha>``, the GPP commit the
+    server reported at ``/health``, which the build records for error
+    messages.
 
     Parameters
     ----------
-    root : Path
-        Repository root directory.
-    """
-
-    root: Path
-
-    @property
-    def schemas_dir(self) -> Path:
-        """
-        Return the schema directory.
-
-        Returns
-        -------
-        Path
-            Schema directory.
-        """
-        return self.root / "graphql" / "schemas"
-
-    def schema_toml_path(self, env: GPPEnvironment) -> Path:
-        """
-        Return the schema TOML path for an environment.
-
-        Parameters
-        ----------
-        env : GPPEnvironment
-            Target environment.
-
-        Returns
-        -------
-        Path
-            Schema TOML path.
-        """
-        return self.schemas_dir / f"{env.value.lower()}.toml"
-
-
-def _required_token_env_var(env: GPPEnvironment) -> str:
-    """
-    Return the required token environment variable.
-
-    Parameters
-    ----------
-    env : GPPEnvironment
-        Target environment.
+    schemas_dir : Path
+        Directory to write the schema files into.
+    environments : Iterable[str], optional
+        Environments to download; development and production by default.
+    http_client : httpx.Client | None, optional
+        Client to send requests with; a new one by default.
+    environ : Mapping[str, str], optional
+        Where to read token fallbacks from; the process environment by default.
 
     Returns
     -------
-    str
-        Required token environment variable.
-    """
-    if env is GPPEnvironment.DEVELOPMENT:
-        return DEVELOPMENT_TOKEN_ENV_VAR
-
-    return TOKEN_ENV_VAR
-
-
-def _validate_token_env_var(env: GPPEnvironment) -> None:
-    """
-    Ensure the required token environment variable is set.
-
-    Parameters
-    ----------
-    env : GPPEnvironment
-        Target environment.
+    list[Path]
+        The schema files written, in the order given.
 
     Raises
     ------
     SchemaDownloadError
-        Raised if the required token environment variable is not set.
+        Raised for an unknown environment, a failed request, a refusal when
+        the environment's token variable is unset, a server commit that
+        cannot be read, or a deployment during the download; its subclass
+        ``SchemaInvalidError`` when the answer is a schema that does not build.
     """
-    env_var = _required_token_env_var(env)
-
-    if not os.getenv(env_var):
+    environments = list(environments)
+    unknown = [env for env in environments if env not in USER_ENVIRONMENTS]
+    if unknown:
         raise SchemaDownloadError(
-            f"Required environment variable '{env_var}' is not set."
+            f"Unknown environment {', '.join(unknown)}; "
+            f"choose from {', '.join(USER_ENVIRONMENTS)}."
         )
 
+    client = http_client or httpx.Client(timeout=TIMEOUT_SECONDS)
+    schemas_dir.mkdir(parents=True, exist_ok=True)
+    written = []
+    try:
+        for env in environments:
+            path = schema_file(schemas_dir, env)
+            before = _server_commit(client, env)
+            sdl = _download(client, env, environ)
+            after = _server_commit(client, env)
+            if before != after:
+                raise SchemaDownloadError(
+                    f"{env}: the server changed from commit {before[:7]} to "
+                    f"{after[:7]} during the download; run it again."
+                )
+            path.write_text(f"# schema-commit: {after}\n{sdl}", encoding="utf-8")
+            written.append(path)
+    finally:
+        if http_client is None:
+            client.close()
+    return written
 
-def _run_schema_download(toml_path: Path) -> None:
-    """
-    Download a GraphQL schema using Ariadne Codegen.
 
-    Parameters
-    ----------
-    toml_path : Path
-        Path to the schema TOML configuration.
+def _server_commit(client: httpx.Client, env: str) -> str:
+    url = urljoin(GPPEnvironment(env).base_url, "/health")
+    try:
+        response = client.get(url)
+        response.raise_for_status()
+        commit = response.json()["commit"]
+    except (httpx.HTTPError, ValueError, KeyError, TypeError) as exc:
+        raise SchemaDownloadError(f"{env}: cannot read the commit at {url}.") from exc
+    if not isinstance(commit, str) or not commit:
+        raise SchemaDownloadError(f"{env}: cannot read the commit at {url}.")
+    return commit
 
-    Raises
-    ------
-    SchemaDownloadError
-        Raised if Ariadne Codegen fails.
-    """
-    with output.status("Downloading schema..."):
+
+def _download(client: httpx.Client, env: str, environ: Mapping[str, str]) -> str:
+    try:
+        data = _introspect(client, env, headers={})
+    except _Refused:
+        token_var = GPPEnvironment(env).token_variable
+        token = environ.get(token_var)
+        if not token:
+            raise SchemaDownloadError(
+                f"{env} refused anonymous introspection; set {token_var} and retry."
+            ) from None
         try:
-            process = subprocess.run(
-                [
-                    "ariadne-codegen",
-                    "graphqlschema",
-                    "--config",
-                    str(toml_path),
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-                cwd=Path.cwd(),
+            data = _introspect(
+                client, env, headers={"Authorization": f"Bearer {token}"}
             )
+        except _Refused:
+            raise SchemaDownloadError(
+                f"{env} refused introspection with the token in {token_var}."
+            ) from None
+    try:
+        schema = build_client_schema(data)
+    except (TypeError, GraphQLError) as exc:
+        raise SchemaInvalidError(f"{env}: schema does not build: {exc}") from exc
+    return print_schema(schema) + "\n"
 
-            if process.stdout:
-                output.dim_info(process.stdout)
 
-        except subprocess.CalledProcessError as exc:
-            if exc.stdout:
-                output.dim_info(exc.stdout)
+def _introspect(client: httpx.Client, env: str, headers: dict[str, str]) -> dict:
+    try:
+        response = client.post(
+            get_graphql_url(GPPEnvironment(env)),
+            json={"query": INTROSPECTION_QUERY},
+            headers=headers,
+        )
+    except httpx.HTTPError as exc:
+        raise SchemaDownloadError(f"{env}: request failed: {exc}") from exc
 
-            stderr = exc.stderr.strip() if exc.stderr else "Schema download failed."
-            raise SchemaDownloadError(stderr) from exc
+    if response.status_code in (401, 403):
+        raise _Refused
+    if response.is_error:
+        raise SchemaDownloadError(f"{env}: HTTP {response.status_code}.")
 
+    try:
+        body = response.json()
+    except ValueError as exc:
+        raise SchemaDownloadError(f"{env}: response is not JSON.") from exc
 
-def _run(env: GPPEnvironment) -> None:
-    """
-    Execute the schema download workflow.
-
-    Parameters
-    ----------
-    env : GPPEnvironment
-        Target environment.
-
-    Raises
-    ------
-    SchemaDownloadError
-        Raised if the workflow fails.
-    """
-    paths = SchemaPaths(root=Path.cwd())
-
-    output.info(f"Downloading schema for environment: {env.value}")
-
-    toml_path = paths.schema_toml_path(env)
-
-    if not toml_path.exists():
-        raise SchemaDownloadError(f"Schema config file not found at {toml_path}")
-
-    _validate_token_env_var(env)
-
-    output.info(f"Using config: {toml_path}")
-
-    _run_schema_download(toml_path)
+    data = body.get("data") if isinstance(body, dict) else None
+    if not isinstance(data, dict) or "__schema" not in data:
+        if isinstance(body, dict) and body.get("errors"):
+            raise _Refused
+        raise SchemaDownloadError(f"{env}: response has no schema.")
+    return data
 
 
 @app.command()
 def main(
-    env: Annotated[
-        GPPEnvironment,
+    environments: Annotated[
+        list[str] | None,
         typer.Argument(
-            help="Environment to download schema for.",
-            case_sensitive=False,
+            help="Environments to download; both when omitted.",
+            show_default=False,
         ),
-    ],
+    ] = None,
+    output_dir: Annotated[
+        Path | None,
+        typer.Option(help="Directory to write into; graphql/schemas by default."),
+    ] = None,
 ) -> None:
     """
-    Download the GraphQL schema for a specific environment.
+    Download environment schemas by introspection.
 
-    The following environment variables must be set:
-    - DEVELOPMENT: GPP_DEVELOPMENT_TOKEN
-    - PRODUCTION: GPP_TOKEN
+    Introspection is anonymous. If a server refuses it, set that environment's
+    token: GPP_DEVELOPMENT_TOKEN or GPP_TOKEN (production).
     """
+    schemas_dir = output_dir or BuildPaths.for_repo(Path.cwd()).schemas_dir
+    selected = (
+        [env.lower() for env in environments] if environments else USER_ENVIRONMENTS
+    )
     try:
-        _run(env)
+        with output.status("Downloading schemas..."):
+            written = download_schemas(schemas_dir, selected)
     except SchemaDownloadError as exc:
         output.fail(str(exc))
         raise typer.Exit(code=1) from exc
 
-    output.success("Schema download completed successfully")
+    for path in written:
+        output.success(f"Wrote {path}")
 
 
 if __name__ == "__main__":

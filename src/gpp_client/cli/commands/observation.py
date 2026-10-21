@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command, require_exactly_one
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client, require_exactly_one
 
 observation_app = typer.Typer(name="observation", help="Observation operations.")
 
@@ -18,6 +17,7 @@ observation_app = typer.Typer(name="observation", help="Observation operations."
 @observation_app.command("get")
 @async_command
 async def get_observation(
+    ctx: typer.Context,
     observation_id: Annotated[
         str | None,
         typer.Option(
@@ -42,7 +42,7 @@ async def get_observation(
     )
 
     with output.status("Fetching observation..."):
-        async with GPPClient() as client:
+        async with open_client(ctx) as client:
             match selector_name:
                 case "observation_id":
                     result = await client.observation.get_by_id(
@@ -61,6 +61,7 @@ async def get_observation(
 @observation_app.command("list")
 @async_command
 async def list_observations(
+    ctx: typer.Context,
     include_deleted: Annotated[
         bool,
         typer.Option(
@@ -88,7 +89,7 @@ async def list_observations(
     List observations.
     """
     with output.status("Fetching observations..."):
-        async with GPPClient() as client:
+        async with open_client(ctx) as client:
             result = await client.observation.get_all(
                 include_deleted=include_deleted,
                 offset=offset,
