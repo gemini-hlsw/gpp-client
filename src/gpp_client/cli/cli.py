@@ -14,6 +14,7 @@ from gpp_client import __version__
 from gpp_client.cli import output
 from gpp_client.cli.commands import (
     attachment_app,
+    config_app,
     goats_app,
     observation_app,
     program_app,
@@ -24,7 +25,6 @@ from gpp_client.cli.commands import (
 )
 from gpp_client.cli.utils import async_command, open_client
 from gpp_client.environment import GPPEnvironment
-from gpp_client.settings import get_config_path as _get_config_path
 
 
 @dataclass(slots=True)
@@ -112,14 +112,6 @@ async def ping(ctx: typer.Context) -> None:
     output.success("GPP is reachable. Credentials are valid.")
 
 
-@app.command("get-config-path")
-def get_config_path() -> None:
-    """Get the path to the GPP Client configuration file."""
-
-    config_path = _get_config_path()
-    output.info(f"{config_path.resolve()}")
-
-
 app.add_typer(observation_app)
 app.add_typer(program_app)
 app.add_typer(attachment_app)
@@ -128,6 +120,7 @@ app.add_typer(workflow_state_app)
 app.add_typer(site_status_app)
 app.add_typer(goats_app)
 app.add_typer(scheduler_app)
+app.add_typer(config_app)
 
 
 def main() -> None:

@@ -55,12 +55,12 @@ def test_basic_output_functions(consoles, func, expected):
     func("hello")
 
     if func is output.fail:
-        mock_error.print.assert_called_once_with(expected)
+        mock_error.print.assert_called_once_with(expected, soft_wrap=True)
         mock_console.print.assert_not_called()
     elif func is output.info:
-        mock_console.print.assert_any_call("hello", style="white")
+        mock_console.print.assert_any_call("hello", style="white", soft_wrap=True)
     else:
-        mock_console.print.assert_any_call(expected)
+        mock_console.print.assert_any_call(expected, soft_wrap=True)
 
 
 def test_space(consoles):

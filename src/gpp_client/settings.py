@@ -105,17 +105,26 @@ class GPPSettings(BaseSettings):
         Raises
         ------
         GPPClientError
-            If the configuration file is not valid TOML.
+            If the configuration file is not valid TOML or holds a key that
+            is not a setting.
         """
         sources = [init_settings, env_settings, dotenv_settings]
         path = get_config_path()
         if path.is_file():
             try:
-                sources.append(TomlConfigSettingsSource(settings_cls, toml_file=path))
+                toml_source = TomlConfigSettingsSource(settings_cls, toml_file=path)
             except tomllib.TOMLDecodeError as exc:
                 raise GPPClientError(
                     f"Cannot read {path}: it is not valid TOML ({exc})."
                 ) from None
+            valid = list(settings_cls.model_fields)
+            unknown = [key for key in toml_source.toml_data if key not in valid]
+            if unknown:
+                raise GPPClientError(
+                    f"Cannot read {path}: unknown keys {', '.join(unknown)}. "
+                    f"Valid keys: {', '.join(valid)}."
+                )
+            sources.append(toml_source)
         return (
             *(_BlankEnvironmentIsUnset(source) for source in sources),
             file_secret_settings,
@@ -204,7 +213,7 @@ def get_config_path() -> Path:
     Path
         Path to the configuration file.
     """
-    return Path(typer.get_app_dir(APP_NAME)) / CONFIG_FILE_NAME
+    return Path(typer.get_app_dir(APP_NAME, force_posix=True)) / CONFIG_FILE_NAME
 
 
 def _environment_named(value: object) -> GPPEnvironment:

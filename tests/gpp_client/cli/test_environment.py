@@ -198,6 +198,19 @@ def test_unknown_environment_in_config_fails_listing_valid_names(
     assert gpp_network.requests == []
 
 
+def test_unknown_config_key_fails_naming_it(
+    runner, cli_app, gpp_network, config_path
+) -> None:
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text('default_profile = "dev"\n')
+
+    result = _read_workflow_state(runner, cli_app)
+
+    assert result.exit_code == 1
+    assert "unknown keys default_profile." in result.output
+    assert gpp_network.requests == []
+
+
 def test_env_option_ignores_case(runner, cli_app, gpp_network) -> None:
     gpp_network.respond({"observation": None})
 

@@ -74,7 +74,7 @@ def info(msg: str) -> None:
     msg : str
         The message text.
     """
-    console.print(f"{msg}", style="white")
+    console.print(f"{msg}", style="white", soft_wrap=True)
 
 
 def dim_info(msg: RenderableType) -> None:
@@ -98,7 +98,7 @@ def success(msg: RenderableType) -> None:
     msg : RenderableType
         Success message text.
     """
-    console.print(f"{ICON_SUCCESS} {msg}")
+    console.print(f"{ICON_SUCCESS} {msg}", soft_wrap=True)
 
 
 def warning(msg: RenderableType) -> None:
@@ -110,7 +110,7 @@ def warning(msg: RenderableType) -> None:
     msg : RenderableType
         Warning text.
     """
-    console.print(f"{ICON_WARNING} {msg}")
+    console.print(f"{ICON_WARNING} {msg}", soft_wrap=True)
     space()
 
 
@@ -123,7 +123,7 @@ def fail(msg: RenderableType) -> None:
     msg : RenderableType
         Error message text.
     """
-    error_console.print(f"{ICON_ERROR} {msg}")
+    error_console.print(f"{ICON_ERROR} {msg}", soft_wrap=True)
 
 
 def environment(env: GPPEnvironment) -> None:
@@ -151,7 +151,7 @@ def procedure(msg: RenderableType) -> None:
     msg : RenderableType
         Procedure message text.
     """
-    console.print(f"{ICON_PROCEDURE} {msg}")
+    console.print(f"{ICON_PROCEDURE} {msg}", soft_wrap=True)
 
 
 def procedure_steps(steps: list[RenderableType]) -> None:

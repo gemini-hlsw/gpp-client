@@ -103,18 +103,14 @@ Configuration File
 An optional TOML configuration file can hold your environment, your tokens,
 and the debug setting. Both the Python client and the ``gpp`` command read it.
 
-The directory is determined using :func:`typer.get_app_dir` and follows
-platform-specific conventions. Typical locations are:
+The file lives in a ``.gpp-client`` folder in your home directory:
 
-- macOS:
-  ``~/Library/Application Support/gpp-client``
-- Linux:
-  ``~/.config/gpp-client``
+- macOS and Linux:
+  ``~/.gpp-client/config.toml``
 - Windows:
-  ``C:\Users\<user>\AppData\Roaming\gpp-client``
+  ``C:\Users\<user>\AppData\Roaming\gpp-client\config.toml``
 
-The file is ``config.toml`` in that directory, and it's only used if it
-exists:
+The file is only used if it exists:
 
 .. code-block:: toml
 
@@ -123,9 +119,16 @@ exists:
    development_token = "dev-token"
    debug = true
 
+These four keys are the only ones the file can hold. Any other key, such as a
+misspelled one, stops the client and the ``gpp`` command with an error that
+names it, so a setting is never silently ignored.
+
+To manage the configuration file from the command line, use the ``gpp config``
+commands described in :doc:`cli/config`.
+
 .. tip::
 
-   To see the exact path used on your system, run ``gpp get-config-path`` or:
+   To see the exact path used on your system, run ``gpp config path`` or:
 
    .. code-block:: python
 

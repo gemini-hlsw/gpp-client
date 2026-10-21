@@ -12,6 +12,13 @@ def committed_schema(environment: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+@pytest.fixture(autouse=True)
+def _no_developer_config_file(monkeypatch, tmp_path_factory) -> None:
+    """Keep the developer's own configuration file out of every test."""
+    missing = tmp_path_factory.mktemp("no-config") / "config.toml"
+    monkeypatch.setattr("gpp_client.settings.get_config_path", lambda: missing)
+
+
 @pytest.fixture(scope="session")
 def schema_str() -> str:
     """Merge the committed schemas, as the build does, and return the SDL."""

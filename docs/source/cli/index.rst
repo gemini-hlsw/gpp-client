@@ -41,12 +41,6 @@ Command Reference
    :width: 80
    :theme: dark
 
-.. typer:: gpp_client.cli.cli:app:get-config-path
-   :prog: gpp get-config-path
-   :make-sections:
-   :width: 80
-   :theme: dark
-
 Commands
 --------
 
@@ -54,6 +48,7 @@ Commands
    :maxdepth: 1
 
    attachment
+   config
    observation
    target
    program

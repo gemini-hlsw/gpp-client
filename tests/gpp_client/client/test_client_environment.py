@@ -160,6 +160,22 @@ def test_invalid_config_file_fails_naming_it(_no_user_configuration) -> None:
     )
 
 
+def test_unknown_config_file_key_fails_naming_it_and_the_valid_keys(
+    _no_user_configuration,
+) -> None:
+    _no_user_configuration.write_text(
+        'default_profile = "dev"\n\n[profiles.dev]\ntoken = "t"\n'
+    )
+
+    with pytest.raises(GPPClientError) as error:
+        GPPClient(environment="production", token="t")
+
+    assert str(error.value) == (
+        f"Cannot read {_no_user_configuration}: unknown keys default_profile, "
+        "profiles. Valid keys: environment, token, development_token, debug."
+    )
+
+
 @pytest.mark.asyncio
 async def test_empty_values_fall_through(gpp_transport, monkeypatch) -> None:
     monkeypatch.setenv("GPP_ENVIRONMENT", "")
