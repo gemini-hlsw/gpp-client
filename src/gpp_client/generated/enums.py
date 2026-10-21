@@ -475,6 +475,7 @@ class CloudExtinctionPreset(str, Enum):
 class ObservingModeType(str, Enum):
     ALOPEKE_SPECKLE = "ALOPEKE_SPECKLE"
     ALOPEKE_WIDE_FIELD = "ALOPEKE_WIDE_FIELD"
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
     EXCHANGE_KECK = "EXCHANGE_KECK"
     EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
     FLAMINGOS_2_IMAGING = "FLAMINGOS_2_IMAGING"
@@ -513,6 +514,10 @@ class VisitorObservingModeType(str, Enum):
 class ExchangeObservingModeType(str, Enum):
     EXCHANGE_KECK = "EXCHANGE_KECK"
     EXCHANGE_SUBARU = "EXCHANGE_SUBARU"
+
+
+class DaytimeCalibrationObservingModeType(str, Enum):
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
 
 
 class CoolStarTemperature(str, Enum):
@@ -681,6 +686,7 @@ class GhostIfuMappingType(str, Enum):
     TARGET_PLUS_SKY = "TARGET_PLUS_SKY"
     SKY_PLUS_TARGET = "SKY_PLUS_TARGET"
     DUAL_TARGET = "DUAL_TARGET"
+    NO_TARGET = "NO_TARGET"
 
 
 class SlitOffsetMode(str, Enum):
@@ -1160,6 +1166,7 @@ class ObservationValidationCode(str, Enum):
     TOO_ACTIVATION_UNEXPECTED = "TOO_ACTIVATION_UNEXPECTED"
     CFP_WARNING = "CFP_WARNING"
     EXPOSURE_TIME_WARNING = "EXPOSURE_TIME_WARNING"
+    SECOND_ORDER_OVERLAP = "SECOND_ORDER_OVERLAP"
 
 
 class ObserveClass(str, Enum):
@@ -1251,11 +1258,6 @@ class SequenceCommand(str, Enum):
     PAUSE = "PAUSE"
     START = "START"
     STOP = "STOP"
-
-
-class ExposureTimeViolationSeverity(str, Enum):
-    ERROR = "ERROR"
-    WARNING = "WARNING"
 
 
 class SequenceType(str, Enum):
@@ -1501,6 +1503,7 @@ class CalibrationRole(str, Enum):
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
     TELLURIC = "TELLURIC"
     DAYTIME_PINHOLE = "DAYTIME_PINHOLE"
+    DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
 
 
 class ArcType(str, Enum):

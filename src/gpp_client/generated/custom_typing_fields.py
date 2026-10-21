@@ -613,6 +613,12 @@ class SystemVerificationGraphQLField(GraphQLField):
         return self
 
 
+class InsertSmartGcalResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "InsertSmartGcalResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class DeleteSequenceResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "DeleteSequenceResultGraphQLField":
         self._alias = alias
@@ -669,6 +675,12 @@ class SmartGcalGraphQLField(GraphQLField):
 
 class VisitorGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "VisitorGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DaytimeCalibrationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DaytimeCalibrationGraphQLField":
         self._alias = alias
         return self
 
@@ -1035,6 +1047,12 @@ class EmissionLinesSurfaceGraphQLField(GraphQLField):
 
 class ExecutionGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ExecutionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ExecutionTimestampsGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ExecutionTimestampsGraphQLField":
         self._alias = alias
         return self
 
@@ -2285,8 +2303,8 @@ class SequenceDigestGraphQLField(GraphQLField):
         return self
 
 
-class ExposureTimeViolationGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "ExposureTimeViolationGraphQLField":
+class StepViolationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "StepViolationGraphQLField":
         self._alias = alias
         return self
 
