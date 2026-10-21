@@ -4,7 +4,7 @@ Python client for GPP, whose GraphQL schema changes almost daily. Most of the cl
 
 ## Read first
 
-- Codegen and the per-environment build: `docs/source/developer/codegen.rst`.
+- Codegen and the generated-code check: `docs/source/developer/codegen.rst`.
 - Schema updates: `docs/source/developer/schema.rst`.
 - Releases: `docs/source/developer/releases.rst`.
 

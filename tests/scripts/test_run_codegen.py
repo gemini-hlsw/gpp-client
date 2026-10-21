@@ -2,6 +2,7 @@
 Tests for the client build pipeline, driven through ``build``.
 """
 
+import ast
 import asyncio
 import dataclasses
 import importlib
@@ -570,6 +571,75 @@ def test_only_environment_specific_fields_default_to_none(tmp_path):
         send(paths, "execution", {"execution": {}})
 
 
+def test_environment_specific_field_in_a_later_operations_file_defaults_to_none(
+    tmp_path,
+):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query firstState { execution { state } }",
+        development=_DEVELOPMENT_EXECUTION,
+        production=_PRODUCTION_EXECUTION,
+    )
+    nested = paths.operations_dir / "nested"
+    nested.mkdir()
+    (nested / "later.graphql").write_text(
+        "query laterExecution { execution { state isCustomized } }"
+    )
+
+    build(paths)
+
+    _, result = send(paths, "later_execution", {"execution": {"state": None}})
+    assert result.execution.is_customized is None
+
+
+def test_environment_specific_field_in_an_inline_fragment_defaults_to_none(tmp_path):
+    items = "type Query { items: [Item!]! }\ntype A { id: ID! }\nunion Item = A | B\n"
+    paths = _write_schemas(
+        tmp_path,
+        operations="query items { items { ... on B { id name } } }",
+        development=items + "type B { id: ID! name: String }",
+        production=items + "type B { id: ID! }",
+    )
+
+    build(paths)
+
+    _, result = send(paths, "items", {"items": [{"__typename": "B", "id": "1"}]})
+    assert result.items[0].name is None
+
+
+@pytest.mark.filterwarnings("ignore:Field 'isCustomized':DeprecationWarning")
+def test_deprecated_environment_specific_field_defaults_to_none(tmp_path):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query execution { execution { state isCustomized } }",
+        development=_EXECUTION_SDL + "type Execution { state: String "
+        'isCustomized: Boolean! @deprecated(reason: "Use state") }',
+        production=_PRODUCTION_EXECUTION,
+    )
+
+    build(paths)
+
+    _, result = send(paths, "execution", {"execution": {"state": None}})
+    assert result.execution.is_customized is None
+
+
+def test_field_on_as_few_environments_as_its_type_stays_required(tmp_path):
+    clone = "type Clone { id: ID! }\n"
+    paths = _write_schemas(
+        tmp_path,
+        operations="query clone { clone { id } }",
+        development="type Query { clone: Clone count: Int }\n" + clone,
+        production="type Query { count: Int }",
+    )
+
+    build(paths)
+
+    _, result = send(paths, "clone", {"clone": None})
+    assert result.clone is None
+    with pytest.raises(ValidationError, match="clone.id"):
+        send(paths, "clone", {"clone": {}})
+
+
 def test_operation_whose_root_field_is_missing_is_unavailable(tmp_path):
     clone = "type Clone { id: ID! }\n"
     paths = _write_schemas(
@@ -979,6 +1049,15 @@ def test_generated_client_without_readable_queries_fails_the_build(
         build(unwrapping)
 
 
+_DEFAULT_STRIPPING_PLUGIN_SOURCE = (
+    "from ariadne_codegen.plugins.base import Plugin\n\n\n"
+    "class ExtraPlugin(Plugin):\n"
+    "    def generate_result_field(self, field_implementation, *_args, **_kw):\n"
+    "        field_implementation.value = None\n"
+    "        return field_implementation\n"
+)
+
+
 def test_environment_specific_field_without_none_default_fails_the_build(
     tmp_path, monkeypatch
 ):
@@ -991,11 +1070,7 @@ def test_environment_specific_field_without_none_default_fails_the_build(
     stripping = _with_extra_plugin(
         paths,
         monkeypatch,
-        "from ariadne_codegen.plugins.base import Plugin\n\n\n"
-        "class ExtraPlugin(Plugin):\n"
-        "    def generate_result_field(self, field_implementation, *_args, **_kw):\n"
-        "        field_implementation.value = None\n"
-        "        return field_implementation\n",
+        _DEFAULT_STRIPPING_PLUGIN_SOURCE,
         after="EnvironmentDefaultsPlugin",
     )
 
@@ -1005,6 +1080,30 @@ def test_environment_specific_field_without_none_default_fails_the_build(
     assert str(error.value) == (
         "Environment-specific fields did not get a None default:\n"
         "  Execution.isCustomized in execution"
+    )
+
+
+def test_missing_none_default_in_a_fragment_names_the_fragment(tmp_path, monkeypatch):
+    paths = _write_schemas(
+        tmp_path,
+        operations="query execution { execution { ...executionFields } }\n"
+        "fragment executionFields on Execution { state isCustomized }",
+        development=_DEVELOPMENT_EXECUTION,
+        production=_PRODUCTION_EXECUTION,
+    )
+    stripping = _with_extra_plugin(
+        paths,
+        monkeypatch,
+        _DEFAULT_STRIPPING_PLUGIN_SOURCE,
+        after="EnvironmentDefaultsPlugin",
+    )
+
+    with pytest.raises(BuildError) as error:
+        build(stripping)
+
+    assert str(error.value) == (
+        "Environment-specific fields did not get a None default:\n"
+        "  Execution.isCustomized in executionFields"
     )
 
 
@@ -1047,6 +1146,7 @@ def test_production_name_of_a_paired_input_type_is_a_warning_alias(tmp_path):
         alias = inputs.GmosImagingVariantInput
     assert alias is inputs.ImagingVariantInput
     assert len(warned) == 1
+    assert warned[0].filename == __file__
 
 
 def test_paired_enum_alias_is_in_the_package_all_and_warns_only_when_used(tmp_path):
@@ -1068,6 +1168,52 @@ def test_paired_enum_alias_is_in_the_package_all_and_warns_only_when_used(tmp_pa
     assert from_package.FAST is from_package("FAST")
     assert len(warned) == 1
     assert warned[0].filename == __file__
+
+
+def test_unknown_name_on_a_module_or_package_with_aliases_is_an_attribute_error(
+    tmp_path,
+):
+    paths = _renamed_input_paths(tmp_path)
+
+    build(paths)
+
+    package = importlib.import_module(paths.package_dir.name)
+    for module in (package, import_generated(paths, "input_types")):
+        with pytest.raises(AttributeError, match="has no attribute 'Missing'"):
+            getattr(module, "Missing")
+
+
+def _type_checking_bindings(path: Path) -> dict[str, str]:
+    """
+    Return what each name bound under ``if TYPE_CHECKING:`` refers to.
+    """
+    bindings = {}
+    for node in ast.parse(path.read_text()).body:
+        if not (isinstance(node, ast.If) and ast.unparse(node.test) == "TYPE_CHECKING"):
+            continue
+        for statement in node.body:
+            if isinstance(statement, ast.Assign):
+                bindings[statement.targets[0].id] = ast.unparse(statement.value)
+            elif isinstance(statement, ast.ImportFrom):
+                for alias in statement.names:
+                    bindings[alias.name] = f"{'.' * statement.level}{statement.module}"
+    return bindings
+
+
+def test_type_checkers_see_each_alias_as_its_class(tmp_path):
+    paths = _renamed_input_paths(tmp_path)
+
+    build(paths)
+
+    package = paths.package_dir
+    assert _type_checking_bindings(package / "input_types.py") == {
+        "GmosImagingVariantInput": "ImagingVariantInput"
+    }
+    assert _type_checking_bindings(package / "enums.py") == {"GmosMode": "Mode"}
+    assert _type_checking_bindings(package / "__init__.py") == {
+        "GmosImagingVariantInput": ".input_types",
+        "GmosMode": ".enums",
+    }
 
 
 def test_paired_object_type_gets_no_alias(tmp_path):
@@ -1173,4 +1319,33 @@ def test_build_output_lists_every_alias_with_its_target(tmp_path):
         "- Alias `GmosImagingVariantInput` of `ImagingVariantInput` in "
         "`input_types`\n"
         "- Alias `GmosMode` of `Mode` in `enums`\n"
+    )
+
+
+def _package_files(package_dir: Path) -> dict[str, bytes]:
+    return {
+        path.relative_to(package_dir).as_posix(): path.read_bytes()
+        for path in package_dir.rglob("*")
+        if path.is_file() and "__pycache__" not in path.parts
+    }
+
+
+def test_committed_generated_package_equals_a_fresh_build(tmp_path):
+    committed = BuildPaths.for_repo(REPO_ROOT)
+    fresh = dataclasses.replace(committed, package_dir=tmp_path / "generated")
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        build(fresh)
+
+    committed_files = _package_files(committed.package_dir)
+    fresh_files = _package_files(fresh.package_dir)
+    differing = sorted(
+        name
+        for name in committed_files.keys() | fresh_files.keys()
+        if committed_files.get(name) != fresh_files.get(name)
+    )
+    assert differing == [], (
+        "Committed generated code differs from a fresh build; run "
+        "`uv run --group codegen python -m scripts.run_codegen`"
     )

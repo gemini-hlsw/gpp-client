@@ -31,6 +31,21 @@ Run the build from the repository root:
 The build doesn't need a token, because it reads only the committed schemas.
 
 
+Checking the Generated Code
+---------------------------
+
+The code in ``src/gpp_client/generated/`` must always match a fresh build of
+``graphql/schemas/`` and ``graphql/operations/``. ``uv run pytest`` checks
+this: one test builds the client into a temporary folder and fails if any
+generated file differs from the committed copy. That catches a hand edit to a
+generated file and an operation or schema change that you forgot to rebuild.
+
+If the test fails, rerun the build and commit its output in the same change as
+the operation or schema change behind it. The ``Codegen Check`` workflow runs
+the same comparison on every pull request, and it also fails if the build
+changes anything under ``graphql/``.
+
+
 What the Build Does
 -------------------
 

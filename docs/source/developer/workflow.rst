@@ -27,5 +27,5 @@ How Results Are Used
 Maintainers should:
 
 - Inspect reported diffs
-- Run ``scripts/run_codegen.py`` if required
+- Rebuild the client as described in :doc:`codegen` if required
 - Commit updated schema files and regenerated client code
