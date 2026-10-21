@@ -12,19 +12,10 @@ from gpp_client import GPPClient
 from gpp_client.constants import DEVELOPMENT_URL, PRODUCTION_URL
 from gpp_client.environment import GPPEnvironment
 from gpp_client.exceptions import GPPAuthError, GPPClientError
+from tests.gpp_client.environment_sources import write_environment
 
 
-@pytest.fixture(autouse=True)
-def _no_user_configuration(monkeypatch, tmp_path):
-    for name in (
-        "GPP_ENVIRONMENT",
-        "GPP_TOKEN",
-        "GPP_DEVELOPMENT_TOKEN",
-    ):
-        monkeypatch.delenv(name, raising=False)
-    config_path = tmp_path / "config.toml"
-    monkeypatch.setattr("gpp_client.settings.get_config_path", lambda: config_path)
-    return config_path
+pytestmark = pytest.mark.usefixtures("_no_user_configuration")
 
 
 async def _send_ping(gpp_transport, **client_kwargs) -> httpx.Request:
@@ -321,3 +312,120 @@ def test_repr_names_the_environment() -> None:
     client = GPPClient(environment="development", token="t")
 
     assert repr(client) == "GPPClient(environment='development')"
+
+
+@pytest.mark.parametrize(
+    ("blank", "below"),
+    [("variable", "dotenv"), ("variable", "config"), ("dotenv", "config")],
+)
+def test_blank_source_falls_through_to_the_next_one(
+    monkeypatch, tmp_path, _no_user_configuration, blank, below
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    if blank == "variable":
+        monkeypatch.setenv("GPP_ENVIRONMENT", "   ")
+    else:
+        (tmp_path / ".env").write_text("GPP_ENVIRONMENT='   '\n")
+    if below == "dotenv":
+        (tmp_path / ".env").write_text("GPP_ENVIRONMENT=development\n")
+    else:
+        _no_user_configuration.write_text('environment = "development"\n')
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        client = GPPClient(token="t")
+
+    assert client.settings.environment is GPPEnvironment.DEVELOPMENT
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_blank_config_environment_falls_through_to_production(
+    _no_user_configuration, blank
+) -> None:
+    _no_user_configuration.write_text(f'environment = "{blank}"\n')
+
+    with pytest.warns(FutureWarning):
+        client = GPPClient(token="t")
+
+    assert client.settings.environment is GPPEnvironment.PRODUCTION
+
+
+def _set_environment(source, name, monkeypatch, tmp_path, config_path) -> dict:
+    """
+    Name the environment in one source; return the client arguments it needs.
+    """
+    if source == "argument":
+        return {"environment": name}
+    write_environment(source, name, monkeypatch, tmp_path, config_path)
+    return {}
+
+
+@pytest.mark.parametrize(
+    ("higher", "lower"),
+    [
+        ("argument", "dotenv"),
+        ("argument", "config"),
+        ("variable", "dotenv"),
+        ("variable", "config"),
+        ("dotenv", "config"),
+    ],
+)
+def test_each_source_beats_the_ones_after_it(
+    monkeypatch, tmp_path, _no_user_configuration, higher, lower
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    kwargs = _set_environment(
+        lower, "production", monkeypatch, tmp_path, _no_user_configuration
+    )
+    kwargs |= _set_environment(
+        higher, "development", monkeypatch, tmp_path, _no_user_configuration
+    )
+
+    client = GPPClient(token="t", **kwargs)
+
+    assert client.settings.environment is GPPEnvironment.DEVELOPMENT
+
+
+@pytest.mark.parametrize("value", ["prod", "staging"])
+@pytest.mark.parametrize("source", ["argument", "variable", "dotenv", "config"])
+def test_bad_environment_from_any_source_fails_listing_valid_names(
+    monkeypatch, tmp_path, _no_user_configuration, source, value
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    kwargs = _set_environment(
+        source, value, monkeypatch, tmp_path, _no_user_configuration
+    )
+
+    with pytest.raises(GPPClientError) as error:
+        GPPClient(token="t", **kwargs)
+
+    assert str(error.value) == (
+        f"Unknown GPP environment '{value}'. Valid names: development, production."
+    )
+
+
+def test_config_environment_that_is_not_text_fails_naming_it(
+    _no_user_configuration,
+) -> None:
+    _no_user_configuration.write_text("environment = 1\n")
+
+    with pytest.raises(GPPClientError) as error:
+        GPPClient(token="t")
+
+    assert str(error.value) == (
+        "Unknown GPP environment 1. Valid names: development, production."
+    )
+
+
+@pytest.mark.parametrize("source", ["variable", "dotenv", "config"])
+def test_environment_from_any_source_ignores_case(
+    monkeypatch, tmp_path, _no_user_configuration, source
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    _set_environment(
+        source, "Development", monkeypatch, tmp_path, _no_user_configuration
+    )
+
+    client = GPPClient(token="t")
+
+    assert client.settings.environment is GPPEnvironment.DEVELOPMENT

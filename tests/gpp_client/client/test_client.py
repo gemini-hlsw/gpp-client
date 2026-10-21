@@ -1,5 +1,6 @@
 """Tests for the main GPP client."""
 
+import asyncio
 from types import SimpleNamespace
 
 import httpx
@@ -348,6 +349,46 @@ async def test_clients_sharing_http_client_send_own_token(gpp_transport) -> None
     sent = [request.headers["Authorization"] for request in gpp_transport.requests]
     assert sent == ["Bearer token-a", "Bearer token-b"]
     assert all(r.headers["X-Caller"] == "kept" for r in gpp_transport.requests)
+
+
+@pytest.mark.asyncio
+async def test_development_and_production_clients_at_once_stay_apart(
+    gpp_transport, monkeypatch, tmp_path, _no_user_configuration
+) -> None:
+    """
+    Ensure two clients on different environments, run at once over one http
+    client, each read their own token and send to their own server.
+    """
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("GPP_TOKEN", "prod-token")
+    monkeypatch.setenv("GPP_DEVELOPMENT_TOKEN", "dev-token")
+    gpp_transport.respond({"observation": None})
+    gpp_transport.respond({"observation": None})
+
+    async with httpx.AsyncClient(transport=gpp_transport) as http_client:
+        development = GPPClient(environment="development", http_client=http_client)
+        production = GPPClient(environment="production", http_client=http_client)
+        await asyncio.gather(
+            development.workflow_state.get_by_id(observation_id="o-1"),
+            production.workflow_state.get_by_id(observation_id="o-1"),
+        )
+
+    sent = {
+        str(request.url): request.headers["Authorization"]
+        for request in gpp_transport.requests
+    }
+    assert sent == {
+        f"{DEVELOPMENT_URL}/odb": "Bearer dev-token",
+        f"{PRODUCTION_URL}/odb": "Bearer prod-token",
+    }
+    assert (development.rest.base_url, development.rest.gpp_token) == (
+        DEVELOPMENT_URL,
+        "dev-token",
+    )
+    assert (production.rest.base_url, production.rest.gpp_token) == (
+        PRODUCTION_URL,
+        "prod-token",
+    )
 
 
 @pytest.mark.asyncio

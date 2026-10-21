@@ -4,9 +4,11 @@ Runtime settings for the installed GPP client package.
 
 import tomllib
 from pathlib import Path
+from typing import Any
 
 import typer
-from pydantic import Field, SecretStr, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator
+from pydantic.fields import FieldInfo
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -44,7 +46,8 @@ class GPPSettings(BaseSettings):
       - ``GPP_DEVELOPMENT_TOKEN``
       - ``GPP_DEBUG``
 
-    An empty value counts as unset.
+    An empty value counts as unset. So does an environment made only of
+    spaces, which lets the next source set it.
     """
 
     model_config = SettingsConfigDict(
@@ -113,19 +116,10 @@ class GPPSettings(BaseSettings):
                 raise GPPClientError(
                     f"Cannot read {path}: it is not valid TOML ({exc})."
                 ) from None
-        return (*sources, file_secret_settings)
-
-    @model_validator(mode="before")
-    @classmethod
-    def _drop_blank_environment(cls, data: object) -> object:
-        """
-        Treat a blank environment as unset, so it falls through to the default.
-        """
-        if isinstance(data, dict):
-            value = data.get("environment")
-            if isinstance(value, str) and not value.strip():
-                data = {k: v for k, v in data.items() if k != "environment"}
-        return data
+        return (
+            *(_BlankEnvironmentIsUnset(source) for source in sources),
+            file_secret_settings,
+        )
 
     @field_validator("environment", mode="before")
     @classmethod
@@ -177,6 +171,28 @@ class GPPSettings(BaseSettings):
         return self.model_copy(
             update={_token_setting(self.environment): SecretStr(token)}
         )
+
+
+class _BlankEnvironmentIsUnset(PydanticBaseSettingsSource):
+    """
+    Drop a blank environment from one source, so the next source can set it.
+    """
+
+    def __init__(self, source: PydanticBaseSettingsSource) -> None:
+        super().__init__(source.settings_cls)
+        self._source = source
+
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
+        return self._source.get_field_value(field, field_name)
+
+    def __call__(self) -> dict[str, Any]:
+        data = self._source()
+        value = data.get("environment")
+        if isinstance(value, str) and not value.strip():
+            return {k: v for k, v in data.items() if k != "environment"}
+        return data
 
 
 def get_config_path() -> Path:

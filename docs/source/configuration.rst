@@ -24,7 +24,8 @@ that is set:
 3. ``GPP_ENVIRONMENT`` in the ``.env`` file of the current folder.
 4. ``environment`` in the configuration file described below.
 
-Names ignore case, and an empty value counts as unset. An unknown name raises
+Environment names ignore case. An empty value, or one made only of spaces,
+counts as unset, so the next source in the list decides. An unknown name raises
 :class:`~gpp_client.exceptions.GPPClientError`, which lists the valid names.
 
 If none of them is set, the client uses production and emits a
