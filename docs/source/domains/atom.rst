@@ -40,8 +40,8 @@ Request atom digests as TSV data:
 Error Handling
 --------------
 
-- ``ValueError`` → invalid observation IDs
-- ``aiohttp.ClientResponseError`` → authentication or HTTP errors
+- ``GPPHttpError`` → GPP rejected the observation IDs or answered another error status
+- ``GPPTransportError`` → GPP could not be reached, or the request timed out
 
 
 Notes
