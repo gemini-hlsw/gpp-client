@@ -216,6 +216,9 @@ def build(paths: BuildPaths) -> BuildResult:
     _check_environment_defaults(paths.package_dir, defaults)
     operation_strs = _embedded_operations(paths, operations)
     schemas = {env: _environment_schema(paths, env) for env in USER_ENVIRONMENTS}
+    # The merge gave conflicting fields production's type, so only development
+    # must drop them; it kept development's type names, so only production
+    # needs them renamed back.
     trimmed = [
         trim_operations(
             env,

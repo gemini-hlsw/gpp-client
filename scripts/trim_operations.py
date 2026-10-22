@@ -2,8 +2,19 @@
 Trim generated operations for one environment.
 
 Each operation, as the generated client embeds it, loses the fields,
-arguments, inline fragments and fragment spreads the environment lacks, and the
-variables only those used.
+arguments, enum values, inline fragments and fragment spreads the environment
+lacks, and the variables only those used. Each copy is then validated against
+that environment's own schema, not the merged one.
+
+Two inputs change what the environment's schema alone would keep:
+
+- ``excluded`` drops elements the environment has but the merged schema types
+  differently. When a field's type differs, the merge keeps production's type,
+  so development's value would not fit the generated model. Development drops
+  the field instead, and it reads ``None`` there.
+- ``reverse`` turns the merged schema's type names, which are development's,
+  back into the environment's own, so a fragment on a type development renamed
+  still matches the type's name on production.
 """
 
 from collections.abc import Callable, Iterable, Mapping
@@ -212,6 +223,13 @@ def generated_operations(operation_strs: Iterable[str]) -> dict[str, str]:
 
 
 class _EnvironmentTrimmer:
+    """
+    Trim every operation for one environment, sharing work between them.
+
+    Holds what spans operations: each fragment, trimmed once and reused by
+    every operation that spreads it, and the log of what was removed where.
+    """
+
     def __init__(self, schema: GraphQLSchema, excluded: frozenset[str]) -> None:
         self.schema = schema
         self.excluded = excluded
@@ -266,6 +284,13 @@ class _EnvironmentTrimmer:
 
 
 class _Trimmer(Visitor):
+    """
+    Walk one operation or fragment and remove what the schema lacks.
+
+    Runs inside a ``TypeInfoVisitor``, so ``type_info`` always names the type
+    of the node being visited. Each removal is passed to ``record``.
+    """
+
     def __init__(
         self,
         type_info: TypeInfo,
@@ -340,6 +365,9 @@ class _Trimmer(Visitor):
         return _copy(node, values=kept)
 
     def _dead_value(self, value: ValueNode, type_: GraphQLInputType) -> bool:
+        """
+        Whether ``value`` is an enum value the environment's enum lacks.
+        """
         named = get_named_type(type_)
         if isinstance(value, EnumValueNode) and isinstance(named, GraphQLEnumType):
             return value.value not in named.values
@@ -383,6 +411,13 @@ class _Trimmer(Visitor):
 def _missing_root_fields(
     operation: OperationDefinitionNode, schema: GraphQLSchema
 ) -> list[str]:
+    """
+    Return the operation's root fields the schema lacks.
+
+    Any such field makes the whole operation unavailable instead of trimmed:
+    without its root field the operation would ask for nothing the caller
+    wanted, so the client raises ``NotAvailable`` before sending it.
+    """
     root = schema.get_root_type(operation.operation)
     names = [
         selection.name.value

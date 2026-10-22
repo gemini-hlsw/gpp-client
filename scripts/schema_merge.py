@@ -1,6 +1,11 @@
 """
 Merge the development and production schemas into one that records availability.
 
+A coordinate names one schema element: ``Type.field``, ``Type.field(arg:)``
+or ``Input.field``. Production wins a conflict because a release must stay
+exact against production. Development's names win a rename because
+development changes first and is where most work happens.
+
 Three steps. First, pairing: a production type is renamed to development's
 name when a shared coordinate carries, on each side, a type of the same kind
 and list depth under a name the other side lacks (``pair_types``). Then the
@@ -277,15 +282,21 @@ def merge_schemas(*, development: str, production: str) -> MergedSchema:
 
 def pair_types(production: DocumentNode, development: DocumentNode) -> Pairing:
     """
-    Find production types that development renamed, by the strict rule.
+    Find production types that development renamed.
 
     A production type is renamed to a development type when a shared coordinate
     (same parent type and field, argument or input field name) carries the two
     names with the same kind and list depth, production's name is absent from
-    development and development's name is absent from production. Each
-    coordinate votes once; an ambiguous or colliding vote makes no rename.
+    development and development's name is absent from production. For example,
+    production's ``Obs.window: TimeWindowProd`` and development's
+    ``Obs.window: TimeWindow`` vote to rename ``TimeWindowProd`` to
+    ``TimeWindow``. Each coordinate votes once; a type whose coordinates vote
+    for different names, or two types voting for the same name, make no rename.
     Renames are applied one step at a time until none is found, and a renamed
     name never renames again.
+
+    Only types are paired, never fields: a field renamed on one environment
+    stays two fields in the merged schema, each on its own environment.
 
     Parameters
     ----------
@@ -481,6 +492,15 @@ def _list_depth(type_node: TypeNode) -> int:
 
 
 class _Merger:
+    """
+    Build the merged schema from development's and production's documents.
+
+    ``dropped`` maps each type name whose kind differs between the
+    environments, such as an enum on one and an object on the other, to the
+    development-only elements left out because of it. Production's definition
+    wins such a name, so the keys also serve as the set of kind conflicts.
+    """
+
     def __init__(
         self, development: DocumentNode, production: DocumentNode, pairing: Pairing
     ) -> None:
@@ -624,6 +644,8 @@ class _Merger:
             if self._drops(coordinate, dev_field, prod_field):
                 continue
             resolved = self._resolve(coordinate, dev_field, prod_field)
+            # After a type conflict the field is production's alone, so
+            # development's arguments go with the rest of its definition.
             arguments = self._merge_input_values(
                 coordinate,
                 dev_field.arguments if DEVELOPMENT in resolved.envs else None,
@@ -632,6 +654,8 @@ class _Merger:
                 argument=True,
             )
             field_type = resolved.type
+            # An environment that has the type but not the field returns no
+            # value for it, so the merged field must accept null.
             if resolved.envs != parent_envs:
                 field_type = _nullable(field_type)
             merged.append(
