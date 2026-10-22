@@ -8,10 +8,16 @@ import asyncio
 import gzip
 import logging
 import ssl
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from typing import Any
 
 import aiohttp
 import certifi
+
+from gpp_client.environment import GPPEnvironment
+from gpp_client.exceptions import GPPHttpError, GPPTransportError
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +42,24 @@ class RESTClient:
         GPP token to authenticate against the REST API. Same as GPPClient.
     timeout : float
         Timeout for REST API requests in seconds.
+    environment : GPPEnvironment, optional
+        The environment ``base_url`` belongs to; production by default, like
+        ``GPPClient``. Every error names it.
     """
 
     _DEFAULT_TIMEOUT = 30.0  # Seconds.
 
     def __init__(
-        self, base_url: str, gpp_token: str, timeout: float = _DEFAULT_TIMEOUT
+        self,
+        base_url: str,
+        gpp_token: str,
+        timeout: float = _DEFAULT_TIMEOUT,
+        *,
+        environment: GPPEnvironment = GPPEnvironment.PRODUCTION,
     ) -> None:
         self.base_url = base_url
         self.gpp_token = gpp_token
+        self.environment = environment
         self._timeout = timeout
 
         self._session: aiohttp.ClientSession | None = None
@@ -116,6 +131,58 @@ class RESTClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
 
+    @asynccontextmanager
+    async def _request(
+        self, method: str, path: str, **kwargs: Any
+    ) -> AsyncIterator[aiohttp.ClientResponse]:
+        """
+        Send a request to one of the client's fixed paths, raising for any
+        failure.
+
+        Parameters
+        ----------
+        method : str
+            The HTTP method.
+        path : str
+            The path under ``base_url``.
+        **kwargs : Any
+            Arguments for the session's request.
+
+        Yields
+        ------
+        aiohttp.ClientResponse
+            A response with a success status.
+
+        Raises
+        ------
+        GPPHttpError
+            If GPP answered an error status. A 404 adds that the path may not
+            be served on the environment.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
+        """
+        session = await self.get_session()
+        try:
+            async with session.request(method, path, **kwargs) as response:
+                if response.status >= 400:
+                    detail = [await response.text()]
+                    if response.status == 404:
+                        detail.append(
+                            f"the path {path} may not be served on "
+                            f"{self.environment.label}"
+                        )
+                    raise GPPHttpError(
+                        self.environment,
+                        response.status,
+                        response,
+                        "; ".join(part for part in detail if part),
+                    )
+                yield response
+        except (aiohttp.ClientError, TimeoutError) as exc:
+            raise GPPTransportError(
+                self.environment, "could not be reached", str(exc)
+            ) from exc
+
     async def get_atom_digests(
         self, observation_ids: list[str], accept_gzip: bool = True
     ) -> str:
@@ -138,10 +205,11 @@ class RESTClient:
 
         Raises
         ------
-        aiohttp.ClientResponseError
-            For HTTP error responses.
-        aiohttp.ClientError
-            For connection or timeout failures.
+        GPPHttpError
+            If GPP rejects the observation IDs (400), does not serve the path
+            on this environment (404) or answers another error status.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         headers = {}
         if accept_gzip:
@@ -150,25 +218,9 @@ class RESTClient:
         # Prepare body - one observation ID per line.
         body = "\n".join(observation_ids)
 
-        session = await self.get_session()
-
-        async with session.post(
-            "/scheduler/atoms", data=body, headers=headers
+        async with self._request(
+            "POST", "/scheduler/atoms", data=body, headers=headers
         ) as response:
-            # Handle different response codes
-            if response.status == 400:
-                error_text = await response.text()
-                raise ValueError(f"Invalid observation IDs: {error_text}")
-            elif response.status == 403:
-                raise aiohttp.ClientResponseError(
-                    request_info=response.request_info,
-                    history=response.history,
-                    status=response.status,
-                    message="Access forbidden - check authentication and permissions",
-                )
-            elif response.status != 200:
-                response.raise_for_status()
-
             # Handle gzipped response
             content_encoding = response.headers.get("Content-Encoding", "").lower()
             if content_encoding == "gzip":
@@ -198,19 +250,18 @@ class RESTClient:
 
         Raises
         ------
-        aiohttp.ClientResponseError
-            For HTTP error responses.
-        aiohttp.ClientError
-            For connection or timeout failures.
+        GPPHttpError
+            If GPP answers an error status, 404 for a path the environment
+            does not serve included.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         if since.tzinfo is None:
             since = since.replace(tzinfo=timezone.utc)
 
-        session = await self.get_session()
-
-        async with session.get(
+        async with self._request(
+            "GET",
             "/scheduler/visibility-changes",
             params={"since": since.astimezone(timezone.utc).isoformat()},
         ) as response:
-            response.raise_for_status()
             return await response.text()

@@ -9,8 +9,7 @@ from typing import Annotated
 import typer
 
 from gpp_client.cli import output
-from gpp_client.cli.utils import async_command, require_exactly_one
-from gpp_client.client import GPPClient
+from gpp_client.cli.utils import async_command, open_client, require_exactly_one
 
 program_app = typer.Typer(name="program", help="Program operations.")
 
@@ -18,6 +17,7 @@ program_app = typer.Typer(name="program", help="Program operations.")
 @program_app.command("get")
 @async_command
 async def get_program(
+    ctx: typer.Context,
     program_id: Annotated[
         str | None,
         typer.Option("--program-id", help="Get a program by ID."),
@@ -54,7 +54,7 @@ async def get_program(
     )
 
     with output.status("Fetching program..."):
-        async with GPPClient() as client:
+        async with open_client(ctx) as client:
             match selector_name:
                 case "program_id":
                     result = await client.program.get_by_id(
@@ -80,6 +80,7 @@ async def get_program(
 @program_app.command("list")
 @async_command
 async def list_programs(
+    ctx: typer.Context,
     include_deleted: Annotated[
         bool,
         typer.Option(
@@ -107,7 +108,7 @@ async def list_programs(
     List programs.
     """
     with output.status("Fetching programs..."):
-        async with GPPClient() as client:
+        async with open_client(ctx) as client:
             result = await client.program.get_all(
                 include_deleted=include_deleted,
                 offset=offset,

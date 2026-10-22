@@ -23,13 +23,13 @@ Builds are triggered when:
 
 Read the Docs provides separate builds for:
 
-- ``stable`` (latest production release)
-- ``latest`` (latest development release)
-- Tagged releases (production and development)
+- ``stable`` (the newest release)
+- ``latest`` (the main branch)
+- Tagged releases
 - Pull request previews
 
-The documentation UI may display a banner indicating whether the current build
-corresponds to a stable release, a development release, or a pull request preview.
+The ``latest`` build shows a banner saying that it follows the main branch,
+which may be ahead of the newest release.
 These banners are configured dynamically in ``conf.py`` using environment
 variables provided by Read the Docs.
 
@@ -61,26 +61,14 @@ Once running, open the following URL in a browser:
 Warnings During Builds
 ~~~~~~~~~~~~~~~~~~~~~~
 
-It is normal to see warnings during documentation builds.
+The documentation builds without warnings, and it should stay that way, because
+a warning usually means a broken reference. Before you open a pull request
+that changes the docs or a public API, build once with warnings treated as
+errors:
 
-Some warnings are unavoidable due to the structure of the project:
+.. code-block:: console
 
-- Portions of the API are generated via **ariadne-codegen**
-- Generated models reflect the upstream **GPP GraphQL schema**
-- The schema is external and may introduce naming collisions or ambiguous
-  references (for example, repeated fields named ``type``)
+   uv run --group docs sphinx-build -W -b html docs/source docs/build
 
-As a result:
-
-- Certain Sphinx warnings (such as ambiguous cross-references) may appear
-- These warnings do **not** indicate documentation breakage
-- Builds are considered successful as long as Sphinx completes without errors
-
-.. note::
-
-   If you identify warnings that indicate genuine documentation problems,
-   please address them or raise an issue for further investigation.
-
-Developers should focus on resolving **errors** and clear documentation issues,
-but warnings originating from generated code are expected and acceptable.
+If the build fails, fix the reference or markup that the warning names.
 

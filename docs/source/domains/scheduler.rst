@@ -11,7 +11,7 @@ Quick Example
 
 .. code-block:: python
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       programs = await client.scheduler.get_programs()
 
 

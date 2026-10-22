@@ -1,3 +1,4 @@
+# schema-commit: 59465b5e8725cc056118fd6072434d8247641171
 """Email address, matching ^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$"""
 scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 

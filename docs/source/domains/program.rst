@@ -12,7 +12,7 @@ Quick Example
 
 .. code-block:: python
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       program = await client.program.get_by_id("p-123")
 
 

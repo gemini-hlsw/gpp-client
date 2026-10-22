@@ -19,7 +19,7 @@ Quick Example
    from gpp_client import GPPClient
    from gpp_client.generated import AttachmentType
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       attachment_id = await client.attachment.upload(
          program_id="p-123",
          attachment_type=AttachmentType.FINDER,

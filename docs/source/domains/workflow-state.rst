@@ -14,7 +14,7 @@ Quick Example
 
    from gpp_client.generated import ObservationWorkflowState
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       result = await client.workflow_state.update_by_id(
          observation_id="o-123",
          workflow_state=ObservationWorkflowState.READY,

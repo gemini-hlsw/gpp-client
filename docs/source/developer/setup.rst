@@ -80,4 +80,6 @@ Testing
    uv run pytest
 
 Tests run with ``asyncio`` enabled and use isolated import mode to ensure that
-generated API code behaves correctly under real import conditions.
+generated API code behaves correctly under real import conditions. The suite
+also fails when the committed generated code differs from a fresh build. To fix
+that failure, see :doc:`codegen`.

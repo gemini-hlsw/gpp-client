@@ -221,6 +221,8 @@ from .custom_typing_fields import (
     GroupedImagingVariantGraphQLField,
     GroupElementGraphQLField,
     GroupGraphQLField,
+    GroupProgressGraphQLField,
+    GroupWindowGraphQLField,
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
@@ -4389,6 +4391,10 @@ class ExecutionTimestampsFields(GraphQLField):
         ExecutionTimestampsGraphQLField("firstEventTime")
     )
     "Time of the observation's earliest execution event, across all of its\nvisits (ordinarily in the first visit).  The earliest and latest events\ngenerally fall in different visits, so `lastEventTime - firstEventTime` is not\nthe execution time."
+    start_time: "ExecutionTimestampsGraphQLField" = ExecutionTimestampsGraphQLField(
+        "startTime"
+    )
+    "Time of the observation's first execution event other than a slew, which is\nwhen its execution started.  This is null until such an event is recorded,\neven if the telescope has slewed to the target."
     last_event_time: "ExecutionTimestampsGraphQLField" = (
         ExecutionTimestampsGraphQLField("lastEventTime")
     )
@@ -8864,6 +8870,14 @@ class GroupFields(GraphQLField):
         observations in every band present in the group are included."""
         return CalculatedBandedTimeFields("timeEstimateBanded")
 
+    @classmethod
+    def progress(cls) -> "GroupProgressFields":
+        """The group's progress toward satisfying its constraints: how many elements
+        are complete, whether the group is complete or can no longer be completed,
+        and when and what may be observed next.  Calculated when queried, so it is
+        never out of date.  Null for a deleted group."""
+        return GroupProgressFields("progress")
+
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
     "This group is managed by the system and not user-editable"
@@ -8877,6 +8891,7 @@ class GroupFields(GraphQLField):
             "CalculatedBandedTimeFields",
             "CalculatedCategorizedTimeRangeFields",
             "GroupElementFields",
+            "GroupProgressFields",
             "ProgramFields",
             "TimeSpanFields",
         ],
@@ -8917,6 +8932,57 @@ class GroupElementFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GroupElementFields":
+        self._alias = alias
+        return self
+
+
+class GroupProgressFields(GraphQLField):
+    """A group's progress toward satisfying its constraints."""
+
+    status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
+    completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
+    "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing."
+    required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
+    "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
+
+    @classmethod
+    def next_window(cls) -> "GroupWindowFields":
+        """When the next element may be observed.  Set only while the group is ongoing
+        and its constraints restrict the timing."""
+        return GroupWindowFields("nextWindow")
+
+    violations: "GroupProgressGraphQLField" = GroupProgressGraphQLField("violations")
+    "Why the group can no longer be completed: the constraints it can no longer\nmeet.  Empty unless unschedulable.  A subgroup's own violations are on its\nown `progress`."
+
+    def fields(
+        self, *subfields: Union[GroupProgressGraphQLField, "GroupWindowFields"]
+    ) -> "GroupProgressFields":
+        """Subfields should come from the GroupProgressFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupProgressFields":
+        self._alias = alias
+        return self
+
+
+class GroupWindowFields(GraphQLField):
+    """When the next element of a group may be observed, given the completions so far.
+    The window reflects only the group's own constraints.  The program's active
+    period and each observation's timing windows also apply, and are left to the
+    scheduler to combine with it."""
+
+    start: "GroupWindowGraphQLField" = GroupWindowGraphQLField("start")
+    "The earliest time the next element may start, per the minimum interval."
+    end: "GroupWindowGraphQLField" = GroupWindowGraphQLField("end")
+    "The latest time the next element may finish, per the maximum interval or the\nend of the night for a same-night group.  Null if there is no such limit.\nFitting an observation into the window (say, by its time estimate) is left to\nthe scheduler."
+
+    def fields(self, *subfields: GroupWindowGraphQLField) -> "GroupWindowFields":
+        """Subfields should come from the GroupWindowFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupWindowFields":
         self._alias = alias
         return self
 
@@ -10890,6 +10956,10 @@ class ObservationValidationFields(GraphQLField):
         "code"
     )
     "The type of validation problem"
+    severity: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
+        "severity"
+    )
+    "Whether the problem is an error or a warning, as determined by the code."
     messages: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
         "messages"
     )
@@ -14011,6 +14081,8 @@ class StepViolationFields(GraphQLField):
 
     code: "StepViolationGraphQLField" = StepViolationGraphQLField("code")
     "The validation code reported for the problem."
+    severity: "StepViolationGraphQLField" = StepViolationGraphQLField("severity")
+    "Whether the problem is an error or a warning, as determined by the code."
     message: "StepViolationGraphQLField" = StepViolationGraphQLField("message")
     'The problem as a sentence, e.g. "Exposure times for GMOS North must be at\nleast 1 s."'
 

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 import typer
 from rich.console import Console
@@ -53,21 +55,38 @@ class TestPrintNotFound:
 class TestAsyncCommand:
     def test_successful_execution(self):
         @async_command
-        async def dummy():
+        async def dummy(ctx: typer.Context):
             return "ok"
 
-        result = dummy()
+        result = dummy(ctx=SimpleNamespace(obj=None))
         assert result == "ok"
 
     def test_exception_triggers_exit(self, capsys):
         @async_command
-        async def broken():
+        async def broken(ctx: typer.Context):
             raise ValueError
 
         with pytest.raises(typer.Exit):
-            broken()
+            broken(ctx=SimpleNamespace(obj=None))
 
         _ = capsys.readouterr()
+
+    def test_debug_from_the_command_context_prints_the_traceback(self, capsys):
+        @async_command
+        async def broken(context: typer.Context):
+            raise ValueError("boom")
+
+        with pytest.raises(typer.Exit):
+            broken(context=SimpleNamespace(obj=SimpleNamespace(debug=True)))
+
+        assert "Traceback" in capsys.readouterr().err
+
+    def test_command_without_a_context_parameter_is_rejected(self):
+        with pytest.raises(TypeError, match="typer.Context"):
+
+            @async_command
+            async def no_context():
+                return None
 
 
 @pytest.mark.parametrize(

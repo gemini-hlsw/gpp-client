@@ -3,6 +3,7 @@ Commands for the GPP CLI.
 """
 
 from .attachment import attachment_app
+from .config import config_app
 from .goats import goats_app
 from .observation import observation_app
 from .program import program_app
@@ -20,4 +21,5 @@ __all__ = [
     "site_status_app",
     "goats_app",
     "scheduler_app",
+    "config_app",
 ]

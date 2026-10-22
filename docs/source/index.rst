@@ -32,8 +32,11 @@ Create a client and fetch data:
 
    from gpp_client import GPPClient
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="production") as client:
       program = await client.program.get_by_id("p-123")
+
+To use development instead, set ``GPP_DEVELOPMENT_TOKEN`` and pass
+``environment="development"``.
 
 Documentation Overview
 ----------------------

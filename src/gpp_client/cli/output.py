@@ -8,6 +8,7 @@ __all__ = [
     "success",
     "warning",
     "fail",
+    "environment",
     "panel",
     "confirm_prompt",
     "print_exception",
@@ -30,6 +31,7 @@ from rich.prompt import Confirm
 from rich.table import Table
 
 from gpp_client.cli.console import console, error_console
+from gpp_client.environment import GPPEnvironment
 
 ICON_BULLET = "[bold white]•[/]"
 ICON_SUCCESS = "[bold green]✔[/]"
@@ -72,7 +74,7 @@ def info(msg: str) -> None:
     msg : str
         The message text.
     """
-    console.print(f"{msg}", style="white")
+    console.print(f"{msg}", style="white", soft_wrap=True)
 
 
 def dim_info(msg: RenderableType) -> None:
@@ -96,7 +98,7 @@ def success(msg: RenderableType) -> None:
     msg : RenderableType
         Success message text.
     """
-    console.print(f"{ICON_SUCCESS} {msg}")
+    console.print(f"{ICON_SUCCESS} {msg}", soft_wrap=True)
 
 
 def warning(msg: RenderableType) -> None:
@@ -108,7 +110,7 @@ def warning(msg: RenderableType) -> None:
     msg : RenderableType
         Warning text.
     """
-    console.print(f"{ICON_WARNING} {msg}")
+    console.print(f"{ICON_WARNING} {msg}", soft_wrap=True)
     space()
 
 
@@ -121,7 +123,23 @@ def fail(msg: RenderableType) -> None:
     msg : RenderableType
         Error message text.
     """
-    error_console.print(f"{ICON_ERROR} {msg}")
+    error_console.print(f"{ICON_ERROR} {msg}", soft_wrap=True)
+
+
+def environment(env: GPPEnvironment) -> None:
+    """
+    Print the environment a command uses to stderr.
+
+    Parameters
+    ----------
+    env : GPPEnvironment
+        The environment the client was built for.
+    """
+    error_console.print(
+        f"Environment: {env.label} ({env.base_url})",
+        style="dim",
+        soft_wrap=True,
+    )
 
 
 def procedure(msg: RenderableType) -> None:
@@ -133,7 +151,7 @@ def procedure(msg: RenderableType) -> None:
     msg : RenderableType
         Procedure message text.
     """
-    console.print(f"{ICON_PROCEDURE} {msg}")
+    console.print(f"{ICON_PROCEDURE} {msg}", soft_wrap=True)
 
 
 def procedure_steps(steps: list[RenderableType]) -> None:

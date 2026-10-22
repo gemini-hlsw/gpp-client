@@ -54,7 +54,7 @@ def test_get_program_dispatches_correctly(
     getattr(program, method_name).return_value = result_model
 
     mocker.patch(
-        "gpp_client.cli.commands.program.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(program=program),
     )
     json_pydantic_mock = mocker.patch(
@@ -114,7 +114,7 @@ def test_list_programs_dispatches_correctly(
     )
 
     mocker.patch(
-        "gpp_client.cli.commands.program.GPPClient",
+        "gpp_client.cli.utils.GPPClient",
         return_value=dummy_async_client_factory(program=program),
     )
     json_pydantic_mock = mocker.patch(

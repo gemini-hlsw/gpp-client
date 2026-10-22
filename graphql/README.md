@@ -1,39 +1,15 @@
-## GraphQL Operations Structure
+# GraphQL operations
 
-GraphQL operations are now organized to support both shared and environment-specific behavior.
+Operations and fragments live in `operations/shared/`. Each one is written once and serves both GPP environments; the build trims what an environment lacks from the copy it sends there.
 
-### Directory Layout
+The schemas the operations are built against live in `schemas/`, one per environment.
 
-- `graphql/operations/shared/`
-  - Contains all operations and fragments used in both development and production.
-- `graphql/operations/development_only.graphql`
-  - Contains operations and fragments that exist only in the development schema.
+To rebuild the client after changing an operation or a schema, run from the repository root:
 
-### How It Works
+```bash
+uv run --group codegen python -m scripts.run_codegen
+```
 
-- **Production**
-  - Uses only the contents of `shared/`.
+The developer guide covers the build and schema updates:
 
-- **Development**
-  - Uses `shared/` + `development_only.graphql`.
-
-- During code generation, these are assembled into a temporary build directory and passed to `ariadne-codegen`.
-
-### Rules
-
-- `development_only.graphql` must be **additive only**.
-  - No operation or fragment names may collide with anything in `shared/`.
-  - Violations will fail code generation.
-
-- If `development_only.graphql` is empty or missing, it is ignored.
-
-### Guidelines
-
-- Put anything stable and supported in both environments into `shared/`.
-- Put experimental, dev-only, or not-yet-released schema usage into `development_only.graphql`.
-- Once a dev-only operation is promoted to production, move it into `shared/` and remove it from `development_only.graphql`.
-
-### Notes
-
-- The `build/` directory is temporary and is recreated on each codegen run.
-- Generated client code reflects the environment used during codegen.
+https://gpp-client.readthedocs.io/en/latest/developer/codegen.html

@@ -1,0 +1,15 @@
+# One ariadne-codegen run on the merged schema. scripts/run_codegen.py fills in
+# schema_path, queries_path, target_package_path and target_package_name.
+[tool.ariadne-codegen]
+client_name = "GraphQLClient"
+client_file_name = "client"
+plugins = [
+    "custom_plugins.AliasNamesPlugin",
+    "custom_plugins.EnvironmentDefaultsPlugin",
+    "custom_plugins.AliasStrWrapperPlugin",
+]
+enable_custom_operations = true
+# DO NOT CHANGE: SCHEDULER NEEDS THIS ON
+convert_to_snake_case = true
+##########
+include_comments = "none"

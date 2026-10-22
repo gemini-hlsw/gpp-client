@@ -11,7 +11,7 @@ Quick Example
 
 .. code-block:: python
 
-   async with GPPClient() as client:
+   async with GPPClient(environment="development") as client:
       tsv = await client.atom.get_digests(
          observation_ids=["o-123", "o-456"]
       )
@@ -40,8 +40,8 @@ Request atom digests as TSV data:
 Error Handling
 --------------
 
-- ``ValueError`` → invalid observation IDs
-- ``aiohttp.ClientResponseError`` → authentication or HTTP errors
+- ``GPPHttpError`` → GPP rejected the observation IDs or answered another error status
+- ``GPPTransportError`` → GPP could not be reached, or the request timed out
 
 
 Notes

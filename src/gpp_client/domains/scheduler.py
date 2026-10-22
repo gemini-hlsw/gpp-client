@@ -406,10 +406,15 @@ class SchedulerDomain(BaseDomain):
         -------
         list[tuple[str, str]]
             List of tuples containing the program reference label and ID.
+            Programs without a reference are left out.
         """
         today = datetime.today().date().isoformat() if date is None else date
         response = await self.get_program_ids(today=today)
-        return [(p.reference.label, p.id) for p in response.programs.matches]
+        return [
+            (p.reference.label, p.id)
+            for p in response.programs.matches
+            if p.reference is not None
+        ]
 
     async def get_visibility_changes(self, since: datetime) -> VisibilityChanges:
         """
@@ -433,8 +438,11 @@ class SchedulerDomain(BaseDomain):
 
         Raises
         ------
-        aiohttp.ClientError
-            For HTTP errors, connection failures, or timeouts.
+        GPPHttpError
+            If GPP answers an error status, 404 for an endpoint the selected
+            environment does not serve included.
+        GPPTransportError
+            If GPP could not be reached, or the request timed out.
         """
         body = await self._rest.get_visibility_changes(since)
         return parse_visibility_changes(body)

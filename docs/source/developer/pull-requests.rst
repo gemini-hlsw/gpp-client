@@ -28,4 +28,6 @@ If a pull request changes:
 
 then the generated code must also be committed.
 
-Generated code is treated as part of the repository source and is validated in CI.
+Generated code is treated as part of the repository source. ``uv run pytest``
+fails when it differs from a fresh build, and CI checks it again. For details,
+see :doc:`codegen`.
