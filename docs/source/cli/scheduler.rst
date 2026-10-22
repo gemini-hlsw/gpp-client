@@ -6,7 +6,7 @@ The ``gpp scheduler`` command group provides access to scheduler data.
 Quick Example
 -------------
 
-List scheduler programs:
+List active scheduler programs:
 
 .. code-block:: bash
 

@@ -91,13 +91,14 @@ class SchedulerDomain(BaseDomain):
         page_size: int = PROGRAMS_PAGE_SIZE,
     ) -> GetSchedulerPrograms:
         """
-        Get scheduler programs, fetching every page so the result reads as a
-        single query.
+        Get active scheduler programs, fetching every page so the result reads
+        as a single query.
 
         Parameters
         ----------
         programs_list : list[str] | None, optional
-            Optional list of program IDs to restrict the result set.
+            Optional list of program IDs to restrict the result set. Inactive
+            programs in the list are left out.
         page_size : int, optional
             Number of programs requested per page. Must be at least 2.
 

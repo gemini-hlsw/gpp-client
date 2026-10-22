@@ -14654,7 +14654,11 @@ class GraphQLClient(AsyncBaseClient):
     ) -> GetSchedulerPrograms:
         query = gql("""
             query GetSchedulerPrograms($programsList: [ProgramId!], $offset: ProgramId, $limit: NonNegInt) {
-              programs(WHERE: {id: {IN: $programsList}}, OFFSET: $offset, LIMIT: $limit) {
+              programs(
+                WHERE: {id: {IN: $programsList}, status: {EQ: ACTIVE}}
+                OFFSET: $offset
+                LIMIT: $limit
+              ) {
                 hasMore
                 matches {
                   id
