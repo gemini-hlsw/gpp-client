@@ -1621,18 +1621,6 @@ class GroupGraphQLField(GraphQLField):
         return self
 
 
-class GroupWindowGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GroupWindowGraphQLField":
-        self._alias = alias
-        return self
-
-
-class GroupProgressGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "GroupProgressGraphQLField":
-        self._alias = alias
-        return self
-
-
 class GroupElementGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GroupElementGraphQLField":
         self._alias = alias
