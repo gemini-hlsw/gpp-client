@@ -30,7 +30,7 @@ async def list_programs(
     ] = None,
 ) -> None:
     """
-    List scheduler programs.
+    List active scheduler programs.
     """
     with output.status("Fetching scheduler programs..."):
         async with GPPClient() as client:

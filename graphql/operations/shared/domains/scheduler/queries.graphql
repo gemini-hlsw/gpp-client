@@ -4,7 +4,7 @@ query GetSchedulerPrograms(
   $limit: NonNegInt
 ) {
   programs(
-    WHERE: { id: { IN: $programsList } }
+    WHERE: { id: { IN: $programsList }, status: { EQ: ACTIVE } }
     OFFSET: $offset
     LIMIT: $limit
   ) {
