@@ -15,6 +15,7 @@ from .enums import (
     BrightnessSurfaceUnits,
     CalculationState,
     CalibrationRole,
+    CalibrationSetType,
     CassRotator,
     CatalogName,
     ChargeClass,
@@ -981,6 +982,21 @@ class GmosSouthLongSlitAcquisitionInput(BaseModel):
         alias=str("exposureTimeMode"), default=None
     )
     "Exposure time mode for the acquisition sequence.  If not specified, a default\nexposure time mode is used."
+
+
+class WarningDismissalInput(BaseModel):
+    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    "One of programId, proposalReference, and programReference must be supplied."
+    proposal_reference: Optional[Any] = Field(
+        alias=str("proposalReference"), default=None
+    )
+    "One of programId, proposalReference, and programReference must be supplied."
+    program_reference: Optional[Any] = Field(
+        alias=str("programReference"), default=None
+    )
+    "One of programId, proposalReference, and programReference must be supplied."
+    justification: Any
+    "Why the warnings should be dismissed.  It is included in the body of the email\nsent to the support staff."
 
 
 class GmosSouthLongSlitInput(BaseModel):
@@ -2006,6 +2022,10 @@ class ResetAcquisitionInput(BaseModel):
     )
     regenerate: Optional[bool] = False
     "Regenerate the acquisition from the observing mode even if it was customized\nvia `replace*Sequence`, clearing the customization."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Reset even while an acquisition step is executing.  The executing step is\nthen marked abandoned, although Observe keeps running it.  Defaults to false,\nin which case the mutation fails while an acquisition step is executing."
 
 
 class RightAscensionInput(BaseModel):
@@ -2116,8 +2136,43 @@ class VisitorInput(BaseModel):
 class DaytimeCalibrationInput(BaseModel):
     """Daytime calibration mode input.  Staff only."""
 
-    instrument: Instrument
-    "Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,\nGNIRS or IGRINS2."
+    instrument: Optional[Instrument] = None
+    "Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,\nGNIRS or IGRINS2.  Required on creation; on an edit it may be omitted to\nkeep the current instrument, but never set to null."
+    calibration_sets: Optional[list["CalibrationSetInput"]] = Field(
+        alias=str("calibrationSets"), default=None
+    )
+    "Calibration sets, in order.  On an edit the whole list is replaced; omit it\nto keep the existing rows.  Rows may only be set for GMOS_NORTH and\nGMOS_SOUTH, and are rejected once the sequence has been materialized (first\nvisit or a hand edit)."
+
+
+class CalibrationSetInput(BaseModel):
+    """Calibration set input.  Exactly one instrument setup must be given and it must
+    match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
+    ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
+    A BIAS ignores the setup's exposure time and takes zero."""
+
+    kind: CalibrationSetType
+    count: Any
+    "Exposures taken with this setup, at most 1000."
+    gcal: Optional["CalibrationSetGcalInput"] = None
+    "GCAL lamp configuration, required for FLAT and ARC, rejected otherwise."
+    gmos_north: Optional["GmosNorthDynamicInput"] = Field(
+        alias=str("gmosNorth"), default=None
+    )
+    gmos_south: Optional["GmosSouthDynamicInput"] = Field(
+        alias=str("gmosSouth"), default=None
+    )
+
+
+class CalibrationSetGcalInput(BaseModel):
+    """GCAL configuration input for a flat or arc calibration set.  Give either a
+    continuum lamp or one or more arc lamps.  The diffuser defaults per instrument
+    (VISIBLE for GMOS, IR for the infrared instruments) when omitted."""
+
+    continuum: Optional[GcalContinuum] = None
+    arcs: Optional[list[GcalArc]] = None
+    filter_: GcalFilter = Field(alias=str("filter"))
+    diffuser: Optional[GcalDiffuser] = None
+    shutter: GcalShutter
 
 
 class ExchangeInput(BaseModel):
@@ -3222,7 +3277,7 @@ class Igrins2LongSlitInput(BaseModel):
     telluric_type: Optional["TelluricTypeInput"] = Field(
         alias=str("telluricType"), default=None
     )
-    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is HOT."
+    "The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.\nOn create the default is A0V."
 
 
 class Igrins2SvcInput(BaseModel):
@@ -5904,6 +5959,10 @@ class ReplaceFlamingos2SequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["Flamingos2AtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 class ReplaceGmosNorthSequenceInput(BaseModel):
@@ -5919,6 +5978,10 @@ class ReplaceGmosNorthSequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["GmosNorthAtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 class ReplaceGmosSouthSequenceInput(BaseModel):
@@ -5934,6 +5997,10 @@ class ReplaceGmosSouthSequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["GmosSouthAtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 class ReplaceIgrins2SequenceInput(BaseModel):
@@ -5949,6 +6016,10 @@ class ReplaceIgrins2SequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["Igrins2AtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 class ReplaceGnirsSequenceInput(BaseModel):
@@ -5964,6 +6035,10 @@ class ReplaceGnirsSequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["GnirsAtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 class ReplaceGhostSequenceInput(BaseModel):
@@ -5979,6 +6054,10 @@ class ReplaceGhostSequenceInput(BaseModel):
     "Specifies which sequence should be replaced."
     sequence: Optional[list["GhostAtomInput"]] = None
     "The new sequence.  Any unexecuted steps are deleted and replaced with the\nprovided sequence.  Steps that were previously executed, or for which at least\none execution event was received, are preserved."
+    abandon_ongoing_step: Optional[bool] = Field(
+        alias=str("abandonOngoingStep"), default=False
+    )
+    "Replace the sequence even while one of its steps is executing.  The executing\nstep is then marked abandoned, although Observe keeps running it, and the\nsteps of the new sequence run after it.  Defaults to false, in which case the\nmutation fails while a step of the sequence is executing."
 
 
 AddProgramUserInput.model_rebuild()
@@ -6069,6 +6148,8 @@ RecordGmosNorthVisitInput.model_rebuild()
 RecordGmosSouthVisitInput.model_rebuild()
 ObservingModeInput.model_rebuild()
 VisitorInput.model_rebuild()
+DaytimeCalibrationInput.model_rebuild()
+CalibrationSetInput.model_rebuild()
 ExchangeInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
 SetAllocationsInput.model_rebuild()

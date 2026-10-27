@@ -247,12 +247,13 @@ type AtomEvent implements ExecutionEvent {
 
   """
   Atom record associated with this event, if any.  Atom records only materialize
-  when the steps they contain execute.
+  when the steps they contain execute.  An atom with several runs matches
+  several atom records.
   """
-  atom: AtomRecord
+  atom: AtomRecord @deprecated(reason: "Atom events are no longer recorded.")
 
   """Atom execution stage."""
-  atomStage: AtomStage!
+  atomStage: AtomStage! @deprecated(reason: "Atom events are no longer recorded.")
 
   """
   Idempotency key, if any.  The IdempotencyKey may be provided by clients when
@@ -287,15 +288,27 @@ enum AtomStage {
   START_ATOM
 }
 
-"""The portion of an atom that executed in a particular visit."""
+"""
+A run of consecutive executed steps of one atom within one visit. An atom
+whose execution is interrupted by other steps (e.g., a reinserted acquisition)
+and then resumed, in the same visit or a later one, has one atom record per run.
+Listing a visit's atom records by `index`, and each record's steps by `index`,
+produces the steps in execution order.
+"""
 type AtomRecord {
-  """Atom ID."""
+  """
+  Atom ID. It is not unique among atom records: every run of the same atom
+  shares it.
+  """
   id: AtomId!
 
   """Visit in which this atom executed."""
   visit: Visit!
 
-  """Atom execution order -- the index of its first executed step."""
+  """
+  Atom execution order -- the index of its first executed step. It uniquely
+  identifies the atom record within the observation.
+  """
   index: PosInt!
 
   """Description, if any."""
@@ -1385,6 +1398,9 @@ type Email {
   """Recipient email address"""
   recipientEmail: EmailAddress!
 
+  """Address that replies should go to, if different from the sender"""
+  replyToEmail: EmailAddress
+
   """Email subject"""
   subject: NonEmptyString!
 
@@ -1497,7 +1513,7 @@ enum ExecutionEventType {
   SLEW
 
   """Atom-level event type. NOTE: this is no longer used."""
-  ATOM
+  ATOM @deprecated(reason: "Atom events are no longer recorded.")
 
   """Step-level event type."""
   STEP
@@ -2431,6 +2447,29 @@ input GmosSouthLongSlitAcquisitionInput {
   exposureTimeMode: ExposureTimeModeInput
 }
 
+input WarningDismissalInput {
+  """
+  One of programId, proposalReference, and programReference must be supplied.
+  """
+  programId: ProgramId
+
+  """
+  One of programId, proposalReference, and programReference must be supplied.
+  """
+  proposalReference: ProposalReferenceLabel
+
+  """
+  One of programId, proposalReference, and programReference must be supplied.
+  """
+  programReference: ProgramReferenceLabel
+
+  """
+  Why the warnings should be dismissed.  It is included in the body of the email
+  sent to the support staff.
+  """
+  justification: NonEmptyString!
+}
+
 """Edit or create GMOS South Long Slit advanced configuration"""
 input GmosSouthLongSlitInput {
   """
@@ -3355,7 +3394,8 @@ type Mutation {
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceFlamingos2Sequence(input: ReplaceFlamingos2SequenceInput!): ReplaceFlamingos2SequenceResult!
 
@@ -3368,7 +3408,8 @@ type Mutation {
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceGmosNorthSequence(input: ReplaceGmosNorthSequenceInput!): ReplaceGmosNorthSequenceResult!
 
@@ -3390,28 +3431,32 @@ type Mutation {
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceGmosSouthSequence(input: ReplaceGmosSouthSequenceInput!): ReplaceGmosSouthSequenceResult!
 
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceIgrins2Sequence(input: ReplaceIgrins2SequenceInput!): ReplaceIgrins2SequenceResult!
 
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceGnirsSequence(input: ReplaceGnirsSequenceInput!): ReplaceGnirsSequenceResult!
 
   """
   Replaces the remaining steps in an execution sequence with the provided
   sequence.  Previously executed (or even partially executed) steps are not
-  deleted.  Any ongoing steps are abandoned.
+  deleted.  Fails while a step of the sequence is executing, unless
+  `abandonOngoingStep` is set.
   """
   replaceGhostSequence(input: ReplaceGhostSequenceInput!): ReplaceGhostSequenceResult!
 
@@ -3429,7 +3474,8 @@ type Mutation {
   Resets the acquisition sequence to start from the initial step regardless of
   which acquisition steps may have been executed.  An acquisition customized
   via `replace*Sequence` restarts from a copy of its edited steps and stays
-  customized, unless `regenerate` is set.  Requires staff (or better) access.
+  customized, unless `regenerate` is set.  Fails while an acquisition step is
+  executing, unless `abandonOngoingStep` is set.  Requires staff (or better) access.
   """
   resetAcquisition(input: ResetAcquisitionInput!): ResetAcquisitionResult!
 
@@ -3563,6 +3609,13 @@ type Mutation {
   according to the current workflow. Returns the updated workflow.
   """
   setObservationWorkflowState(input: SetObservationWorkflowStateInput!): ObservationWorkflow
+
+  """
+  Sends an email to each of the program's primary and secondary support contacts, on behalf of the current user
+  (who must be a user of the program with write access), asking them to review the program's warnings for
+  dismissal.  The emails come from the system address with the current user as the Reply-To.
+  """
+  requestWarningDismissal(input: WarningDismissalInput!): [Email!]!
 }
 
 input SetObservationWorkflowStateInput {
@@ -5087,6 +5140,13 @@ input ResetAcquisitionInput {
   via `replace*Sequence`, clearing the customization.
   """
   regenerate: Boolean = false
+
+  """
+  Reset even while an acquisition step is executing.  The executing step is
+  then marked abandoned, although Observe keeps running it.  Defaults to false,
+  in which case the mutation fails while an acquisition step is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """The result of resetting the acquisition sequence."""
@@ -5268,15 +5328,108 @@ type DaytimeCalibration {
 
   """Instrument of the calibration."""
   instrument: Instrument!
+
+  """
+  Ordered calibration sets that generate the sequence.  Empty until staff add
+  rows (or enter the sequence by hand).
+  """
+  calibrationSets: [CalibrationSet!]!
 }
 
 """Daytime calibration mode input.  Staff only."""
 input DaytimeCalibrationInput {
   """
   Instrument of the calibration: FLAMINGOS2, GHOST, GMOS_NORTH, GMOS_SOUTH,
-  GNIRS or IGRINS2.
+  GNIRS or IGRINS2.  Required on creation; on an edit it may be omitted to
+  keep the current instrument, but never set to null.
   """
-  instrument: Instrument!
+  instrument: Instrument
+
+  """
+  Calibration sets, in order.  On an edit the whole list is replaced; omit it
+  to keep the existing rows.  Rows may only be set for GMOS_NORTH and
+  GMOS_SOUTH, and are rejected once the sequence has been materialized (first
+  visit or a hand edit).
+  """
+  calibrationSets: [CalibrationSetInput!]
+}
+
+"""
+The kind of exposure a calibration set produces.  DAYTIME_OBSERVE is an
+exposure with the dome closed and no lamp, such as a pupil or bubble image.
+"""
+enum CalibrationSetType {
+  BIAS
+  DARK
+  FLAT
+  ARC
+  DAYTIME_OBSERVE
+}
+
+"""
+One row of a daytime calibration: a kind, an exposure count, the GCAL
+configuration (flats and arcs only) and one instrument setup.  The generator
+expands it into one atom holding `count` identical DAY_CAL steps.
+"""
+type CalibrationSet {
+  kind: CalibrationSetType!
+
+  """Exposures taken with this setup."""
+  count: PosInt!
+
+  """GCAL lamp configuration, present for FLAT and ARC only."""
+  gcal: CalibrationSetGcal
+
+  """GMOS North setup, when the instrument is GMOS North."""
+  gmosNorth: GmosNorthDynamic
+
+  """GMOS South setup, when the instrument is GMOS South."""
+  gmosSouth: GmosSouthDynamic
+}
+
+"""GCAL configuration of a flat or arc calibration set."""
+type CalibrationSetGcal {
+  """GCAL continuum, present for a flat"""
+  continuum: GcalContinuum
+
+  """GCAL arcs, one or more present for an arc"""
+  arcs: [GcalArc!]!
+  filter: GcalFilter!
+  diffuser: GcalDiffuser!
+  shutter: GcalShutter!
+}
+
+"""
+Calibration set input.  Exactly one instrument setup must be given and it must
+match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
+ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
+A BIAS ignores the setup's exposure time and takes zero.
+"""
+input CalibrationSetInput {
+  kind: CalibrationSetType!
+
+  """Exposures taken with this setup, at most 1000."""
+  count: PosInt!
+
+  """
+  GCAL lamp configuration, required for FLAT and ARC, rejected otherwise.
+  """
+  gcal: CalibrationSetGcalInput
+  gmosNorth: GmosNorthDynamicInput
+  gmosSouth: GmosSouthDynamicInput
+}
+
+"""
+GCAL configuration input for a flat or arc calibration set.  Give either a
+continuum lamp or one or more arc lamps.  The diffuser defaults per instrument
+(VISIBLE for GMOS, IR for the infrared instruments) when omitted.
+"""
+input CalibrationSetGcalInput {
+  continuum: GcalContinuum
+  arcs: [GcalArc!]
+  filter: GcalFilter!
+  diffuser: GcalDiffuser
+  shutter: GcalShutter!
 }
 
 input ExchangeInput {
@@ -9883,7 +10036,7 @@ input Igrins2LongSlitInput {
 
   """
   The telluricType field must be either specified or skipped altogether. It cannot be unset with a null value.
-  On create the default is HOT.
+  On create the default is A0V.
   """
   telluricType: TelluricTypeInput
 }
@@ -15404,6 +15557,9 @@ type Program {
   `UNCONSTRAINED` if it has none.  A summary of what the observations ask for.
   """
   maxSchedulingMode: SchedulingMode!
+
+  """List of related emails sent by the system."""
+  emails: [Email!]!
 }
 
 """ProgramId id formatted as `p-[1-9a-f][0-9a-f]*`"""
@@ -21397,6 +21553,14 @@ input ReplaceFlamingos2SequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [Flamingos2AtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """
@@ -21425,6 +21589,14 @@ input ReplaceGmosNorthSequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [GmosNorthAtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """
@@ -21453,6 +21625,14 @@ input ReplaceGmosSouthSequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [GmosSouthAtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """
@@ -21481,6 +21661,14 @@ input ReplaceIgrins2SequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [Igrins2AtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """
@@ -21509,6 +21697,14 @@ input ReplaceGnirsSequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [GnirsAtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """
@@ -21537,6 +21733,14 @@ input ReplaceGhostSequenceInput {
   one execution event was received, are preserved.
   """
   sequence: [GhostAtomInput!]
+
+  """
+  Replace the sequence even while one of its steps is executing.  The executing
+  step is then marked abandoned, although Observe keeps running it, and the
+  steps of the new sequence run after it.  Defaults to false, in which case the
+  mutation fails while a step of the sequence is executing.
+  """
+  abandonOngoingStep: Boolean = false
 }
 
 """

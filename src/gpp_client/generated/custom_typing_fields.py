@@ -685,6 +685,18 @@ class DaytimeCalibrationGraphQLField(GraphQLField):
         return self
 
 
+class CalibrationSetGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalibrationSetGraphQLField":
+        self._alias = alias
+        return self
+
+
+class CalibrationSetGcalGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalibrationSetGcalGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ExchangeGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ExchangeGraphQLField":
         self._alias = alias
@@ -1617,6 +1629,18 @@ class GoaPropertiesGraphQLField(GraphQLField):
 
 class GroupGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GroupGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupWindowGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupWindowGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupProgressGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupProgressGraphQLField":
         self._alias = alias
         return self
 

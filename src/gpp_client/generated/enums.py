@@ -313,6 +313,14 @@ class SmartGcalType(str, Enum):
     NIGHT_BASELINE = "NIGHT_BASELINE"
 
 
+class CalibrationSetType(str, Enum):
+    BIAS = "BIAS"
+    DARK = "DARK"
+    FLAT = "FLAT"
+    ARC = "ARC"
+    DAYTIME_OBSERVE = "DAYTIME_OBSERVE"
+
+
 class StepExecutionState(str, Enum):
     NOT_STARTED = "NOT_STARTED"
     ONGOING = "ONGOING"
@@ -907,6 +915,24 @@ class GmosBinning(str, Enum):
     FOUR = "FOUR"
 
 
+class GroupStatus(str, Enum):
+    EMPTY = "EMPTY"
+    PENDING = "PENDING"
+    ONGOING = "ONGOING"
+    COMPLETE = "COMPLETE"
+    UNSCHEDULABLE = "UNSCHEDULABLE"
+
+
+class GroupConstraintViolation(str, Enum):
+    ORDER = "ORDER"
+    MINIMUM_INTERVAL = "MINIMUM_INTERVAL"
+    MAXIMUM_INTERVAL = "MAXIMUM_INTERVAL"
+    SAME_NIGHT = "SAME_NIGHT"
+    SAME_NIGHT_MULTIPLE_SITES = "SAME_NIGHT_MULTIPLE_SITES"
+    INSUFFICIENT_ELEMENTS = "INSUFFICIENT_ELEMENTS"
+    SUBGROUP_UNSCHEDULABLE = "SUBGROUP_UNSCHEDULABLE"
+
+
 class AltairMode(str, Enum):
     NGS = "NGS"
     LGS = "LGS"
@@ -1148,6 +1174,11 @@ class ObservationPriority(str, Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
+
+
+class ObservationValidationCodeSeverity(str, Enum):
+    ERROR = "ERROR"
+    WARNING = "WARNING"
 
 
 class ObservationValidationCode(str, Enum):

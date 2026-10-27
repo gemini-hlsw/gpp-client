@@ -27,6 +27,7 @@ from .custom_fields import (
     DeleteProgramUserResultFields,
     DeleteProposalResultFields,
     DeleteSequenceResultFields,
+    EmailFields,
     InsertSmartGcalResultFields,
     LinkUserResultFields,
     ObservationWorkflowFields,
@@ -132,6 +133,7 @@ from .input_types import (
     UpdateProgramUsersInput,
     UpdateProposalInput,
     UpdateTargetsInput,
+    WarningDismissalInput,
 )
 
 
@@ -563,7 +565,8 @@ class Mutation:
     ) -> ReplaceFlamingos2SequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceFlamingos2SequenceInput!", "value": input}
         }
@@ -595,7 +598,8 @@ class Mutation:
     ) -> ReplaceGmosNorthSequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceGmosNorthSequenceInput!", "value": input}
         }
@@ -655,7 +659,8 @@ class Mutation:
     ) -> ReplaceGmosSouthSequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceGmosSouthSequenceInput!", "value": input}
         }
@@ -672,7 +677,8 @@ class Mutation:
     ) -> ReplaceIgrins2SequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceIgrins2SequenceInput!", "value": input}
         }
@@ -689,7 +695,8 @@ class Mutation:
     ) -> ReplaceGnirsSequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceGnirsSequenceInput!", "value": input}
         }
@@ -706,7 +713,8 @@ class Mutation:
     ) -> ReplaceGhostSequenceResultFields:
         """Replaces the remaining steps in an execution sequence with the provided
         sequence.  Previously executed (or even partially executed) steps are not
-        deleted.  Any ongoing steps are abandoned."""
+        deleted.  Fails while a step of the sequence is executing, unless
+        `abandonOngoingStep` is set."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ReplaceGhostSequenceInput!", "value": input}
         }
@@ -744,7 +752,8 @@ class Mutation:
         """Resets the acquisition sequence to start from the initial step regardless of
         which acquisition steps may have been executed.  An acquisition customized
         via `replace*Sequence` restarts from a copy of its edited steps and stays
-        customized, unless `regenerate` is set.  Requires staff (or better) access."""
+        customized, unless `regenerate` is set.  Fails while an acquisition step is
+        executing, unless `abandonOngoingStep` is set.  Requires staff (or better) access."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "ResetAcquisitionInput!", "value": input}
         }
@@ -1126,4 +1135,19 @@ class Mutation:
         }
         return ObservationWorkflowFields(
             field_name="setObservationWorkflowState", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def request_warning_dismissal(cls, input: WarningDismissalInput) -> EmailFields:
+        """Sends an email to each of the program's primary and secondary support contacts, on behalf of the current user
+        (who must be a user of the program with write access), asking them to review the program's warnings for
+        dismissal.  The emails come from the system address with the current user as the Reply-To."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "WarningDismissalInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return EmailFields(
+            field_name="requestWarningDismissal", arguments=cleared_arguments
         )

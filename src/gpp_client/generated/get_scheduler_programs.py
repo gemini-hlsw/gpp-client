@@ -5,6 +5,8 @@ from pydantic import Field
 from .base_model import BaseModel
 from .enums import (
     Existence,
+    GroupConstraintViolation,
+    GroupStatus,
     ProgramType,
     ProposalStatus,
     ScienceBand,
@@ -125,6 +127,10 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup(BaseModel):
         "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMaximumInterval"
     ] = Field(alias="maximumInterval")
     system: bool
+    progress: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgress"
+    ]
+    same_night: bool = Field(alias="sameNight")
 
 
 class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMinimumInterval(
@@ -137,6 +143,23 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupMaximumInterval(
     BaseModel
 ):
     seconds: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgress(BaseModel):
+    completed: Any
+    next_window: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressNextWindow"
+    ] = Field(alias="nextWindow")
+    required: Any
+    status: GroupStatus
+    violations: list[GroupConstraintViolation]
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressNextWindow(
+    BaseModel
+):
+    end: Optional[Any]
+    start: Any
 
 
 class GetSchedulerProgramsProgramsMatchesAllGroupElementsObservation(BaseModel):
@@ -152,3 +175,4 @@ GetSchedulerProgramsProgramsMatchesTimeCharge.model_rebuild()
 GetSchedulerProgramsProgramsMatchesTimeChargeTime.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllGroupElements.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup.model_rebuild()
+GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgress.model_rebuild()
