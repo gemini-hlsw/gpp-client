@@ -14716,6 +14716,17 @@ class GraphQLClient(AsyncBaseClient):
                         seconds
                       }
                       system
+                      progress {
+                        completed
+                        nextWindow {
+                          end
+                          start
+                        }
+                        required
+                        status
+                        violations
+                      }
+                      sameNight
                     }
                     observation {
                       id

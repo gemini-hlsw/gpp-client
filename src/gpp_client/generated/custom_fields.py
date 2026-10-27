@@ -40,6 +40,8 @@ from .custom_typing_fields import (
     CalibrationDigestGraphQLField,
     CalibrationEstimateGraphQLField,
     CalibrationProgramReferenceGraphQLField,
+    CalibrationSetGcalGraphQLField,
+    CalibrationSetGraphQLField,
     CallForProposalsExchangePartnerGraphQLField,
     CallForProposalsGraphQLField,
     CallForProposalsPartnerGraphQLField,
@@ -221,6 +223,8 @@ from .custom_typing_fields import (
     GroupedImagingVariantGraphQLField,
     GroupElementGraphQLField,
     GroupGraphQLField,
+    GroupProgressGraphQLField,
+    GroupWindowGraphQLField,
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
@@ -1104,7 +1108,8 @@ class AtomEventFields(GraphQLField):
     @classmethod
     def atom(cls) -> "AtomRecordFields":
         """Atom record associated with this event, if any.  Atom records only materialize
-        when the steps they contain execute."""
+        when the steps they contain execute.  An atom with several runs matches
+        several atom records."""
         return AtomRecordFields("atom")
 
     atom_stage: "AtomEventGraphQLField" = AtomEventGraphQLField("atomStage")
@@ -1131,10 +1136,14 @@ class AtomEventFields(GraphQLField):
 
 
 class AtomRecordFields(GraphQLField):
-    """The portion of an atom that executed in a particular visit."""
+    """A run of consecutive executed steps of one atom within one visit. An atom
+    whose execution is interrupted by other steps (e.g., a reinserted acquisition)
+    and then resumed, in the same visit or a later one, has one atom record per run.
+    Listing a visit's atom records by `index`, and each record's steps by `index`,
+    produces the steps in execution order."""
 
     id: "AtomRecordGraphQLField" = AtomRecordGraphQLField("id")
-    "Atom ID."
+    "Atom ID. It is not unique among atom records: every run of the same atom\nshares it."
 
     @classmethod
     def visit(cls) -> "VisitFields":
@@ -1142,7 +1151,7 @@ class AtomRecordFields(GraphQLField):
         return VisitFields("visit")
 
     index: "AtomRecordGraphQLField" = AtomRecordGraphQLField("index")
-    "Atom execution order -- the index of its first executed step."
+    "Atom execution order -- the index of its first executed step. It uniquely\nidentifies the atom record within the observation."
     description: "AtomRecordGraphQLField" = AtomRecordGraphQLField("description")
     "Description, if any."
     instrument: "AtomRecordGraphQLField" = AtomRecordGraphQLField("instrument")
@@ -1707,6 +1716,77 @@ class CalibrationProgramReferenceFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "CalibrationProgramReferenceFields":
+        self._alias = alias
+        return self
+
+
+class CalibrationSetFields(GraphQLField):
+    """One row of a daytime calibration: a kind, an exposure count, the GCAL
+    configuration (flats and arcs only) and one instrument setup.  The generator
+    expands it into one atom holding `count` identical DAY_CAL steps."""
+
+    kind: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("kind")
+    count: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("count")
+    "Exposures taken with this setup."
+
+    @classmethod
+    def gcal(cls) -> "CalibrationSetGcalFields":
+        """GCAL lamp configuration, present for FLAT and ARC only."""
+        return CalibrationSetGcalFields("gcal")
+
+    @classmethod
+    def gmos_north(cls) -> "GmosNorthDynamicFields":
+        """GMOS North setup, when the instrument is GMOS North."""
+        return GmosNorthDynamicFields("gmosNorth")
+
+    @classmethod
+    def gmos_south(cls) -> "GmosSouthDynamicFields":
+        """GMOS South setup, when the instrument is GMOS South."""
+        return GmosSouthDynamicFields("gmosSouth")
+
+    def fields(
+        self,
+        *subfields: Union[
+            CalibrationSetGraphQLField,
+            "CalibrationSetGcalFields",
+            "GmosNorthDynamicFields",
+            "GmosSouthDynamicFields",
+        ],
+    ) -> "CalibrationSetFields":
+        """Subfields should come from the CalibrationSetFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalibrationSetFields":
+        self._alias = alias
+        return self
+
+
+class CalibrationSetGcalFields(GraphQLField):
+    """GCAL configuration of a flat or arc calibration set."""
+
+    continuum: "CalibrationSetGcalGraphQLField" = CalibrationSetGcalGraphQLField(
+        "continuum"
+    )
+    "GCAL continuum, present for a flat"
+    arcs: "CalibrationSetGcalGraphQLField" = CalibrationSetGcalGraphQLField("arcs")
+    "GCAL arcs, one or more present for an arc"
+    filter_: "CalibrationSetGcalGraphQLField" = CalibrationSetGcalGraphQLField("filter")
+    diffuser: "CalibrationSetGcalGraphQLField" = CalibrationSetGcalGraphQLField(
+        "diffuser"
+    )
+    shutter: "CalibrationSetGcalGraphQLField" = CalibrationSetGcalGraphQLField(
+        "shutter"
+    )
+
+    def fields(
+        self, *subfields: CalibrationSetGcalGraphQLField
+    ) -> "CalibrationSetGcalFields":
+        """Subfields should come from the CalibrationSetGcalFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalibrationSetGcalFields":
         self._alias = alias
         return self
 
@@ -3545,8 +3625,14 @@ class DaytimeCalibrationFields(GraphQLField):
     )
     "Instrument of the calibration."
 
+    @classmethod
+    def calibration_sets(cls) -> "CalibrationSetFields":
+        """Ordered calibration sets that generate the sequence.  Empty until staff add
+        rows (or enter the sequence by hand)."""
+        return CalibrationSetFields("calibrationSets")
+
     def fields(
-        self, *subfields: DaytimeCalibrationGraphQLField
+        self, *subfields: Union[DaytimeCalibrationGraphQLField, "CalibrationSetFields"]
     ) -> "DaytimeCalibrationFields":
         """Subfields should come from the DaytimeCalibrationFields class"""
         self._subfields.extend(subfields)
@@ -3795,6 +3881,8 @@ class EmailFields(GraphQLField):
     "Sender email address"
     recipient_email: "EmailGraphQLField" = EmailGraphQLField("recipientEmail")
     "Recipient email address"
+    reply_to_email: "EmailGraphQLField" = EmailGraphQLField("replyToEmail")
+    "Address that replies should go to, if different from the sender"
     subject: "EmailGraphQLField" = EmailGraphQLField("subject")
     "Email subject"
     text_message: "EmailGraphQLField" = EmailGraphQLField("textMessage")
@@ -4389,6 +4477,10 @@ class ExecutionTimestampsFields(GraphQLField):
         ExecutionTimestampsGraphQLField("firstEventTime")
     )
     "Time of the observation's earliest execution event, across all of its\nvisits (ordinarily in the first visit).  The earliest and latest events\ngenerally fall in different visits, so `lastEventTime - firstEventTime` is not\nthe execution time."
+    start_time: "ExecutionTimestampsGraphQLField" = ExecutionTimestampsGraphQLField(
+        "startTime"
+    )
+    "Time of the observation's first execution event other than a slew, which is\nwhen its execution started.  This is null until such an event is recorded,\neven if the telescope has slewed to the target."
     last_event_time: "ExecutionTimestampsGraphQLField" = (
         ExecutionTimestampsGraphQLField("lastEventTime")
     )
@@ -8864,6 +8956,14 @@ class GroupFields(GraphQLField):
         observations in every band present in the group are included."""
         return CalculatedBandedTimeFields("timeEstimateBanded")
 
+    @classmethod
+    def progress(cls) -> "GroupProgressFields":
+        """The group's progress toward satisfying its constraints: how many elements
+        are complete, whether the group is complete or can no longer be completed,
+        and when and what may be observed next.  Calculated when queried, so it is
+        never out of date.  Null for a deleted group."""
+        return GroupProgressFields("progress")
+
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
     "This group is managed by the system and not user-editable"
@@ -8877,6 +8977,7 @@ class GroupFields(GraphQLField):
             "CalculatedBandedTimeFields",
             "CalculatedCategorizedTimeRangeFields",
             "GroupElementFields",
+            "GroupProgressFields",
             "ProgramFields",
             "TimeSpanFields",
         ],
@@ -8917,6 +9018,57 @@ class GroupElementFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GroupElementFields":
+        self._alias = alias
+        return self
+
+
+class GroupProgressFields(GraphQLField):
+    """A group's progress toward satisfying its constraints."""
+
+    status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
+    completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
+    "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing."
+    required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
+    "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
+
+    @classmethod
+    def next_window(cls) -> "GroupWindowFields":
+        """When the next element may be observed.  Set only while the group is ongoing
+        and its constraints restrict the timing."""
+        return GroupWindowFields("nextWindow")
+
+    violations: "GroupProgressGraphQLField" = GroupProgressGraphQLField("violations")
+    "Why the group can no longer be completed: the constraints it can no longer\nmeet.  Empty unless unschedulable.  A subgroup's own violations are on its\nown `progress`."
+
+    def fields(
+        self, *subfields: Union[GroupProgressGraphQLField, "GroupWindowFields"]
+    ) -> "GroupProgressFields":
+        """Subfields should come from the GroupProgressFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupProgressFields":
+        self._alias = alias
+        return self
+
+
+class GroupWindowFields(GraphQLField):
+    """When the next element of a group may be observed, given the completions so far.
+    The window reflects only the group's own constraints.  The program's active
+    period and each observation's timing windows also apply, and are left to the
+    scheduler to combine with it."""
+
+    start: "GroupWindowGraphQLField" = GroupWindowGraphQLField("start")
+    "The earliest time the next element may start, per the minimum interval."
+    end: "GroupWindowGraphQLField" = GroupWindowGraphQLField("end")
+    "The latest time the next element may finish, per the maximum interval or the\nend of the night for a same-night group.  Null if there is no such limit.\nFitting an observation into the window (say, by its time estimate) is left to\nthe scheduler."
+
+    def fields(self, *subfields: GroupWindowGraphQLField) -> "GroupWindowFields":
+        """Subfields should come from the GroupWindowFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupWindowFields":
         self._alias = alias
         return self
 
@@ -10890,6 +11042,10 @@ class ObservationValidationFields(GraphQLField):
         "code"
     )
     "The type of validation problem"
+    severity: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
+        "severity"
+    )
+    "Whether the problem is an error or a warning, as determined by the code."
     messages: "ObservationValidationGraphQLField" = ObservationValidationGraphQLField(
         "messages"
     )
@@ -11562,6 +11718,11 @@ class ProgramFields(GraphQLField):
     )
     "The most restrictive scheduling mode among the program's observations, or\n`UNCONSTRAINED` if it has none.  A summary of what the observations ask for."
 
+    @classmethod
+    def emails(cls) -> "EmailFields":
+        """List of related emails sent by the system."""
+        return EmailFields("emails")
+
     def fields(
         self,
         *subfields: Union[
@@ -11573,6 +11734,7 @@ class ProgramFields(GraphQLField):
             "CalculatedCategorizedTimeRangeFields",
             "ConfigurationRequestSelectResultFields",
             "DateIntervalFields",
+            "EmailFields",
             "GoaPropertiesFields",
             "GroupElementFields",
             "ObservationSelectResultFields",
@@ -14011,6 +14173,8 @@ class StepViolationFields(GraphQLField):
 
     code: "StepViolationGraphQLField" = StepViolationGraphQLField("code")
     "The validation code reported for the problem."
+    severity: "StepViolationGraphQLField" = StepViolationGraphQLField("severity")
+    "Whether the problem is an error or a warning, as determined by the code."
     message: "StepViolationGraphQLField" = StepViolationGraphQLField("message")
     'The problem as a sentence, e.g. "Exposure times for GMOS North must be at\nleast 1 s."'
 
