@@ -14817,108 +14817,1036 @@ class GraphQLClient(AsyncBaseClient):
                 newCalculationState
                 editType
                 value {
-                  id
-                  reference {
-                    label
-                  }
+                  ...ObservationDetails
                   observationTime
                   program {
+                    ...ProgramCore
                     active {
-                      end
                       start
+                      end
                     }
                   }
-                  workflow {
-                    value {
-                      state
-                    }
-                  }
-                  execution {
-                    visits {
-                      matches {
-                        observation {
-                          id
-                        }
-                        atomRecords {
-                          matches {
-                            executionState
-                            id
-                          }
-                        }
-                      }
-                    }
-                  }
-                  targetEnvironment {
-                    asterism {
-                      name
-                      sidereal {
-                        ra {
-                          hours
-                          hms
-                          degrees
-                        }
-                        dec {
-                          degrees
-                          dms
-                        }
-                        epoch
-                      }
-                      nonsidereal {
-                        des
-                        keyType
-                        key
-                      }
-                    }
-                    explicitBase {
-                      ra {
-                        hms
-                      }
-                      dec {
-                        dms
-                      }
-                    }
-                  }
-                  constraintSet {
-                    imageQuality
-                    cloudExtinction
-                    skyBackground
-                    waterVapor
-                    elevationRange {
-                      airMass {
-                        min
-                        max
-                      }
-                      hourAngle {
-                        minHours
-                        maxHours
-                      }
-                    }
-                  }
-                  schedulingConstraints {
-                    timingWindows {
-                      inclusion
-                      startUtc
-                      end {
-                        __typename
-                        ... on TimingWindowEndAt {
-                          atUtc
-                        }
-                        ... on TimingWindowEndAfter {
-                          after {
-                            seconds
-                          }
-                          repeat {
-                            period {
-                              seconds
-                            }
-                            times
-                          }
-                        }
-                      }
-                    }
-                  }
-                  instrument
                 }
+              }
+            }
+
+            fragment ConstraintSetDetails on ConstraintSet {
+              imageQuality
+              cloudExtinction
+              skyBackground
+              waterVapor
+              elevationRange {
+                airMass {
+                  min
+                  max
+                }
+                hourAngle {
+                  minHours
+                  maxHours
+                }
+              }
+            }
+
+            fragment Flamingos2ImagingDetails on Flamingos2Imaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                  }
+                }
+              }
+              initialFilters {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              defaultReadMode
+              explicitReadMode
+              defaultReads
+              explicitReads
+              defaultDecker
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              explicitReadoutMode
+            }
+
+            fragment Flamingos2LongSlitDetails on Flamingos2LongSlit {
+              decker
+              defaultDecker
+              disperser
+              filter
+              fpu
+              telluricType {
+                tag
+                starTypes
+              }
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              explicitReadMode
+              explicitReads
+              explicitDecker
+              readoutMode
+              defaultReadoutMode
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    value
+                    at {
+                      nanometers
+                    }
+                  }
+                  timeAndCount {
+                    time {
+                      seconds
+                    }
+                    count
+                    at {
+                      nanometers
+                    }
+                  }
+                }
+              }
+              initialDisperser
+              initialFilter
+              initialFpu
+            }
+
+            fragment GmosNorthImagingDetails on GmosNorthImaging {
+              filters {
+                filter
+              }
+              bin
+            }
+
+            fragment GmosNorthLongSlitDetails on GmosNorthLongSlit {
+              grating
+              filter
+              fpu
+              centralWavelength {
+                nanometers
+              }
+              xBin
+              yBin
+            }
+
+            fragment GmosSouthImagingDetails on GmosSouthImaging {
+              filters {
+                filter
+              }
+              bin
+            }
+
+            fragment GmosSouthLongSlitDetails on GmosSouthLongSlit {
+              grating
+              filter
+              fpu
+              centralWavelength {
+                nanometers
+              }
+              xBin
+              yBin
+            }
+
+            fragment GnirsImagingDetails on GnirsImaging {
+              camera
+              defaultWellDepth
+              explicitReadMode
+              explicitWellDepth
+              filters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              initialFilters {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                filter
+              }
+              wellDepth
+            }
+
+            fragment GnirsSpectroscopyDetails on GnirsSpectroscopy {
+              acquisition {
+                explicitAcquisitionType
+                explicitFilter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+                skyOffset {
+                  p {
+                    arcseconds
+                  }
+                  q {
+                    arcseconds
+                  }
+                }
+              }
+              camera
+              centralWavelengths {
+                centralWavelength {
+                  nanometers
+                }
+              }
+              decker
+              defaultDecker
+              defaultWellDepth
+              explicitDecker
+              explicitFocusMotorSteps
+              explicitGrating
+              explicitPrism
+              explicitReadMode
+              explicitWellDepth
+              filter
+              grating
+              ifu {
+                fpu
+                initialFpu
+                telescopeConfigs {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              initialCamera
+              initialFilter
+              initialGrating
+              initialPrism
+              prism
+              telluricType {
+                starTypes
+                tag
+              }
+              wellDepth
+              slit {
+                fpu
+                initialFpu
+                defaultTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                explicitTelescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+                telescopeConfigs {
+                  alongSlit {
+                    guiding
+                    q {
+                      arcseconds
+                    }
+                  }
+                  offsetMode
+                  toSky {
+                    guiding
+                    offset {
+                      p {
+                        arcseconds
+                      }
+                      q {
+                        arcseconds
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment Igrins2LongSlitDetails on Igrins2LongSlit {
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  time {
+                    seconds
+                  }
+                  count
+                  at {
+                    nanometers
+                  }
+                }
+              }
+              telluricType {
+                tag
+                starTypes
+              }
+            }
+
+            fragment NonsiderealTargetDetails on Nonsidereal {
+              des
+              keyType
+              key
+            }
+
+            fragment ObservationCore on Observation {
+              id
+              existence
+              reference {
+                label
+              }
+              title
+              instrument
+              calibrationRole
+              priority
+            }
+
+            fragment ObservationDetails on Observation {
+              ...ObservationCore
+              observerNotes
+              subtitle
+              program {
+                ...ProgramCore
+              }
+              scienceRequirements {
+                ...ScienceRequirementsDetails
+              }
+              scienceBand
+              workflow {
+                ...WorkflowDetails
+              }
+              observingMode {
+                ...ObservingModeDetails
+              }
+              constraintSet {
+                ...ConstraintSetDetails
+              }
+              timingWindows {
+                ...TimingWindowDetails
+              }
+              targetEnvironment {
+                ...TargetEnvironmentDetails
+              }
+              schedulingConstraints {
+                ...SchedulingConstraintsDetails
+              }
+              execution {
+                digest {
+                  value {
+                    acquisition {
+                      timeEstimate {
+                        total {
+                          seconds
+                        }
+                        program {
+                          seconds
+                        }
+                        nonCharged {
+                          seconds
+                        }
+                      }
+                    }
+                    setup {
+                      full {
+                        seconds
+                      }
+                      reacquisition {
+                        seconds
+                      }
+                    }
+                  }
+                }
+              }
+              attachments {
+                id
+                fileName
+                attachmentType
+                mask {
+                  name
+                  instrument
+                  pixelScale
+                  dispersionDirection
+                  scienceSlitCount
+                  acquisitionSlitCount
+                }
+              }
+            }
+
+            fragment ObservingModeDetails on ObservingMode {
+              instrument
+              mode
+              gmosNorthLongSlit {
+                ...GmosNorthLongSlitDetails
+              }
+              gmosSouthLongSlit {
+                ...GmosSouthLongSlitDetails
+              }
+              gmosNorthImaging {
+                ...GmosNorthImagingDetails
+              }
+              gmosSouthImaging {
+                ...GmosSouthImagingDetails
+              }
+              flamingos2LongSlit {
+                ...Flamingos2LongSlitDetails
+              }
+              flamingos2Imaging {
+                ...Flamingos2ImagingDetails
+              }
+              igrins2LongSlit {
+                ...Igrins2LongSlitDetails
+              }
+              visitor {
+                ...VisitorDetails
+              }
+              ghostIfu {
+                ...ghostIfuDetails
+              }
+              gnirsSpectroscopy {
+                ...GnirsSpectroscopyDetails
+              }
+              gnirsImaging {
+                ...GnirsImagingDetails
+              }
+              gmosSouthMos {
+                ...gmosSouthMosDetails
+              }
+              gmosSouthIfu {
+                ...gmosSouthIfuDetails
+              }
+              gmosNorthMos {
+                ...gmosNorthMosDetails
+              }
+              gmosNorthIfu {
+                ...gmosNorthIfuDetails
+              }
+              flamingos2Mos {
+                ...flamingos2MosDetails
+              }
+            }
+
+            fragment ProgramCore on Program {
+              id
+              name
+              existence
+              description
+              tooActivationCeiling
+            }
+
+            fragment SchedulingConstraintsDetails on SchedulingConstraints {
+              tooActivation
+              schedulingMode
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  ... on TimingWindowEndAt {
+                    __typename
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    __typename
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment ScienceRequirementsDetails on ScienceRequirements {
+              mode
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+            }
+
+            fragment SiderealTargetDetails on Sidereal {
+              ra {
+                hours
+                hms
+                degrees
+              }
+              dec {
+                degrees
+                dms
+              }
+              epoch
+            }
+
+            fragment TargetEnvironmentDetails on TargetEnvironment {
+              asterism {
+                name
+                sidereal {
+                  ...SiderealTargetDetails
+                }
+                nonsidereal {
+                  ...NonsiderealTargetDetails
+                }
+              }
+              explicitBase {
+                ra {
+                  hms
+                }
+                dec {
+                  dms
+                }
+              }
+            }
+
+            fragment TimingWindowDetails on TimingWindow {
+              inclusion
+              startUtc
+              end {
+                __typename
+                ... on TimingWindowEndAt {
+                  atUtc
+                }
+                ... on TimingWindowEndAfter {
+                  after {
+                    seconds
+                  }
+                  repeat {
+                    period {
+                      seconds
+                    }
+                    times
+                  }
+                }
+              }
+            }
+
+            fragment VisitorDetails on Visitor {
+              mode
+              name
+              centralWavelength {
+                nanometers
+              }
+              totalRequestTime {
+                seconds
+              }
+              agsDiameter {
+                dms
+                hms
+              }
+            }
+
+            fragment WorkflowCore on CalculatedObservationWorkflow {
+              state
+            }
+
+            fragment WorkflowDetails on CalculatedObservationWorkflow {
+              ...WorkflowCore
+              value {
+                state
+                validTransitions
+                validationErrors {
+                  code
+                  messages
+                }
+              }
+            }
+
+            fragment flamingos2MosDetails on Flamingos2Mos {
+              readoutMode
+              initialSlitWidth
+              initialFilter
+              initialDisperser
+              filter
+              explicitReads
+              explicitReadoutMode
+              explicitReadMode
+              explicitDecker
+              disperser
+              defaultReadoutMode
+              defaultDecker
+              decker
+              exposureTimeMode {
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+              }
+              explicitTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              defaultTelescopeConfigs {
+                alongSlit {
+                  guiding
+                  q {
+                    arcseconds
+                  }
+                }
+                offsetMode
+                toSky {
+                  guiding
+                  offset {
+                    p {
+                      arcseconds
+                    }
+                    q {
+                      arcseconds
+                    }
+                  }
+                }
+              }
+              telluricType {
+                starTypes
+                tag
+              }
+            }
+
+            fragment ghostDetectorConfigDetails on GhostDetectorConfig {
+              binning
+              defaultBinning
+              defaultReadMode
+              explicitBinning
+              explicitReadMode
+              readMode
+              exposureTimeMode {
+                signalToNoise {
+                  value
+                  at {
+                    nanometers
+                  }
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                  count
+                }
+              }
+            }
+
+            fragment ghostIfuDetails on GhostIfu {
+              defaultIfu1Agitator
+              defaultIfu2Agitator
+              explicitIfu1Agitator
+              explicitIfu2Agitator
+              ifu1Agitator
+              ifu2Agitator
+              resolutionMode
+              stepCount
+              blue {
+                ...ghostDetectorConfigDetails
+              }
+              red {
+                ...ghostDetectorConfigDetails
+              }
+              skyPosition {
+                dec {
+                  degrees
+                }
+                ra {
+                  degrees
+                }
+              }
+              slitViewingCameraExposureTime {
+                seconds
+              }
+            }
+
+            fragment gmosNorthIfuDetails on GmosNorthIfu {
+              yBin
+              xBin
+              roi
+              initialGrating
+              initialFpu
+              initialFilter
+              grating
+              fpu
+              filter
+              explicitYBin
+              explicitXBin
+              explicitRoi
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              centralWavelength {
+                nanometers
+              }
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment gmosNorthMosDetails on GmosNorthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              centralWavelength {
+                nanometers
+              }
+              customMask {
+                attachmentId
+                slitWidth
+              }
+            }
+
+            fragment gmosSouthIfuDetails on GmosSouthIfu {
+              acquisition {
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              explicitYBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  count
+                  at {
+                    nanometers
+                  }
+                  time {
+                    seconds
+                  }
+                }
+              }
+              filter
+              fpu
+              grating
+              initialFpu
+              initialFilter
+              initialGrating
+              xBin
+              yBin
+            }
+
+            fragment gmosSouthMosDetails on GmosSouthMos {
+              acquisition {
+                filter
+                exposureTimeMode {
+                  signalToNoise {
+                    at {
+                      nanometers
+                    }
+                    value
+                  }
+                  timeAndCount {
+                    at {
+                      nanometers
+                    }
+                    count
+                    time {
+                      seconds
+                    }
+                  }
+                }
+              }
+              acquisitionType
+              ampGain
+              ampReadMode
+              defaultAmpGain
+              defaultAmpReadMode
+              defaultRoi
+              defaultXBin
+              defaultYBin
+              explicitAmpGain
+              explicitAmpReadMode
+              explicitRoi
+              explicitXBin
+              exposureTimeMode {
+                signalToNoise {
+                  at {
+                    nanometers
+                  }
+                  value
+                }
+                timeAndCount {
+                  at {
+                    nanometers
+                  }
+                  count
+                  time {
+                    seconds
+                  }
+                }
+              }
+              explicitYBin
+              filter
+              grating
+              initialFilter
+              initialGrating
+              initialSlitWidth
+              roi
+              xBin
+              yBin
+              customMask {
+                attachmentId
+                slitWidth
               }
             }
             """)

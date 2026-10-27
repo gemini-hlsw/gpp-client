@@ -446,6 +446,11 @@ class SchedulerDomain(BaseDomain):
         Subscribe to observation calculation update events with the
         execution flag set to true so only executed events are sent.
 
+        Each event's observation carries the same fields as the observations in
+        ``get_all``, plus its program's active dates and its observation time.
+        Unlike ``get_all``, the timing windows stay under
+        ``scheduling_constraints`` and no atom sequence is attached.
+
         Yields
         ------
         SchedulerObservationsUpdates
