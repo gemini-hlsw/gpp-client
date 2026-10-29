@@ -82,6 +82,7 @@ from .restore_observation_by_id import RestoreObservationById
 from .restore_observation_by_reference import RestoreObservationByReference
 from .restore_program_by_id import RestoreProgramById
 from .restore_target_by_id import RestoreTargetById
+from .scheduler_executed_events import SchedulerExecutedEvents
 from .scheduler_observations_updates import SchedulerObservationsUpdates
 from .set_observation_workflow_state import SetObservationWorkflowState
 from .target_edit import TargetEdit
@@ -15858,6 +15859,57 @@ class GraphQLClient(AsyncBaseClient):
             **kwargs,
         ):
             yield SchedulerObservationsUpdates.model_validate(data)
+
+    async def scheduler_executed_events(
+        self, **kwargs: Any
+    ) -> AsyncIterator[SchedulerExecutedEvents]:
+        query = gql("""
+            subscription SchedulerExecutedEvents {
+              executionEventAdded(input: {eventType: {IN: [SEQUENCE, SLEW]}}) {
+                value {
+                  __typename
+                  eventType
+                  id
+                  ... on SequenceEvent {
+                    id
+                    observation {
+                      id
+                      reference {
+                        label
+                      }
+                    }
+                    effectiveTime
+                    command
+                    visit {
+                      site
+                    }
+                  }
+                  ... on SlewEvent {
+                    id
+                    recordedTime
+                    slewStage
+                    observation {
+                      id
+                      reference {
+                        label
+                      }
+                    }
+                    visit {
+                      site
+                    }
+                  }
+                }
+              }
+            }
+            """)
+        variables: dict[str, object] = {}
+        async for data in self.execute_ws(
+            query=query,
+            operation_name="SchedulerExecutedEvents",
+            variables=variables,
+            **kwargs,
+        ):
+            yield SchedulerExecutedEvents.model_validate(data)
 
     async def clone_target(
         self,

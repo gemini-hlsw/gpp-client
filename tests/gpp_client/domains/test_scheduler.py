@@ -12,11 +12,17 @@ from gpp_client.domains.scheduler import (
     PROGRAMS_PAGE_SIZE,
     SchedulerDomain,
 )
+from gpp_client.generated.fragments import ObservationDetails, ProgramCore
 from gpp_client.generated.get_scheduler_programs import (
     GetSchedulerPrograms,
     GetSchedulerProgramsPrograms,
     GetSchedulerProgramsProgramsMatches,
 )
+from gpp_client.generated.scheduler_observations_updates import (
+    SchedulerObservationsUpdatesObscalcUpdateValue,
+    SchedulerObservationsUpdatesObscalcUpdateValueProgram,
+)
+from tests.gpp_client.domains.helpers import _yield_events
 
 
 @pytest.fixture()
@@ -399,3 +405,42 @@ async def test_get_all_leaves_shared_rest_client_open(
 
     rest.get_atom_digests.assert_awaited_once_with(["o-1"])
     rest.close.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_subscribe_to_calculation_updates_yields_executable_events(
+    scheduler_domain: SchedulerDomain,
+    graphql,
+    mocker,
+) -> None:
+    """
+    Ensure only executable observation updates are requested and every event
+    is yielded.
+    """
+    events = [SimpleNamespace(id=1), SimpleNamespace(id=2)]
+    graphql.scheduler_observations_updates = mocker.Mock(
+        return_value=_yield_events(events)
+    )
+
+    result = [
+        event async for event in scheduler_domain.subscribe_to_calculation_updates()
+    ]
+
+    assert result == events
+    graphql.scheduler_observations_updates.assert_called_once_with(executable_only=True)
+
+
+def test_calculation_update_observation_matches_get_all_observations() -> None:
+    """
+    Ensure an updated observation carries the same fields as the observations
+    in get_all, plus the program active dates the scheduler reads.
+    """
+    assert issubclass(
+        SchedulerObservationsUpdatesObscalcUpdateValue, ObservationDetails
+    )
+
+    # Selecting program again in the subscription replaces the fragment's
+    # program, so ProgramCore must still be there.
+    program = SchedulerObservationsUpdatesObscalcUpdateValueProgram
+    assert issubclass(program, ProgramCore)
+    assert "active" in program.model_fields

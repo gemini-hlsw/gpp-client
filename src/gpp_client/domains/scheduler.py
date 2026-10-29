@@ -11,6 +11,7 @@ from gpp_client.domains.base import BaseDomain
 from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
 from gpp_client.generated import (
     SchedulerObservationsUpdates,
+    SchedulerExecutedEvents,
     WhereOptionEqObservingModeType,
 )
 from gpp_client.generated.get_scheduler_all_programs_id import (
@@ -459,4 +460,19 @@ class SchedulerDomain(BaseDomain):
         async for event in self._graphql.scheduler_observations_updates(
             executable_only=True
         ):
+            yield event
+
+    async def subscribe_to_executed_events(
+        self,
+    ) -> AsyncIterator[SchedulerExecutedEvents]:
+        """
+        Subscribe to executed events ``(SLEW, SEQUENCE)`` to help the Scheduler
+        guide executions.
+
+        Yields
+        ------
+        SchedulerExecutedEvents
+            Events added by Observe, either ``SEQUENCE`` or ``SLEW``.
+        """
+        async for event in self._graphql.scheduler_executed_events():
             yield event
