@@ -40,6 +40,19 @@ subscription SchedulerExecutedEvents {
           reference {
             label
           }
+          execution {
+            digest {
+              value {
+                estimate {
+                  total {
+                    total {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
         effectiveTime
         command
@@ -56,10 +69,24 @@ subscription SchedulerExecutedEvents {
           reference {
             label
           }
+          execution {
+            digest {
+              value {
+                estimate {
+                  total {
+                    total {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
         visit {
           site
         }
+
       }
     }
   }

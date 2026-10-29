@@ -15877,6 +15877,19 @@ class GraphQLClient(AsyncBaseClient):
                       reference {
                         label
                       }
+                      execution {
+                        digest {
+                          value {
+                            estimate {
+                              total {
+                                total {
+                                  seconds
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
                     }
                     effectiveTime
                     command
@@ -15892,6 +15905,19 @@ class GraphQLClient(AsyncBaseClient):
                       id
                       reference {
                         label
+                      }
+                      execution {
+                        digest {
+                          value {
+                            estimate {
+                              total {
+                                total {
+                                  seconds
+                                }
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                     visit {

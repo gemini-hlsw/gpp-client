@@ -48,12 +48,53 @@ class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservation(
     reference: Optional[
         "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationReference"
     ]
+    execution: "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecution"
 
 
 class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationReference(
     BaseModel
 ):
     label: Any
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecution(
+    BaseModel
+):
+    digest: Optional[
+        "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigest"
+    ]
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigest(
+    BaseModel
+):
+    value: Optional[
+        "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValue"
+    ]
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValue(
+    BaseModel
+):
+    estimate: "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimate"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimate(
+    BaseModel
+):
+    total: "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimateTotal"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimateTotal(
+    BaseModel
+):
+    total: "SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimateTotalTotal"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimateTotalTotal(
+    BaseModel
+):
+    seconds: Any
 
 
 class SchedulerExecutedEventsExecutionEventAddedValueSequenceEventVisit(BaseModel):
@@ -76,12 +117,55 @@ class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservation(BaseMo
     reference: Optional[
         "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationReference"
     ]
+    execution: (
+        "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecution"
+    )
 
 
 class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationReference(
     BaseModel
 ):
     label: Any
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecution(
+    BaseModel
+):
+    digest: Optional[
+        "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigest"
+    ]
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigest(
+    BaseModel
+):
+    value: Optional[
+        "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValue"
+    ]
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValue(
+    BaseModel
+):
+    estimate: "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimate"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimate(
+    BaseModel
+):
+    total: "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimateTotal"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimateTotal(
+    BaseModel
+):
+    total: "SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimateTotalTotal"
+
+
+class SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimateTotalTotal(
+    BaseModel
+):
+    seconds: Any
 
 
 class SchedulerExecutedEventsExecutionEventAddedValueSlewEventVisit(BaseModel):
@@ -92,5 +176,15 @@ SchedulerExecutedEvents.model_rebuild()
 SchedulerExecutedEventsExecutionEventAdded.model_rebuild()
 SchedulerExecutedEventsExecutionEventAddedValueSequenceEvent.model_rebuild()
 SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservation.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecution.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigest.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValue.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimate.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSequenceEventObservationExecutionDigestValueEstimateTotal.model_rebuild()
 SchedulerExecutedEventsExecutionEventAddedValueSlewEvent.model_rebuild()
 SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservation.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecution.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigest.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValue.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimate.model_rebuild()
+SchedulerExecutedEventsExecutionEventAddedValueSlewEventObservationExecutionDigestValueEstimateTotal.model_rebuild()
