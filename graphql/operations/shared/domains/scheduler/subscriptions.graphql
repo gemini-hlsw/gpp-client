@@ -10,112 +10,84 @@ subscription SchedulerObservationsUpdates($executableOnly: Boolean) {
     newCalculationState
     editType
     value {
-      id
-      reference{
-        label
-      }
+      ...ObservationDetails
       observationTime
       program {
+        ...ProgramCore
         active {
-          end
           start
+          end
         }
       }
-      workflow {
-        value {
-          state
-        }
-      }
-      execution {
-        visits {
-          matches {
-            observation {
-              id
-            }
-            atomRecords {
-              matches {
-                executionState
-                id
-              }
-            }
+    }
+  }
+}
+
+#=============================================================================
+# SchedulerExecutedEvents
+# Use to track ongoing executions on the ODB
+#=============================================================================
+
+subscription SchedulerExecutedEvents {
+  executionEventAdded(input: { eventType: { IN: [SEQUENCE, SLEW] } }) {
+    value {
+      eventType
+      id
+      ... on SequenceEvent {
+        id
+        observation {
+          id
+          reference {
+            label
           }
-        }
-      }
-      targetEnvironment {
-        # ...TargetEnvironmentDetails
-        asterism {
-          name
-          sidereal {
-            #...SiderealTargetDetails
-            ra {
-              hours
-              hms
-              degrees
-            }
-            dec {
-              degrees
-              dms
-            }
-            epoch
-          }
-          nonsidereal {
-            #...NonsiderealTargetDetails
-            des
-            keyType
-            key
-          }
-        }
-        explicitBase {
-          ra {
-            hms
-          }
-          dec {
-            dms
-          }
-        }
-      }
-      constraintSet {
-        #...ConstraintSetDetails
-        imageQuality
-        cloudExtinction
-        skyBackground
-        waterVapor
-        elevationRange {
-          airMass {
-            min
-            max
-          }
-          hourAngle {
-            minHours
-            maxHours
-          }
-        }
-      }
-      schedulingConstraints {
-        timingWindows {
-          #...TimingWindowDetails
-          inclusion
-          startUtc
-          end {
-            __typename
-            ... on TimingWindowEndAt {
-              atUtc
-            }
-            ... on TimingWindowEndAfter {
-              after {
-                seconds
-              }
-              repeat {
-                period {
-                  seconds
+          execution {
+            digest {
+              value {
+                estimate {
+                  total {
+                    total {
+                      seconds
+                    }
+                  }
                 }
-                times
               }
             }
           }
         }
+        effectiveTime
+        command
+        visit {
+          site
+        }
       }
-      instrument
+      ... on SlewEvent {
+        id
+        recordedTime
+        slewStage
+        observation {
+          id
+          reference {
+            label
+          }
+          execution {
+            digest {
+              value {
+                estimate {
+                  total {
+                    total {
+                      seconds
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        visit {
+          site
+        }
+
+      }
     }
   }
 }
