@@ -1744,11 +1744,18 @@ class CalibrationSetFields(GraphQLField):
         """GMOS South setup, when the instrument is GMOS South."""
         return GmosSouthDynamicFields("gmosSouth")
 
+    @classmethod
+    def flamingos_2(cls) -> "Flamingos2DynamicFields":
+        """Flamingos 2 setup, when the instrument is Flamingos 2.  Its window cover
+        is exactly as entered; a set never defaults it."""
+        return Flamingos2DynamicFields("flamingos2")
+
     def fields(
         self,
         *subfields: Union[
             CalibrationSetGraphQLField,
             "CalibrationSetGcalFields",
+            "Flamingos2DynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
         ],
@@ -4658,6 +4665,10 @@ class Flamingos2DynamicFields(GraphQLField):
     "Flamingos 2 readout mode."
     reads: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField("reads")
     "Flamingos 2 reads."
+    window_cover: "Flamingos2DynamicGraphQLField" = Flamingos2DynamicGraphQLField(
+        "windowCover"
+    )
+    "Flamingos 2 window cover. Null means automatic."
 
     @classmethod
     def central_wavelength(cls) -> "WavelengthFields":
@@ -8927,6 +8938,14 @@ class GroupFields(GraphQLField):
 
     same_night: "GroupGraphQLField" = GroupGraphQLField("sameNight")
     "If true, all observations in this group must be scheduled on the same night.\nMutually exclusive with `maximumInterval`.\nOnly valid for AND groups."
+    minimum_observations_per_night: "GroupGraphQLField" = GroupGraphQLField(
+        "minimumObservationsPerNight"
+    )
+    "On any night when at least one of this group's observations completes, at\nleast this many must complete that night.  Nights on which none complete are\nunconstrained.  Null means no minimum.  Every completion counts, including an\nOR group's extras, through the night the group completes; later ones don't.\nA per-observation calibration group (a science observation with its\ncalibrations) counts as one observation.  Daytime calibrations are ignored,\nso it completes with its science observation and any tellurics.  Mutually\nexclusive with `sameNight`."
+    maximum_observations_per_night: "GroupGraphQLField" = GroupGraphQLField(
+        "maximumObservationsPerNight"
+    )
+    "No more than this many of this group's observations may complete on any one\nnight.  Null means no maximum.  Counted as for `minimumObservationsPerNight`.\nMutually exclusive with `sameNight`."
 
     @classmethod
     def elements(cls, include_deleted: bool) -> "GroupElementFields":
@@ -9023,11 +9042,20 @@ class GroupElementFields(GraphQLField):
 
 
 class GroupProgressFields(GraphQLField):
-    """A group's progress toward satisfying its constraints."""
+    """A group's progress toward satisfying its constraints.
+
+    An observation's timing is taken from its execution: it starts with its first
+    execution event other than a slew, and completes with its last event, as in
+    `ExecutionTimestamps`.  A visitor instrument observation, which records only
+    slews, is instead timed by its time charge: it starts with its first slew and
+    completes where its charge ends, as in its visits'
+    `timeChargeInvoice.interval`.  The charge end is recorded some time after the
+    fact (the charge runs until the next chargeable visit at the site starts or the
+    night ends), and until then the observation completes at its slew."""
 
     status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
     completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
-    "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing."
+    "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing, except in a group with a minimum observations per night whose night\nin progress is short of it and may still take an extra observation."
     required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
     "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
 
@@ -9059,9 +9087,9 @@ class GroupWindowFields(GraphQLField):
     scheduler to combine with it."""
 
     start: "GroupWindowGraphQLField" = GroupWindowGraphQLField("start")
-    "The earliest time the next element may start, per the minimum interval."
+    "The earliest time the next element may start, per the minimum interval, or\nthe end of the night in progress once it holds the group's maximum\nobservations per night."
     end: "GroupWindowGraphQLField" = GroupWindowGraphQLField("end")
-    "The latest time the next element may finish, per the maximum interval or the\nend of the night for a same-night group.  Null if there is no such limit.\nFitting an observation into the window (say, by its time estimate) is left to\nthe scheduler."
+    "The latest time the next element may finish, per the maximum interval, the\nend of the night for a same-night group, or the end of the night in progress\nwhile it is short of the group's minimum observations per night.  Null if\nthere is no such limit.\nFitting an observation into the window (say, by its time estimate) is left to\nthe scheduler."
 
     def fields(self, *subfields: GroupWindowGraphQLField) -> "GroupWindowFields":
         """Subfields should come from the GroupWindowFields class"""
@@ -9098,6 +9126,11 @@ class GroupedImagingVariantFields(GraphQLField):
     def sky_offsets(cls) -> "TelescopeConfigGeneratorFields":
         """Offset generator to use for the sky datasets."""
         return TelescopeConfigGeneratorFields("skyOffsets")
+
+    exposures_per_offset: "GroupedImagingVariantGraphQLField" = (
+        GroupedImagingVariantGraphQLField("exposuresPerOffset")
+    )
+    "Number of consecutive science exposures to collect at each object offset\nposition before moving to the next position.  The overall exposure count still\ncaps the total, so the final position may receive fewer exposures."
 
     def fields(
         self,
@@ -9867,6 +9900,11 @@ class InterleavedImagingVariantFields(GraphQLField):
     def sky_offsets(cls) -> "TelescopeConfigGeneratorFields":
         """Offset generator to use for the sky datasets."""
         return TelescopeConfigGeneratorFields("skyOffsets")
+
+    exposures_per_offset: "InterleavedImagingVariantGraphQLField" = (
+        InterleavedImagingVariantGraphQLField("exposuresPerOffset")
+    )
+    "Number of consecutive science exposures to collect in one filter at each\nobject offset position before moving on to the next filter and position.  A\nfilter's final position may receive fewer exposures so that its overall\nexposure count is honored."
 
     def fields(
         self,
@@ -11507,6 +11545,11 @@ class PreImagingVariantFields(GraphQLField):
     @classmethod
     def offset_4(cls) -> "OffsetFields":
         return OffsetFields("offset4")
+
+    exposures_per_offset: "PreImagingVariantGraphQLField" = (
+        PreImagingVariantGraphQLField("exposuresPerOffset")
+    )
+    "Number of consecutive science exposures to collect in one filter at each\noffset position before moving on to the next position.  A filter's final\nposition may receive fewer exposures so that its overall exposure count is\nhonored."
 
     def fields(
         self, *subfields: Union[PreImagingVariantGraphQLField, "OffsetFields"]
@@ -14430,10 +14473,12 @@ class TargetEnvironmentFields(GraphQLField):
     @classmethod
     def guide_environment(cls) -> "GuideEnvironmentFields":
         """The guide target(s) and related information.
-        If a guide target has been set via `guideTargetName`, that target will be
-        returned. If it not found or not usable, an error will be returned.
-        If no guide target has been set, or it has been invalidated by observation/target
-        changes, Gaia will be searched for the best guide target available."""
+        If a guide target has been selected via `setGuideTargetName`, that target will
+        be returned. If it is not found or not usable, an error naming it will be
+        returned; select another guide target or clear the selection to return to
+        automatic selection. A selection is never discarded by observation or target
+        changes. If no guide target has been selected, Gaia will be searched for the
+        best guide target available."""
         return GuideEnvironmentFields("guideEnvironment")
 
     @classmethod
@@ -14462,7 +14507,7 @@ class TargetEnvironmentFields(GraphQLField):
     guide_target_name: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "guideTargetName"
     )
-    "The name of the guide target, if any, set by `setGuideTargetName`.\nIf the name is no longer valid or a sequence cannot be generated, null will\nbe returned."
+    "The name of the guide target, if any, selected by `setGuideTargetName`. The\nselection is returned until it is cleared or replaced, whether or not the\nstar is usable with the current observation settings."
     use_blind_offset: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "useBlindOffset"
     )
@@ -14901,6 +14946,17 @@ class TimeChargeInvoiceFields(GraphQLField):
     and manual adjustments made by staff."""
 
     @classmethod
+    def interval(cls) -> "TimestampIntervalFields":
+        """The interval over which the raw 'executionTime' was measured, before any
+        discounts.  For most visits this is the same as the visit's own 'interval',
+        from its first execution event to its last.  Visitor instrument visits,
+        which record only slew events, are charged from the slew until the next
+        chargeable visit at the site starts or, once the night is over, until
+        nautical dawn, so for them it extends to that point.  Null if the visit has
+        no events."""
+        return TimestampIntervalFields("interval")
+
+    @classmethod
     def execution_time(cls) -> "CategorizedTimeFields":
         """Raw execution time."""
         return CategorizedTimeFields("executionTime")
@@ -14928,6 +14984,7 @@ class TimeChargeInvoiceFields(GraphQLField):
             "CategorizedTimeFields",
             "TimeChargeCorrectionFields",
             "TimeChargeDiscountInterface",
+            "TimestampIntervalFields",
         ],
     ) -> "TimeChargeInvoiceFields":
         """Subfields should come from the TimeChargeInvoiceFields class"""
@@ -15897,7 +15954,9 @@ class VisitFields(GraphQLField):
 
     @classmethod
     def interval(cls) -> "TimestampIntervalFields":
-        """Time interval during which this visit executed."""
+        """Time interval from the visit's first execution event to its last.  For the
+        interval over which time is charged, which differs for visitor instrument
+        visits, see 'timeChargeInvoice.interval'."""
         return TimestampIntervalFields("interval")
 
     @classmethod
