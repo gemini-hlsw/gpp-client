@@ -44,6 +44,7 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
+    Flamingos2WindowCover,
     FluxDensityContinuumIntegratedUnits,
     FluxDensityContinuumSurfaceUnits,
     FocalPlane,
@@ -2141,14 +2142,15 @@ class DaytimeCalibrationInput(BaseModel):
     calibration_sets: Optional[list["CalibrationSetInput"]] = Field(
         alias=str("calibrationSets"), default=None
     )
-    "Calibration sets, in order.  On an edit the whole list is replaced; omit it\nto keep the existing rows.  Rows may only be set for GMOS_NORTH and\nGMOS_SOUTH, and are rejected once the sequence has been materialized (first\nvisit or a hand edit)."
+    "Calibration sets, in order.  On an edit the whole list is replaced; omit it\nto keep the existing rows.  Rows may only be set for GMOS_NORTH, GMOS_SOUTH\nand FLAMINGOS2, and are rejected once the sequence has been materialized\n(first visit or a hand edit)."
 
 
 class CalibrationSetInput(BaseModel):
     """Calibration set input.  Exactly one instrument setup must be given and it must
     match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
     ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
-    A BIAS ignores the setup's exposure time and takes zero."""
+    A BIAS ignores the setup's exposure time and takes zero.  A Flamingos 2 set
+    may only be a DARK, FLAT or ARC."""
 
     kind: CalibrationSetType
     count: Any
@@ -2160,6 +2162,9 @@ class CalibrationSetInput(BaseModel):
     )
     gmos_south: Optional["GmosSouthDynamicInput"] = Field(
         alias=str("gmosSouth"), default=None
+    )
+    flamingos_2: Optional["Flamingos2DynamicInput"] = Field(
+        alias=str("flamingos2"), default=None
     )
 
 
@@ -2230,7 +2235,7 @@ class SetGuideTargetNameInput(BaseModel):
         alias=str("observationReference"), default=None
     )
     target_name: Optional[Any] = Field(alias=str("targetName"), default=None)
-    'The name of the guide star. This must satisfy the regular expression "^Gaia DR3 (-?\\d+)$" where the\nnumeric part is the Gaia source_id. Omit or set to null to delete.'
+    'The name of the guide star. This must satisfy the regular expression "^Gaia DR3 (-?\\d+)$" where the\nnumeric part is the Gaia source_id. Omit or set to null to delete the\nselection and return to automatic guide star selection.'
 
 
 class SetProgramReferenceInput(BaseModel):
@@ -3039,6 +3044,9 @@ class Flamingos2DynamicInput(BaseModel):
     decker: Flamingos2Decker
     readout_mode: Flamingos2ReadoutMode = Field(alias=str("readoutMode"))
     reads: Flamingos2Reads
+    window_cover: Optional[Flamingos2WindowCover] = Field(
+        alias=str("windowCover"), default=None
+    )
 
 
 class Flamingos2FpuMaskInput(BaseModel):
@@ -3565,15 +3573,19 @@ class GroupedImagingVariantInput(BaseModel):
     """Input used for specifying GMOS grouped filter imaging."""
 
     order: Optional[WavelengthOrder] = None
-    "Whether the filters should appear in the sequence in increasing or decreasing\norder by their wavelength.  Defaults to `INCREASING` on create, absent (i.e.,\nnot modified) on update."
+    "Whether the filters should appear in the sequence in increasing or decreasing\norder by their wavelength.  Defaults to `INCREASING` on create.  If absent on\nupdate, the current value is kept, unless switching from another variant, in\nwhich case it is reset to `INCREASING`."
     offsets: Optional["TelescopeConfigGeneratorInput"] = None
     "Offset generator for the science object datasets. The same offset sequence is\ncreated for each filter using the specified generator.  If not specified, no\noffsets will be used."
     sky_count: Optional[Any] = Field(alias=str("skyCount"), default=None)
-    "Number of sky positions to collect before and after object datasets. For\nexample, if set to 2 there will be two sky positions before a group of object\nexposures and two more after using the same filter as the object datasets.\nDefaults to 0 on creation, absent (i.e., not modified) on update."
+    "Number of sky positions to collect before and after object datasets. For\nexample, if set to 2 there will be two sky positions before a group of object\nexposures and two more after using the same filter as the object datasets.\nDefaults to 0 on creation.  If absent on update, the current value is kept,\nunless switching from another variant, in which case it is reset to 0."
     sky_offsets: Optional["TelescopeConfigGeneratorInput"] = Field(
         alias=str("skyOffsets"), default=None
     )
     "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used."
+    exposures_per_offset: Optional[Any] = Field(
+        alias=str("exposuresPerOffset"), default=None
+    )
+    "Number of consecutive science exposures to collect at each object offset\nposition before moving to the next position.  Defaults to 1 on creation.  If\nabsent on update, the current value is kept, unless switching from another\nvariant, in which case it is reset to 1."
 
 
 class InterleavedImagingVariantInput(BaseModel):
@@ -3582,11 +3594,15 @@ class InterleavedImagingVariantInput(BaseModel):
     offsets: Optional["TelescopeConfigGeneratorInput"] = None
     "Offset generator for the science object datasets. The offset pattern is\ncreated for the sequence of science datasets as a whole."
     sky_count: Optional[Any] = Field(alias=str("skyCount"), default=None)
-    "Number of sky positions to collect, per filter, before and after a series of\nobject datasets. Defaults to 0 on creation, absent (i.e., not modified) on\nupdate."
+    "Number of sky positions to collect, per filter, before and after a series of\nobject datasets.  Defaults to 0 on creation.  If absent on update, the current\nvalue is kept, unless switching from another variant, in which case it is\nreset to 0."
     sky_offsets: Optional["TelescopeConfigGeneratorInput"] = Field(
         alias=str("skyOffsets"), default=None
     )
     "Offset generator to use for sky positions.  If not specified, no offsets will\nbe used.  When specifying an offset generator, the skyCount should be set to\na value greater than 0."
+    exposures_per_offset: Optional[Any] = Field(
+        alias=str("exposuresPerOffset"), default=None
+    )
+    "Number of consecutive science exposures to collect in one filter at each\nobject offset position before moving on to the next filter and position.\nDefaults to 1 on creation.  If absent on update, the current value is kept,\nunless switching from another variant, in which case it is reset to 1."
 
 
 class PreImagingVariantInput(BaseModel):
@@ -3596,6 +3612,10 @@ class PreImagingVariantInput(BaseModel):
     offset_2: Optional["OffsetInput"] = Field(alias=str("offset2"), default=None)
     offset_3: Optional["OffsetInput"] = Field(alias=str("offset3"), default=None)
     offset_4: Optional["OffsetInput"] = Field(alias=str("offset4"), default=None)
+    exposures_per_offset: Optional[Any] = Field(
+        alias=str("exposuresPerOffset"), default=None
+    )
+    "Number of consecutive science exposures to collect in one filter at each\noffset position before moving on to the next position.  Defaults to 1 on\ncreation.  If absent on update, the current value is kept, unless switching\nfrom another variant, in which case it is reset to 1."
 
 
 class GmosNorthImagingFilterInput(BaseModel):
@@ -3649,6 +3669,14 @@ class GroupPropertiesInput(BaseModel):
     "If specified, elements will be separated by at most `maximumInterval`."
     same_night: Optional[bool] = Field(alias=str("sameNight"), default=None)
     "If true, all observations in this group must be scheduled on the same night.\nMutually exclusive with `maximumInterval`.\nOnly valid for AND groups."
+    minimum_observations_per_night: Optional[Any] = Field(
+        alias=str("minimumObservationsPerNight"), default=None
+    )
+    "On any night when at least one of the group's observations completes, at\nleast this many must complete that night.  Null means no minimum.  A group\nwith either per-night limit may contain only observations (and the\nper-observation calibration groups the ODB creates).  Mutually exclusive with\n`sameNight`."
+    maximum_observations_per_night: Optional[Any] = Field(
+        alias=str("maximumObservationsPerNight"), default=None
+    )
+    "No more than this many of the group's observations may complete on any one\nnight.  Null means no maximum.  May not be less than\n`minimumObservationsPerNight`.  Mutually exclusive with `sameNight`."
     parent_group: Optional[Any] = Field(alias=str("parentGroup"), default=None)
     "Parent group (optional). If specified then parent index must also be specified."
     parent_group_index: Optional[Any] = Field(
