@@ -319,6 +319,9 @@ class CalibrationSetType(str, Enum):
     FLAT = "FLAT"
     ARC = "ARC"
     DAYTIME_OBSERVE = "DAYTIME_OBSERVE"
+    SMART_FLAT = "SMART_FLAT"
+    SMART_ARC = "SMART_ARC"
+    DAY_BASELINE = "DAY_BASELINE"
 
 
 class StepExecutionState(str, Enum):
@@ -970,8 +973,6 @@ class HiiRegionSpectrum(str, Enum):
 
 
 class ImageQualityPreset(str, Enum):
-    POINT_ONE = "POINT_ONE"
-    POINT_TWO = "POINT_TWO"
     POINT_THREE = "POINT_THREE"
     POINT_FOUR = "POINT_FOUR"
     POINT_SIX = "POINT_SIX"
@@ -1182,6 +1183,12 @@ class ObservationPriority(str, Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
+
+
+class ObservationQaState(str, Enum):
+    PASS = "PASS"
+    USABLE = "USABLE"
+    FAIL = "FAIL"
 
 
 class ObservationValidationCodeSeverity(str, Enum):
@@ -1542,6 +1549,8 @@ class CalibrationRole(str, Enum):
     SPECTROPHOTOMETRIC = "SPECTROPHOTOMETRIC"
     TELLURIC = "TELLURIC"
     DAYTIME_PINHOLE = "DAYTIME_PINHOLE"
+    DAYTIME_FLAT = "DAYTIME_FLAT"
+    DAYTIME_ARC = "DAYTIME_ARC"
     DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
 
 

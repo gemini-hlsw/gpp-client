@@ -3876,6 +3876,12 @@ input ObservationPropertiesInput {
   creation. Cannot be set to null.
   """
   priority: ObservationPriority
+
+  """
+  Staff only.  Overrides the observation's calculated QA state.  Set to `null`
+  to remove the override and return to the calculated state.
+  """
+  qaStateOverride: ObservationQaState
 }
 
 """Observation times properties"""
@@ -5347,9 +5353,9 @@ input DaytimeCalibrationInput {
 
   """
   Calibration sets, in order.  On an edit the whole list is replaced; omit it
-  to keep the existing rows.  Rows may only be set for GMOS_NORTH and
-  GMOS_SOUTH, and are rejected once the sequence has been materialized (first
-  visit or a hand edit).
+  to keep the existing rows.  Rows may only be set for GMOS_NORTH, GMOS_SOUTH
+  and FLAMINGOS2, and are rejected once the sequence has been materialized
+  (first visit or a hand edit).
   """
   calibrationSets: [CalibrationSetInput!]
 }
@@ -5357,6 +5363,8 @@ input DaytimeCalibrationInput {
 """
 The kind of exposure a calibration set produces.  DAYTIME_OBSERVE is an
 exposure with the dome closed and no lamp, such as a pupil or bubble image.
+SMART_FLAT, SMART_ARC and DAY_BASELINE are resolved through the Smart GCAL
+tables.
 """
 enum CalibrationSetType {
   BIAS
@@ -5364,18 +5372,32 @@ enum CalibrationSetType {
   FLAT
   ARC
   DAYTIME_OBSERVE
+  SMART_FLAT
+  SMART_ARC
+  DAY_BASELINE
 }
 
 """
 One row of a daytime calibration: a kind, an exposure count, the GCAL
 configuration (flats and arcs only) and one instrument setup.  The generator
-expands it into one atom holding `count` identical DAY_CAL steps.
+expands it into one atom: `count` identical DAY_CAL steps for a manual kind,
+the steps the Smart GCAL lookup returns for a smart kind.
 """
 type CalibrationSet {
   kind: CalibrationSetType!
 
-  """Exposures taken with this setup."""
-  count: PosInt!
+  """
+  Steps this set contributes to the sequence: `explicitCount` for a manual
+  step, the number of steps the Smart GCAL lookup returns for a smart step, or
+  null when the lookup finds no mapping for the setup.
+  """
+  count: PosInt
+
+  """
+  Exposures requested for this setup, as given on input.  Always present for
+  a manual step, always null for a smart step.
+  """
+  explicitCount: PosInt
 
   """GCAL lamp configuration, present for FLAT and ARC only."""
   gcal: CalibrationSetGcal
@@ -5385,6 +5407,15 @@ type CalibrationSet {
 
   """GMOS South setup, when the instrument is GMOS South."""
   gmosSouth: GmosSouthDynamic
+
+  """
+  Flamingos 2 setup, when the instrument is Flamingos 2.  Its window cover
+  is exactly as entered; a set never defaults it.
+  """
+  flamingos2: Flamingos2Dynamic
+
+  """IGRINS-2 setup, when the instrument is IGRINS-2."""
+  igrins2: Igrins2Dynamic
 }
 
 """GCAL configuration of a flat or arc calibration set."""
@@ -5401,15 +5432,16 @@ type CalibrationSetGcal {
 
 """
 Calibration set input.  Exactly one instrument setup must be given and it must
-match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
-ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
-A BIAS ignores the setup's exposure time and takes zero.
+match the mode's instrument.
 """
 input CalibrationSetInput {
   kind: CalibrationSetType!
 
-  """Exposures taken with this setup, at most 1000."""
-  count: PosInt!
+  """
+  Exposures taken with this setup, at most 1000.  Required for a manual kind,
+  rejected for a smart kind, whose count comes from the Smart GCAL lookup.
+  """
+  explicitCount: PosInt
 
   """
   GCAL lamp configuration, required for FLAT and ARC, rejected otherwise.
@@ -5417,6 +5449,8 @@ input CalibrationSetInput {
   gcal: CalibrationSetGcalInput
   gmosNorth: GmosNorthDynamicInput
   gmosSouth: GmosSouthDynamicInput
+  flamingos2: Flamingos2DynamicInput
+  igrins2: Igrins2DynamicInput
 }
 
 """
@@ -5520,7 +5554,8 @@ input SetGuideTargetNameInput {
 
   """
   The name of the guide star. This must satisfy the regular expression "^Gaia DR3 (-?\d+)$" where the
-  numeric part is the Gaia source_id. Omit or set to null to delete.
+  numeric part is the Gaia source_id. Omit or set to null to delete the
+  selection and return to automatic guide star selection.
   """
   targetName: NonEmptyString
 }
@@ -8641,6 +8676,9 @@ type Flamingos2Dynamic {
   """Flamingos 2 reads."""
   reads: Flamingos2Reads!
 
+  """Flamingos 2 window cover. Null means automatic."""
+  windowCover: Flamingos2WindowCover
+
   """Central wavelength, which is taken from the filter wavelength."""
   centralWavelength: Wavelength!
 }
@@ -8891,6 +8929,7 @@ input Flamingos2DynamicInput {
   decker: Flamingos2Decker!
   readoutMode: Flamingos2ReadoutMode!
   reads: Flamingos2Reads!
+  windowCover: Flamingos2WindowCover
 }
 
 """Flamingos 2 mask option, either builtin or custom mask"""
@@ -9104,6 +9143,15 @@ enum Flamingos2Reads {
 
   """Flamingos2Reads Reads 16"""
   READS_16
+}
+
+"""Flamingos2 Window Cover"""
+enum Flamingos2WindowCover {
+  """Flamingos2WindowCover Open"""
+  OPEN
+
+  """Flamingos2WindowCover Close"""
+  CLOSE
 }
 
 """
@@ -11355,14 +11403,22 @@ type GroupedImagingVariant {
 
   """Offset generator to use for the sky datasets."""
   skyOffsets: TelescopeConfigGenerator!
+
+  """
+  Number of consecutive science exposures to collect at each object offset
+  position before moving to the next position.  The overall exposure count still
+  caps the total, so the final position may receive fewer exposures.
+  """
+  exposuresPerOffset: PosInt!
 }
 
 """Input used for specifying GMOS grouped filter imaging."""
 input GroupedImagingVariantInput {
   """
   Whether the filters should appear in the sequence in increasing or decreasing
-  order by their wavelength.  Defaults to `INCREASING` on create, absent (i.e.,
-  not modified) on update.
+  order by their wavelength.  Defaults to `INCREASING` on create.  If absent on
+  update, the current value is kept, unless switching from another variant, in
+  which case it is reset to `INCREASING`.
   """
   order: WavelengthOrder
 
@@ -11377,7 +11433,8 @@ input GroupedImagingVariantInput {
   Number of sky positions to collect before and after object datasets. For
   example, if set to 2 there will be two sky positions before a group of object
   exposures and two more after using the same filter as the object datasets.
-  Defaults to 0 on creation, absent (i.e., not modified) on update.
+  Defaults to 0 on creation.  If absent on update, the current value is kept,
+  unless switching from another variant, in which case it is reset to 0.
   """
   skyCount: NonNegInt
 
@@ -11386,6 +11443,14 @@ input GroupedImagingVariantInput {
   be used.
   """
   skyOffsets: TelescopeConfigGeneratorInput
+
+  """
+  Number of consecutive science exposures to collect at each object offset
+  position before moving to the next position.  Defaults to 1 on creation.  If
+  absent on update, the current value is kept, unless switching from another
+  variant, in which case it is reset to 1.
+  """
+  exposuresPerOffset: PosInt
 }
 
 """
@@ -11408,6 +11473,14 @@ type InterleavedImagingVariant {
 
   """Offset generator to use for the sky datasets."""
   skyOffsets: TelescopeConfigGenerator!
+
+  """
+  Number of consecutive science exposures to collect in one filter at each
+  object offset position before moving on to the next filter and position.  A
+  filter's final position may receive fewer exposures so that its overall
+  exposure count is honored.
+  """
+  exposuresPerOffset: PosInt!
 }
 
 """Input used for specifying GMOS interleaved filter imaging."""
@@ -11420,8 +11493,9 @@ input InterleavedImagingVariantInput {
 
   """
   Number of sky positions to collect, per filter, before and after a series of
-  object datasets. Defaults to 0 on creation, absent (i.e., not modified) on
-  update.
+  object datasets.  Defaults to 0 on creation.  If absent on update, the current
+  value is kept, unless switching from another variant, in which case it is
+  reset to 0.
   """
   skyCount: NonNegInt
 
@@ -11431,6 +11505,14 @@ input InterleavedImagingVariantInput {
   a value greater than 0.
   """
   skyOffsets: TelescopeConfigGeneratorInput
+
+  """
+  Number of consecutive science exposures to collect in one filter at each
+  object offset position before moving on to the next filter and position.
+  Defaults to 1 on creation.  If absent on update, the current value is kept,
+  unless switching from another variant, in which case it is reset to 1.
+  """
+  exposuresPerOffset: PosInt
 }
 
 """
@@ -11441,6 +11523,14 @@ type PreImagingVariant {
   offset2: Offset!
   offset3: Offset!
   offset4: Offset!
+
+  """
+  Number of consecutive science exposures to collect in one filter at each
+  offset position before moving on to the next position.  A filter's final
+  position may receive fewer exposures so that its overall exposure count is
+  honored.
+  """
+  exposuresPerOffset: PosInt!
 }
 
 """MOS pre-imaging offsets, each of which default to (0, 0)."""
@@ -11449,6 +11539,14 @@ input PreImagingVariantInput {
   offset2: OffsetInput
   offset3: OffsetInput
   offset4: OffsetInput
+
+  """
+  Number of consecutive science exposures to collect in one filter at each
+  offset position before moving on to the next position.  Defaults to 1 on
+  creation.  If absent on update, the current value is kept, unless switching
+  from another variant, in which case it is reset to 1.
+  """
+  exposuresPerOffset: PosInt
 }
 
 """Imaging filters combine an actual filter with an exposure time mode."""
@@ -12949,6 +13047,25 @@ type Group {
   """
   sameNight: Boolean!
 
+  """
+  On any night when at least one of this group's observations completes, at
+  least this many must complete that night.  Nights on which none complete are
+  unconstrained.  Null means no minimum.  Every completion counts, including an
+  OR group's extras, through the night the group completes; later ones don't.
+  A per-observation calibration group (a science observation with its
+  calibrations) counts as one observation.  Daytime calibrations are ignored,
+  so it completes with its science observation and any tellurics.  Mutually
+  exclusive with `sameNight`.
+  """
+  minimumObservationsPerNight: PosShort
+
+  """
+  No more than this many of this group's observations may complete on any one
+  night.  Null means no maximum.  Counted as for `minimumObservationsPerNight`.
+  Mutually exclusive with `sameNight`.
+  """
+  maximumObservationsPerNight: PosShort
+
   """Contained elements"""
   elements(includeDeleted: Boolean! = false): [GroupElement!]!
 
@@ -12996,8 +13113,11 @@ observe, has started, is complete, or can no longer be completed.
 """
 enum GroupStatus {
   """
-  The group has nothing to observe: no elements, or only inactive observations
-  and empty subgroups.  Its parent group leaves it out.
+  The group has nothing to observe: no elements, or only inactive observations,
+  observations declared complete without ever having been observed, daytime
+  calibrations, the calibrations of a science observation left out, and empty
+  subgroups.  Its parent group leaves it out.  (Group
+  progress ignores daytime calibrations, which may be taken the following day.)
   """
   EMPTY
 
@@ -13050,7 +13170,29 @@ enum GroupConstraintViolation {
   """A same-night group has observations at more than one site."""
   SAME_NIGHT_MULTIPLE_SITES
 
-  """Too few viable (non-inactive) elements remain to reach the minimum."""
+  """
+  A night on which at least one of the group's observations completed ended
+  with fewer than the group's minimum observations per night.
+  """
+  OBSERVATIONS_PER_NIGHT_MINIMUM
+
+  """
+  More than the group's maximum observations per night completed on one night.
+  """
+  OBSERVATIONS_PER_NIGHT_MAXIMUM
+
+  """
+  A group with observations-per-night limits has observations at more than one
+  site, so its nights are ambiguous.
+  """
+  OBSERVATIONS_PER_NIGHT_MULTIPLE_SITES
+
+  """
+  Too few elements remain to complete the group: fewer than its minimum are
+  viable (not inactive, nor rejected for their QA state), or, in a group with no
+  minimum, which requires all of its elements, one has been rejected.  Setting a
+  minimum lets a replacement observation take a rejected one's place.
+  """
   INSUFFICIENT_ELEMENTS
 
   """A subgroup that the group needs can no longer be completed."""
@@ -13065,20 +13207,52 @@ scheduler to combine with it.
 """
 type GroupWindow {
   """
-  The earliest time the next element may start, per the minimum interval.
+  The earliest time the next element may start, per the minimum interval, or
+  the end of the night in progress once it holds the group's maximum
+  observations per night.
   """
   start: Timestamp!
 
   """
-  The latest time the next element may finish, per the maximum interval or the
-  end of the night for a same-night group.  Null if there is no such limit.
+  The latest time the next element may finish, per the maximum interval, the
+  end of the night for a same-night group, or the end of the night in progress
+  while it is short of the group's minimum observations per night.  Null if
+  there is no such limit.
   Fitting an observation into the window (say, by its time estimate) is left to
   the scheduler.
   """
   end: Timestamp
 }
 
-"""A group's progress toward satisfying its constraints."""
+"""
+A group's progress toward satisfying its constraints.
+
+An observation's timing is taken from its execution: it starts with its first
+execution event other than a slew, and completes with its last event, as in
+`ExecutionTimestamps`.  A visitor instrument observation, which records only
+slews, is instead timed by its time charge: it starts with its first slew and
+completes where its charge ends, as in its visits'
+`timeChargeInvoice.interval`.  The charge end is recorded some time after the
+fact (the charge runs until the next chargeable visit at the site starts or the
+night ends), and until then the observation completes at its slew.
+
+A complete observation whose QA state (see `ObservationQa.state`) is `USABLE`
+or `FAIL` is rejected: it never counts as complete, and it isn't checked
+against the group's constraints.  One not yet assessed counts, including one
+with some datasets still unassessed: until a person settles its QA state, an
+observation is assumed to be good, so that group progress never sends the
+scheduler back into a group without a QA decision.  The calibrations in a
+per-observation calibration group go with their science observation: they are
+left out when it is, and rejected when it is.  A subgroup with only rejected
+elements is itself rejected.  A group with no `minimumRequired` requires all of
+its elements, rejected ones included, so it is `UNSCHEDULABLE` until a minimum
+is set.  With a minimum, rejected elements are left out, and a replacement (a
+new observation) may take a rejected one's place.  A rejection can still break
+the group's time constraints (its intervals, same night, or observations per
+night), or the order of an ordered group whose later elements are already
+complete, since the completions left are checked without it, and a replacement
+observed later can't undo that.
+"""
 type GroupProgress {
   status: GroupStatus!
 
@@ -13087,13 +13261,15 @@ type GroupProgress {
   counting as one element.  An ordered group's elements after the first
   `required` don't count, nor do an unordered group's completions after it is
   complete.  Always zero while empty or pending, and fewer than `required` while
-  ongoing.
+  ongoing, except in a group with a minimum observations per night whose night
+  in progress is short of it and may still take an extra observation.
   """
   completed: NonNegInt!
 
   """
-  The number of elements the group requires: its `minimumRequired`, or every
-  viable (non-inactive) element when that is unset.  Zero only when empty.
+  The number of elements the group requires: its `minimumRequired`, or, when
+  that is unset, every element that isn't left out (see `GroupStatus.EMPTY`),
+  rejected ones included.  Zero only when empty.
   """
   required: NonNegInt!
 
@@ -13165,6 +13341,22 @@ input GroupPropertiesInput {
   Only valid for AND groups.
   """
   sameNight: Boolean
+
+  """
+  On any night when at least one of the group's observations completes, at
+  least this many must complete that night.  Null means no minimum.  A group
+  with either per-night limit may contain only observations (and the
+  per-observation calibration groups the ODB creates).  Mutually exclusive with
+  `sameNight`.
+  """
+  minimumObservationsPerNight: PosShort
+
+  """
+  No more than this many of the group's observations may complete on any one
+  night.  Null means no maximum.  May not be less than
+  `minimumObservationsPerNight`.  Mutually exclusive with `sameNight`.
+  """
+  maximumObservationsPerNight: PosShort
 
   """
   Parent group (optional). If specified then parent index must also be specified.
@@ -13372,12 +13564,6 @@ type HourAngleRange {
 
 """Image quality"""
 enum ImageQualityPreset {
-  """ImageQualityPreset PointOne"""
-  POINT_ONE
-
-  """ImageQualityPreset PointTwo"""
-  POINT_TWO
-
   """ImageQualityPreset PointThree"""
   POINT_THREE
 
@@ -14328,6 +14514,69 @@ type Observation {
   held around this observation's pointing.
   """
   archiveDuplication: ArchiveDuplication!
+
+  """The QA verdict for the observation as a whole."""
+  qa: ObservationQa!
+}
+
+"""
+The QA verdict for an observation as a whole.  It is calculated from the QA
+states of the observation's written science datasets unless staff override it.
+Acquisition datasets are ignored, as are datasets that were never written
+(such as those of aborted exposures):
+
+* no science datasets, or any not yet assessed: no verdict (null)
+* all datasets PASS: PASS
+* all datasets FAIL: FAIL
+* otherwise: USABLE
+
+An override stays in place as datasets are added or their QA states change,
+until staff clear it.  Even when some datasets fail, the observation as a
+whole may pass.
+"""
+type ObservationQa {
+  """
+  The effective QA state: the staff override when there is one, otherwise the
+  calculated state.  Null when the observation has no verdict.
+  """
+  state: ObservationQaState
+
+  """
+  The QA state calculated from the science datasets, ignoring any override.
+  Null when there are no science datasets or any is not yet assessed.
+  """
+  computed: ObservationQaState
+
+  """
+  The staff-assigned QA state, if any.  Set it with `qaStateOverride` in
+  `ObservationPropertiesInput`.
+  """
+  override: ObservationQaState
+
+  """The number of science datasets in each QA state."""
+  datasets: DatasetQaCounts!
+}
+
+"""
+The number of an observation's written science datasets in each QA state.
+Datasets that were never written, such as those of aborted exposures, are not
+counted.
+"""
+type DatasetQaCounts {
+  """All science datasets."""
+  total: NonNegInt!
+
+  """Science datasets whose QA state is PASS."""
+  pass: NonNegInt!
+
+  """Science datasets whose QA state is USABLE."""
+  usable: NonNegInt!
+
+  """Science datasets whose QA state is FAIL."""
+  fail: NonNegInt!
+
+  """Science datasets with no QA state yet."""
+  notAssessed: NonNegInt!
 }
 
 """The outcome of the most recent Archive Duplication Search attempt."""
@@ -14621,10 +14870,13 @@ type ConfigurationObservingMode {
   gmosSouthIfu: ConfigurationGmosSouthIfu
   gmosNorthImaging: ConfigurationGmosNorthImaging
   gmosSouthImaging: ConfigurationGmosSouthImaging
+  flamingos2Imaging: ConfigurationFlamingos2Imaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
   flamingos2Mos: ConfigurationFlamingos2Mos
+  ghostIfu: ConfigurationGhostIfu
   gnirsLongSlit: ConfigurationGnirsLongSlit
   gnirsIfu: ConfigurationGnirsIfu
+  gnirsImaging: ConfigurationGnirsImaging
   igrins2LongSlit: ConfigurationIgrins2LongSlit
   visitor: ConfigurationVisitor
 }
@@ -14658,6 +14910,10 @@ type ConfigurationGmosSouthImaging {
   filters: [GmosSouthFilter!]!
 }
 
+type ConfigurationFlamingos2Imaging {
+  filters: [Flamingos2Filter!]!
+}
+
 type ConfigurationFlamingos2LongSlit {
   disperser: Flamingos2Disperser!
 }
@@ -14685,6 +14941,15 @@ type ConfigurationGmosSouthIfu {
 type ConfigurationGnirsIfu {
   grating: GnirsGrating!
   fpu: GnirsFpuIfu!
+}
+
+type ConfigurationGnirsImaging {
+  camera: GnirsCamera!
+  filters: [GnirsFilter!]!
+}
+
+type ConfigurationGhostIfu {
+  resolutionMode: GhostResolutionMode!
 }
 
 type ConfigurationIgrins2LongSlit {
@@ -15187,6 +15452,16 @@ enum ObservationPriority {
   LOW
   MEDIUM
   HIGH
+}
+
+"""
+QA verdict for an observation as a whole.  There is no "undefined" value: an
+observation without a verdict has none (null).
+"""
+enum ObservationQaState {
+  PASS
+  USABLE
+  FAIL
 }
 
 """The severity of an observation validation code."""
@@ -17934,6 +18209,12 @@ enum CalibrationRole {
   """CalibrationRole DaytimePinhole"""
   DAYTIME_PINHOLE
 
+  """CalibrationRole DaytimeFlat"""
+  DAYTIME_FLAT
+
+  """CalibrationRole DaytimeArc"""
+  DAYTIME_ARC
+
   """CalibrationRole DaytimeCalibration"""
   DAYTIME_CALIBRATION
 }
@@ -18093,10 +18374,12 @@ type TargetEnvironment {
 
   """
   The guide target(s) and related information.
-  If a guide target has been set via `guideTargetName`, that target will be
-  returned. If it not found or not usable, an error will be returned.
-  If no guide target has been set, or it has been invalidated by observation/target
-  changes, Gaia will be searched for the best guide target available.
+  If a guide target has been selected via `setGuideTargetName`, that target will
+  be returned. If it is not found or not usable, an error naming it will be
+  returned; select another guide target or clear the selection to return to
+  automatic selection. A selection is never discarded by observation or target
+  changes. If no guide target has been selected, Gaia will be searched for the
+  best guide target available.
   """
   guideEnvironment: GuideEnvironment!
 
@@ -18117,9 +18400,9 @@ type TargetEnvironment {
   explicitBase: Coordinates
 
   """
-  The name of the guide target, if any, set by `setGuideTargetName`.
-  If the name is no longer valid or a sequence cannot be generated, null will
-  be returned.
+  The name of the guide target, if any, selected by `setGuideTargetName`. The
+  selection is returned until it is cleared or replaced, whether or not the
+  star is usable with the current observation settings.
   """
   guideTargetName: NonEmptyString
 
@@ -18360,6 +18643,17 @@ time along with any automatically applied discounts (e.g., for bad weather)
 and manual adjustments made by staff.
 """
 type TimeChargeInvoice {
+  """
+  The interval over which the raw 'executionTime' was measured, before any
+  discounts.  For most visits this is the same as the visit's own 'interval',
+  from its first execution event to its last.  Visitor instrument visits,
+  which record only slew events, are charged from the slew until the next
+  chargeable visit at the site starts or, once the night is over, until
+  nautical dawn, so for them it extends to that point.  Null if the visit has
+  no events.
+  """
+  interval: TimestampInterval
+
   """Raw execution time."""
   executionTime: CategorizedTime!
 
@@ -18564,7 +18858,11 @@ type Visit {
   """Site of the visit."""
   site: Site!
 
-  """Time interval during which this visit executed."""
+  """
+  Time interval from the visit's first execution event to its last.  For the
+  interval over which time is charged, which differs for visitor instrument
+  visits, see 'timeChargeInvoice.interval'.
+  """
   interval: TimestampInterval
 
   """Executed (or at least partially executed) atom records for this visit."""
@@ -19487,6 +19785,9 @@ input WhereObservation {
   """Matches the calibration role."""
   calibrationRole: WhereOptionEqCalibrationRole
 
+  """Matches the observation's QA state and science dataset QA counts."""
+  qa: WhereObservationQa
+
   """
   Matches if the observation's stored base position lies within the angular
   `distance` of `center`. The stored position is the
@@ -19672,6 +19973,76 @@ input WhereEqTargetDisposition {
 
   """Matches if the target disposition is none of the supplied values."""
   NIN: [TargetDisposition!]
+}
+
+"""Observation QA filter options.  All specified items must match."""
+input WhereObservationQa {
+  """
+  Matches the effective QA state: the override when there is one, otherwise
+  the calculated state.
+  """
+  state: WhereOptionEqObservationQaState
+
+  """
+  Matches the QA state calculated from the science datasets, ignoring any
+  override.
+  """
+  computed: WhereOptionEqObservationQaState
+
+  """
+  Matches the staff-assigned QA state.  Use `IS_NULL: true` to match
+  observations without an override.
+  """
+  override: WhereOptionEqObservationQaState
+
+  """Matches the number of science datasets in each QA state."""
+  datasets: WhereDatasetQaCounts
+}
+
+"""
+Science dataset QA count filter options.  All specified items must match.
+For example, `notAssessed: { GT: 0 }` matches observations with science
+datasets that have not yet been assessed.
+"""
+input WhereDatasetQaCounts {
+  """Matches the number of science datasets."""
+  total: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is PASS."""
+  pass: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is USABLE."""
+  usable: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is FAIL."""
+  fail: WhereOrderNonNegInt
+
+  """Matches the number of science datasets with no QA state yet."""
+  notAssessed: WhereOrderNonNegInt
+}
+
+"""
+Filters on equality (or not) of an optional observation QA state.  All
+supplied criteria must match, but usually only one is selected.
+"""
+input WhereOptionEqObservationQaState {
+  """
+  When `true`, matches if the QA state is not defined. When `false` matches if
+  the QA state is defined.
+  """
+  IS_NULL: Boolean
+
+  """Matches if the property is exactly the supplied value."""
+  EQ: ObservationQaState
+
+  """Matches if the property is not the supplied value."""
+  NEQ: ObservationQaState
+
+  """Matches if the property value is any of the supplied options."""
+  IN: [ObservationQaState!]
+
+  """Matches if the property value is none of the supplied values."""
+  NIN: [ObservationQaState!]
 }
 
 """
@@ -20450,6 +20821,40 @@ input WhereOrderPosInt {
   Matches if the PosInt is ordered before or equal (<=) the supplied value.
   """
   LTE: PosInt
+}
+
+"""
+Filters on equality or order comparisons of the NonNegInt property.  All supplied
+criteria must match, but usually only one is selected.
+"""
+input WhereOrderNonNegInt {
+  """Matches if the NonNegInt is exactly the supplied value."""
+  EQ: NonNegInt
+
+  """Matches if the NonNegInt is not the supplied value."""
+  NEQ: NonNegInt
+
+  """Matches if the NonNegInt is any of the supplied options."""
+  IN: [NonNegInt!]
+
+  """Matches if the NonNegInt is none of the supplied values."""
+  NIN: [NonNegInt!]
+
+  """Matches if the NonNegInt is ordered after (>) the supplied value."""
+  GT: NonNegInt
+
+  """Matches if the NonNegInt is ordered before (<) the supplied value."""
+  LT: NonNegInt
+
+  """
+  Matches if the NonNegInt is ordered after or equal (>=) the supplied value.
+  """
+  GTE: NonNegInt
+
+  """
+  Matches if the NonNegInt is ordered before or equal (<=) the supplied value.
+  """
+  LTE: NonNegInt
 }
 
 """

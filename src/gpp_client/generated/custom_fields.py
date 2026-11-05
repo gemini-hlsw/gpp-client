@@ -62,8 +62,10 @@ from .custom_typing_fields import (
     ConditionsMeasurementGraphQLField,
     ConfigChangeEstimateGraphQLField,
     ConfigurationConditionsGraphQLField,
+    ConfigurationFlamingos2ImagingGraphQLField,
     ConfigurationFlamingos2LongSlitGraphQLField,
     ConfigurationFlamingos2MosGraphQLField,
+    ConfigurationGhostIfuGraphQLField,
     ConfigurationGmosNorthIfuGraphQLField,
     ConfigurationGmosNorthImagingGraphQLField,
     ConfigurationGmosNorthLongSlitGraphQLField,
@@ -73,6 +75,7 @@ from .custom_typing_fields import (
     ConfigurationGmosSouthLongSlitGraphQLField,
     ConfigurationGmosSouthMosGraphQLField,
     ConfigurationGnirsIfuGraphQLField,
+    ConfigurationGnirsImagingGraphQLField,
     ConfigurationGnirsLongSlitGraphQLField,
     ConfigurationGraphQLField,
     ConfigurationIgrins2LongSlitGraphQLField,
@@ -100,6 +103,7 @@ from .custom_typing_fields import (
     DatasetEstimateGraphQLField,
     DatasetEventGraphQLField,
     DatasetGraphQLField,
+    DatasetQaCountsGraphQLField,
     DatasetReferenceGraphQLField,
     DatasetSelectResultGraphQLField,
     DateIntervalGraphQLField,
@@ -280,6 +284,7 @@ from .custom_typing_fields import (
     MonitoringProgramReferenceGraphQLField,
     NonsiderealGraphQLField,
     ObservationGraphQLField,
+    ObservationQaGraphQLField,
     ObservationReferenceGraphQLField,
     ObservationSelectResultGraphQLField,
     ObservationTimeEstimateGraphQLField,
@@ -1723,11 +1728,16 @@ class CalibrationProgramReferenceFields(GraphQLField):
 class CalibrationSetFields(GraphQLField):
     """One row of a daytime calibration: a kind, an exposure count, the GCAL
     configuration (flats and arcs only) and one instrument setup.  The generator
-    expands it into one atom holding `count` identical DAY_CAL steps."""
+    expands it into one atom: `count` identical DAY_CAL steps for a manual kind,
+    the steps the Smart GCAL lookup returns for a smart kind."""
 
     kind: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("kind")
     count: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("count")
-    "Exposures taken with this setup."
+    "Steps this set contributes to the sequence: `explicitCount` for a manual\nstep, the number of steps the Smart GCAL lookup returns for a smart step, or\nnull when the lookup finds no mapping for the setup."
+    explicit_count: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField(
+        "explicitCount"
+    )
+    "Exposures requested for this setup, as given on input.  Always present for\na manual step, always null for a smart step."
 
     @classmethod
     def gcal(cls) -> "CalibrationSetGcalFields":
@@ -1750,6 +1760,11 @@ class CalibrationSetFields(GraphQLField):
         is exactly as entered; a set never defaults it."""
         return Flamingos2DynamicFields("flamingos2")
 
+    @classmethod
+    def igrins_2(cls) -> "Igrins2DynamicFields":
+        """IGRINS-2 setup, when the instrument is IGRINS-2."""
+        return Igrins2DynamicFields("igrins2")
+
     def fields(
         self,
         *subfields: Union[
@@ -1758,6 +1773,7 @@ class CalibrationSetFields(GraphQLField):
             "Flamingos2DynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
+            "Igrins2DynamicFields",
         ],
     ) -> "CalibrationSetFields":
         """Subfields should come from the CalibrationSetFields class"""
@@ -2407,6 +2423,23 @@ class ConfigurationConditionsFields(GraphQLField):
         return self
 
 
+class ConfigurationFlamingos2ImagingFields(GraphQLField):
+    filters: "ConfigurationFlamingos2ImagingGraphQLField" = (
+        ConfigurationFlamingos2ImagingGraphQLField("filters")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationFlamingos2ImagingGraphQLField
+    ) -> "ConfigurationFlamingos2ImagingFields":
+        """Subfields should come from the ConfigurationFlamingos2ImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationFlamingos2ImagingFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationFlamingos2LongSlitFields(GraphQLField):
     disperser: "ConfigurationFlamingos2LongSlitGraphQLField" = (
         ConfigurationFlamingos2LongSlitGraphQLField("disperser")
@@ -2437,6 +2470,23 @@ class ConfigurationFlamingos2MosFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ConfigurationFlamingos2MosFields":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGhostIfuFields(GraphQLField):
+    resolution_mode: "ConfigurationGhostIfuGraphQLField" = (
+        ConfigurationGhostIfuGraphQLField("resolutionMode")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGhostIfuGraphQLField
+    ) -> "ConfigurationGhostIfuFields":
+        """Subfields should come from the ConfigurationGhostIfuFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGhostIfuFields":
         self._alias = alias
         return self
 
@@ -2601,6 +2651,26 @@ class ConfigurationGnirsIfuFields(GraphQLField):
         return self
 
 
+class ConfigurationGnirsImagingFields(GraphQLField):
+    camera: "ConfigurationGnirsImagingGraphQLField" = (
+        ConfigurationGnirsImagingGraphQLField("camera")
+    )
+    filters: "ConfigurationGnirsImagingGraphQLField" = (
+        ConfigurationGnirsImagingGraphQLField("filters")
+    )
+
+    def fields(
+        self, *subfields: ConfigurationGnirsImagingGraphQLField
+    ) -> "ConfigurationGnirsImagingFields":
+        """Subfields should come from the ConfigurationGnirsImagingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ConfigurationGnirsImagingFields":
+        self._alias = alias
+        return self
+
+
 class ConfigurationGnirsLongSlitFields(GraphQLField):
     grating: "ConfigurationGnirsLongSlitGraphQLField" = (
         ConfigurationGnirsLongSlitGraphQLField("grating")
@@ -2682,6 +2752,10 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationGmosSouthImagingFields("gmosSouthImaging")
 
     @classmethod
+    def flamingos_2_imaging(cls) -> "ConfigurationFlamingos2ImagingFields":
+        return ConfigurationFlamingos2ImagingFields("flamingos2Imaging")
+
+    @classmethod
     def flamingos_2_long_slit(cls) -> "ConfigurationFlamingos2LongSlitFields":
         return ConfigurationFlamingos2LongSlitFields("flamingos2LongSlit")
 
@@ -2690,12 +2764,20 @@ class ConfigurationObservingModeFields(GraphQLField):
         return ConfigurationFlamingos2MosFields("flamingos2Mos")
 
     @classmethod
+    def ghost_ifu(cls) -> "ConfigurationGhostIfuFields":
+        return ConfigurationGhostIfuFields("ghostIfu")
+
+    @classmethod
     def gnirs_long_slit(cls) -> "ConfigurationGnirsLongSlitFields":
         return ConfigurationGnirsLongSlitFields("gnirsLongSlit")
 
     @classmethod
     def gnirs_ifu(cls) -> "ConfigurationGnirsIfuFields":
         return ConfigurationGnirsIfuFields("gnirsIfu")
+
+    @classmethod
+    def gnirs_imaging(cls) -> "ConfigurationGnirsImagingFields":
+        return ConfigurationGnirsImagingFields("gnirsImaging")
 
     @classmethod
     def igrins_2_long_slit(cls) -> "ConfigurationIgrins2LongSlitFields":
@@ -2709,8 +2791,10 @@ class ConfigurationObservingModeFields(GraphQLField):
         self,
         *subfields: Union[
             ConfigurationObservingModeGraphQLField,
+            "ConfigurationFlamingos2ImagingFields",
             "ConfigurationFlamingos2LongSlitFields",
             "ConfigurationFlamingos2MosFields",
+            "ConfigurationGhostIfuFields",
             "ConfigurationGmosNorthIfuFields",
             "ConfigurationGmosNorthImagingFields",
             "ConfigurationGmosNorthLongSlitFields",
@@ -2720,6 +2804,7 @@ class ConfigurationObservingModeFields(GraphQLField):
             "ConfigurationGmosSouthLongSlitFields",
             "ConfigurationGmosSouthMosFields",
             "ConfigurationGnirsIfuFields",
+            "ConfigurationGnirsImagingFields",
             "ConfigurationGnirsLongSlitFields",
             "ConfigurationIgrins2LongSlitFields",
             "ConfigurationVisitorFields",
@@ -3539,6 +3624,36 @@ class DatasetEventFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "DatasetEventFields":
+        self._alias = alias
+        return self
+
+
+class DatasetQaCountsFields(GraphQLField):
+    """The number of an observation's written science datasets in each QA state.
+    Datasets that were never written, such as those of aborted exposures, are not
+    counted."""
+
+    total: "DatasetQaCountsGraphQLField" = DatasetQaCountsGraphQLField("total")
+    "All science datasets."
+    pass_: "DatasetQaCountsGraphQLField" = DatasetQaCountsGraphQLField("pass")
+    "Science datasets whose QA state is PASS."
+    usable: "DatasetQaCountsGraphQLField" = DatasetQaCountsGraphQLField("usable")
+    "Science datasets whose QA state is USABLE."
+    fail: "DatasetQaCountsGraphQLField" = DatasetQaCountsGraphQLField("fail")
+    "Science datasets whose QA state is FAIL."
+    not_assessed: "DatasetQaCountsGraphQLField" = DatasetQaCountsGraphQLField(
+        "notAssessed"
+    )
+    "Science datasets with no QA state yet."
+
+    def fields(
+        self, *subfields: DatasetQaCountsGraphQLField
+    ) -> "DatasetQaCountsFields":
+        """Subfields should come from the DatasetQaCountsFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DatasetQaCountsFields":
         self._alias = alias
         return self
 
@@ -9051,13 +9166,30 @@ class GroupProgressFields(GraphQLField):
     completes where its charge ends, as in its visits'
     `timeChargeInvoice.interval`.  The charge end is recorded some time after the
     fact (the charge runs until the next chargeable visit at the site starts or the
-    night ends), and until then the observation completes at its slew."""
+    night ends), and until then the observation completes at its slew.
+
+    A complete observation whose QA state (see `ObservationQa.state`) is `USABLE`
+    or `FAIL` is rejected: it never counts as complete, and it isn't checked
+    against the group's constraints.  One not yet assessed counts, including one
+    with some datasets still unassessed: until a person settles its QA state, an
+    observation is assumed to be good, so that group progress never sends the
+    scheduler back into a group without a QA decision.  The calibrations in a
+    per-observation calibration group go with their science observation: they are
+    left out when it is, and rejected when it is.  A subgroup with only rejected
+    elements is itself rejected.  A group with no `minimumRequired` requires all of
+    its elements, rejected ones included, so it is `UNSCHEDULABLE` until a minimum
+    is set.  With a minimum, rejected elements are left out, and a replacement (a
+    new observation) may take a rejected one's place.  A rejection can still break
+    the group's time constraints (its intervals, same night, or observations per
+    night), or the order of an ordered group whose later elements are already
+    complete, since the completions left are checked without it, and a replacement
+    observed later can't undo that."""
 
     status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
     completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
     "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing, except in a group with a minimum observations per night whose night\nin progress is short of it and may still take an extra observation."
     required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
-    "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
+    "The number of elements the group requires: its `minimumRequired`, or, when\nthat is unset, every element that isn't left out (see `GroupStatus.EMPTY`),\nrejected ones included.  Zero only when empty."
 
     @classmethod
     def next_window(cls) -> "GroupWindowFields":
@@ -10918,6 +11050,11 @@ class ObservationFields(GraphQLField):
         held around this observation's pointing."""
         return ArchiveDuplicationFields("archiveDuplication")
 
+    @classmethod
+    def qa(cls) -> "ObservationQaFields":
+        """The QA verdict for the observation as a whole."""
+        return ObservationQaFields("qa")
+
     def fields(
         self,
         *subfields: Union[
@@ -10930,6 +11067,7 @@ class ObservationFields(GraphQLField):
             "ConstraintSetFields",
             "ExecutionFields",
             "ItcInterface",
+            "ObservationQaFields",
             "ObservationReferenceFields",
             "ObservingModeFields",
             "PosAngleConstraintFields",
@@ -10946,6 +11084,45 @@ class ObservationFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ObservationFields":
+        self._alias = alias
+        return self
+
+
+class ObservationQaFields(GraphQLField):
+    """The QA verdict for an observation as a whole.  It is calculated from the QA
+    states of the observation's written science datasets unless staff override it.
+    Acquisition datasets are ignored, as are datasets that were never written
+    (such as those of aborted exposures):
+
+    * no science datasets, or any not yet assessed: no verdict (null)
+    * all datasets PASS: PASS
+    * all datasets FAIL: FAIL
+    * otherwise: USABLE
+
+    An override stays in place as datasets are added or their QA states change,
+    until staff clear it.  Even when some datasets fail, the observation as a
+    whole may pass."""
+
+    state: "ObservationQaGraphQLField" = ObservationQaGraphQLField("state")
+    "The effective QA state: the staff override when there is one, otherwise the\ncalculated state.  Null when the observation has no verdict."
+    computed: "ObservationQaGraphQLField" = ObservationQaGraphQLField("computed")
+    "The QA state calculated from the science datasets, ignoring any override.\nNull when there are no science datasets or any is not yet assessed."
+    override: "ObservationQaGraphQLField" = ObservationQaGraphQLField("override")
+    "The staff-assigned QA state, if any.  Set it with `qaStateOverride` in\n`ObservationPropertiesInput`."
+
+    @classmethod
+    def datasets(cls) -> "DatasetQaCountsFields":
+        """The number of science datasets in each QA state."""
+        return DatasetQaCountsFields("datasets")
+
+    def fields(
+        self, *subfields: Union[ObservationQaGraphQLField, "DatasetQaCountsFields"]
+    ) -> "ObservationQaFields":
+        """Subfields should come from the ObservationQaFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ObservationQaFields":
         self._alias = alias
         return self
 
