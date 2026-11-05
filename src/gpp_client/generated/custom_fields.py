@@ -9166,30 +9166,13 @@ class GroupProgressFields(GraphQLField):
     completes where its charge ends, as in its visits'
     `timeChargeInvoice.interval`.  The charge end is recorded some time after the
     fact (the charge runs until the next chargeable visit at the site starts or the
-    night ends), and until then the observation completes at its slew.
-
-    A complete observation whose QA state (see `ObservationQa.state`) is `USABLE`
-    or `FAIL` is rejected: it never counts as complete, and it isn't checked
-    against the group's constraints.  One not yet assessed counts, including one
-    with some datasets still unassessed: until a person settles its QA state, an
-    observation is assumed to be good, so that group progress never sends the
-    scheduler back into a group without a QA decision.  The calibrations in a
-    per-observation calibration group go with their science observation: they are
-    left out when it is, and rejected when it is.  A subgroup with only rejected
-    elements is itself rejected.  A group with no `minimumRequired` requires all of
-    its elements, rejected ones included, so it is `UNSCHEDULABLE` until a minimum
-    is set.  With a minimum, rejected elements are left out, and a replacement (a
-    new observation) may take a rejected one's place.  A rejection can still break
-    the group's time constraints (its intervals, same night, or observations per
-    night), or the order of an ordered group whose later elements are already
-    complete, since the completions left are checked without it, and a replacement
-    observed later can't undo that."""
+    night ends), and until then the observation completes at its slew."""
 
     status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
     completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
     "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing, except in a group with a minimum observations per night whose night\nin progress is short of it and may still take an extra observation."
     required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
-    "The number of elements the group requires: its `minimumRequired`, or, when\nthat is unset, every element that isn't left out (see `GroupStatus.EMPTY`),\nrejected ones included.  Zero only when empty."
+    "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
 
     @classmethod
     def next_window(cls) -> "GroupWindowFields":

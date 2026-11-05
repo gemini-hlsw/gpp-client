@@ -3876,6 +3876,12 @@ input ObservationPropertiesInput {
   creation. Cannot be set to null.
   """
   priority: ObservationPriority
+
+  """
+  Staff only.  Overrides the observation's calculated QA state.  Set to `null`
+  to remove the override and return to the calculated state.
+  """
+  qaStateOverride: ObservationQaState
 }
 
 """Observation times properties"""
@@ -5357,6 +5363,8 @@ input DaytimeCalibrationInput {
 """
 The kind of exposure a calibration set produces.  DAYTIME_OBSERVE is an
 exposure with the dome closed and no lamp, such as a pupil or bubble image.
+SMART_FLAT, SMART_ARC and DAY_BASELINE are resolved through the Smart GCAL
+tables.
 """
 enum CalibrationSetType {
   BIAS
@@ -5364,18 +5372,32 @@ enum CalibrationSetType {
   FLAT
   ARC
   DAYTIME_OBSERVE
+  SMART_FLAT
+  SMART_ARC
+  DAY_BASELINE
 }
 
 """
 One row of a daytime calibration: a kind, an exposure count, the GCAL
 configuration (flats and arcs only) and one instrument setup.  The generator
-expands it into one atom holding `count` identical DAY_CAL steps.
+expands it into one atom: `count` identical DAY_CAL steps for a manual kind,
+the steps the Smart GCAL lookup returns for a smart kind.
 """
 type CalibrationSet {
   kind: CalibrationSetType!
 
-  """Exposures taken with this setup."""
-  count: PosInt!
+  """
+  Steps this set contributes to the sequence: `explicitCount` for a manual
+  step, the number of steps the Smart GCAL lookup returns for a smart step, or
+  null when the lookup finds no mapping for the setup.
+  """
+  count: PosInt
+
+  """
+  Exposures requested for this setup, as given on input.  Always present for
+  a manual step, always null for a smart step.
+  """
+  explicitCount: PosInt
 
   """GCAL lamp configuration, present for FLAT and ARC only."""
   gcal: CalibrationSetGcal
@@ -5391,6 +5413,9 @@ type CalibrationSet {
   is exactly as entered; a set never defaults it.
   """
   flamingos2: Flamingos2Dynamic
+
+  """IGRINS-2 setup, when the instrument is IGRINS-2."""
+  igrins2: Igrins2Dynamic
 }
 
 """GCAL configuration of a flat or arc calibration set."""
@@ -5407,16 +5432,16 @@ type CalibrationSetGcal {
 
 """
 Calibration set input.  Exactly one instrument setup must be given and it must
-match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
-ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
-A BIAS ignores the setup's exposure time and takes zero.  A Flamingos 2 set
-may only be a DARK, FLAT or ARC.
+match the mode's instrument.
 """
 input CalibrationSetInput {
   kind: CalibrationSetType!
 
-  """Exposures taken with this setup, at most 1000."""
-  count: PosInt!
+  """
+  Exposures taken with this setup, at most 1000.  Required for a manual kind,
+  rejected for a smart kind, whose count comes from the Smart GCAL lookup.
+  """
+  explicitCount: PosInt
 
   """
   GCAL lamp configuration, required for FLAT and ARC, rejected otherwise.
@@ -5425,6 +5450,7 @@ input CalibrationSetInput {
   gmosNorth: GmosNorthDynamicInput
   gmosSouth: GmosSouthDynamicInput
   flamingos2: Flamingos2DynamicInput
+  igrins2: Igrins2DynamicInput
 }
 
 """
@@ -13514,12 +13540,6 @@ type HourAngleRange {
 
 """Image quality"""
 enum ImageQualityPreset {
-  """ImageQualityPreset PointOne"""
-  POINT_ONE
-
-  """ImageQualityPreset PointTwo"""
-  POINT_TWO
-
   """ImageQualityPreset PointThree"""
   POINT_THREE
 
@@ -14470,6 +14490,69 @@ type Observation {
   held around this observation's pointing.
   """
   archiveDuplication: ArchiveDuplication!
+
+  """The QA verdict for the observation as a whole."""
+  qa: ObservationQa!
+}
+
+"""
+The QA verdict for an observation as a whole.  It is calculated from the QA
+states of the observation's written science datasets unless staff override it.
+Acquisition datasets are ignored, as are datasets that were never written
+(such as those of aborted exposures):
+
+* no science datasets, or any not yet assessed: no verdict (null)
+* all datasets PASS: PASS
+* all datasets FAIL: FAIL
+* otherwise: USABLE
+
+An override stays in place as datasets are added or their QA states change,
+until staff clear it.  Even when some datasets fail, the observation as a
+whole may pass.
+"""
+type ObservationQa {
+  """
+  The effective QA state: the staff override when there is one, otherwise the
+  calculated state.  Null when the observation has no verdict.
+  """
+  state: ObservationQaState
+
+  """
+  The QA state calculated from the science datasets, ignoring any override.
+  Null when there are no science datasets or any is not yet assessed.
+  """
+  computed: ObservationQaState
+
+  """
+  The staff-assigned QA state, if any.  Set it with `qaStateOverride` in
+  `ObservationPropertiesInput`.
+  """
+  override: ObservationQaState
+
+  """The number of science datasets in each QA state."""
+  datasets: DatasetQaCounts!
+}
+
+"""
+The number of an observation's written science datasets in each QA state.
+Datasets that were never written, such as those of aborted exposures, are not
+counted.
+"""
+type DatasetQaCounts {
+  """All science datasets."""
+  total: NonNegInt!
+
+  """Science datasets whose QA state is PASS."""
+  pass: NonNegInt!
+
+  """Science datasets whose QA state is USABLE."""
+  usable: NonNegInt!
+
+  """Science datasets whose QA state is FAIL."""
+  fail: NonNegInt!
+
+  """Science datasets with no QA state yet."""
+  notAssessed: NonNegInt!
 }
 
 """The outcome of the most recent Archive Duplication Search attempt."""
@@ -14763,10 +14846,13 @@ type ConfigurationObservingMode {
   gmosSouthIfu: ConfigurationGmosSouthIfu
   gmosNorthImaging: ConfigurationGmosNorthImaging
   gmosSouthImaging: ConfigurationGmosSouthImaging
+  flamingos2Imaging: ConfigurationFlamingos2Imaging
   flamingos2LongSlit: ConfigurationFlamingos2LongSlit
   flamingos2Mos: ConfigurationFlamingos2Mos
+  ghostIfu: ConfigurationGhostIfu
   gnirsLongSlit: ConfigurationGnirsLongSlit
   gnirsIfu: ConfigurationGnirsIfu
+  gnirsImaging: ConfigurationGnirsImaging
   igrins2LongSlit: ConfigurationIgrins2LongSlit
   visitor: ConfigurationVisitor
 }
@@ -14800,6 +14886,10 @@ type ConfigurationGmosSouthImaging {
   filters: [GmosSouthFilter!]!
 }
 
+type ConfigurationFlamingos2Imaging {
+  filters: [Flamingos2Filter!]!
+}
+
 type ConfigurationFlamingos2LongSlit {
   disperser: Flamingos2Disperser!
 }
@@ -14827,6 +14917,15 @@ type ConfigurationGmosSouthIfu {
 type ConfigurationGnirsIfu {
   grating: GnirsGrating!
   fpu: GnirsFpuIfu!
+}
+
+type ConfigurationGnirsImaging {
+  camera: GnirsCamera!
+  filters: [GnirsFilter!]!
+}
+
+type ConfigurationGhostIfu {
+  resolutionMode: GhostResolutionMode!
 }
 
 type ConfigurationIgrins2LongSlit {
@@ -15329,6 +15428,16 @@ enum ObservationPriority {
   LOW
   MEDIUM
   HIGH
+}
+
+"""
+QA verdict for an observation as a whole.  There is no "undefined" value: an
+observation without a verdict has none (null).
+"""
+enum ObservationQaState {
+  PASS
+  USABLE
+  FAIL
 }
 
 """The severity of an observation validation code."""
@@ -18076,6 +18185,12 @@ enum CalibrationRole {
   """CalibrationRole DaytimePinhole"""
   DAYTIME_PINHOLE
 
+  """CalibrationRole DaytimeFlat"""
+  DAYTIME_FLAT
+
+  """CalibrationRole DaytimeArc"""
+  DAYTIME_ARC
+
   """CalibrationRole DaytimeCalibration"""
   DAYTIME_CALIBRATION
 }
@@ -19646,6 +19761,9 @@ input WhereObservation {
   """Matches the calibration role."""
   calibrationRole: WhereOptionEqCalibrationRole
 
+  """Matches the observation's QA state and science dataset QA counts."""
+  qa: WhereObservationQa
+
   """
   Matches if the observation's stored base position lies within the angular
   `distance` of `center`. The stored position is the
@@ -19831,6 +19949,76 @@ input WhereEqTargetDisposition {
 
   """Matches if the target disposition is none of the supplied values."""
   NIN: [TargetDisposition!]
+}
+
+"""Observation QA filter options.  All specified items must match."""
+input WhereObservationQa {
+  """
+  Matches the effective QA state: the override when there is one, otherwise
+  the calculated state.
+  """
+  state: WhereOptionEqObservationQaState
+
+  """
+  Matches the QA state calculated from the science datasets, ignoring any
+  override.
+  """
+  computed: WhereOptionEqObservationQaState
+
+  """
+  Matches the staff-assigned QA state.  Use `IS_NULL: true` to match
+  observations without an override.
+  """
+  override: WhereOptionEqObservationQaState
+
+  """Matches the number of science datasets in each QA state."""
+  datasets: WhereDatasetQaCounts
+}
+
+"""
+Science dataset QA count filter options.  All specified items must match.
+For example, `notAssessed: { GT: 0 }` matches observations with science
+datasets that have not yet been assessed.
+"""
+input WhereDatasetQaCounts {
+  """Matches the number of science datasets."""
+  total: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is PASS."""
+  pass: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is USABLE."""
+  usable: WhereOrderNonNegInt
+
+  """Matches the number of science datasets whose QA state is FAIL."""
+  fail: WhereOrderNonNegInt
+
+  """Matches the number of science datasets with no QA state yet."""
+  notAssessed: WhereOrderNonNegInt
+}
+
+"""
+Filters on equality (or not) of an optional observation QA state.  All
+supplied criteria must match, but usually only one is selected.
+"""
+input WhereOptionEqObservationQaState {
+  """
+  When `true`, matches if the QA state is not defined. When `false` matches if
+  the QA state is defined.
+  """
+  IS_NULL: Boolean
+
+  """Matches if the property is exactly the supplied value."""
+  EQ: ObservationQaState
+
+  """Matches if the property is not the supplied value."""
+  NEQ: ObservationQaState
+
+  """Matches if the property value is any of the supplied options."""
+  IN: [ObservationQaState!]
+
+  """Matches if the property value is none of the supplied values."""
+  NIN: [ObservationQaState!]
 }
 
 """
@@ -20609,6 +20797,40 @@ input WhereOrderPosInt {
   Matches if the PosInt is ordered before or equal (<=) the supplied value.
   """
   LTE: PosInt
+}
+
+"""
+Filters on equality or order comparisons of the NonNegInt property.  All supplied
+criteria must match, but usually only one is selected.
+"""
+input WhereOrderNonNegInt {
+  """Matches if the NonNegInt is exactly the supplied value."""
+  EQ: NonNegInt
+
+  """Matches if the NonNegInt is not the supplied value."""
+  NEQ: NonNegInt
+
+  """Matches if the NonNegInt is any of the supplied options."""
+  IN: [NonNegInt!]
+
+  """Matches if the NonNegInt is none of the supplied values."""
+  NIN: [NonNegInt!]
+
+  """Matches if the NonNegInt is ordered after (>) the supplied value."""
+  GT: NonNegInt
+
+  """Matches if the NonNegInt is ordered before (<) the supplied value."""
+  LT: NonNegInt
+
+  """
+  Matches if the NonNegInt is ordered after or equal (>=) the supplied value.
+  """
+  GTE: NonNegInt
+
+  """
+  Matches if the NonNegInt is ordered before or equal (<=) the supplied value.
+  """
+  LTE: NonNegInt
 }
 
 """
