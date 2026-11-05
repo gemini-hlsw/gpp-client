@@ -108,6 +108,7 @@ from .enums import (
     LineFluxSurfaceUnits,
     MosPreImaging,
     ObservationPriority,
+    ObservationQaState,
     ObservationValidationCode,
     ObservationWorkflowState,
     Observatory,
@@ -1535,6 +1536,10 @@ class ObservationPropertiesInput(BaseModel):
     "Set the notes for  thhe observer"
     priority: Optional[ObservationPriority] = None
     "The PI's declared priority for this observation. Defaults to MEDIUM on\ncreation. Cannot be set to null."
+    qa_state_override: Optional[ObservationQaState] = Field(
+        alias=str("qaStateOverride"), default=None
+    )
+    "Staff only.  Overrides the observation's calculated QA state.  Set to `null`\nto remove the override and return to the calculated state."
 
 
 class ObservationTimesInput(BaseModel):
@@ -2147,14 +2152,11 @@ class DaytimeCalibrationInput(BaseModel):
 
 class CalibrationSetInput(BaseModel):
     """Calibration set input.  Exactly one instrument setup must be given and it must
-    match the mode's instrument.  A FLAT needs a `gcal` with a continuum lamp, an
-    ARC one with at least one arc lamp; BIAS, DARK and DAYTIME_OBSERVE take none.
-    A BIAS ignores the setup's exposure time and takes zero.  A Flamingos 2 set
-    may only be a DARK, FLAT or ARC."""
+    match the mode's instrument."""
 
     kind: CalibrationSetType
-    count: Any
-    "Exposures taken with this setup, at most 1000."
+    explicit_count: Optional[Any] = Field(alias=str("explicitCount"), default=None)
+    "Exposures taken with this setup, at most 1000.  Required for a manual kind,\nrejected for a smart kind, whose count comes from the Smart GCAL lookup."
     gcal: Optional["CalibrationSetGcalInput"] = None
     "GCAL lamp configuration, required for FLAT and ARC, rejected otherwise."
     gmos_north: Optional["GmosNorthDynamicInput"] = Field(
@@ -2165,6 +2167,9 @@ class CalibrationSetInput(BaseModel):
     )
     flamingos_2: Optional["Flamingos2DynamicInput"] = Field(
         alias=str("flamingos2"), default=None
+    )
+    igrins_2: Optional["Igrins2DynamicInput"] = Field(
+        alias=str("igrins2"), default=None
     )
 
 
@@ -4522,6 +4527,8 @@ class WhereObservation(BaseModel):
         alias=str("calibrationRole"), default=None
     )
     "Matches the calibration role."
+    qa: Optional["WhereObservationQa"] = None
+    "Matches the observation's QA state and science dataset QA counts."
     target_coordinates: Optional["WhereCone"] = Field(
         alias=str("targetCoordinates"), default=None
     )
@@ -4658,6 +4665,54 @@ class WhereEqTargetDisposition(BaseModel):
     "Matches if the target disposition is any of the supplied options."
     nin: Optional[list[TargetDisposition]] = Field(alias=str("NIN"), default=None)
     "Matches if the target disposition is none of the supplied values."
+
+
+class WhereObservationQa(BaseModel):
+    """Observation QA filter options.  All specified items must match."""
+
+    state: Optional["WhereOptionEqObservationQaState"] = None
+    "Matches the effective QA state: the override when there is one, otherwise\nthe calculated state."
+    computed: Optional["WhereOptionEqObservationQaState"] = None
+    "Matches the QA state calculated from the science datasets, ignoring any\noverride."
+    override: Optional["WhereOptionEqObservationQaState"] = None
+    "Matches the staff-assigned QA state.  Use `IS_NULL: true` to match\nobservations without an override."
+    datasets: Optional["WhereDatasetQaCounts"] = None
+    "Matches the number of science datasets in each QA state."
+
+
+class WhereDatasetQaCounts(BaseModel):
+    """Science dataset QA count filter options.  All specified items must match.
+    For example, `notAssessed: { GT: 0 }` matches observations with science
+    datasets that have not yet been assessed."""
+
+    total: Optional["WhereOrderNonNegInt"] = None
+    "Matches the number of science datasets."
+    pass_: Optional["WhereOrderNonNegInt"] = Field(alias=str("pass"), default=None)
+    "Matches the number of science datasets whose QA state is PASS."
+    usable: Optional["WhereOrderNonNegInt"] = None
+    "Matches the number of science datasets whose QA state is USABLE."
+    fail: Optional["WhereOrderNonNegInt"] = None
+    "Matches the number of science datasets whose QA state is FAIL."
+    not_assessed: Optional["WhereOrderNonNegInt"] = Field(
+        alias=str("notAssessed"), default=None
+    )
+    "Matches the number of science datasets with no QA state yet."
+
+
+class WhereOptionEqObservationQaState(BaseModel):
+    """Filters on equality (or not) of an optional observation QA state.  All
+    supplied criteria must match, but usually only one is selected."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the QA state is not defined. When `false` matches if\nthe QA state is defined."
+    eq: Optional[ObservationQaState] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
+    neq: Optional[ObservationQaState] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
+    in_: Optional[list[ObservationQaState]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
+    nin: Optional[list[ObservationQaState]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
 
 
 class WhereOptionEqCalibrationRole(BaseModel):
@@ -5176,6 +5231,28 @@ class WhereOrderPosInt(BaseModel):
     "Matches if the PosInt is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
     "Matches if the PosInt is ordered before or equal (<=) the supplied value."
+
+
+class WhereOrderNonNegInt(BaseModel):
+    """Filters on equality or order comparisons of the NonNegInt property.  All supplied
+    criteria must match, but usually only one is selected."""
+
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the NonNegInt is exactly the supplied value."
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the NonNegInt is not the supplied value."
+    in_: Optional[list[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the NonNegInt is any of the supplied options."
+    nin: Optional[list[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the NonNegInt is none of the supplied values."
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the NonNegInt is ordered after (>) the supplied value."
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the NonNegInt is ordered before (<) the supplied value."
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the NonNegInt is ordered after or equal (>=) the supplied value."
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the NonNegInt is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderProgramId(BaseModel):
@@ -6269,6 +6346,8 @@ WhereConfigurationRequest.model_rebuild()
 WhereCone.model_rebuild()
 WhereObservationReference.model_rebuild()
 WhereGroup.model_rebuild()
+WhereObservationQa.model_rebuild()
+WhereDatasetQaCounts.model_rebuild()
 WhereProposalReference.model_rebuild()
 WherePartnerLink.model_rebuild()
 WhereProgram.model_rebuild()

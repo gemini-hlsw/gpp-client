@@ -1931,6 +1931,18 @@ class ObservationGraphQLField(GraphQLField):
         return self
 
 
+class ObservationQaGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObservationQaGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DatasetQaCountsGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DatasetQaCountsGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ArchiveMatchGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ArchiveMatchGraphQLField":
         self._alias = alias
@@ -2009,6 +2021,12 @@ class ConfigurationGmosSouthImagingGraphQLField(GraphQLField):
         return self
 
 
+class ConfigurationFlamingos2ImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationFlamingos2ImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ConfigurationFlamingos2LongSlitGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationFlamingos2LongSlitGraphQLField":
         self._alias = alias
@@ -2041,6 +2059,18 @@ class ConfigurationGmosSouthIfuGraphQLField(GraphQLField):
 
 class ConfigurationGnirsIfuGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ConfigurationGnirsIfuGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGnirsImagingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGnirsImagingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ConfigurationGhostIfuGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ConfigurationGhostIfuGraphQLField":
         self._alias = alias
         return self
 
