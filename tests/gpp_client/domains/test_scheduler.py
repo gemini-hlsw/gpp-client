@@ -7,11 +7,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from gpp_client.domains.scheduler import (
-    OBSERVATIONS_PAGE_SIZE,
-    PROGRAMS_PAGE_SIZE,
-    SchedulerDomain,
-)
+from gpp_client.domains import scheduler as scheduler_module
+from gpp_client.domains.scheduler import SchedulerDomain
+from gpp_client.exceptions import GPPClientError
+from gpp_client.generated.enums import ObservationWorkflowState
 from gpp_client.generated.fragments import ObservationDetails, ProgramCore
 from gpp_client.generated.get_scheduler_programs import (
     GetSchedulerPrograms,
@@ -70,70 +69,115 @@ def _observations_page(ids: list[str], has_more: bool) -> SimpleNamespace:
     )
 
 
+def _mock_get_programs(mocker, programs: list[dict]):
+    """
+    Build a ``get_programs`` stand-in whose response dumps to ``programs``.
+    """
+    return mocker.AsyncMock(
+        return_value=mocker.Mock(
+            model_dump=mocker.Mock(return_value={"programs": {"matches": programs}})
+        )
+    )
+
+
 @pytest.mark.asyncio
-async def test_get_all_pages_observations_after_programs(
+async def test_get_all_queries_every_tree_observation_by_id_in_batches(
+    scheduler_domain: SchedulerDomain,
+    rest,
+    graphql,
+    mocker,
+    monkeypatch,
+) -> None:
+    """
+    Ensure every observation in the program trees, nested groups included, is
+    asked for by ID in capped batches with no OFFSET cursor, and every one the
+    ODB returns lands in the tree and gets a sequence.
+    """
+    monkeypatch.setattr(scheduler_module, "ID_BATCH_SIZE", 2)
+    programs = [
+        {
+            "id": "p-1",
+            "all_group_elements": [
+                {"parent_group_id": None, "observation": {"id": "o-1"}},
+                {"parent_group_id": None, "group": {"id": "g-1"}},
+                {"parent_group_id": "g-1", "observation": {"id": "o-2"}},
+                # Not Ready/Ongoing, so the ODB never returns it.
+                {"parent_group_id": "g-1", "observation": {"id": "o-3"}},
+            ],
+        },
+        {
+            "id": "p-2",
+            "all_group_elements": [
+                {"parent_group_id": None, "observation": {"id": "o-4"}},
+                {"parent_group_id": None, "observation": {"id": "o-5"}},
+            ],
+        },
+    ]
+    ready = {"o-1", "o-2", "o-4", "o-5"}
+    observation_calls = []
+
+    async def get_observations(**kwargs):
+        observation_calls.append(kwargs)
+        asked = kwargs["where"].id.in_
+        return _observations_page([i for i in asked if i in ready], has_more=False)
+
+    mocker.patch.object(
+        scheduler_domain, "get_programs", _mock_get_programs(mocker, programs)
+    )
+    graphql.get_observations = get_observations
+    rest.get_atom_digests = mocker.AsyncMock(return_value="")
+
+    result = await scheduler_domain.get_all(programs_list=["p-1", "p-2"])
+
+    assert [c["where"].id.in_ for c in observation_calls] == [
+        ["o-1", "o-2"],
+        ["o-3", "o-4"],
+        ["o-5"],
+    ]
+    for call in observation_calls:
+        # No OFFSET or LIMIT, so there is no cursor that could stall.
+        assert set(call) == {"where", "include_deleted"}
+        assert call["where"].workflow.workflow_state.in_ == [
+            ObservationWorkflowState.READY,
+            ObservationWorkflowState.ONGOING,
+        ]
+    rest.get_atom_digests.assert_awaited_once_with(["o-1", "o-2", "o-4", "o-5"])
+
+    p1_root, p2_root = (p["root"]["elements"] for p in result)
+    assert p1_root[0]["observation"]["id"] == "o-1"
+    assert [e["observation"]["id"] for e in p1_root[1]["group"]["elements"]] == ["o-2"]
+    assert [e["observation"]["id"] for e in p2_root] == ["o-4", "o-5"]
+
+
+@pytest.mark.asyncio
+async def test_get_all_raises_when_an_observation_batch_is_incomplete(
     scheduler_domain: SchedulerDomain,
     rest,
     graphql,
     mocker,
 ) -> None:
     """
-    Ensure programs, observation pages and sequences are fetched in that order,
-    every observation page lands in the tree, and sequences are requested only
-    for observations the query returned.
+    Ensure a batch the ODB reports as cut short fails instead of dropping
+    observations.
     """
-    calls = []
-    filters = []
     program = {
         "id": "p-1",
         "all_group_elements": [
             {"parent_group_id": None, "observation": {"id": "o-1"}},
-            {"parent_group_id": None, "observation": {"id": "o-2"}},
-            # Not Ready/Ongoing, so the observation query never returns it.
-            {"parent_group_id": None, "observation": {"id": "o-3"}},
         ],
     }
-    observation_pages = [
-        _observations_page(["o-1"], has_more=True),
-        _observations_page(["o-1", "o-2"], has_more=False),
-    ]
+    mocker.patch.object(
+        scheduler_domain, "get_programs", _mock_get_programs(mocker, [program])
+    )
+    graphql.get_observations = mocker.AsyncMock(
+        return_value=_observations_page(["o-1"], has_more=True)
+    )
+    rest.get_atom_digests = mocker.AsyncMock(return_value="")
 
-    async def get_programs(**kwargs):
-        calls.append("programs")
-        return mocker.Mock(
-            model_dump=mocker.Mock(return_value={"programs": {"matches": [program]}})
-        )
+    with pytest.raises(GPPClientError, match="observations"):
+        await scheduler_domain.get_all(programs_list=["p-1"])
 
-    async def get_observations(**kwargs):
-        calls.append(("observations", kwargs["offset"], kwargs["limit"]))
-        filters.append(kwargs["where"])
-        return observation_pages.pop(0)
-
-    async def get_atom_digests(observation_ids):
-        calls.append(("atoms", observation_ids))
-        return ""
-
-    mocker.patch.object(scheduler_domain, "get_programs", get_programs)
-    graphql.get_observations = get_observations
-    rest.get_atom_digests = get_atom_digests
-
-    result = await scheduler_domain.get_all(programs_list=["p-1"])
-
-    assert calls == [
-        "programs",
-        ("observations", None, OBSERVATIONS_PAGE_SIZE),
-        ("observations", "o-1", OBSERVATIONS_PAGE_SIZE),
-        # Sequences only for observations the query returned.
-        ("atoms", ["o-1", "o-2"]),
-    ]
-    assert [e["observation"]["id"] for e in result[0]["root"]["elements"]] == [
-        "o-1",
-        "o-2",
-    ]
-    # Observations are filtered by program, not by the full observation ID list.
-    for where in filters:
-        assert where.program.id.in_ == ["p-1"]
-        assert where.id is None
+    rest.get_atom_digests.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -218,94 +262,72 @@ async def test_get_all_moves_timing_windows_to_observation_root(
 
 
 @pytest.mark.asyncio
-async def test_get_programs_merges_every_page(
+async def test_get_programs_queries_listed_ids_in_batches(
     scheduler_domain: SchedulerDomain,
     graphql,
     mocker,
+    monkeypatch,
 ) -> None:
     """
-    Ensure pages are walked by offset and merged without the repeated program.
+    Ensure listed program IDs are asked for in capped batches, without repeats,
+    and every batch is merged into one result.
     """
+    monkeypatch.setattr(scheduler_module, "ID_BATCH_SIZE", 2)
     graphql.get_scheduler_programs = mocker.AsyncMock(
         side_effect=[
-            _programs_page(["p-1", "p-2", "p-3"], has_more=True),
-            _programs_page(["p-3", "p-4", "p-5"], has_more=True),
-            _programs_page(["p-5", "p-6"], has_more=False),
+            _programs_page(["p-1", "p-2"], has_more=False),
+            _programs_page(["p-3"], has_more=False),
         ]
     )
 
     result = await scheduler_domain.get_programs(
-        programs_list=["p-1", "p-6"], page_size=3
+        programs_list=["p-1", "p-2", "p-2", "p-3"]
     )
 
-    assert [p.id for p in result.programs.matches] == [
-        "p-1",
-        "p-2",
-        "p-3",
-        "p-4",
-        "p-5",
-        "p-6",
-    ]
+    assert [p.id for p in result.programs.matches] == ["p-1", "p-2", "p-3"]
     assert result.programs.has_more is False
     assert graphql.get_scheduler_programs.await_args_list == [
-        mocker.call(programs_list=["p-1", "p-6"], offset=None, limit=3),
-        mocker.call(programs_list=["p-1", "p-6"], offset="p-3", limit=3),
-        mocker.call(programs_list=["p-1", "p-6"], offset="p-5", limit=3),
+        mocker.call(programs_list=["p-1", "p-2"]),
+        mocker.call(programs_list=["p-3"]),
     ]
 
 
 @pytest.mark.asyncio
-async def test_get_programs_defaults_to_module_page_size(
+async def test_get_programs_without_a_list_makes_one_query(
     scheduler_domain: SchedulerDomain,
     graphql,
     mocker,
 ) -> None:
     """
-    Ensure a single page is requested with the default page size.
+    Ensure all active programs come from one query, returned as is.
     """
-    graphql.get_scheduler_programs = mocker.AsyncMock(
-        return_value=_programs_page(["p-1"], has_more=False)
-    )
+    page = _programs_page(["p-1"], has_more=False)
+    graphql.get_scheduler_programs = mocker.AsyncMock(return_value=page)
 
     result = await scheduler_domain.get_programs()
 
-    assert [p.id for p in result.programs.matches] == ["p-1"]
-    graphql.get_scheduler_programs.assert_awaited_once_with(
-        programs_list=None, offset=None, limit=PROGRAMS_PAGE_SIZE
-    )
+    assert result is page
+    graphql.get_scheduler_programs.assert_awaited_once_with(programs_list=None)
 
 
+@pytest.mark.parametrize("programs_list", [None, ["p-1", "p-2"]])
 @pytest.mark.asyncio
-async def test_get_programs_stops_when_page_has_only_the_offset(
+async def test_get_programs_raises_when_the_odb_leaves_programs_out(
     scheduler_domain: SchedulerDomain,
     graphql,
     mocker,
+    programs_list,
 ) -> None:
     """
-    Ensure a page that only repeats the offset program ends the loop.
+    Ensure a result the ODB reports as cut short fails instead of dropping
+    programs.
     """
     graphql.get_scheduler_programs = mocker.AsyncMock(
-        side_effect=[
-            _programs_page(["p-1", "p-2"], has_more=True),
-            _programs_page(["p-2"], has_more=True),
-        ]
+        return_value=_programs_page(["p-1"], has_more=True)
     )
 
-    result = await scheduler_domain.get_programs(page_size=2)
-
-    assert [p.id for p in result.programs.matches] == ["p-1", "p-2"]
-    assert graphql.get_scheduler_programs.await_count == 2
-
-
-@pytest.mark.asyncio
-async def test_get_programs_rejects_page_size_below_two(
-    scheduler_domain: SchedulerDomain,
-) -> None:
-    """
-    Ensure a page size that could never advance the offset is refused.
-    """
-    with pytest.raises(ValueError, match="page_size"):
-        await scheduler_domain.get_programs(page_size=1)
+    with pytest.raises(GPPClientError, match="programs"):
+        await scheduler_domain.get_programs(programs_list=programs_list)
 
 
 @pytest.mark.asyncio
