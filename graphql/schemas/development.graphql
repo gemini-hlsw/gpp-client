@@ -3482,6 +3482,20 @@ type Mutation {
   """Set the allocations for a program."""
   setAllocations(input: SetAllocationsInput!): SetAllocationsResult!
 
+  """
+  Sets, or updates, a partner's TAC feedback for a program.  Feedback may only
+  be provided by partners with a non-zero time split in the proposal.  NGO users
+  may only set feedback for their own partner, and only for programs they can
+  read.
+  """
+  setTacFeedback(input: SetTacFeedbackInput!): TacFeedbackResult!
+
+  """
+  Deletes a partner's TAC feedback for a program.  NGO users may only delete
+  feedback for their own partner, and only for programs they can read.
+  """
+  deleteTacFeedback(input: DeleteTacFeedbackInput!): DeleteTacFeedbackResult!
+
   """Set the name of the guide target for an observation."""
   setGuideTargetName(input: SetGuideTargetNameInput!): SetGuideTargetNameResult!
 
@@ -4160,6 +4174,15 @@ type PartnerSplit {
   Percentage of requested time that should be associated with the partner.
   """
   percent: IntPercent!
+
+  """
+  The partner lead: the investigator the partner contacts during ITAC.  Each
+  partner with requested time needs a lead before the proposal can be submitted.
+  The lead is an investigator affiliated with the partner, and the PI is always
+  the lead of the PI's own partner (a non-partner PI leads US).  Null until a
+  lead is assigned, and always null for a partner without requested time.
+  """
+  lead: ProgramUser
 }
 
 """
@@ -4173,6 +4196,16 @@ input PartnerSplitInput {
   Percentage of requested time that should be associated with the partner.
   """
   percent: IntPercent!
+
+  """
+  The partner lead, which must be an investigator affiliated with the partner
+  (and must be the PI for the PI's own partner).  When omitted, the current
+  lead is kept while still eligible.  When null, the current lead is discarded.
+  Either way, a lead that needs no choice is assigned automatically: the PI for
+  the PI's own partner, and otherwise the only eligible investigator.  Ignored
+  for a partner without requested time.
+  """
+  leadId: ProgramUserId
 }
 
 """
@@ -4390,6 +4423,12 @@ type ProgramUser {
   This property is only meaningful for classical proposals.
   """
   classicalVisitor: Boolean!
+
+  """
+  Whether this investigator is the partner lead for their partner (see
+  `PartnerSplit.lead`).
+  """
+  isPartnerLead: Boolean!
 
   """
   Name created preferentially from the fields of the preferred profile, falling back
@@ -5353,9 +5392,8 @@ input DaytimeCalibrationInput {
 
   """
   Calibration sets, in order.  On an edit the whole list is replaced; omit it
-  to keep the existing rows.  Rows may only be set for GMOS_NORTH, GMOS_SOUTH
-  and FLAMINGOS2, and are rejected once the sequence has been materialized
-  (first visit or a hand edit).
+  to keep the existing rows.  Rows are rejected once the sequence has been
+  materialized (first visit or a hand edit).
   """
   calibrationSets: [CalibrationSetInput!]
 }
@@ -5416,6 +5454,12 @@ type CalibrationSet {
 
   """IGRINS-2 setup, when the instrument is IGRINS-2."""
   igrins2: Igrins2Dynamic
+
+  """GNIRS setup, when the instrument is GNIRS."""
+  gnirs: GnirsDynamic
+
+  """GHOST setup, when the instrument is GHOST."""
+  ghost: GhostDynamic
 }
 
 """GCAL configuration of a flat or arc calibration set."""
@@ -5451,6 +5495,8 @@ input CalibrationSetInput {
   gmosSouth: GmosSouthDynamicInput
   flamingos2: Flamingos2DynamicInput
   igrins2: Igrins2DynamicInput
+  gnirs: GnirsDynamicInput
+  ghost: GhostDynamicInput
 }
 
 """
@@ -5528,6 +5574,18 @@ input SetAllocationsInput {
 
 type SetAllocationsResult {
   allocations: [Allocation!]!
+}
+
+"""
+Sets or updates the TAC feedback of a single partner for a program, which must
+have a proposal in which the partner has a non-zero time split. One of
+programId, programReference or proposalReference is required. (If two or more are provided, they must refer to the same program.)
+"""
+input SetTacFeedbackInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+  tacFeedback: TacFeedbackInput!
 }
 
 type SetupTime {
@@ -9202,6 +9260,19 @@ type Flamingos2LongSlitAcquisition {
   The exposure time mode used for ITC lookup for the acquisition sequence.
   """
   exposureTimeMode: ExposureTimeMode!
+
+  """
+  An explicitly specified acquisition type (if any). When null, the ITC
+  classifies the target: BRIGHT when it reaches a signal-to-noise of 10 in a
+  total exposure time of at most 2 seconds, FAINT otherwise.
+  """
+  explicitAcquisitionType: Flamingos2AcquisitionType
+
+  """
+  Where the sky frames of a FAINT acquisition are taken. Present exactly when
+  `explicitAcquisitionType` is FAINT.
+  """
+  skyOffset: Offset
 }
 
 """Flamingos2 Long Slit mode"""
@@ -9322,6 +9393,18 @@ input Flamingos2LongSlitAcquisitionInput {
   exposure time mode is used.
   """
   exposureTimeMode: ExposureTimeModeInput
+
+  """
+  An explicit acquisition type to use instead of the automatic one. It may be
+  unset by assigning a null value, or ignored by skipping it altogether.
+  """
+  explicitAcquisitionType: Flamingos2AcquisitionType
+
+  """
+  Where the sky frames of a FAINT acquisition are taken. Required when
+  `explicitAcquisitionType` is FAINT and not allowed otherwise.
+  """
+  skyOffset: OffsetInput
 }
 
 """Edit or create Flamingos2 Long Slit advanced configuration"""
@@ -9406,6 +9489,18 @@ type Flamingos2MosAcquisition {
 
   """The Time & Count exposure time mode used for the acquisition sequence."""
   exposureTimeMode: ExposureTimeMode!
+
+  """
+  An explicitly specified acquisition type (if any). When null, the acquisition
+  is FAINT: the brightness of the mask's acquisition stars is unknown.
+  """
+  explicitAcquisitionType: Flamingos2AcquisitionType
+
+  """
+  Where the sky frames of a FAINT acquisition are taken. Present exactly when
+  `explicitAcquisitionType` is FAINT.
+  """
+  skyOffset: Offset
 }
 
 """
@@ -9428,6 +9523,18 @@ input Flamingos2MosAcquisitionInput {
   default is 5 seconds with a count of 1.
   """
   exposureTimeMode: ExposureTimeModeInput
+
+  """
+  An explicit acquisition type to use instead of the automatic one. It may be
+  unset by assigning a null value, or ignored by skipping it altogether.
+  """
+  explicitAcquisitionType: Flamingos2AcquisitionType
+
+  """
+  Where the sky frames of a FAINT acquisition are taken. Required when
+  `explicitAcquisitionType` is FAINT and not allowed otherwise.
+  """
+  skyOffset: OffsetInput
 }
 
 """
@@ -11009,6 +11116,9 @@ enum GmosNorthBuiltinFpu {
 
   """GmosNorthBuiltinFpu IfuRed"""
   IFU_RED
+
+  """GmosNorthBuiltinFpu Pinhole"""
+  PINHOLE
 }
 
 """GMOS North Filter"""
@@ -11713,6 +11823,9 @@ enum GmosSouthBuiltinFpu {
 
   """GmosSouthBuiltinFpu IfuNSRed"""
   IFU_NS_RED
+
+  """GmosSouthBuiltinFpu Pinhole"""
+  PINHOLE
 }
 
 """GMOS South Filter"""
@@ -13877,6 +13990,15 @@ enum GnirsWellDepth {
 }
 
 """
+Flamingos 2 acquisition type. A FAINT acquisition subtracts sky frames, a BRIGHT
+one does not.
+"""
+enum Flamingos2AcquisitionType {
+  BRIGHT
+  FAINT
+}
+
+"""
 GNIRS acquisition target brightness classification, derived from the
 acquisition exposure time (VeryBright < 1 s, Bright ≤ 10 s, Faint > 10 s).
 """
@@ -15779,6 +15901,11 @@ type Program {
 
   """All partner time allocations."""
   allocations: [Allocation!]!
+
+  """
+  TAC feedback from each partner that has provided it, ordered by partner.
+  """
+  tacFeedback: [TacFeedback!]!
 
   """Calibration role of the program"""
   calibrationRole: CalibrationRole
@@ -18164,6 +18291,102 @@ enum TacCategory {
 
   """TacCategory ExtragalacticOther"""
   EXTRAGALACTIC_OTHER
+}
+
+"""A partner's TAC (Time Allocation Committee) feedback for a program."""
+type TacFeedback {
+  """The partner whose TAC provided the feedback."""
+  partner: Partner!
+
+  """The partner TAC's decision."""
+  decision: TacPartnerDecision!
+
+  """The partner TAC's ranking of the proposal."""
+  ranking: PosBigDecimal!
+
+  """
+  The time recommended by the partner TAC, at most one entry per science band,
+  sorted by band.  Empty if the partner TAC recommends no time.
+  """
+  recommendedTimes: [TacRecommendedTime!]!
+
+  """The partner TAC's comments, if any."""
+  comments: NonEmptyString
+}
+
+"""
+A partner's TAC feedback input.  When the partner has no feedback yet for the
+program, the decision and ranking are required.  Otherwise, omitted fields keep
+their existing values.  The decision, ranking and recommended times may not be
+set to null.  Comments are optional, and setting them to null removes any
+existing comments.
+"""
+input TacFeedbackInput {
+  partner: Partner!
+  decision: TacPartnerDecision
+  ranking: PosBigDecimal
+
+  """
+  The time recommended for each science band.  Each band may appear at most
+  once.  When supplied, the list (even an empty one) replaces all existing
+  recommended times.  When omitted, existing recommended times are kept, or
+  none are recorded for new feedback.
+  """
+  recommendedTimes: [TacRecommendedTimeInput!]
+  comments: NonEmptyString
+}
+
+"""
+Deletes the TAC feedback of a single partner for a program. One of programId,
+programReference or proposalReference is required. (If two or more are
+provided, they must refer to the same program.)
+"""
+input DeleteTacFeedbackInput {
+  programId: ProgramId
+  proposalReference: ProposalReferenceLabel
+  programReference: ProgramReferenceLabel
+
+  """The partner whose TAC feedback should be deleted."""
+  partner: Partner!
+}
+
+"""The result of deleting TAC feedback."""
+type DeleteTacFeedbackResult {
+  """`true` if TAC feedback was deleted, `false` otherwise."""
+  result: Boolean!
+}
+
+"""The result of setting TAC feedback."""
+type TacFeedbackResult {
+  """The TAC feedback, as updated."""
+  tacFeedback: TacFeedback!
+}
+
+"""A partner TAC's decision on a proposal."""
+enum TacPartnerDecision {
+  """The proposal was accepted."""
+  ACCEPTED
+
+  """The proposal was rejected."""
+  REJECTED
+}
+
+"""The time recommended by a partner TAC for a science band."""
+type TacRecommendedTime {
+  """The science band for which the time is recommended."""
+  band: ScienceBand!
+
+  """The time recommended for this band."""
+  time: TimeSpan!
+}
+
+"""The time recommended by a partner TAC for a science band."""
+input TacRecommendedTimeInput {
+  """The science band for which the time is recommended."""
+  band: ScienceBand!
+
+  """The time recommended for this band."""
+  time: TimeSpanInput!
 }
 
 """Target disposition"""
@@ -21792,6 +22015,7 @@ enum ObservationWorkflowState {
   DEFINED
   READY
   ONGOING
+  SUSPENDED
   COMPLETED
 }
 

@@ -2471,6 +2471,30 @@ class StepRecordSelectResultGraphQLField(GraphQLField):
         return self
 
 
+class TacFeedbackGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TacFeedbackGraphQLField":
+        self._alias = alias
+        return self
+
+
+class DeleteTacFeedbackResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "DeleteTacFeedbackResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class TacFeedbackResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TacFeedbackResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class TacRecommendedTimeGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "TacRecommendedTimeGraphQLField":
+        self._alias = alias
+        return self
+
+
 class TargetGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "TargetGraphQLField":
         self._alias = alias

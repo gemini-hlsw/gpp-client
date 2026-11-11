@@ -27,6 +27,7 @@ from .custom_fields import (
     DeleteProgramUserResultFields,
     DeleteProposalResultFields,
     DeleteSequenceResultFields,
+    DeleteTacFeedbackResultFields,
     EmailFields,
     InsertSmartGcalResultFields,
     LinkUserResultFields,
@@ -53,6 +54,7 @@ from .custom_fields import (
     SetProgramReferenceResultFields,
     SetProgramResourceLimitResultFields,
     SetProposalStatusResultFields,
+    TacFeedbackResultFields,
     UnlinkUserResultFields,
     UpdateAsterismsResultFields,
     UpdateAttachmentsResultFields,
@@ -94,6 +96,7 @@ from .input_types import (
     DeleteProgramUserInput,
     DeleteProposalInput,
     DeleteSequenceInput,
+    DeleteTacFeedbackInput,
     InsertSmartGcalInput,
     LinkUserInput,
     RecordDatasetInput,
@@ -119,6 +122,7 @@ from .input_types import (
     SetProgramReferenceInput,
     SetProgramResourceLimitInput,
     SetProposalStatusInput,
+    SetTacFeedbackInput,
     UnlinkUserInput,
     UpdateAsterismsInput,
     UpdateAttachmentsInput,
@@ -775,6 +779,38 @@ class Mutation:
         }
         return SetAllocationsResultFields(
             field_name="setAllocations", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def set_tac_feedback(cls, input: SetTacFeedbackInput) -> TacFeedbackResultFields:
+        """Sets, or updates, a partner's TAC feedback for a program.  Feedback may only
+        be provided by partners with a non-zero time split in the proposal.  NGO users
+        may only set feedback for their own partner, and only for programs they can
+        read."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "SetTacFeedbackInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return TacFeedbackResultFields(
+            field_name="setTacFeedback", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def delete_tac_feedback(
+        cls, input: DeleteTacFeedbackInput
+    ) -> DeleteTacFeedbackResultFields:
+        """Deletes a partner's TAC feedback for a program.  NGO users may only delete
+        feedback for their own partner, and only for programs they can read."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "DeleteTacFeedbackInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return DeleteTacFeedbackResultFields(
+            field_name="deleteTacFeedback", arguments=cleared_arguments
         )
 
     @classmethod

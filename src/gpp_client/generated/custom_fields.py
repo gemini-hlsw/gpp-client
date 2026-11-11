@@ -114,6 +114,7 @@ from .custom_typing_fields import (
     DeleteProgramUserResultGraphQLField,
     DeleteProposalResultGraphQLField,
     DeleteSequenceResultGraphQLField,
+    DeleteTacFeedbackResultGraphQLField,
     DemoScienceGraphQLField,
     DetectorEstimateGraphQLField,
     DirectorsTimeGraphQLField,
@@ -386,6 +387,9 @@ from .custom_typing_fields import (
     SubaruProposalTypeGraphQLField,
     SystemProgramReferenceGraphQLField,
     SystemVerificationGraphQLField,
+    TacFeedbackGraphQLField,
+    TacFeedbackResultGraphQLField,
+    TacRecommendedTimeGraphQLField,
     TargetEnvironmentGraphQLField,
     TargetGraphQLField,
     TargetGroupGraphQLField,
@@ -1765,14 +1769,26 @@ class CalibrationSetFields(GraphQLField):
         """IGRINS-2 setup, when the instrument is IGRINS-2."""
         return Igrins2DynamicFields("igrins2")
 
+    @classmethod
+    def gnirs(cls) -> "GnirsDynamicFields":
+        """GNIRS setup, when the instrument is GNIRS."""
+        return GnirsDynamicFields("gnirs")
+
+    @classmethod
+    def ghost(cls) -> "GhostDynamicFields":
+        """GHOST setup, when the instrument is GHOST."""
+        return GhostDynamicFields("ghost")
+
     def fields(
         self,
         *subfields: Union[
             CalibrationSetGraphQLField,
             "CalibrationSetGcalFields",
             "Flamingos2DynamicFields",
+            "GhostDynamicFields",
             "GmosNorthDynamicFields",
             "GmosSouthDynamicFields",
+            "GnirsDynamicFields",
             "Igrins2DynamicFields",
         ],
     ) -> "CalibrationSetFields":
@@ -3886,6 +3902,26 @@ class DeleteSequenceResultFields(GraphQLField):
         return self
 
 
+class DeleteTacFeedbackResultFields(GraphQLField):
+    """The result of deleting TAC feedback."""
+
+    result: "DeleteTacFeedbackResultGraphQLField" = DeleteTacFeedbackResultGraphQLField(
+        "result"
+    )
+    "`true` if TAC feedback was deleted, `false` otherwise."
+
+    def fields(
+        self, *subfields: DeleteTacFeedbackResultGraphQLField
+    ) -> "DeleteTacFeedbackResultFields":
+        """Subfields should come from the DeleteTacFeedbackResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "DeleteTacFeedbackResultFields":
+        self._alias = alias
+        return self
+
+
 class DemoScienceFields(GraphQLField):
     """Proposal properties for Demo Science CallForProposals."""
 
@@ -5132,10 +5168,23 @@ class Flamingos2LongSlitAcquisitionFields(GraphQLField):
         """The exposure time mode used for ITC lookup for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
+    explicit_acquisition_type: "Flamingos2LongSlitAcquisitionGraphQLField" = (
+        Flamingos2LongSlitAcquisitionGraphQLField("explicitAcquisitionType")
+    )
+    "An explicitly specified acquisition type (if any). When null, the ITC\nclassifies the target: BRIGHT when it reaches a signal-to-noise of 10 in a\ntotal exposure time of at most 2 seconds, FAINT otherwise."
+
+    @classmethod
+    def sky_offset(cls) -> "OffsetFields":
+        """Where the sky frames of a FAINT acquisition are taken. Present exactly when
+        `explicitAcquisitionType` is FAINT."""
+        return OffsetFields("skyOffset")
+
     def fields(
         self,
         *subfields: Union[
-            Flamingos2LongSlitAcquisitionGraphQLField, "ExposureTimeModeFields"
+            Flamingos2LongSlitAcquisitionGraphQLField,
+            "ExposureTimeModeFields",
+            "OffsetFields",
         ],
     ) -> "Flamingos2LongSlitAcquisitionFields":
         """Subfields should come from the Flamingos2LongSlitAcquisitionFields class"""
@@ -5279,10 +5328,23 @@ class Flamingos2MosAcquisitionFields(GraphQLField):
         """The Time & Count exposure time mode used for the acquisition sequence."""
         return ExposureTimeModeFields("exposureTimeMode")
 
+    explicit_acquisition_type: "Flamingos2MosAcquisitionGraphQLField" = (
+        Flamingos2MosAcquisitionGraphQLField("explicitAcquisitionType")
+    )
+    "An explicitly specified acquisition type (if any). When null, the acquisition\nis FAINT: the brightness of the mask's acquisition stars is unknown."
+
+    @classmethod
+    def sky_offset(cls) -> "OffsetFields":
+        """Where the sky frames of a FAINT acquisition are taken. Present exactly when
+        `explicitAcquisitionType` is FAINT."""
+        return OffsetFields("skyOffset")
+
     def fields(
         self,
         *subfields: Union[
-            Flamingos2MosAcquisitionGraphQLField, "ExposureTimeModeFields"
+            Flamingos2MosAcquisitionGraphQLField,
+            "ExposureTimeModeFields",
+            "OffsetFields",
         ],
     ) -> "Flamingos2MosAcquisitionFields":
         """Subfields should come from the Flamingos2MosAcquisitionFields class"""
@@ -9166,13 +9228,30 @@ class GroupProgressFields(GraphQLField):
     completes where its charge ends, as in its visits'
     `timeChargeInvoice.interval`.  The charge end is recorded some time after the
     fact (the charge runs until the next chargeable visit at the site starts or the
-    night ends), and until then the observation completes at its slew."""
+    night ends), and until then the observation completes at its slew.
+
+    A complete observation whose QA state (see `ObservationQa.state`) is `USABLE`
+    or `FAIL` is rejected: it never counts as complete, and it isn't checked
+    against the group's constraints.  One not yet assessed counts, including one
+    with some datasets still unassessed: until a person settles its QA state, an
+    observation is assumed to be good, so that group progress never sends the
+    scheduler back into a group without a QA decision.  The calibrations in a
+    per-observation calibration group go with their science observation: they are
+    left out when it is, and rejected when it is.  A subgroup with only rejected
+    elements is itself rejected.  A group with no `minimumRequired` requires all of
+    its elements, rejected ones included, so it is `UNSCHEDULABLE` until a minimum
+    is set.  With a minimum, rejected elements are left out, and a replacement (a
+    new observation) may take a rejected one's place.  A rejection can still break
+    the group's time constraints (its intervals, same night, or observations per
+    night), or the order of an ordered group whose later elements are already
+    complete, since the completions left are checked without it, and a replacement
+    observed later can't undo that."""
 
     status: "GroupProgressGraphQLField" = GroupProgressGraphQLField("status")
     completed: "GroupProgressGraphQLField" = GroupProgressGraphQLField("completed")
     "The number of the group's complete elements that count toward it, a subgroup\ncounting as one element.  An ordered group's elements after the first\n`required` don't count, nor do an unordered group's completions after it is\ncomplete.  Always zero while empty or pending, and fewer than `required` while\nongoing, except in a group with a minimum observations per night whose night\nin progress is short of it and may still take an extra observation."
     required: "GroupProgressGraphQLField" = GroupProgressGraphQLField("required")
-    "The number of elements the group requires: its `minimumRequired`, or every\nviable (non-inactive) element when that is unset.  Zero only when empty."
+    "The number of elements the group requires: its `minimumRequired`, or, when\nthat is unset, every element that isn't left out (see `GroupStatus.EMPTY`),\nrejected ones included.  Zero only when empty."
 
     @classmethod
     def next_window(cls) -> "GroupWindowFields":
@@ -11635,7 +11714,18 @@ class PartnerSplitFields(GraphQLField):
     percent: "PartnerSplitGraphQLField" = PartnerSplitGraphQLField("percent")
     "Percentage of requested time that should be associated with the partner."
 
-    def fields(self, *subfields: PartnerSplitGraphQLField) -> "PartnerSplitFields":
+    @classmethod
+    def lead(cls) -> "ProgramUserFields":
+        """The partner lead: the investigator the partner contacts during ITAC.  Each
+        partner with requested time needs a lead before the proposal can be submitted.
+        The lead is an investigator affiliated with the partner, and the PI is always
+        the lead of the PI's own partner (a non-partner PI leads US).  Null until a
+        lead is assigned, and always null for a partner without requested time."""
+        return ProgramUserFields("lead")
+
+    def fields(
+        self, *subfields: Union[PartnerSplitGraphQLField, "ProgramUserFields"]
+    ) -> "PartnerSplitFields":
         """Subfields should come from the PartnerSplitFields class"""
         self._subfields.extend(subfields)
         return self
@@ -11891,6 +11981,11 @@ class ProgramFields(GraphQLField):
         """All partner time allocations."""
         return AllocationFields("allocations")
 
+    @classmethod
+    def tac_feedback(cls) -> "TacFeedbackFields":
+        """TAC feedback from each partner that has provided it, ordered by partner."""
+        return TacFeedbackFields("tacFeedback")
+
     calibration_role: "ProgramGraphQLField" = ProgramGraphQLField("calibrationRole")
     "Calibration role of the program"
 
@@ -11946,6 +12041,7 @@ class ProgramFields(GraphQLField):
             "ProgramUserFields",
             "ProposalFields",
             "ProposalSummaryGenerationFields",
+            "TacFeedbackFields",
             "UserInvitationFields",
         ],
     ) -> "ProgramFields":
@@ -12113,6 +12209,10 @@ class ProgramUserFields(GraphQLField):
         "classicalVisitor"
     )
     "Whether this investigator will visit to carry out the observations.\nThis property is only meaningful for classical proposals."
+    is_partner_lead: "ProgramUserGraphQLField" = ProgramUserGraphQLField(
+        "isPartnerLead"
+    )
+    "Whether this investigator is the partner lead for their partner (see\n`PartnerSplit.lead`)."
     display_name: "ProgramUserGraphQLField" = ProgramUserGraphQLField("displayName")
     "Name created preferentially from the fields of the preferred profile, falling back\nto the Orcid profile if the preferred fields are not set."
     email: "ProgramUserGraphQLField" = ProgramUserGraphQLField("email")
@@ -14518,6 +14618,80 @@ class SystemVerificationFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "SystemVerificationFields":
+        self._alias = alias
+        return self
+
+
+class TacFeedbackFields(GraphQLField):
+    """A partner's TAC (Time Allocation Committee) feedback for a program."""
+
+    partner: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("partner")
+    "The partner whose TAC provided the feedback."
+    decision: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("decision")
+    "The partner TAC's decision."
+    ranking: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("ranking")
+    "The partner TAC's ranking of the proposal."
+
+    @classmethod
+    def recommended_times(cls) -> "TacRecommendedTimeFields":
+        """The time recommended by the partner TAC, at most one entry per science band,
+        sorted by band.  Empty if the partner TAC recommends no time."""
+        return TacRecommendedTimeFields("recommendedTimes")
+
+    comments: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("comments")
+    "The partner TAC's comments, if any."
+
+    def fields(
+        self, *subfields: Union[TacFeedbackGraphQLField, "TacRecommendedTimeFields"]
+    ) -> "TacFeedbackFields":
+        """Subfields should come from the TacFeedbackFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TacFeedbackFields":
+        self._alias = alias
+        return self
+
+
+class TacFeedbackResultFields(GraphQLField):
+    """The result of setting TAC feedback."""
+
+    @classmethod
+    def tac_feedback(cls) -> "TacFeedbackFields":
+        """The TAC feedback, as updated."""
+        return TacFeedbackFields("tacFeedback")
+
+    def fields(
+        self, *subfields: Union[TacFeedbackResultGraphQLField, "TacFeedbackFields"]
+    ) -> "TacFeedbackResultFields":
+        """Subfields should come from the TacFeedbackResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TacFeedbackResultFields":
+        self._alias = alias
+        return self
+
+
+class TacRecommendedTimeFields(GraphQLField):
+    """The time recommended by a partner TAC for a science band."""
+
+    band: "TacRecommendedTimeGraphQLField" = TacRecommendedTimeGraphQLField("band")
+    "The science band for which the time is recommended."
+
+    @classmethod
+    def time(cls) -> "TimeSpanFields":
+        """The time recommended for this band."""
+        return TimeSpanFields("time")
+
+    def fields(
+        self, *subfields: Union[TacRecommendedTimeGraphQLField, "TimeSpanFields"]
+    ) -> "TacRecommendedTimeFields":
+        """Subfields should come from the TacRecommendedTimeFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "TacRecommendedTimeFields":
         self._alias = alias
         return self
 
