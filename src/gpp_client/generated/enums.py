@@ -794,6 +794,7 @@ class GmosNorthBuiltinFpu(str, Enum):
     IFU2_SLITS = "IFU2_SLITS"
     IFU_BLUE = "IFU_BLUE"
     IFU_RED = "IFU_RED"
+    PINHOLE = "PINHOLE"
 
 
 class GmosNorthFilter(str, Enum):
@@ -874,6 +875,7 @@ class GmosSouthBuiltinFpu(str, Enum):
     IFU_NS2_SLITS = "IFU_NS2_SLITS"
     IFU_NS_BLUE = "IFU_NS_BLUE"
     IFU_NS_RED = "IFU_NS_RED"
+    PINHOLE = "PINHOLE"
 
 
 class GmosSouthFilter(str, Enum):
@@ -1086,6 +1088,11 @@ class GnirsReadMode(str, Enum):
 class GnirsWellDepth(str, Enum):
     SHALLOW = "SHALLOW"
     DEEP = "DEEP"
+
+
+class Flamingos2AcquisitionType(str, Enum):
+    BRIGHT = "BRIGHT"
+    FAINT = "FAINT"
 
 
 class GnirsAcquisitionType(str, Enum):
@@ -1537,6 +1544,11 @@ class TacCategory(str, Enum):
     EXTRAGALACTIC_OTHER = "EXTRAGALACTIC_OTHER"
 
 
+class TacPartnerDecision(str, Enum):
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+
+
 class TargetDisposition(str, Enum):
     SCIENCE = "SCIENCE"
     CALIBRATION = "CALIBRATION"
@@ -1603,4 +1615,5 @@ class ObservationWorkflowState(str, Enum):
     DEFINED = "DEFINED"
     READY = "READY"
     ONGOING = "ONGOING"
+    SUSPENDED = "SUSPENDED"
     COMPLETED = "COMPLETED"

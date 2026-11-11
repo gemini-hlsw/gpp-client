@@ -5,9 +5,10 @@ Module for retrieving scheduler information.
 __all__ = ["SchedulerDomain"]
 
 from datetime import datetime
-from typing import Any, AsyncIterator, Awaitable, Callable
+from typing import Any, AsyncIterator, Iterator
 
 from gpp_client.domains.base import BaseDomain
+from gpp_client.exceptions import GPPClientError
 from gpp_client.rest.models import VisibilityChanges, parse_visibility_changes
 from gpp_client.generated import (
     SchedulerObservationsUpdates,
@@ -25,14 +26,57 @@ from gpp_client.generated.input_types import (
     ObservationWorkflowState,
     WhereCalculatedObservationWorkflow,
     WhereObservation,
+    WhereOrderObservationId,
     WhereOrderObservationWorkflowState,
-    WhereOrderProgramId,
-    WhereProgram,
 )
 
-# Each program carries its full group tree, so large pages are heavy for the ODB.
-PROGRAMS_PAGE_SIZE = 1000
-OBSERVATIONS_PAGE_SIZE = 1000
+# The ODB returns at most this many matches per select. Asking for at most this
+# many IDs at a time means a batch can never be cut short.
+ID_BATCH_SIZE = 1000
+
+
+def _id_batches(ids: list[str]) -> Iterator[list[str]]:
+    """
+    Split IDs into batches no larger than the ODB select cap, dropping repeats.
+
+    Parameters
+    ----------
+    ids : list[str]
+        IDs to split, in the order to query them.
+
+    Yields
+    ------
+    list[str]
+        The next batch of at most ``ID_BATCH_SIZE`` unique IDs.
+    """
+    unique = list(dict.fromkeys(ids))
+    for start in range(0, len(unique), ID_BATCH_SIZE):
+        yield unique[start : start + ID_BATCH_SIZE]
+
+
+def _require_complete(result: Any, what: str) -> None:
+    """
+    Fail when the ODB says it left matches out.
+
+    Parameters
+    ----------
+    result : Any
+        Select result with ``matches`` and ``has_more``.
+    what : str
+        Plural name of the selected items, for the message.
+
+    Raises
+    ------
+    GPPClientError
+        If ``result.has_more`` is set.
+    """
+    # The scheduler must see every observation. A partial answer is worse than
+    # no answer, so stop instead of returning it.
+    if result.has_more:
+        raise GPPClientError(
+            f"ODB returned {len(result.matches)} {what} and reported more that "
+            "were left out; refusing to return an incomplete result."
+        )
 
 
 class SchedulerDomain(BaseDomain):
@@ -40,68 +84,23 @@ class SchedulerDomain(BaseDomain):
     Domain for retrieving scheduler information.
     """
 
-    @staticmethod
-    async def _fetch_all_pages(
-        fetch_page: Callable[[str | None, int], Awaitable[Any]],
-        page_size: int,
-    ) -> list[Any]:
-        """
-        Walk an ``OFFSET``/``LIMIT`` selection one page at a time and return
-        every match.
-
-        Parameters
-        ----------
-        fetch_page : Callable[[str | None, int], Awaitable[Any]]
-            Coroutine taking ``offset`` and ``limit`` and returning a select
-            result with ``matches`` and ``has_more``.
-        page_size : int
-            Number of matches requested per page. Must be at least 2.
-
-        Returns
-        -------
-        list[Any]
-            Every match across all pages, without repeats.
-
-        Raises
-        ------
-        ValueError
-            If ``page_size`` is lower than 2.
-        """
-        # OFFSET is inclusive, so every page after the first repeats the previous
-        # page's last match. A page of 1 would never advance.
-        if page_size < 2:
-            raise ValueError(f"page_size must be at least 2, got {page_size}.")
-
-        matches = []
-        offset = None
-        while True:
-            result = await fetch_page(offset, page_size)
-            page_matches = result.matches
-            if offset is not None and page_matches and page_matches[0].id == offset:
-                page_matches = page_matches[1:]
-            matches.extend(page_matches)
-
-            if not result.has_more or not page_matches:
-                return matches
-            offset = page_matches[-1].id
-
     async def get_programs(
         self,
         *,
         programs_list: list[str] | None = None,
-        page_size: int = PROGRAMS_PAGE_SIZE,
     ) -> GetSchedulerPrograms:
         """
-        Get active scheduler programs, fetching every page so the result reads
-        as a single query.
+        Get active scheduler programs.
+
+        Given a list, the IDs are queried in batches that the ODB can always
+        answer in full, so every active program in the list comes back. Without
+        a list, all active programs come from a single query.
 
         Parameters
         ----------
         programs_list : list[str] | None, optional
             Optional list of program IDs to restrict the result set. Inactive
             programs in the list are left out.
-        page_size : int, optional
-            Number of programs requested per page. Must be at least 2.
 
         Returns
         -------
@@ -110,17 +109,19 @@ class SchedulerDomain(BaseDomain):
 
         Raises
         ------
-        ValueError
-            If ``page_size`` is lower than 2.
+        GPPClientError
+            If the ODB reports matches it did not return.
         """
+        if programs_list is None:
+            response = await self._graphql.get_scheduler_programs(programs_list=None)
+            _require_complete(response.programs, "programs")
+            return response
 
-        async def fetch_page(offset: str | None, limit: int) -> Any:
-            page = await self._graphql.get_scheduler_programs(
-                programs_list=programs_list, offset=offset, limit=limit
-            )
-            return page.programs
-
-        matches = await self._fetch_all_pages(fetch_page, page_size)
+        matches = []
+        for batch in _id_batches(programs_list):
+            response = await self._graphql.get_scheduler_programs(programs_list=batch)
+            _require_complete(response.programs, "programs")
+            matches.extend(response.programs.matches)
         return GetSchedulerPrograms(
             programs=GetSchedulerProgramsPrograms(matches=matches, has_more=False)
         )
@@ -288,6 +289,11 @@ class SchedulerDomain(BaseDomain):
         -------
         list[dict[str, Any]]
             A list of dictionaries representing the programs and their elements.
+
+        Raises
+        ------
+        GPPClientError
+            If the ODB reports programs or observations it did not return.
         """
 
         if not programs_list:
@@ -339,39 +345,35 @@ class SchedulerDomain(BaseDomain):
                     pass
             program["root"] = root
 
-        where_observation = WhereObservation(
-            program=WhereProgram(
-                id=WhereOrderProgramId(in_=[p["id"] for p in programs])
-            ),
-            workflow=WhereCalculatedObservationWorkflow(
-                workflow_state=WhereOrderObservationWorkflowState(
-                    in_=[
-                        ObservationWorkflowState.READY,
-                        ObservationWorkflowState.ONGOING,
-                    ]
-                )
-            ),
-            observing_mode_type=WhereOptionEqObservingModeType(
-                is_null=False,
-            ),
-        )
-
-        # Get observation data, only once every program page is in.
-        async def fetch_observations_page(offset: str | None, limit: int) -> Any:
-            page = await self._graphql.get_observations(
-                where=where_observation,
-                offset=offset,
-                limit=limit,
+        tree_obs_ids = [
+            g["observation"]["id"]
+            for program in programs
+            for g in program["all_group_elements"]
+            if g.get("observation")
+        ]
+        obs_mapping = {}
+        # Query on 1000 observation ids (max pagination limit)
+        for batch in _id_batches(tree_obs_ids):
+            obs_response = await self._graphql.get_observations(
+                where=WhereObservation(
+                    id=WhereOrderObservationId(in_=batch),
+                    workflow=WhereCalculatedObservationWorkflow(
+                        workflow_state=WhereOrderObservationWorkflowState(
+                            in_=[
+                                ObservationWorkflowState.READY,
+                                ObservationWorkflowState.ONGOING,
+                            ]
+                        )
+                    ),
+                    observing_mode_type=WhereOptionEqObservingModeType(
+                        is_null=False,
+                    ),
+                ),
                 include_deleted=False,
             )
-            return page.observations
-
-        obs_matches = await self._fetch_all_pages(
-            fetch_observations_page, OBSERVATIONS_PAGE_SIZE
-        )
-        obs_mapping = {
-            o.id: self._move_timing_windows_to_root(o.model_dump()) for o in obs_matches
-        }
+            _require_complete(obs_response.observations, "observations")
+            for o in obs_response.observations.matches:
+                obs_mapping[o.id] = self._move_timing_windows_to_root(o.model_dump())
 
         # Get sequence for filtered observations (READY/ONGOING)
         if obs_mapping:

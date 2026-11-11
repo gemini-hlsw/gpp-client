@@ -35,6 +35,7 @@ from .enums import (
     ExecutionEventType,
     Existence,
     FieldLens,
+    Flamingos2AcquisitionType,
     Flamingos2CustomSlitWidth,
     Flamingos2Decker,
     Flamingos2Disperser,
@@ -141,6 +142,7 @@ from .enums import (
     SubaruCallForProposalsType,
     SubaruInstrument,
     TacCategory,
+    TacPartnerDecision,
     TargetDisposition,
     TelluricTag,
     TimeAccountingCategory,
@@ -1643,6 +1645,8 @@ class PartnerSplitInput(BaseModel):
     partner: Partner
     percent: Any
     "Percentage of requested time that should be associated with the partner."
+    lead_id: Optional[Any] = Field(alias=str("leadId"), default=None)
+    "The partner lead, which must be an investigator affiliated with the partner\n(and must be the PI for the PI's own partner).  When omitted, the current\nlead is kept while still eligible.  When null, the current lead is discarded.\nEither way, a lead that needs no choice is assigned automatically: the PI for\nthe PI's own partner, and otherwise the only eligible investigator.  Ignored\nfor a partner without requested time."
 
 
 class PosAngleConstraintInput(BaseModel):
@@ -2147,7 +2151,7 @@ class DaytimeCalibrationInput(BaseModel):
     calibration_sets: Optional[list["CalibrationSetInput"]] = Field(
         alias=str("calibrationSets"), default=None
     )
-    "Calibration sets, in order.  On an edit the whole list is replaced; omit it\nto keep the existing rows.  Rows may only be set for GMOS_NORTH, GMOS_SOUTH\nand FLAMINGOS2, and are rejected once the sequence has been materialized\n(first visit or a hand edit)."
+    "Calibration sets, in order.  On an edit the whole list is replaced; omit it\nto keep the existing rows.  Rows are rejected once the sequence has been\nmaterialized (first visit or a hand edit)."
 
 
 class CalibrationSetInput(BaseModel):
@@ -2171,6 +2175,8 @@ class CalibrationSetInput(BaseModel):
     igrins_2: Optional["Igrins2DynamicInput"] = Field(
         alias=str("igrins2"), default=None
     )
+    gnirs: Optional["GnirsDynamicInput"] = None
+    ghost: Optional["GhostDynamicInput"] = None
 
 
 class CalibrationSetGcalInput(BaseModel):
@@ -2227,6 +2233,21 @@ class SetAllocationsInput(BaseModel):
         alias=str("programReference"), default=None
     )
     allocations: list["AllocationInput"]
+
+
+class SetTacFeedbackInput(BaseModel):
+    """Sets or updates the TAC feedback of a single partner for a program, which must
+    have a proposal in which the partner has a non-zero time split. One of
+    programId, programReference or proposalReference is required. (If two or more are provided, they must refer to the same program.)"""
+
+    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    proposal_reference: Optional[Any] = Field(
+        alias=str("proposalReference"), default=None
+    )
+    program_reference: Optional[Any] = Field(
+        alias=str("programReference"), default=None
+    )
+    tac_feedback: "TacFeedbackInput" = Field(alias=str("tacFeedback"))
 
 
 class SetGuideTargetNameInput(BaseModel):
@@ -3092,6 +3113,12 @@ class Flamingos2LongSlitAcquisitionInput(BaseModel):
         alias=str("exposureTimeMode"), default=None
     )
     "Exposure time mode for the acquisition sequence.  If not specified, a default\nexposure time mode is used."
+    explicit_acquisition_type: Optional[Flamingos2AcquisitionType] = Field(
+        alias=str("explicitAcquisitionType"), default=None
+    )
+    "An explicit acquisition type to use instead of the automatic one. It may be\nunset by assigning a null value, or ignored by skipping it altogether."
+    sky_offset: Optional["OffsetInput"] = Field(alias=str("skyOffset"), default=None)
+    "Where the sky frames of a FAINT acquisition are taken. Required when\n`explicitAcquisitionType` is FAINT and not allowed otherwise."
 
 
 class Flamingos2LongSlitInput(BaseModel):
@@ -3147,6 +3174,12 @@ class Flamingos2MosAcquisitionInput(BaseModel):
         alias=str("exposureTimeMode"), default=None
     )
     "Exposure time mode for the acquisition sequence.  MOS acquisition must be\nTime & Count; a signal-to-noise mode is rejected.  If not specified, the\ndefault is 5 seconds with a count of 1."
+    explicit_acquisition_type: Optional[Flamingos2AcquisitionType] = Field(
+        alias=str("explicitAcquisitionType"), default=None
+    )
+    "An explicit acquisition type to use instead of the automatic one. It may be\nunset by assigning a null value, or ignored by skipping it altogether."
+    sky_offset: Optional["OffsetInput"] = Field(alias=str("skyOffset"), default=None)
+    "Where the sky frames of a FAINT acquisition are taken. Required when\n`explicitAcquisitionType` is FAINT and not allowed otherwise."
 
 
 class Flamingos2MosInput(BaseModel):
@@ -3919,6 +3952,48 @@ class CreateConfigurationRequestInput(BaseModel):
     set_: Optional["ConfigurationRequestProperties"] = Field(
         alias=str("SET"), default=None
     )
+
+
+class TacFeedbackInput(BaseModel):
+    """A partner's TAC feedback input.  When the partner has no feedback yet for the
+    program, the decision and ranking are required.  Otherwise, omitted fields keep
+    their existing values.  The decision, ranking and recommended times may not be
+    set to null.  Comments are optional, and setting them to null removes any
+    existing comments."""
+
+    partner: Partner
+    decision: Optional[TacPartnerDecision] = None
+    ranking: Optional[Any] = None
+    recommended_times: Optional[list["TacRecommendedTimeInput"]] = Field(
+        alias=str("recommendedTimes"), default=None
+    )
+    "The time recommended for each science band.  Each band may appear at most\nonce.  When supplied, the list (even an empty one) replaces all existing\nrecommended times.  When omitted, existing recommended times are kept, or\nnone are recorded for new feedback."
+    comments: Optional[Any] = None
+
+
+class DeleteTacFeedbackInput(BaseModel):
+    """Deletes the TAC feedback of a single partner for a program. One of programId,
+    programReference or proposalReference is required. (If two or more are
+    provided, they must refer to the same program.)"""
+
+    program_id: Optional[Any] = Field(alias=str("programId"), default=None)
+    proposal_reference: Optional[Any] = Field(
+        alias=str("proposalReference"), default=None
+    )
+    program_reference: Optional[Any] = Field(
+        alias=str("programReference"), default=None
+    )
+    partner: Partner
+    "The partner whose TAC feedback should be deleted."
+
+
+class TacRecommendedTimeInput(BaseModel):
+    """The time recommended by a partner TAC for a science band."""
+
+    band: ScienceBand
+    "The science band for which the time is recommended."
+    time: "TimeSpanInput"
+    "The time recommended for this band."
 
 
 class TimeChargeCorrectionInput(BaseModel):
@@ -6258,6 +6333,7 @@ CalibrationSetInput.model_rebuild()
 ExchangeInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
 SetAllocationsInput.model_rebuild()
+SetTacFeedbackInput.model_rebuild()
 SetProgramReferenceInput.model_rebuild()
 ProgramReferencePropertiesInput.model_rebuild()
 SiderealInput.model_rebuild()
@@ -6333,6 +6409,8 @@ TooTriggerEditInput.model_rebuild()
 WhereTooTrigger.model_rebuild()
 WhereTooTriggerChronicleEntry.model_rebuild()
 CreateConfigurationRequestInput.model_rebuild()
+TacFeedbackInput.model_rebuild()
+TacRecommendedTimeInput.model_rebuild()
 TimeChargeCorrectionInput.model_rebuild()
 WhereAngle.model_rebuild()
 WhereCallForProposals.model_rebuild()
