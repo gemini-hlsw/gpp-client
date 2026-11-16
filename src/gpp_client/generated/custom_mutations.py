@@ -783,10 +783,27 @@ class Mutation:
 
     @classmethod
     def set_tac_feedback(cls, input: SetTacFeedbackInput) -> TacFeedbackResultFields:
-        """Sets, or updates, a partner's TAC feedback for a program.  Feedback may only
-        be provided by partners with a non-zero time split in the proposal.  NGO users
-        may only set feedback for their own partner, and only for programs they can
-        read."""
+        """Sets, or updates, the TAC feedback of a time accounting category for a
+        program.  The program must have a proposal whose status is SUBMITTED.
+
+        For a category that belongs to a partner, the user must be staff or an NGO
+        user of that partner who can read the program.  The partner must have a
+        non-zero time split in the proposal or, when the proposal's call for
+        proposals is of type FAST_TURNAROUND or POOR_WEATHER, be the PI's partner.
+
+        Only staff may set feedback for the other categories, which are limited as
+        follows:
+
+        * CAL, ENG and CFHT never have TAC feedback.
+        * GT and LTP may provide feedback for any proposal.
+        * JP and KECK may provide feedback when the proposal requests time on behalf
+          of Subaru or Keck, respectively.
+        * DD, DS, LP and SV may provide feedback when the proposal's call for
+          proposals is of type DIRECTORS_TIME, DEMO_SCIENCE, LARGE_PROGRAM or
+          SYSTEM_VERIFICATION, respectively.
+
+        Recommended times do not change observation science bands, which follow the
+        allocations once the proposal is accepted."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "SetTacFeedbackInput!", "value": input}
         }
@@ -801,8 +818,11 @@ class Mutation:
     def delete_tac_feedback(
         cls, input: DeleteTacFeedbackInput
     ) -> DeleteTacFeedbackResultFields:
-        """Deletes a partner's TAC feedback for a program.  NGO users may only delete
-        feedback for their own partner, and only for programs they can read."""
+        """Deletes the TAC feedback of a time accounting category for a program, along
+        with the allocations that carry its recommended times.  The program must have
+        a proposal whose status is SUBMITTED.  For a category that belongs to a
+        partner, the user must be staff or an NGO user of that partner who can read
+        the program.  Only staff may delete feedback for the other categories."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "DeleteTacFeedbackInput!", "value": input}
         }
@@ -890,7 +910,11 @@ class Mutation:
     def set_proposal_status(
         cls, input: SetProposalStatusInput
     ) -> SetProposalStatusResultFields:
-        """Set the proposal status."""
+        """Set the proposal status.  NGO users may not set the proposal status.
+
+        When the proposal is accepted, observations without a science band are given
+        the program's only allocated band, if it has just one, and a warning lists
+        observations whose band has no time allocated, as for `setAllocations`."""
         arguments: dict[str, dict[str, Any]] = {
             "input": {"type": "SetProposalStatusInput!", "value": input}
         }

@@ -5,11 +5,12 @@ from pydantic import Field
 from .base_model import BaseModel
 from .enums import (
     Existence,
-    GroupConstraintViolation,
+    GroupConstraintViolationCode,
     GroupStatus,
     ProgramType,
     ProposalStatus,
     ScienceBand,
+    Site,
     TimeAccountingCategory,
 )
 from .fragments import SchedulerProposal
@@ -152,7 +153,9 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgress(BaseModel
     ] = Field(alias="nextWindow")
     required: Any
     status: GroupStatus
-    violations: list[GroupConstraintViolation]
+    violations: list[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolations"
+    ]
 
 
 class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressNextWindow(
@@ -160,6 +163,33 @@ class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressNextWindow
 ):
     end: Optional[Any]
     start: Any
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolations(
+    BaseModel
+):
+    code: GroupConstraintViolationCode
+    element: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolationsElement"
+    ]
+    night: Optional[
+        "GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolationsNight"
+    ]
+    subgroup_id: Optional[Any] = Field(alias="subgroupId")
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolationsElement(
+    BaseModel
+):
+    observation_id: Optional[Any] = Field(alias="observationId")
+    group_id: Optional[Any] = Field(alias="groupId")
+
+
+class GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolationsNight(
+    BaseModel
+):
+    date: Any
+    site: Site
 
 
 class GetSchedulerProgramsProgramsMatchesAllGroupElementsObservation(BaseModel):
@@ -176,3 +206,4 @@ GetSchedulerProgramsProgramsMatchesTimeChargeTime.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllGroupElements.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllGroupElementsGroup.model_rebuild()
 GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgress.model_rebuild()
+GetSchedulerProgramsProgramsMatchesAllGroupElementsGroupProgressViolations.model_rebuild()

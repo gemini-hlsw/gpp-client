@@ -97,6 +97,7 @@ from .enums import (
     GnirsPrism,
     GnirsReadMode,
     GnirsWellDepth,
+    GroupStandingStatus,
     GuideProbe,
     GuideState,
     HiiRegionSpectrum,
@@ -128,6 +129,7 @@ from .enums import (
     SchedulingMode,
     ScienceBand,
     ScienceSubtype,
+    ScorpioFpu,
     SeeingTrend,
     SequenceCommand,
     SequenceType,
@@ -2120,6 +2122,10 @@ class ObservingModeInput(BaseModel):
         alias=str("igrins2LongSlit"), default=None
     )
     "The igrins2LongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
+    scorpio_long_slit: Optional["ScorpioLongSlitInput"] = Field(
+        alias=str("scorpioLongSlit"), default=None
+    )
+    "The scorpioLongSlit field must be either specified or skipped altogether.  It cannot be unset with a null value."
     visitor: Optional["VisitorInput"] = None
     "A visiting instrument mode. It cannot be unset with a null value."
 
@@ -2236,8 +2242,8 @@ class SetAllocationsInput(BaseModel):
 
 
 class SetTacFeedbackInput(BaseModel):
-    """Sets or updates the TAC feedback of a single partner for a program, which must
-    have a proposal in which the partner has a non-zero time split. One of
+    """Sets or updates the TAC feedback of a single time accounting category for a
+    program, subject to the rules described on the `setTacFeedback` mutation. One of
     programId, programReference or proposalReference is required. (If two or more are provided, they must refer to the same program.)"""
 
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
@@ -3681,6 +3687,33 @@ class GoaPropertiesInput(BaseModel):
     "Whether the header (as well as the data itself) should remain private.  This\nproperty is applicable to science programs and defaults to false."
 
 
+class WhereEqGroupStandingStatus(BaseModel):
+    """Filters on equality (or not) of a group standing status and the supplied
+    criteria.  All supplied criteria must match, but usually only one is selected."""
+
+    eq: Optional[GroupStandingStatus] = Field(alias=str("EQ"), default=None)
+    "Matches if the status is exactly the supplied value."
+    neq: Optional[GroupStandingStatus] = Field(alias=str("NEQ"), default=None)
+    "Matches if the status is not the supplied value."
+    in_: Optional[list[GroupStandingStatus]] = Field(alias=str("IN"), default=None)
+    "Matches if the status is any of the supplied options."
+    nin: Optional[list[GroupStandingStatus]] = Field(alias=str("NIN"), default=None)
+    "Matches if the status is none of the supplied values."
+
+
+class WhereCalculatedGroupStanding(BaseModel):
+    """Matches a group standing.  The status alone matches the value last
+    calculated, which may be out of date while a recalculation is pending.  To
+    match only up-to-date standings, also match `calculationState` `READY`."""
+
+    calculation_state: Optional["WhereOrderCalculationState"] = Field(
+        alias=str("calculationState"), default=None
+    )
+    "Matches the current state of the background calculation."
+    status: Optional["WhereEqGroupStandingStatus"] = None
+    "Matches the standing status."
+
+
 class GroupElementInput(BaseModel):
     """A group element identifier. Exactly one of groupId and observationId must be provided."""
 
@@ -3760,6 +3793,30 @@ class AltairInput(BaseModel):
         alias=str("ndFilter"), default=AltairNdFilter.OUT
     )
     "The Altair neutral density filter position."
+
+
+class ScorpioLongSlitInput(BaseModel):
+    """Edit or create SCORPIO Long Slit configuration.  Each channel exposure time mode
+    must be time and count.  The g and r channels share a detector controller and
+    must have the same exposure time and count, and so must i and z.  A channel
+    that is not specified on create takes the exposure time mode of the channel it
+    shares a controller with, or of the observation's science requirements when
+    neither is specified."""
+
+    fpu: Optional[ScorpioFpu] = None
+    "The long slit.  Required on create.  It cannot be unset with a null value."
+    g: Optional["ExposureTimeModeInput"] = None
+    "Exposure time mode of the g channel.  It cannot be unset with a null value."
+    r: Optional["ExposureTimeModeInput"] = None
+    "Exposure time mode of the r channel.  It cannot be unset with a null value."
+    i: Optional["ExposureTimeModeInput"] = None
+    "Exposure time mode of the i channel.  It cannot be unset with a null value."
+    z: Optional["ExposureTimeModeInput"] = None
+    "Exposure time mode of the z channel.  It cannot be unset with a null value."
+    explicit_telescope_configs: Optional["SlitTelescopeConfigsInput"] = Field(
+        alias=str("explicitTelescopeConfigs"), default=None
+    )
+    "Explicit telescope configs. May be unset by assigning a null value, or ignored by skipping."
 
 
 class ImagingScienceRequirementsInput(BaseModel):
@@ -3955,26 +4012,28 @@ class CreateConfigurationRequestInput(BaseModel):
 
 
 class TacFeedbackInput(BaseModel):
-    """A partner's TAC feedback input.  When the partner has no feedback yet for the
-    program, the decision and ranking are required.  Otherwise, omitted fields keep
-    their existing values.  The decision, ranking and recommended times may not be
-    set to null.  Comments are optional, and setting them to null removes any
-    existing comments."""
+    """The TAC feedback input of a time accounting category.  When the category has no
+    feedback yet for the program, the decision and ranking are required.
+    Otherwise, omitted fields keep their existing values.  The decision, ranking
+    and recommended times may not be set to null.  Comments are optional, and
+    setting them to null removes any existing comments."""
 
-    partner: Partner
+    time_accounting_category: TimeAccountingCategory = Field(
+        alias=str("timeAccountingCategory")
+    )
     decision: Optional[TacPartnerDecision] = None
     ranking: Optional[Any] = None
     recommended_times: Optional[list["TacRecommendedTimeInput"]] = Field(
         alias=str("recommendedTimes"), default=None
     )
-    "The time recommended for each science band.  Each band may appear at most\nonce.  When supplied, the list (even an empty one) replaces all existing\nrecommended times.  When omitted, existing recommended times are kept, or\nnone are recorded for new feedback."
+    "The time recommended for each science band.  Each band may appear at most\nonce.  When supplied, the list (even an empty one) replaces all existing\nrecommended times.  When omitted, existing recommended times are kept, or\nnone are recorded for new feedback.\n\nEach recommended time is stored with the program's allocation for the\ncategory and band.  Setting a recommended time also sets the allocated\nduration to the same time, and removing a recommended time removes the\nallocation."
     comments: Optional[Any] = None
 
 
 class DeleteTacFeedbackInput(BaseModel):
-    """Deletes the TAC feedback of a single partner for a program. One of programId,
-    programReference or proposalReference is required. (If two or more are
-    provided, they must refer to the same program.)"""
+    """Deletes the TAC feedback of a single time accounting category for a program.
+    One of programId, programReference or proposalReference is required. (If two
+    or more are provided, they must refer to the same program.)"""
 
     program_id: Optional[Any] = Field(alias=str("programId"), default=None)
     proposal_reference: Optional[Any] = Field(
@@ -3983,17 +4042,19 @@ class DeleteTacFeedbackInput(BaseModel):
     program_reference: Optional[Any] = Field(
         alias=str("programReference"), default=None
     )
-    partner: Partner
-    "The partner whose TAC feedback should be deleted."
+    time_accounting_category: TimeAccountingCategory = Field(
+        alias=str("timeAccountingCategory")
+    )
+    "The time accounting category whose TAC feedback should be deleted."
 
 
 class TacRecommendedTimeInput(BaseModel):
-    """The time recommended by a partner TAC for a science band."""
+    """The time recommended by a TAC for a science band."""
 
     band: ScienceBand
     "The science band for which the time is recommended."
     time: "TimeSpanInput"
-    "The time recommended for this band."
+    "The time recommended for this band, which must be positive."
 
 
 class TimeChargeCorrectionInput(BaseModel):
@@ -4598,6 +4659,10 @@ class WhereObservation(BaseModel):
     "Matches on the site associated with the observation's instrument, if any."
     workflow: Optional["WhereCalculatedObservationWorkflow"] = None
     "Matches on the observation workflow state."
+    group_standing: Optional["WhereCalculatedGroupStanding"] = Field(
+        alias=str("groupStanding"), default=None
+    )
+    "Matches on the observation's group standing."
     calibration_role: Optional["WhereOptionEqCalibrationRole"] = Field(
         alias=str("calibrationRole"), default=None
     )
@@ -6402,8 +6467,10 @@ GroupedImagingVariantInput.model_rebuild()
 InterleavedImagingVariantInput.model_rebuild()
 PreImagingVariantInput.model_rebuild()
 GmosNorthImagingFilterInput.model_rebuild()
+WhereCalculatedGroupStanding.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
+ScorpioLongSlitInput.model_rebuild()
 ImagingScienceRequirementsInput.model_rebuild()
 TooTriggerEditInput.model_rebuild()
 WhereTooTrigger.model_rebuild()

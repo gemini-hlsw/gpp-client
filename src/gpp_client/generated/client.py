@@ -14725,7 +14725,18 @@ class GraphQLClient(AsyncBaseClient):
                         }
                         required
                         status
-                        violations
+                        violations {
+                          code
+                          element {
+                            observationId
+                            groupId
+                          }
+                          night {
+                            date
+                            site
+                          }
+                          subgroupId
+                        }
                       }
                       sameNight
                     }

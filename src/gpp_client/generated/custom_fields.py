@@ -25,6 +25,7 @@ from .custom_typing_fields import (
     AtomRecordGraphQLField,
     AtomRecordSelectResultGraphQLField,
     AttachmentGraphQLField,
+    AttributionGraphQLField,
     BandBrightnessIntegratedGraphQLField,
     BandBrightnessSurfaceGraphQLField,
     BandedTimeGraphQLField,
@@ -36,6 +37,7 @@ from .custom_typing_fields import (
     CalculatedBandedTimeGraphQLField,
     CalculatedCategorizedTimeRangeGraphQLField,
     CalculatedExecutionDigestGraphQLField,
+    CalculatedGroupStandingGraphQLField,
     CalculatedObservationWorkflowGraphQLField,
     CalibrationDigestGraphQLField,
     CalibrationEstimateGraphQLField,
@@ -225,10 +227,14 @@ from .custom_typing_fields import (
     GnirsStaticGraphQLField,
     GnirsStepGraphQLField,
     GoaPropertiesGraphQLField,
+    GroupConstraintViolationGraphQLField,
+    GroupConstraintWaiverGraphQLField,
     GroupedImagingVariantGraphQLField,
     GroupElementGraphQLField,
+    GroupElementIdGraphQLField,
     GroupGraphQLField,
     GroupProgressGraphQLField,
+    GroupStandingGraphQLField,
     GroupWindowGraphQLField,
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
@@ -294,6 +300,7 @@ from .custom_typing_fields import (
     ObservingModeGraphQLField,
     ObservingModeGroupGraphQLField,
     ObservingModeGroupSelectResultGraphQLField,
+    ObservingNightGraphQLField,
     OffsetGraphQLField,
     OffsetPGraphQLField,
     OffsetQGraphQLField,
@@ -347,6 +354,7 @@ from .custom_typing_fields import (
     ScienceGraphQLField,
     ScienceProgramReferenceGraphQLField,
     ScienceRequirementsGraphQLField,
+    ScorpioLongSlitGraphQLField,
     SequenceDigestGraphQLField,
     SequenceEventGraphQLField,
     SetAllocationsResultGraphQLField,
@@ -1297,6 +1305,23 @@ class AttachmentFields(GraphQLField):
         return self
 
 
+class AttributionFields(GraphQLField):
+    """Who took an action, when, and why, if they said."""
+
+    by: "AttributionGraphQLField" = AttributionGraphQLField("by")
+    at: "AttributionGraphQLField" = AttributionGraphQLField("at")
+    reason: "AttributionGraphQLField" = AttributionGraphQLField("reason")
+
+    def fields(self, *subfields: AttributionGraphQLField) -> "AttributionFields":
+        """Subfields should come from the AttributionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "AttributionFields":
+        self._alias = alias
+        return self
+
+
 class BandBrightnessIntegratedFields(GraphQLField):
     band: "BandBrightnessIntegratedGraphQLField" = BandBrightnessIntegratedGraphQLField(
         "band"
@@ -1610,6 +1635,40 @@ class CalculatedExecutionDigestFields(GraphQLField):
         return self
 
 
+class CalculatedGroupStandingFields(GraphQLField):
+    """A group standing, as last calculated in the background.
+
+    The standing is recalculated whenever something that may change it happens:
+    a change to the group or one of its observations, an observation in its tree
+    starting or completing, or the time for observing a group's next element
+    running out.  Until then `calculationState` is `PENDING` (or `RETRY`, after a
+    failed calculation), and `value` is the standing last calculated, which may be
+    out of date in either direction.  It is `READY` once the standing reflects
+    everything recorded."""
+
+    calculation_state: "CalculatedGroupStandingGraphQLField" = (
+        CalculatedGroupStandingGraphQLField("calculationState")
+    )
+    "The current state of the background calculation."
+
+    @classmethod
+    def value(cls) -> "GroupStandingFields":
+        """The standing, as last calculated."""
+        return GroupStandingFields("value")
+
+    def fields(
+        self,
+        *subfields: Union[CalculatedGroupStandingGraphQLField, "GroupStandingFields"],
+    ) -> "CalculatedGroupStandingFields":
+        """Subfields should come from the CalculatedGroupStandingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "CalculatedGroupStandingFields":
+        self._alias = alias
+        return self
+
+
 class CalculatedObservationWorkflowFields(GraphQLField):
     calculation_state: "CalculatedObservationWorkflowGraphQLField" = (
         CalculatedObservationWorkflowGraphQLField("calculationState")
@@ -1733,11 +1792,12 @@ class CalibrationSetFields(GraphQLField):
     """One row of a daytime calibration: a kind, an exposure count, the GCAL
     configuration (flats and arcs only) and one instrument setup.  The generator
     expands it into one atom: `count` identical DAY_CAL steps for a manual kind,
-    the steps the Smart GCAL lookup returns for a smart kind."""
+    the steps the Smart GCAL lookup returns for a smart kind.  A smart kind whose
+    lookup finds no mapping is left out and reported as MISSING_SMART_GCAL."""
 
     kind: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("kind")
     count: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("count")
-    "Steps this set contributes to the sequence: `explicitCount` for a manual\nstep, the number of steps the Smart GCAL lookup returns for a smart step, or\nnull when the lookup finds no mapping for the setup."
+    "Steps this set contributes to the sequence: `explicitCount` for a manual\nstep, the number of steps the Smart GCAL lookup returns for a smart step\n(zero when the setup is marked as having no calibration), or null when the\nlookup finds no mapping for the setup.  A smart set that contributes no\nsteps is left out of the sequence."
     explicit_count: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField(
         "explicitCount"
     )
@@ -9160,6 +9220,14 @@ class GroupFields(GraphQLField):
         never out of date.  Null for a deleted group."""
         return GroupProgressFields("progress")
 
+    @classmethod
+    def standing(cls) -> "CalculatedGroupStandingFields":
+        """Whether the groups around this one, itself included, still want work in it.
+        Calculated in the background when something relevant changes (or when time
+        passing may change it), so it may briefly lag `progress`: see
+        `CalculatedGroupStanding`.  Null for a deleted group."""
+        return CalculatedGroupStandingFields("standing")
+
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
     "This group is managed by the system and not user-editable"
@@ -9172,6 +9240,7 @@ class GroupFields(GraphQLField):
             GroupGraphQLField,
             "CalculatedBandedTimeFields",
             "CalculatedCategorizedTimeRangeFields",
+            "CalculatedGroupStandingFields",
             "GroupElementFields",
             "GroupProgressFields",
             "ProgramFields",
@@ -9183,6 +9252,97 @@ class GroupFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GroupFields":
+        self._alias = alias
+        return self
+
+
+class GroupConstraintViolationFields(GraphQLField):
+    """One particular violation of a group's constraints: its kind and where in the
+    group it happened.  Which of `element`, `night` and `subgroupId` is set depends
+    on the `code`; the others are null."""
+
+    code: "GroupConstraintViolationGraphQLField" = GroupConstraintViolationGraphQLField(
+        "code"
+    )
+    "The kind of violation."
+
+    @classmethod
+    def element(cls) -> "GroupElementIdFields":
+        """For `ORDER`, the element that completed before an earlier one.  For
+        `MINIMUM_INTERVAL` and `MAXIMUM_INTERVAL`, the element whose completion the
+        interval is measured from."""
+        return GroupElementIdFields("element")
+
+    @classmethod
+    def night(cls) -> "ObservingNightFields":
+        """For `SAME_NIGHT`, the night whose completions didn't finish the group.  For
+        `OBSERVATIONS_PER_NIGHT_MINIMUM` and `OBSERVATIONS_PER_NIGHT_MAXIMUM`, the
+        night with too few or too many."""
+        return ObservingNightFields("night")
+
+    subgroup_id: "GroupConstraintViolationGraphQLField" = (
+        GroupConstraintViolationGraphQLField("subgroupId")
+    )
+    "For `SUBGROUP_UNSCHEDULABLE`, the subgroup."
+
+    def fields(
+        self,
+        *subfields: Union[
+            GroupConstraintViolationGraphQLField,
+            "GroupElementIdFields",
+            "ObservingNightFields",
+        ],
+    ) -> "GroupConstraintViolationFields":
+        """Subfields should come from the GroupConstraintViolationFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupConstraintViolationFields":
+        self._alias = alias
+        return self
+
+
+class GroupConstraintWaiverFields(GraphQLField):
+    """The acceptance of one violation of a group's constraints, say because the PI
+    judged data taken at the wrong time usable.  A waived violation no longer
+    counts against the group, while the constraint itself stays as written, so
+    that any other violation is still caught.  A waiver is granted only for a
+    violation that has happened.  A revoked waiver is kept, but no longer applies."""
+
+    id: "GroupConstraintWaiverGraphQLField" = GroupConstraintWaiverGraphQLField("id")
+    group_id: "GroupConstraintWaiverGraphQLField" = GroupConstraintWaiverGraphQLField(
+        "groupId"
+    )
+    "The group whose violation is accepted."
+
+    @classmethod
+    def violation(cls) -> "GroupConstraintViolationFields":
+        """The violation accepted."""
+        return GroupConstraintViolationFields("violation")
+
+    @classmethod
+    def granted(cls) -> "AttributionFields":
+        """Who granted the waiver, when, and why the violation was accepted, if they said."""
+        return AttributionFields("granted")
+
+    @classmethod
+    def revoked(cls) -> "AttributionFields":
+        """Who revoked the waiver, when and why, if it has been revoked."""
+        return AttributionFields("revoked")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GroupConstraintWaiverGraphQLField,
+            "AttributionFields",
+            "GroupConstraintViolationFields",
+        ],
+    ) -> "GroupConstraintWaiverFields":
+        """Subfields should come from the GroupConstraintWaiverFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupConstraintWaiverFields":
         self._alias = alias
         return self
 
@@ -9214,6 +9374,24 @@ class GroupElementFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GroupElementFields":
+        self._alias = alias
+        return self
+
+
+class GroupElementIdFields(GraphQLField):
+    """An element of a group: a subgroup or an observation.  Exactly one is set."""
+
+    group_id: "GroupElementIdGraphQLField" = GroupElementIdGraphQLField("groupId")
+    observation_id: "GroupElementIdGraphQLField" = GroupElementIdGraphQLField(
+        "observationId"
+    )
+
+    def fields(self, *subfields: GroupElementIdGraphQLField) -> "GroupElementIdFields":
+        """Subfields should come from the GroupElementIdFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupElementIdFields":
         self._alias = alias
         return self
 
@@ -9259,17 +9437,70 @@ class GroupProgressFields(GraphQLField):
         and its constraints restrict the timing."""
         return GroupWindowFields("nextWindow")
 
-    violations: "GroupProgressGraphQLField" = GroupProgressGraphQLField("violations")
-    "Why the group can no longer be completed: the constraints it can no longer\nmeet.  Empty unless unschedulable.  A subgroup's own violations are on its\nown `progress`."
+    @classmethod
+    def violations(cls) -> "GroupConstraintViolationFields":
+        """Why the group can no longer be completed: the violations of its constraints
+        that no waiver accepts.  Empty unless unschedulable.  A subgroup's own
+        violations are on its own `progress`."""
+        return GroupConstraintViolationFields("violations")
+
+    @classmethod
+    def waived(cls) -> "GroupConstraintWaiverFields":
+        """The waivers that accept violations of the group's constraints which would
+        otherwise make it unschedulable.  An ongoing, complete or unschedulable group
+        may have them."""
+        return GroupConstraintWaiverFields("waived")
 
     def fields(
-        self, *subfields: Union[GroupProgressGraphQLField, "GroupWindowFields"]
+        self,
+        *subfields: Union[
+            GroupProgressGraphQLField,
+            "GroupConstraintViolationFields",
+            "GroupConstraintWaiverFields",
+            "GroupWindowFields",
+        ],
     ) -> "GroupProgressFields":
         """Subfields should come from the GroupProgressFields class"""
         self._subfields.extend(subfields)
         return self
 
     def alias(self, alias: str) -> "GroupProgressFields":
+        self._alias = alias
+        return self
+
+
+class GroupStandingFields(GraphQLField):
+    """Every group and observation has a group standing.  It says whether the group
+    or observation is still worth doing, given the groups it belongs to.  It is
+    stored for each group, and an observation has its group's.
+    For example, a `READY` observation in a group that can no longer be completed
+    is `UNSCHEDULABLE`: completing it couldn't help complete the group.  Similarly,
+    the observations left over in a group that already has the observations it
+    requires are `COMPLETE`: they're no longer needed.
+
+    The standing comes from the progress (`Group.progress`) of the groups
+    containing the observation, or, for a group, the groups containing it and the
+    group itself.  The outermost of these that is complete or unschedulable decides
+    the standing and is named in it.  If none is, the standing is `VIABLE`.  An
+    observation outside any group is always `VIABLE`.
+
+    Together with the observation workflow state, the standing can filter the
+    observations to consider for scheduling: only `VIABLE` ones need further
+    consideration.  The standing is calculated in the background, so it may be out
+    of date while the `calculationState` of the `CalculatedGroupStanding` holding
+    it is `PENDING`.  A strict filter also matches `READY` (see
+    `WhereCalculatedGroupStanding`)."""
+
+    status: "GroupStandingGraphQLField" = GroupStandingGraphQLField("status")
+    group_id: "GroupStandingGraphQLField" = GroupStandingGraphQLField("groupId")
+    "The group that decided the status, unless viable."
+
+    def fields(self, *subfields: GroupStandingGraphQLField) -> "GroupStandingFields":
+        """Subfields should come from the GroupStandingFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupStandingFields":
         self._alias = alias
         return self
 
@@ -11107,6 +11338,14 @@ class ObservationFields(GraphQLField):
         return CalculatedObservationWorkflowFields("workflow")
 
     @classmethod
+    def group_standing(cls) -> "CalculatedGroupStandingFields":
+        """Whether the groups around the observation still want it: its group's
+        standing, or viable outside any group.  Independent of the workflow state.
+        Calculated in the background, like the group's: see
+        `CalculatedGroupStanding`."""
+        return CalculatedGroupStandingFields("groupStanding")
+
+    @classmethod
     def archive_duplication(cls) -> "ArchiveDuplicationFields":
         """Result of the Archive Duplication Search: what the Gemini Observatory Archive
         held around this observation's pointing."""
@@ -11123,6 +11362,7 @@ class ObservationFields(GraphQLField):
             ObservationGraphQLField,
             "ArchiveDuplicationFields",
             "AttachmentFields",
+            "CalculatedGroupStandingFields",
             "CalculatedObservationWorkflowFields",
             "ConfigurationFields",
             "ConfigurationRequestFields",
@@ -11469,6 +11709,11 @@ class ObservingModeFields(GraphQLField):
         return Igrins2LongSlitFields("igrins2LongSlit")
 
     @classmethod
+    def scorpio_long_slit(cls) -> "ScorpioLongSlitFields":
+        """SCORPIO Long Slit mode"""
+        return ScorpioLongSlitFields("scorpioLongSlit")
+
+    @classmethod
     def visitor(cls) -> "VisitorFields":
         return VisitorFields("visitor")
 
@@ -11495,6 +11740,7 @@ class ObservingModeFields(GraphQLField):
             "GnirsLongSlitFields",
             "GnirsSpectroscopyFields",
             "Igrins2LongSlitFields",
+            "ScorpioLongSlitFields",
             "VisitorFields",
         ],
     ) -> "ObservingModeFields":
@@ -11585,6 +11831,23 @@ class ObservingModeGroupSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ObservingModeGroupSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class ObservingNightFields(GraphQLField):
+    """An observing night at a site."""
+
+    site: "ObservingNightGraphQLField" = ObservingNightGraphQLField("site")
+    date: "ObservingNightGraphQLField" = ObservingNightGraphQLField("date")
+    "The local date on which the night ends.  A night runs from 14:00 local time\non the day before to 14:00 on this date."
+
+    def fields(self, *subfields: ObservingNightGraphQLField) -> "ObservingNightFields":
+        """Subfields should come from the ObservingNightFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ObservingNightFields":
         self._alias = alias
         return self
 
@@ -11983,7 +12246,8 @@ class ProgramFields(GraphQLField):
 
     @classmethod
     def tac_feedback(cls) -> "TacFeedbackFields":
-        """TAC feedback from each partner that has provided it, ordered by partner."""
+        """TAC feedback for each time accounting category that has provided it, ordered
+        by time accounting category."""
         return TacFeedbackFields("tacFeedback")
 
     calibration_role: "ProgramGraphQLField" = ProgramGraphQLField("calibrationRole")
@@ -13195,6 +13459,71 @@ class ScienceRequirementsFields(GraphQLField):
         return self
 
 
+class ScorpioLongSlitFields(GraphQLField):
+    """SCORPIO Long Slit mode.  Only the visible arm is configured, with one exposure
+    time mode for each of its channels."""
+
+    fpu: "ScorpioLongSlitGraphQLField" = ScorpioLongSlitGraphQLField("fpu")
+    "The long slit."
+
+    @classmethod
+    def g(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode of the g channel.  It has the same exposure time and count
+        as r, which shares its detector controller."""
+        return ExposureTimeModeFields("g")
+
+    @classmethod
+    def r(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode of the r channel.  It has the same exposure time and count
+        as g, which shares its detector controller."""
+        return ExposureTimeModeFields("r")
+
+    @classmethod
+    def i(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode of the i channel.  It has the same exposure time and count
+        as z, which shares its detector controller."""
+        return ExposureTimeModeFields("i")
+
+    @classmethod
+    def z(cls) -> "ExposureTimeModeFields":
+        """Exposure time mode of the z channel.  It has the same exposure time and count
+        as i, which shares its detector controller."""
+        return ExposureTimeModeFields("z")
+
+    @classmethod
+    def telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Effective telescope configs (explicit override coalesced with the default)."""
+        return SlitTelescopeConfigsFields("telescopeConfigs")
+
+    @classmethod
+    def default_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Default telescope configs: four positions along the slit,
+        q = 0, -15, +15, 0 arcsec, all guided."""
+        return SlitTelescopeConfigsFields("defaultTelescopeConfigs")
+
+    @classmethod
+    def explicit_telescope_configs(cls) -> "SlitTelescopeConfigsFields":
+        """Optional explicitly specified telescope configs. If set they override the
+        default."""
+        return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
+
+    def fields(
+        self,
+        *subfields: Union[
+            ScorpioLongSlitGraphQLField,
+            "ExposureTimeModeFields",
+            "SlitTelescopeConfigsFields",
+        ],
+    ) -> "ScorpioLongSlitFields":
+        """Subfields should come from the ScorpioLongSlitFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ScorpioLongSlitFields":
+        self._alias = alias
+        return self
+
+
 class SequenceDigestFields(GraphQLField):
     observe_class: "SequenceDigestGraphQLField" = SequenceDigestGraphQLField(
         "observeClass"
@@ -13233,7 +13562,10 @@ class SequenceDigestFields(GraphQLField):
         that steps violate (CONFIGURATION_ERROR for exposures that cannot be taken,
         EXPOSURE_TIME_WARNING for those merely outside the recommended range, which
         are reported for science steps alone) and, for GMOS spectroscopy, science
-        steps exposed to second order light (SECOND_ORDER_OVERLAP)."""
+        steps exposed to second order light (SECOND_ORDER_OVERLAP).  They also
+        include the calibrations left out of a generated sequence because no Smart
+        GCAL entry is defined for their configuration (MISSING_SMART_GCAL), which no
+        step shows."""
         return StepViolationFields("stepViolations")
 
     def fields(
@@ -14623,23 +14955,26 @@ class SystemVerificationFields(GraphQLField):
 
 
 class TacFeedbackFields(GraphQLField):
-    """A partner's TAC (Time Allocation Committee) feedback for a program."""
+    """The TAC (Time Allocation Committee) feedback of a time accounting category for
+    a program."""
 
-    partner: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("partner")
-    "The partner whose TAC provided the feedback."
+    time_accounting_category: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField(
+        "timeAccountingCategory"
+    )
+    "The time accounting category whose TAC provided the feedback."
     decision: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("decision")
-    "The partner TAC's decision."
+    "The TAC's decision."
     ranking: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("ranking")
-    "The partner TAC's ranking of the proposal."
+    "The TAC's ranking of the proposal."
 
     @classmethod
     def recommended_times(cls) -> "TacRecommendedTimeFields":
-        """The time recommended by the partner TAC, at most one entry per science band,
-        sorted by band.  Empty if the partner TAC recommends no time."""
+        """The time recommended by the TAC, at most one entry per science band, sorted
+        by band.  Empty if the TAC recommends no time."""
         return TacRecommendedTimeFields("recommendedTimes")
 
     comments: "TacFeedbackGraphQLField" = TacFeedbackGraphQLField("comments")
-    "The partner TAC's comments, if any."
+    "The TAC's comments, if any."
 
     def fields(
         self, *subfields: Union[TacFeedbackGraphQLField, "TacRecommendedTimeFields"]
@@ -14674,14 +15009,14 @@ class TacFeedbackResultFields(GraphQLField):
 
 
 class TacRecommendedTimeFields(GraphQLField):
-    """The time recommended by a partner TAC for a science band."""
+    """The time recommended by a TAC for a science band."""
 
     band: "TacRecommendedTimeGraphQLField" = TacRecommendedTimeGraphQLField("band")
     "The science band for which the time is recommended."
 
     @classmethod
     def time(cls) -> "TimeSpanFields":
-        """The time recommended for this band."""
+        """The time recommended for this band, which is always positive."""
         return TimeSpanFields("time")
 
     def fields(
