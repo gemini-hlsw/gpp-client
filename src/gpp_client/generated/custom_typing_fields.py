@@ -1645,6 +1645,48 @@ class GroupProgressGraphQLField(GraphQLField):
         return self
 
 
+class GroupConstraintViolationGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupConstraintViolationGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupElementIdGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupElementIdGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ObservingNightGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObservingNightGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupConstraintWaiverGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupConstraintWaiverGraphQLField":
+        self._alias = alias
+        return self
+
+
+class AttributionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "AttributionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupStandingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupStandingGraphQLField":
+        self._alias = alias
+        return self
+
+
+class CalculatedGroupStandingGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "CalculatedGroupStandingGraphQLField":
+        self._alias = alias
+        return self
+
+
 class GroupElementGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "GroupElementGraphQLField":
         self._alias = alias
@@ -1725,6 +1767,12 @@ class SpectroscopyConfigOptionGnirsGraphQLField(GraphQLField):
 
 class SpectroscopyConfigOptionScorpioGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "SpectroscopyConfigOptionScorpioGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ScorpioLongSlitGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ScorpioLongSlitGraphQLField":
         self._alias = alias
         return self
 

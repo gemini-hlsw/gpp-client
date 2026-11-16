@@ -506,6 +506,7 @@ class ObservingModeType(str, Enum):
     GNIRS_IFU = "GNIRS_IFU"
     IGRINS_2_LONG_SLIT = "IGRINS_2_LONG_SLIT"
     MAROON_X = "MAROON_X"
+    SCORPIO_LONG_SLIT = "SCORPIO_LONG_SLIT"
     VISITOR_NORTH = "VISITOR_NORTH"
     VISITOR_SOUTH = "VISITOR_SOUTH"
     ZORRO_SPECKLE = "ZORRO_SPECKLE"
@@ -933,7 +934,7 @@ class GroupStatus(str, Enum):
     UNSCHEDULABLE = "UNSCHEDULABLE"
 
 
-class GroupConstraintViolation(str, Enum):
+class GroupConstraintViolationCode(str, Enum):
     ORDER = "ORDER"
     MINIMUM_INTERVAL = "MINIMUM_INTERVAL"
     MAXIMUM_INTERVAL = "MAXIMUM_INTERVAL"
@@ -944,6 +945,12 @@ class GroupConstraintViolation(str, Enum):
     OBSERVATIONS_PER_NIGHT_MULTIPLE_SITES = "OBSERVATIONS_PER_NIGHT_MULTIPLE_SITES"
     INSUFFICIENT_ELEMENTS = "INSUFFICIENT_ELEMENTS"
     SUBGROUP_UNSCHEDULABLE = "SUBGROUP_UNSCHEDULABLE"
+
+
+class GroupStandingStatus(str, Enum):
+    VIABLE = "VIABLE"
+    COMPLETE = "COMPLETE"
+    UNSCHEDULABLE = "UNSCHEDULABLE"
 
 
 class AltairMode(str, Enum):
@@ -1220,6 +1227,7 @@ class ObservationValidationCode(str, Enum):
     CFP_WARNING = "CFP_WARNING"
     EXPOSURE_TIME_WARNING = "EXPOSURE_TIME_WARNING"
     SECOND_ORDER_OVERLAP = "SECOND_ORDER_OVERLAP"
+    MISSING_SMART_GCAL = "MISSING_SMART_GCAL"
 
 
 class ObserveClass(str, Enum):
@@ -1564,6 +1572,7 @@ class CalibrationRole(str, Enum):
     DAYTIME_FLAT = "DAYTIME_FLAT"
     DAYTIME_ARC = "DAYTIME_ARC"
     DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
+    MOS_MASK_FLAT = "MOS_MASK_FLAT"
 
 
 class ArcType(str, Enum):

@@ -2,4 +2,4 @@
 Package-level environment constant for generated client code.
 """
 
-PACKAGE_ENVIRONMENT = "PRODUCTION"
+PACKAGE_ENVIRONMENT = "DEVELOPMENT"
