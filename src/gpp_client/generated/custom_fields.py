@@ -234,11 +234,13 @@ from .custom_typing_fields import (
     GroupElementIdGraphQLField,
     GroupGraphQLField,
     GroupProgressGraphQLField,
+    GroupSelectResultGraphQLField,
     GroupStandingGraphQLField,
     GroupWindowGraphQLField,
     GuideAvailabilityPeriodGraphQLField,
     GuideEnvironmentGraphQLField,
     GuideTargetGraphQLField,
+    GuideTargetSelectionGraphQLField,
     HasExchangePartnerGraphQLField,
     HasGeminiPartnerGraphQLField,
     HasNonPartnerGraphQLField,
@@ -289,8 +291,10 @@ from .custom_typing_fields import (
     MaskDefinitionGraphQLField,
     MaskSlitGraphQLField,
     MonitoringProgramReferenceGraphQLField,
+    MosMaskSelectResultGraphQLField,
     NonsiderealGraphQLField,
     ObservationGraphQLField,
+    ObservationGuideTargetSelectionGraphQLField,
     ObservationQaGraphQLField,
     ObservationReferenceGraphQLField,
     ObservationSelectResultGraphQLField,
@@ -347,6 +351,7 @@ from .custom_typing_fields import (
     ReplaceGnirsSequenceResultGraphQLField,
     ReplaceIgrins2SequenceResultGraphQLField,
     ResetAcquisitionResultGraphQLField,
+    RevokeGroupConstraintWaiverResultGraphQLField,
     RevokeUserInvitationResultGraphQLField,
     RightAscensionArcGraphQLField,
     RightAscensionGraphQLField,
@@ -358,7 +363,7 @@ from .custom_typing_fields import (
     SequenceDigestGraphQLField,
     SequenceEventGraphQLField,
     SetAllocationsResultGraphQLField,
-    SetGuideTargetNameResultGraphQLField,
+    SetGuideTargetResultGraphQLField,
     SetProgramReferenceResultGraphQLField,
     SetProgramResourceLimitResultGraphQLField,
     SetProposalStatusResultGraphQLField,
@@ -447,6 +452,7 @@ from .custom_typing_fields import (
     VisitGraphQLField,
     VisitorGraphQLField,
     VisitSelectResultGraphQLField,
+    WaiveGroupConstraintResultGraphQLField,
     WavelengthDitherGraphQLField,
     WavelengthGraphQLField,
 )
@@ -1791,8 +1797,9 @@ class CalibrationProgramReferenceFields(GraphQLField):
 class CalibrationSetFields(GraphQLField):
     """One row of a daytime calibration: a kind, an exposure count, the GCAL
     configuration (flats and arcs only) and one instrument setup.  The generator
-    expands it into one atom: `count` identical DAY_CAL steps for a manual kind,
-    the steps the Smart GCAL lookup returns for a smart kind.  A smart kind whose
+    expands it into steps of the daytime calibration's single atom: `count`
+    identical DAY_CAL steps for a manual kind, the steps the Smart GCAL lookup
+    returns for a smart kind.  A smart kind whose
     lookup finds no mapping is left out and reported as MISSING_SMART_GCAL."""
 
     kind: "CalibrationSetGraphQLField" = CalibrationSetGraphQLField("kind")
@@ -9228,6 +9235,20 @@ class GroupFields(GraphQLField):
         `CalculatedGroupStanding`.  Null for a deleted group."""
         return CalculatedGroupStandingFields("standing")
 
+    @classmethod
+    def waivers(cls, include_revoked: bool) -> "GroupConstraintWaiverFields":
+        """The waivers granted for violations of the group's constraints, by
+        `waiveGroupConstraint`, in the order granted.  Revoked waivers are left out
+        unless `includeRevoked` is set.  A waiver applies only while its violation is
+        found, when it is listed in the progress's `waived`."""
+        arguments: dict[str, dict[str, Any]] = {
+            "includeRevoked": {"type": "Boolean!", "value": include_revoked}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return GroupConstraintWaiverFields("waivers", arguments=cleared_arguments)
+
     existence: "GroupGraphQLField" = GroupGraphQLField("existence")
     system: "GroupGraphQLField" = GroupGraphQLField("system")
     "This group is managed by the system and not user-editable"
@@ -9241,6 +9262,7 @@ class GroupFields(GraphQLField):
             "CalculatedBandedTimeFields",
             "CalculatedCategorizedTimeRangeFields",
             "CalculatedGroupStandingFields",
+            "GroupConstraintWaiverFields",
             "GroupElementFields",
             "GroupProgressFields",
             "ProgramFields",
@@ -9469,6 +9491,29 @@ class GroupProgressFields(GraphQLField):
         return self
 
 
+class GroupSelectResultFields(GraphQLField):
+    """The matching groups, limited to a maximum of 1000 entries."""
+
+    @classmethod
+    def matches(cls) -> "GroupFields":
+        """Matching groups up to the return size limit of 1000."""
+        return GroupFields("matches")
+
+    has_more: "GroupSelectResultGraphQLField" = GroupSelectResultGraphQLField("hasMore")
+    "`true` when there were additional matches that were not returned."
+
+    def fields(
+        self, *subfields: Union[GroupSelectResultGraphQLField, "GroupFields"]
+    ) -> "GroupSelectResultFields":
+        """Subfields should come from the GroupSelectResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GroupSelectResultFields":
+        self._alias = alias
+        return self
+
+
 class GroupStandingFields(GraphQLField):
     """Every group and observation has a group standing.  It says whether the group
     or observation is still worth doing, given the groups it belongs to.  It is
@@ -9667,6 +9712,36 @@ class GuideTargetFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "GuideTargetFields":
+        self._alias = alias
+        return self
+
+
+class GuideTargetSelectionFields(GraphQLField):
+    """The guide target selected by hand for an observation. Exactly one field is set."""
+
+    catalog_name: "GuideTargetSelectionGraphQLField" = GuideTargetSelectionGraphQLField(
+        "catalogName"
+    )
+    'The catalog name of the selected star, for example "Gaia DR3 123". The name\ncarries the catalog and its release.'
+
+    @classmethod
+    def observation_target(cls) -> "ObservationGuideTargetSelectionFields":
+        """Set when the observation guides on one of its own targets. Today these are its
+        science targets, sidereal or non-sidereal, usable behind Altair, where the
+        AOWFS guides on axis."""
+        return ObservationGuideTargetSelectionFields("observationTarget")
+
+    def fields(
+        self,
+        *subfields: Union[
+            GuideTargetSelectionGraphQLField, "ObservationGuideTargetSelectionFields"
+        ],
+    ) -> "GuideTargetSelectionFields":
+        """Subfields should come from the GuideTargetSelectionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "GuideTargetSelectionFields":
         self._alias = alias
         return self
 
@@ -11192,6 +11267,31 @@ class MonitoringProgramReferenceFields(GraphQLField):
         return self
 
 
+class MosMaskSelectResultFields(GraphQLField):
+    """The matching MOS mask attachments, limited to a maximum of 1000 entries."""
+
+    @classmethod
+    def matches(cls) -> "AttachmentFields":
+        """Matching MOS mask attachments up to the return size limit of 1000."""
+        return AttachmentFields("matches")
+
+    has_more: "MosMaskSelectResultGraphQLField" = MosMaskSelectResultGraphQLField(
+        "hasMore"
+    )
+    "`true` when there were additional matches that were not returned."
+
+    def fields(
+        self, *subfields: Union[MosMaskSelectResultGraphQLField, "AttachmentFields"]
+    ) -> "MosMaskSelectResultFields":
+        """Subfields should come from the MosMaskSelectResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "MosMaskSelectResultFields":
+        self._alias = alias
+        return self
+
+
 class NonsiderealFields(GraphQLField):
     des: "NonsiderealGraphQLField" = NonsiderealGraphQLField("des")
     "Human readable designation that discriminates among ephemeris keys of the same type."
@@ -11386,6 +11486,26 @@ class ObservationFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "ObservationFields":
+        self._alias = alias
+        return self
+
+
+class ObservationGuideTargetSelectionFields(GraphQLField):
+    """The observation target an observation guides on."""
+
+    target_id: "ObservationGuideTargetSelectionGraphQLField" = (
+        ObservationGuideTargetSelectionGraphQLField("targetId")
+    )
+    "The id of the target, or null for the observation's only science target.\nWithout an id the selection is an error when the guide star is resolved if the\nobservation has more than one science target. An id that is not one of the\nobservation's science targets makes the selection unusable."
+
+    def fields(
+        self, *subfields: ObservationGuideTargetSelectionGraphQLField
+    ) -> "ObservationGuideTargetSelectionFields":
+        """Subfields should come from the ObservationGuideTargetSelectionFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "ObservationGuideTargetSelectionFields":
         self._alias = alias
         return self
 
@@ -13279,6 +13399,27 @@ class ResetAcquisitionResultFields(GraphQLField):
         return self
 
 
+class RevokeGroupConstraintWaiverResultFields(GraphQLField):
+    @classmethod
+    def waiver(cls) -> "GroupConstraintWaiverFields":
+        """The revoked waiver."""
+        return GroupConstraintWaiverFields("waiver")
+
+    def fields(
+        self,
+        *subfields: Union[
+            RevokeGroupConstraintWaiverResultGraphQLField, "GroupConstraintWaiverFields"
+        ],
+    ) -> "RevokeGroupConstraintWaiverResultFields":
+        """Subfields should come from the RevokeGroupConstraintWaiverResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "RevokeGroupConstraintWaiverResultFields":
+        self._alias = alias
+        return self
+
+
 class RevokeUserInvitationResultFields(GraphQLField):
     @classmethod
     def invitation(cls) -> "UserInvitationFields":
@@ -13465,6 +13606,10 @@ class ScorpioLongSlitFields(GraphQLField):
 
     fpu: "ScorpioLongSlitGraphQLField" = ScorpioLongSlitGraphQLField("fpu")
     "The long slit."
+    channel_selection: "ScorpioLongSlitGraphQLField" = ScorpioLongSlitGraphQLField(
+        "channelSelection"
+    )
+    "The arms used for science.  Only VIS_ONLY is currently supported."
 
     @classmethod
     def g(cls) -> "ExposureTimeModeFields":
@@ -13506,6 +13651,9 @@ class ScorpioLongSlitFields(GraphQLField):
         """Optional explicitly specified telescope configs. If set they override the
         default."""
         return SlitTelescopeConfigsFields("explicitTelescopeConfigs")
+
+    repeats: "ScorpioLongSlitGraphQLField" = ScorpioLongSlitGraphQLField("repeats")
+    "Number of passes over the telescope configs (nod-and-read).  Defaults to 1."
 
     def fields(
         self,
@@ -13656,22 +13804,21 @@ class SetAllocationsResultFields(GraphQLField):
         return self
 
 
-class SetGuideTargetNameResultFields(GraphQLField):
-    """The result of setting the guide target name for an observation."""
+class SetGuideTargetResultFields(GraphQLField):
+    """The result of selecting the guide target of an observation."""
 
     @classmethod
     def observation(cls) -> "ObservationFields":
         return ObservationFields("observation")
 
     def fields(
-        self,
-        *subfields: Union[SetGuideTargetNameResultGraphQLField, "ObservationFields"],
-    ) -> "SetGuideTargetNameResultFields":
-        """Subfields should come from the SetGuideTargetNameResultFields class"""
+        self, *subfields: Union[SetGuideTargetResultGraphQLField, "ObservationFields"]
+    ) -> "SetGuideTargetResultFields":
+        """Subfields should come from the SetGuideTargetResultFields class"""
         self._subfields.extend(subfields)
         return self
 
-    def alias(self, alias: str) -> "SetGuideTargetNameResultFields":
+    def alias(self, alias: str) -> "SetGuideTargetResultFields":
         self._alias = alias
         return self
 
@@ -15142,12 +15289,16 @@ class TargetEnvironmentFields(GraphQLField):
     @classmethod
     def guide_environment(cls) -> "GuideEnvironmentFields":
         """The guide target(s) and related information.
-        If a guide target has been selected via `setGuideTargetName`, that target will
-        be returned. If it is not found or not usable, an error naming it will be
+        If a guide target has been selected via `setGuideTarget`, that target will be
+        returned. If it is not found or not usable, an error naming it will be
         returned; select another guide target or clear the selection to return to
         automatic selection. A selection is never discarded by observation or target
-        changes. If no guide target has been selected, Gaia will be searched for the
-        best guide target available."""
+        changes. An observation target selected without a target id is an error if the
+        observation has more than one science target. If no guide target has been
+        selected, Gaia will be searched for the best guide target available and,
+        behind Altair, the science targets are also considered. An observation target,
+        sidereal or non-sidereal, is returned as the target it is, so the telescope
+        follows it."""
         return GuideEnvironmentFields("guideEnvironment")
 
     @classmethod
@@ -15176,7 +15327,16 @@ class TargetEnvironmentFields(GraphQLField):
     guide_target_name: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "guideTargetName"
     )
-    "The name of the guide target, if any, selected by `setGuideTargetName`. The\nselection is returned until it is cleared or replaced, whether or not the\nstar is usable with the current observation settings."
+    "The name of the catalog guide star, if any, selected by `setGuideTarget`; null\nwhen the selection is automatic or an observation target.\nThe selection is returned until it is cleared or replaced, whether or not the\nstar is usable with the current observation settings."
+
+    @classmethod
+    def guide_target_selection(cls) -> "GuideTargetSelectionFields":
+        """The guide target, if any, selected by hand with `setGuideTarget`; null when
+        the selection is automatic. The selection is returned until it is cleared or
+        replaced, whether or not the star is usable with the current observation
+        settings."""
+        return GuideTargetSelectionFields("guideTargetSelection")
+
     use_blind_offset: "TargetEnvironmentGraphQLField" = TargetEnvironmentGraphQLField(
         "useBlindOffset"
     )
@@ -15223,6 +15383,7 @@ class TargetEnvironmentFields(GraphQLField):
             "CoordinatesFields",
             "GuideAvailabilityPeriodFields",
             "GuideEnvironmentFields",
+            "GuideTargetSelectionFields",
             "TargetFields",
         ],
     ) -> "TargetEnvironmentFields":
@@ -16819,6 +16980,27 @@ class VisitorFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "VisitorFields":
+        self._alias = alias
+        return self
+
+
+class WaiveGroupConstraintResultFields(GraphQLField):
+    @classmethod
+    def waiver(cls) -> "GroupConstraintWaiverFields":
+        """The new waiver."""
+        return GroupConstraintWaiverFields("waiver")
+
+    def fields(
+        self,
+        *subfields: Union[
+            WaiveGroupConstraintResultGraphQLField, "GroupConstraintWaiverFields"
+        ],
+    ) -> "WaiveGroupConstraintResultFields":
+        """Subfields should come from the WaiveGroupConstraintResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "WaiveGroupConstraintResultFields":
         self._alias = alias
         return self
 

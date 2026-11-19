@@ -715,8 +715,20 @@ class SetupTimeGraphQLField(GraphQLField):
         return self
 
 
-class SetGuideTargetNameResultGraphQLField(GraphQLField):
-    def alias(self, alias: str) -> "SetGuideTargetNameResultGraphQLField":
+class GuideTargetSelectionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GuideTargetSelectionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class ObservationGuideTargetSelectionGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "ObservationGuideTargetSelectionGraphQLField":
+        self._alias = alias
+        return self
+
+
+class SetGuideTargetResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "SetGuideTargetResultGraphQLField":
         self._alias = alias
         return self
 
@@ -1669,6 +1681,18 @@ class GroupConstraintWaiverGraphQLField(GraphQLField):
         return self
 
 
+class WaiveGroupConstraintResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "WaiveGroupConstraintResultGraphQLField":
+        self._alias = alias
+        return self
+
+
+class RevokeGroupConstraintWaiverResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "RevokeGroupConstraintWaiverResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class AttributionGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "AttributionGraphQLField":
         self._alias = alias
@@ -2291,6 +2315,12 @@ class ProgramNoteSelectResultGraphQLField(GraphQLField):
         return self
 
 
+class MosMaskSelectResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "MosMaskSelectResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class ProgramSelectResultGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "ProgramSelectResultGraphQLField":
         self._alias = alias
@@ -2701,6 +2731,12 @@ class WavelengthGraphQLField(GraphQLField):
 
 class WavelengthDitherGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "WavelengthDitherGraphQLField":
+        self._alias = alias
+        return self
+
+
+class GroupSelectResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "GroupSelectResultGraphQLField":
         self._alias = alias
         return self
 

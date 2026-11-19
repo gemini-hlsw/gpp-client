@@ -1033,6 +1033,12 @@ class ScorpioFpu(str, Enum):
     LONG_SLIT_4_32 = "LONG_SLIT_4_32"
 
 
+class ScorpioChannelSelection(str, Enum):
+    VIS_IR = "VIS_IR"
+    VIS_ONLY = "VIS_ONLY"
+    IR_ONLY = "IR_ONLY"
+
+
 class GnirsCamera(str, Enum):
     LONG_BLUE = "LONG_BLUE"
     LONG_RED = "LONG_RED"
@@ -1572,7 +1578,7 @@ class CalibrationRole(str, Enum):
     DAYTIME_FLAT = "DAYTIME_FLAT"
     DAYTIME_ARC = "DAYTIME_ARC"
     DAYTIME_CALIBRATION = "DAYTIME_CALIBRATION"
-    MOS_MASK_FLAT = "MOS_MASK_FLAT"
+    DAYTIME_MASK_IMAGE = "DAYTIME_MASK_IMAGE"
 
 
 class ArcType(str, Enum):

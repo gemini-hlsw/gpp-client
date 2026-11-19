@@ -48,9 +48,10 @@ from .custom_fields import (
     ReplaceGnirsSequenceResultFields,
     ReplaceIgrins2SequenceResultFields,
     ResetAcquisitionResultFields,
+    RevokeGroupConstraintWaiverResultFields,
     RevokeUserInvitationResultFields,
     SetAllocationsResultFields,
-    SetGuideTargetNameResultFields,
+    SetGuideTargetResultFields,
     SetProgramReferenceResultFields,
     SetProgramResourceLimitResultFields,
     SetProposalStatusResultFields,
@@ -68,6 +69,7 @@ from .custom_fields import (
     UpdateProgramUsersResultFields,
     UpdateProposalResultFields,
     UpdateTargetsResultFields,
+    WaiveGroupConstraintResultFields,
 )
 from .input_types import (
     AddDatasetEventInput,
@@ -115,9 +117,10 @@ from .input_types import (
     ReplaceGnirsSequenceInput,
     ReplaceIgrins2SequenceInput,
     ResetAcquisitionInput,
+    RevokeGroupConstraintWaiverInput,
     RevokeUserInvitationInput,
     SetAllocationsInput,
-    SetGuideTargetNameInput,
+    SetGuideTargetInput,
     SetObservationWorkflowStateInput,
     SetProgramReferenceInput,
     SetProgramResourceLimitInput,
@@ -137,6 +140,7 @@ from .input_types import (
     UpdateProgramUsersInput,
     UpdateProposalInput,
     UpdateTargetsInput,
+    WaiveGroupConstraintInput,
     WarningDismissalInput,
 )
 
@@ -834,18 +838,17 @@ class Mutation:
         )
 
     @classmethod
-    def set_guide_target_name(
-        cls, input: SetGuideTargetNameInput
-    ) -> SetGuideTargetNameResultFields:
-        """Set the name of the guide target for an observation."""
+    def set_guide_target(cls, input: SetGuideTargetInput) -> SetGuideTargetResultFields:
+        """Select by hand the guide target of an observation, a catalog star or one of
+        its own targets, or return it to automatic selection."""
         arguments: dict[str, dict[str, Any]] = {
-            "input": {"type": "SetGuideTargetNameInput!", "value": input}
+            "input": {"type": "SetGuideTargetInput!", "value": input}
         }
         cleared_arguments = {
             key: value for key, value in arguments.items() if value["value"] is not None
         }
-        return SetGuideTargetNameResultFields(
-            field_name="setGuideTargetName", arguments=cleared_arguments
+        return SetGuideTargetResultFields(
+            field_name="setGuideTarget", arguments=cleared_arguments
         )
 
     @classmethod
@@ -1005,6 +1008,41 @@ class Mutation:
         }
         return UpdateGroupsResultFields(
             field_name="updateGroups", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def waive_group_constraint(
+        cls, input: WaiveGroupConstraintInput
+    ) -> WaiveGroupConstraintResultFields:
+        """Accepts one violation of a group's constraints, so that it no longer counts
+        against the group.  The violation must have happened: it must be one the
+        group's progress lists among its `violations`.  Anyone who may edit the
+        group may waive its violations."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "WaiveGroupConstraintInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return WaiveGroupConstraintResultFields(
+            field_name="waiveGroupConstraint", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def revoke_group_constraint_waiver(
+        cls, input: RevokeGroupConstraintWaiverInput
+    ) -> RevokeGroupConstraintWaiverResultFields:
+        """Revokes a waiver, so that its violation counts against the group again.  The
+        waiver is kept, recording who revoked it, when and why.  Anyone who may edit
+        the group may revoke its waivers."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "RevokeGroupConstraintWaiverInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return RevokeGroupConstraintWaiverResultFields(
+            field_name="revokeGroupConstraintWaiver", arguments=cleared_arguments
         )
 
     @classmethod
