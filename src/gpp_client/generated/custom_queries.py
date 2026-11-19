@@ -12,7 +12,9 @@ from .custom_fields import (
     ExecutionConfigFields,
     ExecutionEventSelectResultFields,
     GroupFields,
+    GroupSelectResultFields,
     ImagingConfigOptionFields,
+    MosMaskSelectResultFields,
     ObservationFields,
     ObservationSelectResultFields,
     ObservingModeGroupSelectResultFields,
@@ -31,11 +33,13 @@ from .custom_fields import (
 )
 from .custom_typing_fields import GraphQLField
 from .input_types import (
+    WhereAttachment,
     WhereCallForProposals,
     WhereConfigurationRequest,
     WhereDataset,
     WhereDatasetChronicleEntry,
     WhereExecutionEvent,
+    WhereGroup,
     WhereImagingConfigOption,
     WhereObservation,
     WhereProgram,
@@ -317,6 +321,30 @@ class Query:
         return GroupFields(field_name="group", arguments=cleared_arguments)
 
     @classmethod
+    def groups(
+        cls,
+        include_deleted: bool,
+        *,
+        where: Optional[WhereGroup] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> GroupSelectResultFields:
+        """Selects the first `LIMIT` matching groups based on the provided `WHERE`
+        parameter, if any, ordered by id."""
+        arguments: dict[str, dict[str, Any]] = {
+            "WHERE": {"type": "WhereGroup", "value": where},
+            "OFFSET_AT": {"type": "GroupId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "GroupId", "value": offset_after},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+            "includeDeleted": {"type": "Boolean!", "value": include_deleted},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return GroupSelectResultFields(field_name="groups", arguments=cleared_arguments)
+
+    @classmethod
     def observation(
         cls,
         *,
@@ -519,6 +547,33 @@ class Query:
         }
         return ProgramNoteSelectResultFields(
             field_name="programNotes", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def mos_masks(
+        cls,
+        instruments: list[Instrument],
+        *,
+        where: Optional[WhereAttachment] = None,
+        offset_at: Optional[Any] = None,
+        offset_after: Optional[Any] = None,
+        limit: Optional[Any] = None,
+    ) -> MosMaskSelectResultFields:
+        """Selects the first `LIMIT` MOS mask attachments cut for any of the given
+        instruments, from every program, in attachment id order.  Staff only: other users get no
+        matches.  Use it to choose the mask of a daytime calibration."""
+        arguments: dict[str, dict[str, Any]] = {
+            "instruments": {"type": "[Instrument!]!", "value": instruments},
+            "WHERE": {"type": "WhereAttachment", "value": where},
+            "OFFSET_AT": {"type": "AttachmentId", "value": offset_at},
+            "OFFSET_AFTER": {"type": "AttachmentId", "value": offset_after},
+            "LIMIT": {"type": "NonNegInt", "value": limit},
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return MosMaskSelectResultFields(
+            field_name="mosMasks", arguments=cleared_arguments
         )
 
     @classmethod

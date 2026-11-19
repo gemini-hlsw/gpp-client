@@ -97,6 +97,7 @@ from .enums import (
     GnirsPrism,
     GnirsReadMode,
     GnirsWellDepth,
+    GroupConstraintViolationCode,
     GroupStandingStatus,
     GuideProbe,
     GuideState,
@@ -129,6 +130,7 @@ from .enums import (
     SchedulingMode,
     ScienceBand,
     ScienceSubtype,
+    ScorpioChannelSelection,
     ScorpioFpu,
     SeeingTrend,
     SequenceCommand,
@@ -2256,18 +2258,39 @@ class SetTacFeedbackInput(BaseModel):
     tac_feedback: "TacFeedbackInput" = Field(alias=str("tacFeedback"))
 
 
-class SetGuideTargetNameInput(BaseModel):
-    """Input parameters for setting the guide star name for an observation.
-    Identify the observation to clone by specifying either its id or reference.  If
-    both are specified, they must refer to the same observation.  If neither is
-    specified, an error will be returned."""
+class GuideTargetSelectionInput(BaseModel):
+    """The guide target to select for an observation. Exactly one of the fields must
+    be set."""
+
+    catalog_name: Optional[Any] = Field(alias=str("catalogName"), default=None)
+    'The catalog name of the guide star, for example "Gaia DR3 123". The name\ncarries the catalog and its release. Gaia DR3 is the only catalog accepted for\nnow: the name must satisfy the regular expression "^Gaia DR3 (-?\\d+)$".'
+    observation_target: Optional["ObservationGuideTargetSelectionInput"] = Field(
+        alias=str("observationTarget"), default=None
+    )
+    "Guide on one of the observation's own targets. Today these are its science\ntargets, sidereal or non-sidereal, usable behind Altair, where the AOWFS\nguides on axis."
+
+
+class ObservationGuideTargetSelectionInput(BaseModel):
+    """The observation target an observation should guide on."""
+
+    target_id: Optional[Any] = Field(alias=str("targetId"), default=None)
+    "The id of the target. Omit it when the observation has a single science\ntarget: without an id the selection is an error when the guide star is\nresolved if the observation has more than one science target. An id that is\nnot one of the observation's science targets makes the selection unusable."
+
+
+class SetGuideTargetInput(BaseModel):
+    """Input parameters for selecting the guide target of an observation.
+    Identify the observation by specifying either its id or reference.  If both are
+    specified, they must refer to the same observation.  If neither is specified,
+    an error will be returned."""
 
     observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
     observation_reference: Optional[Any] = Field(
         alias=str("observationReference"), default=None
     )
-    target_name: Optional[Any] = Field(alias=str("targetName"), default=None)
-    'The name of the guide star. This must satisfy the regular expression "^Gaia DR3 (-?\\d+)$" where the\nnumeric part is the Gaia source_id. Omit or set to null to delete the\nselection and return to automatic guide star selection.'
+    guide_target: Optional["GuideTargetSelectionInput"] = Field(
+        alias=str("guideTarget"), default=None
+    )
+    "The guide target to select. Omit or set to null to delete the selection and\nreturn to automatic guide target selection."
 
 
 class SetProgramReferenceInput(BaseModel):
@@ -3687,6 +3710,42 @@ class GoaPropertiesInput(BaseModel):
     "Whether the header (as well as the data itself) should remain private.  This\nproperty is applicable to science programs and defaults to false."
 
 
+class GroupConstraintViolationInput(BaseModel):
+    """A violation of a group's constraints to waive, identified as
+    `GroupConstraintViolation` identifies it: its kind and where in the group it
+    happened.  `element` is required for `ORDER`, `MINIMUM_INTERVAL` and
+    `MAXIMUM_INTERVAL`, and `night` for `SAME_NIGHT`,
+    `OBSERVATIONS_PER_NIGHT_MINIMUM` and `OBSERVATIONS_PER_NIGHT_MAXIMUM`.  Other
+    kinds can't be waived."""
+
+    code: GroupConstraintViolationCode
+    element: Optional["GroupElementInput"] = None
+    night: Optional["ObservingNightInput"] = None
+
+
+class ObservingNightInput(BaseModel):
+    """An observing night at a site, as `ObservingNight` describes it."""
+
+    site: Site
+    date: Any
+
+
+class WaiveGroupConstraintInput(BaseModel):
+    group_id: Any = Field(alias=str("groupId"))
+    "The group whose violation is accepted."
+    violation: "GroupConstraintViolationInput"
+    "The violation accepted."
+    reason: Optional[Any] = None
+    "Why the violation is accepted, recorded with the waiver."
+
+
+class RevokeGroupConstraintWaiverInput(BaseModel):
+    waiver_id: Any = Field(alias=str("waiverId"))
+    "The waiver to revoke.  It must not have been revoked already."
+    reason: Optional[Any] = None
+    "Why the waiver is revoked, recorded with it."
+
+
 class WhereEqGroupStandingStatus(BaseModel):
     """Filters on equality (or not) of a group standing status and the supplied
     criteria.  All supplied criteria must match, but usually only one is selected."""
@@ -3805,6 +3864,10 @@ class ScorpioLongSlitInput(BaseModel):
 
     fpu: Optional[ScorpioFpu] = None
     "The long slit.  Required on create.  It cannot be unset with a null value."
+    channel_selection: Optional[ScorpioChannelSelection] = Field(
+        alias=str("channelSelection"), default=None
+    )
+    "The arms used for science.  Only VIS_ONLY is currently supported, and it is\nthe value used when skipped.  It cannot be unset with a null value."
     g: Optional["ExposureTimeModeInput"] = None
     "Exposure time mode of the g channel.  It cannot be unset with a null value."
     r: Optional["ExposureTimeModeInput"] = None
@@ -3817,6 +3880,8 @@ class ScorpioLongSlitInput(BaseModel):
         alias=str("explicitTelescopeConfigs"), default=None
     )
     "Explicit telescope configs. May be unset by assigning a null value, or ignored by skipping."
+    repeats: Optional[Any] = None
+    "Number of passes over the telescope configs (nod-and-read).  Defaults to 1\nwhen skipped on create.  It cannot be unset with a null value."
 
 
 class ImagingScienceRequirementsInput(BaseModel):
@@ -4745,6 +4810,144 @@ class WhereGroup(BaseModel):
     id: Optional["WhereOrderGroupId"] = None
     name: Optional["WhereOptionString"] = None
     description: Optional["WhereOptionString"] = None
+    program: Optional["WhereProgram"] = None
+    "Matches the program containing the group."
+    standing: Optional["WhereCalculatedGroupStanding"] = None
+    "Matches the group's standing (`Group.standing`).  A deleted group has no\nstanding, so it matches no standing filter."
+    waivers: Optional["WhereGroupConstraintWaiver"] = None
+    "Matches if some waiver of the group, revoked ones included, matches.  Every\ncondition in the filter, `NOT` included, applies to that one waiver: so\n`{ violation: { code: { EQ: ORDER } }, revoked: { IS_NULL: true } }` matches\nan active ORDER waiver, and `{ NOT: { revoked: { IS_NULL: true } } }` a\nrevoked one.\nThe filter can't express that no waiver matches, and negating it from\noutside (`NOT: { waivers: ... }`) has the same meaning as negating it inside.\nUse `hasWaiver` and `hasActiveWaiver` to match groups without waivers."
+    has_waiver: Optional["WhereBoolean"] = Field(alias=str("hasWaiver"), default=None)
+    "Matches whether the group has any waiver, revoked ones included."
+    has_active_waiver: Optional["WhereBoolean"] = Field(
+        alias=str("hasActiveWaiver"), default=None
+    )
+    "Matches whether the group has an active (unrevoked) waiver."
+    system: Optional["WhereBoolean"] = None
+    "Matches whether the group is managed by the system."
+    minimum_required: Optional["WhereOptionOrderNonNegShort"] = Field(
+        alias=str("minimumRequired"), default=None
+    )
+    "Matches how many of the group's elements must be observed.  Null means all\nof them, so `IS_NULL: true` matches groups that require every element."
+    ordered: Optional["WhereBoolean"] = None
+    "Matches whether the group's elements must be observed in order."
+    minimum_interval: Optional["WhereOptionOrderTimeSpan"] = Field(
+        alias=str("minimumInterval"), default=None
+    )
+    "Matches the group's minimum interval between elements, if any."
+    maximum_interval: Optional["WhereOptionOrderTimeSpan"] = Field(
+        alias=str("maximumInterval"), default=None
+    )
+    "Matches the group's maximum interval between elements, if any."
+    same_night: Optional["WhereBoolean"] = Field(alias=str("sameNight"), default=None)
+    "Matches whether the group's elements must all be observed in one night."
+    minimum_observations_per_night: Optional["WhereOptionOrderPosShort"] = Field(
+        alias=str("minimumObservationsPerNight"), default=None
+    )
+    "Matches the group's minimum number of observations per night, if any."
+    maximum_observations_per_night: Optional["WhereOptionOrderPosShort"] = Field(
+        alias=str("maximumObservationsPerNight"), default=None
+    )
+    "Matches the group's maximum number of observations per night, if any."
+
+
+class WhereGroupConstraintWaiver(BaseModel):
+    """Matches a group constraint waiver, field by field as `GroupConstraintWaiver`
+    has them, except its `groupId`: it is matched as one of the group's waivers."""
+
+    and_: Optional[list["WhereGroupConstraintWaiver"]] = Field(
+        alias=str("AND"), default=None
+    )
+    or_: Optional[list["WhereGroupConstraintWaiver"]] = Field(
+        alias=str("OR"), default=None
+    )
+    not_: Optional["WhereGroupConstraintWaiver"] = Field(alias=str("NOT"), default=None)
+    id: Optional["WhereOrderGroupConstraintWaiverId"] = None
+    violation: Optional["WhereGroupConstraintViolation"] = None
+    "Matches the violation accepted."
+    granted: Optional["WhereAttribution"] = None
+    "Matches who granted the waiver and when."
+    revoked: Optional["WhereOptionAttribution"] = None
+    "Matches who revoked the waiver and when.  `IS_NULL: true` matches an active\nwaiver, and `IS_NULL: false` a revoked one."
+
+
+class WhereGroupConstraintViolation(BaseModel):
+    """Matches a group constraint violation, as `GroupConstraintViolation` has it.
+    Whether a violation is located by element or by night follows from its code."""
+
+    code: Optional["WhereEqGroupConstraintViolationCode"] = None
+    "Matches the kind of violation."
+    element: Optional["WhereGroupElementId"] = None
+    "Matches the element where it happened.  Never matches a night's violation."
+    night: Optional["WhereObservingNight"] = None
+    "Matches the night when it happened.  Never matches an element's violation."
+
+
+class WhereGroupElementId(BaseModel):
+    """Matches a group element id.  A condition on the id the element doesn't have
+    (say `groupId` for an observation) never matches."""
+
+    group_id: Optional["WhereOrderGroupId"] = Field(alias=str("groupId"), default=None)
+    observation_id: Optional["WhereOrderObservationId"] = Field(
+        alias=str("observationId"), default=None
+    )
+
+
+class WhereObservingNight(BaseModel):
+    """Matches an observing night."""
+
+    site: Optional["WhereEqSite"] = None
+    date: Optional["WhereOrderDate"] = None
+    "Matches the local date on which the night ends."
+
+
+class WhereAttribution(BaseModel):
+    """Matches who took an action and when."""
+
+    by: Optional["WhereOrderUserId"] = None
+    at: Optional["WhereOrderTimestamp"] = None
+
+
+class WhereOptionAttribution(BaseModel):
+    """Matches who took an action, if anyone did, and when."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the action hasn't been taken.  When `false` matches if\nit has."
+    by: Optional["WhereOrderUserId"] = None
+    at: Optional["WhereOrderTimestamp"] = None
+
+
+class WhereOrderGroupConstraintWaiverId(BaseModel):
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the property is exactly the supplied value."
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the property is not the supplied value."
+    in_: Optional[list[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the property value is any of the supplied options."
+    nin: Optional[list[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the property value is none of the supplied values."
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the property is ordered after (>) the supplied value."
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the property is ordered before (<) the supplied value."
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the property is ordered after or equal (>=) the supplied value."
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the property is ordered before or equal (<=) the supplied value."
+
+
+class WhereEqGroupConstraintViolationCode(BaseModel):
+    eq: Optional[GroupConstraintViolationCode] = Field(alias=str("EQ"), default=None)
+    "Matches if the code is exactly the supplied value."
+    neq: Optional[GroupConstraintViolationCode] = Field(alias=str("NEQ"), default=None)
+    "Matches if the code is not the supplied value."
+    in_: Optional[list[GroupConstraintViolationCode]] = Field(
+        alias=str("IN"), default=None
+    )
+    "Matches if the code is any of the supplied options."
+    nin: Optional[list[GroupConstraintViolationCode]] = Field(
+        alias=str("NIN"), default=None
+    )
+    "Matches if the code is none of the supplied values."
 
 
 class WhereOrderGroupId(BaseModel):
@@ -5210,6 +5413,78 @@ class WhereOptionOrderTimestamp(BaseModel):
     "Matches if the timestamp is ordered after or equal (>=) the supplied value."
     lte: Optional[Any] = Field(alias=str("LTE"), default=None)
     "Matches if the timestamp is ordered before or equal (<=) the supplied value."
+
+
+class WhereOptionOrderNonNegShort(BaseModel):
+    """Filters on equality or order comparisons of an optional count property.  All
+    supplied criteria must match, but usually only one is selected."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the count is not defined.  When `false` matches if\nthe count is defined."
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the count is exactly the supplied value."
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the count is not the supplied value."
+    in_: Optional[list[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the count is any of the supplied options."
+    nin: Optional[list[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the count is none of the supplied values."
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the count is ordered after (>) the supplied value."
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the count is ordered before (<) the supplied value."
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the count is ordered after or equal (>=) the supplied value."
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the count is ordered before or equal (<=) the supplied value."
+
+
+class WhereOptionOrderPosShort(BaseModel):
+    """Filters on equality or order comparisons of an optional count property.  All
+    supplied criteria must match, but usually only one is selected."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the count is not defined.  When `false` matches if\nthe count is defined."
+    eq: Optional[Any] = Field(alias=str("EQ"), default=None)
+    "Matches if the count is exactly the supplied value."
+    neq: Optional[Any] = Field(alias=str("NEQ"), default=None)
+    "Matches if the count is not the supplied value."
+    in_: Optional[list[Any]] = Field(alias=str("IN"), default=None)
+    "Matches if the count is any of the supplied options."
+    nin: Optional[list[Any]] = Field(alias=str("NIN"), default=None)
+    "Matches if the count is none of the supplied values."
+    gt: Optional[Any] = Field(alias=str("GT"), default=None)
+    "Matches if the count is ordered after (>) the supplied value."
+    lt: Optional[Any] = Field(alias=str("LT"), default=None)
+    "Matches if the count is ordered before (<) the supplied value."
+    gte: Optional[Any] = Field(alias=str("GTE"), default=None)
+    "Matches if the count is ordered after or equal (>=) the supplied value."
+    lte: Optional[Any] = Field(alias=str("LTE"), default=None)
+    "Matches if the count is ordered before or equal (<=) the supplied value."
+
+
+class WhereOptionOrderTimeSpan(BaseModel):
+    """Filters on equality or order comparisons of an optional time span property.  All
+    supplied criteria must match, but usually only one is selected."""
+
+    is_null: Optional[bool] = Field(alias=str("IS_NULL"), default=None)
+    "When `true`, matches if the time span is not defined.  When `false` matches if\nthe time span is defined."
+    eq: Optional["TimeSpanInput"] = Field(alias=str("EQ"), default=None)
+    "Matches if the time span is exactly the supplied value."
+    neq: Optional["TimeSpanInput"] = Field(alias=str("NEQ"), default=None)
+    "Matches if the time span is not the supplied value."
+    in_: Optional[list["TimeSpanInput"]] = Field(alias=str("IN"), default=None)
+    "Matches if the time span is any of the supplied options."
+    nin: Optional[list["TimeSpanInput"]] = Field(alias=str("NIN"), default=None)
+    "Matches if the time span is none of the supplied values."
+    gt: Optional["TimeSpanInput"] = Field(alias=str("GT"), default=None)
+    "Matches if the time span is ordered after (>) the supplied value."
+    lt: Optional["TimeSpanInput"] = Field(alias=str("LT"), default=None)
+    "Matches if the time span is ordered before (<) the supplied value."
+    gte: Optional["TimeSpanInput"] = Field(alias=str("GTE"), default=None)
+    "Matches if the time span is ordered after or equal (>=) the supplied value."
+    lte: Optional["TimeSpanInput"] = Field(alias=str("LTE"), default=None)
+    "Matches if the time span is ordered before or equal (<=) the supplied value."
 
 
 class WhereOrderInt(BaseModel):
@@ -6399,6 +6674,8 @@ ExchangeInput.model_rebuild()
 ScienceRequirementsInput.model_rebuild()
 SetAllocationsInput.model_rebuild()
 SetTacFeedbackInput.model_rebuild()
+GuideTargetSelectionInput.model_rebuild()
+SetGuideTargetInput.model_rebuild()
 SetProgramReferenceInput.model_rebuild()
 ProgramReferencePropertiesInput.model_rebuild()
 SiderealInput.model_rebuild()
@@ -6467,6 +6744,8 @@ GroupedImagingVariantInput.model_rebuild()
 InterleavedImagingVariantInput.model_rebuild()
 PreImagingVariantInput.model_rebuild()
 GmosNorthImagingFilterInput.model_rebuild()
+GroupConstraintViolationInput.model_rebuild()
+WaiveGroupConstraintInput.model_rebuild()
 WhereCalculatedGroupStanding.model_rebuild()
 GroupPropertiesInput.model_rebuild()
 CreateGroupInput.model_rebuild()
@@ -6491,8 +6770,15 @@ WhereConfigurationRequest.model_rebuild()
 WhereCone.model_rebuild()
 WhereObservationReference.model_rebuild()
 WhereGroup.model_rebuild()
+WhereGroupConstraintWaiver.model_rebuild()
+WhereGroupConstraintViolation.model_rebuild()
+WhereGroupElementId.model_rebuild()
+WhereObservingNight.model_rebuild()
+WhereAttribution.model_rebuild()
+WhereOptionAttribution.model_rebuild()
 WhereObservationQa.model_rebuild()
 WhereDatasetQaCounts.model_rebuild()
+WhereOptionOrderTimeSpan.model_rebuild()
 WhereProposalReference.model_rebuild()
 WherePartnerLink.model_rebuild()
 WhereProgram.model_rebuild()
