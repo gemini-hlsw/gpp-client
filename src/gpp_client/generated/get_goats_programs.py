@@ -1,9 +1,7 @@
-from typing import Any, Literal, Optional
-
 from pydantic import Field
 
 from .base_model import BaseModel
-from .enums import ProgramType, ProposalStatus, TooActivation
+from .fragments import GOATSProgram
 
 
 class GetGOATSPrograms(BaseModel):
@@ -15,35 +13,9 @@ class GetGOATSProgramsPrograms(BaseModel):
     has_more: bool = Field(alias="hasMore")
 
 
-class GetGOATSProgramsProgramsMatches(BaseModel):
-    id: Any
-    name: Optional[Any]
-    description: Optional[Any]
-    reference: Optional["GetGOATSProgramsProgramsMatchesReference"]
-    proposal_status: ProposalStatus = Field(alias="proposalStatus")
-    type_: ProgramType = Field(alias="type")
-    too_activation_ceiling: Optional[TooActivation] = Field(
-        alias="tooActivationCeiling"
-    )
-
-
-class GetGOATSProgramsProgramsMatchesReference(BaseModel):
-    typename__: Literal[
-        "CalibrationProgramReference",
-        "CommissioningProgramReference",
-        "EngineeringProgramReference",
-        "ExampleProgramReference",
-        "KeckProgramReference",
-        "LibraryProgramReference",
-        "MonitoringProgramReference",
-        "ProgramReference",
-        "ScienceProgramReference",
-        "SubaruProgramReference",
-        "SystemProgramReference",
-    ] = Field(alias="__typename")
-    label: Any
+class GetGOATSProgramsProgramsMatches(GOATSProgram):
+    pass
 
 
 GetGOATSPrograms.model_rebuild()
 GetGOATSProgramsPrograms.model_rebuild()
-GetGOATSProgramsProgramsMatches.model_rebuild()

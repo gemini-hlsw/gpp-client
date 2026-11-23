@@ -663,19 +663,23 @@ class GraphQLClient(AsyncBaseClient):
             query GetGOATSPrograms {
               programs(includeDeleted: false, WHERE: {proposalStatus: {EQ: ACCEPTED}}) {
                 matches {
-                  id
-                  name
-                  description
-                  reference {
-                    __typename
-                    label
-                  }
-                  proposalStatus
-                  type
-                  tooActivationCeiling
+                  ...GOATSProgram
                 }
                 hasMore
               }
+            }
+
+            fragment GOATSProgram on Program {
+              id
+              name
+              description
+              reference {
+                __typename
+                label
+              }
+              proposalStatus
+              type
+              tooActivationCeiling
             }
             """)
         variables: dict[str, object] = {}
@@ -698,1216 +702,424 @@ class GraphQLClient(AsyncBaseClient):
                 WHERE: {program: {id: {EQ: $programId}, proposalStatus: {EQ: ACCEPTED}}}
               ) {
                 matches {
-                  id
-                  reference {
-                    label
-                  }
-                  instrument
-                  calibrationRole
-                  configurationRequests {
-                    id
-                  }
-                  title
-                  subtitle
-                  constraintSet {
-                    imageQuality
-                    cloudExtinction
-                    skyBackground
-                    waterVapor
-                    elevationRange {
-                      airMass {
-                        min
-                        max
-                      }
-                      hourAngle {
-                        minHours
-                        maxHours
-                      }
-                    }
-                  }
-                  workflow {
-                    calculationState
-                    value {
-                      state
-                      validTransitions
-                      validationErrors {
-                        code
-                      }
-                    }
-                  }
-                  attachments {
-                    id
-                    attachmentType
-                    fileName
-                    description
-                    updatedAt
-                  }
-                  targetEnvironment {
-                    asterism {
-                      id
-                      name
-                      opportunity {
-                        __typename
-                      }
-                    }
-                    firstScienceTarget {
-                      id
-                      name
-                      opportunity {
-                        __typename
-                      }
-                      sidereal {
-                        ra {
-                          hms
-                          hours
-                          degrees
-                        }
-                        dec {
-                          dms
-                          degrees
-                        }
-                        properMotion {
-                          ra {
-                            milliarcsecondsPerYear
-                          }
-                          dec {
-                            milliarcsecondsPerYear
-                          }
-                        }
-                        parallax {
-                          milliarcseconds
-                        }
-                        radialVelocity {
-                          kilometersPerSecond
-                        }
-                      }
-                      sourceProfile {
-                        point {
-                          bandNormalized {
-                            brightnesses {
-                              band
-                              value
-                              units
-                            }
-                            sed {
-                              blackBodyTempK
-                              coolStar
-                              fluxDensities {
-                                wavelength {
-                                  nanometers
-                                }
-                                density
-                              }
-                              fluxDensitiesAttachment
-                              galaxy
-                              hiiRegion
-                              planet
-                              planetaryNebula
-                              powerLaw
-                              quasar
-                              stellarLibrary
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                  posAngleConstraint {
-                    mode
-                    angle {
-                      degrees
-                    }
-                  }
-                  scienceBand
-                  observationDuration {
-                    seconds
-                    minutes
-                    hours
-                    iso
-                  }
-                  observerNotes
-                  scienceRequirements {
-                    mode
-                    spectroscopy {
-                      wavelength {
-                        nanometers
-                      }
-                    }
-                    exposureTimeMode {
-                      signalToNoise {
-                        value
-                        at {
-                          nanometers
-                        }
-                      }
-                      timeAndCount {
-                        time {
-                          seconds
-                        }
-                        count
-                        at {
-                          nanometers
-                        }
-                      }
-                    }
-                  }
-                  observingMode {
-                    instrument
-                    mode
-                    gmosNorthLongSlit {
-                      grating
-                      filter
-                      fpu
-                      centralWavelength {
-                        nanometers
-                      }
-                      wavelengthDithers {
-                        nanometers
-                      }
-                      xBin
-                      yBin
-                      ampReadMode
-                      roi
-                      exposureTimeMode {
-                        signalToNoise {
-                          value
-                          at {
-                            nanometers
-                          }
-                        }
-                        timeAndCount {
-                          time {
-                            seconds
-                          }
-                          count
-                          at {
-                            nanometers
-                          }
-                        }
-                      }
-                      defaultTelescopeConfigs {
-                        alongSlit {
-                          guiding
-                          q {
-                            arcseconds
-                          }
-                        }
-                        offsetMode
-                        toSky {
-                          guiding
-                          offset {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                      explicitTelescopeConfigs {
-                        alongSlit {
-                          guiding
-                          q {
-                            arcseconds
-                          }
-                        }
-                        offsetMode
-                        toSky {
-                          guiding
-                          offset {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                    }
-                    gmosSouthLongSlit {
-                      grating
-                      filter
-                      fpu
-                      centralWavelength {
-                        nanometers
-                      }
-                      wavelengthDithers {
-                        nanometers
-                      }
-                      xBin
-                      yBin
-                      ampReadMode
-                      roi
-                      exposureTimeMode {
-                        signalToNoise {
-                          value
-                          at {
-                            nanometers
-                          }
-                        }
-                        timeAndCount {
-                          time {
-                            seconds
-                          }
-                          count
-                          at {
-                            nanometers
-                          }
-                        }
-                      }
-                      defaultTelescopeConfigs {
-                        alongSlit {
-                          guiding
-                          q {
-                            arcseconds
-                          }
-                        }
-                        offsetMode
-                        toSky {
-                          guiding
-                          offset {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                      explicitTelescopeConfigs {
-                        alongSlit {
-                          guiding
-                          q {
-                            arcseconds
-                          }
-                        }
-                        offsetMode
-                        toSky {
-                          guiding
-                          offset {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                    }
-                    gmosNorthImaging {
-                      filters {
-                        filter
-                        exposureTimeMode {
-                          signalToNoise {
-                            value
-                            at {
-                              nanometers
-                            }
-                          }
-                          timeAndCount {
-                            time {
-                              seconds
-                            }
-                            count
-                            at {
-                              nanometers
-                            }
-                          }
-                        }
-                      }
-                      ampReadMode
-                      bin
-                      roi
-                      variant {
-                        variantType
-                        grouped {
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          order
-                          offsets {
-                            generatorType
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                        interleaved {
-                          offsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                        }
-                        preImaging {
-                          offset1 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset2 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset3 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset4 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                    }
-                    gmosSouthImaging {
-                      filters {
-                        filter
-                        exposureTimeMode {
-                          signalToNoise {
-                            value
-                            at {
-                              nanometers
-                            }
-                          }
-                          timeAndCount {
-                            time {
-                              seconds
-                            }
-                            count
-                            at {
-                              nanometers
-                            }
-                          }
-                        }
-                      }
-                      ampReadMode
-                      bin
-                      roi
-                      variant {
-                        variantType
-                        grouped {
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          order
-                          offsets {
-                            generatorType
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                        interleaved {
-                          offsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                              center {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                        }
-                        preImaging {
-                          offset1 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset2 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset3 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset4 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                      ampReadMode
-                      bin
-                      roi
-                      variant {
-                        variantType
-                        grouped {
-                          offsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          order
-                        }
-                        interleaved {
-                          offsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                          skyCount
-                          skyOffsets {
-                            generatorType
-                            enumerated {
-                              values {
-                                guiding
-                                offset {
-                                  p {
-                                    arcseconds
-                                  }
-                                  q {
-                                    arcseconds
-                                  }
-                                }
-                              }
-                            }
-                            random {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            spiral {
-                              seed
-                              size {
-                                arcseconds
-                              }
-                            }
-                            uniform {
-                              cornerA {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                              cornerB {
-                                p {
-                                  arcseconds
-                                }
-                                q {
-                                  arcseconds
-                                }
-                              }
-                            }
-                          }
-                        }
-                        preImaging {
-                          offset1 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset2 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset3 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                          offset4 {
-                            p {
-                              arcseconds
-                            }
-                            q {
-                              arcseconds
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                  program {
-                    allocations {
-                      scienceBand
-                      duration {
-                        hours
-                      }
-                    }
-                    timeCharge {
-                      band
-                      time {
-                        program {
-                          hours
-                        }
-                      }
-                    }
-                  }
-                  schedulingConstraints {
-                    schedulingMode
-                    tooActivation
-                    timingWindows {
-                      inclusion
-                      startUtc
-                      end {
-                        __typename
-                        ... on TimingWindowEndAt {
-                          atUtc
-                        }
-                        ... on TimingWindowEndAfter {
-                          after {
-                            seconds
-                          }
-                          repeat {
-                            period {
-                              seconds
-                            }
-                            times
-                          }
-                        }
-                      }
-                    }
-                  }
-                  priority
+                  ...GOATSObservation
                 }
                 hasMore
+              }
+            }
+
+            fragment GOATSConstraintSet on ConstraintSet {
+              imageQuality
+              cloudExtinction
+              skyBackground
+              waterVapor
+              elevationRange {
+                airMass {
+                  min
+                  max
+                }
+                hourAngle {
+                  minHours
+                  maxHours
+                }
+              }
+            }
+
+            fragment GOATSExposureTimeMode on ExposureTimeMode {
+              signalToNoise {
+                value
+                at {
+                  nanometers
+                }
+              }
+              timeAndCount {
+                time {
+                  seconds
+                }
+                count
+                at {
+                  nanometers
+                }
+              }
+            }
+
+            fragment GOATSGmosNorthImaging on GmosNorthImaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  ...GOATSExposureTimeMode
+                }
+              }
+              ampReadMode
+              bin
+              roi
+              variant {
+                ...GOATSImagingVariant
+              }
+            }
+
+            fragment GOATSGmosNorthLongSlit on GmosNorthLongSlit {
+              grating
+              filter
+              fpu
+              centralWavelength {
+                nanometers
+              }
+              wavelengthDithers {
+                nanometers
+              }
+              xBin
+              yBin
+              ampReadMode
+              roi
+              exposureTimeMode {
+                ...GOATSExposureTimeMode
+              }
+              defaultTelescopeConfigs {
+                ...GOATSSlitTelescopeConfigs
+              }
+              explicitTelescopeConfigs {
+                ...GOATSSlitTelescopeConfigs
+              }
+            }
+
+            fragment GOATSGmosSouthImaging on GmosSouthImaging {
+              filters {
+                filter
+                exposureTimeMode {
+                  ...GOATSExposureTimeMode
+                }
+              }
+              ampReadMode
+              bin
+              roi
+              variant {
+                ...GOATSImagingVariant
+              }
+            }
+
+            fragment GOATSGmosSouthLongSlit on GmosSouthLongSlit {
+              grating
+              filter
+              fpu
+              centralWavelength {
+                nanometers
+              }
+              wavelengthDithers {
+                nanometers
+              }
+              xBin
+              yBin
+              ampReadMode
+              roi
+              exposureTimeMode {
+                ...GOATSExposureTimeMode
+              }
+              defaultTelescopeConfigs {
+                ...GOATSSlitTelescopeConfigs
+              }
+              explicitTelescopeConfigs {
+                ...GOATSSlitTelescopeConfigs
+              }
+            }
+
+            fragment GOATSImagingVariant on ImagingVariant {
+              variantType
+              grouped {
+                skyCount
+                skyOffsets {
+                  ...GOATSTelescopeConfigGenerator
+                }
+                order
+                offsets {
+                  ...GOATSTelescopeConfigGenerator
+                }
+              }
+              interleaved {
+                offsets {
+                  ...GOATSTelescopeConfigGenerator
+                }
+                skyCount
+                skyOffsets {
+                  ...GOATSTelescopeConfigGenerator
+                }
+              }
+              preImaging {
+                offset1 {
+                  ...GOATSOffset
+                }
+                offset2 {
+                  ...GOATSOffset
+                }
+                offset3 {
+                  ...GOATSOffset
+                }
+                offset4 {
+                  ...GOATSOffset
+                }
+              }
+            }
+
+            fragment GOATSObservation on Observation {
+              id
+              reference {
+                label
+              }
+              instrument
+              calibrationRole
+              configurationRequests {
+                id
+              }
+              title
+              subtitle
+              constraintSet {
+                ...GOATSConstraintSet
+              }
+              workflow {
+                calculationState
+                value {
+                  state
+                  validTransitions
+                  validationErrors {
+                    code
+                  }
+                }
+              }
+              attachments {
+                id
+                attachmentType
+                fileName
+                description
+                updatedAt
+              }
+              targetEnvironment {
+                asterism {
+                  id
+                  name
+                  opportunity {
+                    __typename
+                  }
+                }
+                firstScienceTarget {
+                  ...GOATSTarget
+                }
+              }
+              posAngleConstraint {
+                mode
+                angle {
+                  degrees
+                }
+              }
+              scienceBand
+              observationDuration {
+                seconds
+                minutes
+                hours
+                iso
+              }
+              observerNotes
+              scienceRequirements {
+                mode
+                spectroscopy {
+                  wavelength {
+                    nanometers
+                  }
+                }
+                exposureTimeMode {
+                  ...GOATSExposureTimeMode
+                }
+              }
+              observingMode {
+                ...GOATSObservingMode
+              }
+              program {
+                allocations {
+                  scienceBand
+                  duration {
+                    hours
+                  }
+                }
+                timeCharge {
+                  band
+                  time {
+                    program {
+                      hours
+                    }
+                  }
+                }
+              }
+              schedulingConstraints {
+                ...GOATSSchedulingConstraints
+              }
+              priority
+            }
+
+            fragment GOATSObservingMode on ObservingMode {
+              instrument
+              mode
+              gmosNorthLongSlit {
+                ...GOATSGmosNorthLongSlit
+              }
+              gmosSouthLongSlit {
+                ...GOATSGmosSouthLongSlit
+              }
+              gmosNorthImaging {
+                ...GOATSGmosNorthImaging
+              }
+              gmosSouthImaging {
+                ...GOATSGmosSouthImaging
+              }
+            }
+
+            fragment GOATSOffset on Offset {
+              p {
+                arcseconds
+              }
+              q {
+                arcseconds
+              }
+            }
+
+            fragment GOATSSchedulingConstraints on SchedulingConstraints {
+              schedulingMode
+              tooActivation
+              timingWindows {
+                inclusion
+                startUtc
+                end {
+                  __typename
+                  ... on TimingWindowEndAt {
+                    atUtc
+                  }
+                  ... on TimingWindowEndAfter {
+                    after {
+                      seconds
+                    }
+                    repeat {
+                      period {
+                        seconds
+                      }
+                      times
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment GOATSSlitTelescopeConfigs on SlitTelescopeConfigs {
+              alongSlit {
+                guiding
+                q {
+                  arcseconds
+                }
+              }
+              offsetMode
+              toSky {
+                ...GOATSTelescopeConfig
+              }
+            }
+
+            fragment GOATSTarget on Target {
+              id
+              name
+              opportunity {
+                __typename
+              }
+              sidereal {
+                ra {
+                  hms
+                  hours
+                  degrees
+                }
+                dec {
+                  dms
+                  degrees
+                }
+                properMotion {
+                  ra {
+                    milliarcsecondsPerYear
+                  }
+                  dec {
+                    milliarcsecondsPerYear
+                  }
+                }
+                parallax {
+                  milliarcseconds
+                }
+                radialVelocity {
+                  kilometersPerSecond
+                }
+              }
+              sourceProfile {
+                point {
+                  bandNormalized {
+                    brightnesses {
+                      band
+                      value
+                      units
+                    }
+                    sed {
+                      blackBodyTempK
+                      coolStar
+                      fluxDensities {
+                        wavelength {
+                          nanometers
+                        }
+                        density
+                      }
+                      fluxDensitiesAttachment
+                      galaxy
+                      hiiRegion
+                      planet
+                      planetaryNebula
+                      powerLaw
+                      quasar
+                      stellarLibrary
+                    }
+                  }
+                }
+              }
+            }
+
+            fragment GOATSTelescopeConfig on TelescopeConfig {
+              guiding
+              offset {
+                ...GOATSOffset
+              }
+            }
+
+            fragment GOATSTelescopeConfigGenerator on TelescopeConfigGenerator {
+              generatorType
+              enumerated {
+                values {
+                  ...GOATSTelescopeConfig
+                }
+              }
+              random {
+                seed
+                size {
+                  arcseconds
+                }
+                center {
+                  ...GOATSOffset
+                }
+              }
+              spiral {
+                seed
+                size {
+                  arcseconds
+                }
+                center {
+                  ...GOATSOffset
+                }
+              }
+              uniform {
+                cornerA {
+                  ...GOATSOffset
+                }
+                cornerB {
+                  ...GOATSOffset
+                }
               }
             }
             """)
@@ -1930,72 +1142,80 @@ class GraphQLClient(AsyncBaseClient):
                 WHERE: {program: {id: {EQ: $programId}}, status: {EQ: APPROVED}}
               ) {
                 matches {
-                  id
-                  status
-                  justification
-                  applicableObservations
-                  configuration {
-                    conditions {
-                      imageQuality
-                      cloudExtinction
-                      skyBackground
-                      waterVapor
-                    }
-                    target {
-                      coordinates {
-                        ra {
-                          hms
-                          degrees
-                        }
-                        dec {
-                          dms
-                          degrees
-                        }
-                      }
-                      region {
-                        rightAscensionArc {
-                          type
-                          start {
-                            hms
-                            degrees
-                          }
-                          end {
-                            hms
-                            degrees
-                          }
-                        }
-                        declinationArc {
-                          type
-                          start {
-                            dms
-                            degrees
-                          }
-                          end {
-                            dms
-                            degrees
-                          }
-                        }
-                      }
-                    }
-                    observingMode {
-                      instrument
-                      mode
-                      gmosNorthLongSlit {
-                        grating
-                      }
-                      gmosSouthLongSlit {
-                        grating
-                      }
-                      gmosNorthImaging {
-                        filters
-                      }
-                      gmosSouthImaging {
-                        filters
-                      }
-                    }
-                  }
+                  ...GOATSConfigurationRequest
                 }
                 hasMore
+              }
+            }
+
+            fragment GOATSConfigurationRequest on ConfigurationRequest {
+              id
+              status
+              justification
+              applicableObservations
+              configuration {
+                conditions {
+                  imageQuality
+                  cloudExtinction
+                  skyBackground
+                  waterVapor
+                }
+                target {
+                  ...GOATSConfigurationTarget
+                }
+                observingMode {
+                  instrument
+                  mode
+                  gmosNorthLongSlit {
+                    grating
+                  }
+                  gmosSouthLongSlit {
+                    grating
+                  }
+                  gmosNorthImaging {
+                    filters
+                  }
+                  gmosSouthImaging {
+                    filters
+                  }
+                }
+              }
+            }
+
+            fragment GOATSConfigurationTarget on ConfigurationTarget {
+              coordinates {
+                ra {
+                  hms
+                  degrees
+                }
+                dec {
+                  dms
+                  degrees
+                }
+              }
+              region {
+                rightAscensionArc {
+                  type
+                  start {
+                    hms
+                    degrees
+                  }
+                  end {
+                    hms
+                    degrees
+                  }
+                }
+                declinationArc {
+                  type
+                  start {
+                    dms
+                    degrees
+                  }
+                  end {
+                    dms
+                    degrees
+                  }
+                }
               }
             }
             """)
@@ -2015,53 +1235,61 @@ class GraphQLClient(AsyncBaseClient):
         query = gql("""
             query GetGOATSConfigOptions($instrument: Instrument!) {
               spectroscopyConfigOptions(WHERE: {instrument: {EQ: $instrument}}) {
-                name
-                instrument
-                site
-                focalPlane
-                fpuLabel
-                disperserLabel
-                filterLabel
-                slitWidth {
-                  arcseconds
-                }
-                resolution
-                wavelengthMin {
-                  nanometers
-                }
-                wavelengthMax {
-                  nanometers
-                }
-                wavelengthOptimal {
-                  nanometers
-                }
-                wavelengthCoverage {
-                  nanometers
-                }
-                gmosNorth {
-                  fpu
-                  grating
-                  filter
-                }
-                gmosSouth {
-                  fpu
-                  grating
-                  filter
-                }
+                ...GOATSSpectroscopyConfigOption
               }
               imagingConfigOptions(WHERE: {instrument: {EQ: $instrument}}) {
-                instrument
-                site
-                filterLabel
-                fov {
-                  arcseconds
-                }
-                gmosNorth {
-                  filter
-                }
-                gmosSouth {
-                  filter
-                }
+                ...GOATSImagingConfigOption
+              }
+            }
+
+            fragment GOATSImagingConfigOption on ImagingConfigOption {
+              instrument
+              site
+              filterLabel
+              fov {
+                arcseconds
+              }
+              gmosNorth {
+                filter
+              }
+              gmosSouth {
+                filter
+              }
+            }
+
+            fragment GOATSSpectroscopyConfigOption on SpectroscopyConfigOption {
+              name
+              instrument
+              site
+              focalPlane
+              fpuLabel
+              disperserLabel
+              filterLabel
+              slitWidth {
+                arcseconds
+              }
+              resolution
+              wavelengthMin {
+                nanometers
+              }
+              wavelengthMax {
+                nanometers
+              }
+              wavelengthOptimal {
+                nanometers
+              }
+              wavelengthCoverage {
+                nanometers
+              }
+              gmosNorth {
+                fpu
+                grating
+                filter
+              }
+              gmosSouth {
+                fpu
+                grating
+                filter
               }
             }
             """)
