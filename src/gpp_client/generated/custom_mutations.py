@@ -56,6 +56,7 @@ from .custom_fields import (
     SetProgramResourceLimitResultFields,
     SetProposalStatusResultFields,
     TacFeedbackResultFields,
+    UnfreezeTimeAccountingResultFields,
     UnlinkUserResultFields,
     UpdateAsterismsResultFields,
     UpdateAttachmentsResultFields,
@@ -126,6 +127,7 @@ from .input_types import (
     SetProgramResourceLimitInput,
     SetProposalStatusInput,
     SetTacFeedbackInput,
+    UnfreezeTimeAccountingInput,
     UnlinkUserInput,
     UpdateAsterismsInput,
     UpdateAttachmentsInput,
@@ -731,6 +733,30 @@ class Mutation:
         }
         return ReplaceGhostSequenceResultFields(
             field_name="replaceGhostSequence", arguments=cleared_arguments
+        )
+
+    @classmethod
+    def unfreeze_time_accounting(
+        cls, input: UnfreezeTimeAccountingInput
+    ) -> UnfreezeTimeAccountingResultFields:
+        """Moves a visit, or every visit of an observation, to the current time
+        accounting rules and recomputes its charge right away, unfreezing any whose
+        time accounting was frozen when the rules changed (see
+        `TimeChargeInvoice.frozen`).  A visit that isn't frozen is simply
+        recomputed, which is harmless since its charge already follows its changes.
+        A visit on a newer version of the rules than this service implements (as
+        after a rollback) is left alone and is missing from the result's `visits`.
+        Existing time charge corrections are applied to the recomputed charge, so a
+        correction that compensated for the old rules may need to be revisited.
+        Requires staff (or better) access."""
+        arguments: dict[str, dict[str, Any]] = {
+            "input": {"type": "UnfreezeTimeAccountingInput!", "value": input}
+        }
+        cleared_arguments = {
+            key: value for key, value in arguments.items() if value["value"] is not None
+        }
+        return UnfreezeTimeAccountingResultFields(
+            field_name="unfreezeTimeAccounting", arguments=cleared_arguments
         )
 
     @classmethod

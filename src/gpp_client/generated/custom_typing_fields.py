@@ -487,6 +487,12 @@ class SpiralTelescopeConfigGeneratorGraphQLField(GraphQLField):
         return self
 
 
+class UnfreezeTimeAccountingResultGraphQLField(GraphQLField):
+    def alias(self, alias: str) -> "UnfreezeTimeAccountingResultGraphQLField":
+        self._alias = alias
+        return self
+
+
 class UniformTelescopeConfigGeneratorGraphQLField(GraphQLField):
     def alias(self, alias: str) -> "UniformTelescopeConfigGeneratorGraphQLField":
         self._alias = alias
