@@ -1,6 +1,9 @@
 from typing import Optional
 
+from pydantic import Field
+
 from .base_model import BaseModel
+from .enums import ObservationValidationCode
 from .fragments import ObservationCore, ProgramCore, WorkflowDetails
 
 
@@ -14,7 +17,9 @@ class GetObservationWorkflowStateByIdObservation(ObservationCore):
 
 
 class GetObservationWorkflowStateByIdObservationProgram(ProgramCore):
-    pass
+    dismissed_warnings: list[ObservationValidationCode] = Field(
+        alias="dismissedWarnings"
+    )
 
 
 class GetObservationWorkflowStateByIdObservationWorkflow(WorkflowDetails):

@@ -8,10 +8,17 @@ import asyncio
 import logging
 
 from gpp_client.domains.base import BaseDomain
-from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
+from gpp_client.exceptions import (
+    GPPClientError,
+    GPPRetryableError,
+    GPPValidationError,
+    GPPWorkflowTransitionError,
+    WorkflowReason,
+)
 from gpp_client.generated.enums import CalculationState, ObservationWorkflowState
 from gpp_client.generated.get_observation_workflow_state_by_id import (
     GetObservationWorkflowStateById,
+    GetObservationWorkflowStateByIdObservation,
     GetObservationWorkflowStateByIdObservationWorkflow,
 )
 from gpp_client.generated.get_observation_workflow_state_by_reference import (
@@ -105,8 +112,8 @@ class WorkflowStateDomain(BaseDomain):
         ------
         GPPClientError
             If there are general client-side errors.
-        GPPValidationError
-            If the requested workflow state transition is invalid.
+        GPPWorkflowTransitionError
+            If GPP does not allow the requested state; it carries GPP's reasons.
         GPPRetryableError
             If the observation calculation is not ``READY``.
         """
@@ -137,11 +144,13 @@ class WorkflowStateDomain(BaseDomain):
                     workflow.value.model_dump(by_alias=True)
                 )
             )
-        # Validate the requested workflow state against 'validTransitions'.
+        # Validate the requested workflow state against 'validTransitions'. The
+        # error goes out as raised, since raise_error would drop its reasons.
         try:
             _check_valid_transition(workflow, workflow_state)
-        except ValueError as exc:
-            self.raise_error(GPPValidationError, exc)
+        except GPPWorkflowTransitionError as exc:
+            logger.error("%s: %s", type(self).__name__, exc)
+            raise
 
         mutation_result = await self._graphql.set_observation_workflow_state(
             observation_id=observation_id,
@@ -222,10 +231,64 @@ class WorkflowStateDomain(BaseDomain):
                 # This is the only retryable case: calculation state not READY.
                 if attempt < max_attempts:
                     await asyncio.sleep(retry_delay)
-            except (GPPValidationError, GPPClientError) as exc:
-                self.raise_error(type(exc), exc)
+            except (GPPValidationError, GPPClientError):
+                # update_by_id already logged it.
+                raise
 
         exc = GPPClientError("Failed to set workflow state after multiple retries.")
+        self.raise_error(type(exc), exc)
+
+    async def get_by_id_when_ready(
+        self,
+        observation_id: str,
+        *,
+        max_attempts: int = 10,
+        initial_delay: float = 0.0,
+        retry_delay: float = 1.0,
+    ) -> GetObservationWorkflowStateByIdObservation:
+        """
+        Get an observation's workflow once GPP has finished calculating it.
+
+        After an edit, GPP recalculates the observation in the background, and its
+        workflow (state, valid transitions and validation errors) stays out of date
+        until the calculation state is ``READY``.
+
+        Parameters
+        ----------
+        observation_id : str
+            The observation ID.
+        max_attempts : int, default=10
+            Maximum number of times to ask.
+        initial_delay : float, default=0.0
+            Delay in seconds before asking the first time.
+        retry_delay : float, default=1.0
+            Delay in seconds between asks.
+
+        Returns
+        -------
+        GetObservationWorkflowStateByIdObservation
+            The observation, with its workflow as calculated and the warnings its
+            program dismissed, which do not keep it from ``READY``.
+
+        Raises
+        ------
+        GPPClientError
+            If GPP returns no such observation, or has not finished calculating it
+            after every attempt.
+        """
+        await asyncio.sleep(initial_delay)
+        for attempt in range(1, max_attempts + 1):
+            result = await self.get_by_id(observation_id=observation_id)
+            observation = result.observation
+            if observation is None or observation.workflow is None:
+                exc = GPPClientError(f"GPP returned no workflow for {observation_id}.")
+                self.raise_error(type(exc), exc)
+            if observation.workflow.state == CalculationState.READY:
+                return observation
+            if attempt < max_attempts:
+                await asyncio.sleep(retry_delay)
+
+        exc = GPPClientError("GPP did not finish calculating the observation in time.")
         self.raise_error(type(exc), exc)
 
 
@@ -290,14 +353,41 @@ def _check_valid_transition(
 
     Raises
     ------
-    ValueError
+    GPPWorkflowTransitionError
         If the requested transition is not allowed based on
-        ``validTransitions``.
+        ``validTransitions``. It carries GPP's validation messages, which say
+        why (for example, that no science band is selected), errors first. Its
+        message gives them too, or else the states GPP allows.
     """
     valid_transitions = workflow.value.valid_transitions or []
-    if workflow_state not in valid_transitions:
-        valid_str = ", ".join(t.value for t in valid_transitions) or "None"
-        raise ValueError(
-            f"Cannot transition to '{workflow_state.value}'. "
-            f"Valid transitions are: {valid_str}."
+    if workflow_state in valid_transitions:
+        return
+
+    # A code GPP sends without messages is still a reason.
+    reasons = [
+        WorkflowReason(
+            severity=error.severity.value,
+            code=error.code.value,
+            message=message,
         )
+        for error in workflow.value.validation_errors or []
+        for message in (error.messages or [error.code.value])
+    ]
+    # Errors are what keeps the state from changing, so they come first.
+    reasons.sort(key=lambda reason: reason.severity != "ERROR")
+    allowed = [t.value for t in valid_transitions]
+
+    if reasons:
+        text = " ".join(reason.message for reason in reasons)
+        message = f"Cannot change to {workflow_state.value}: {text}"
+    else:
+        message = (
+            f"Cannot change to {workflow_state.value}. "
+            f"GPP allows: {', '.join(allowed) or 'none'}."
+        )
+    raise GPPWorkflowTransitionError(
+        message,
+        requested=workflow_state.value,
+        allowed=allowed,
+        reasons=reasons,
+    )

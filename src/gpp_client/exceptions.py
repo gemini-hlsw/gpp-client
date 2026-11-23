@@ -10,8 +10,12 @@ __all__ = [
     "GPPTimeoutError",
     "GPPResponseError",
     "GPPValidationError",
+    "GPPWorkflowTransitionError",
     "GPPRetryableError",
+    "WorkflowReason",
 ]
+
+from dataclasses import dataclass
 
 
 class GPPError(Exception):
@@ -36,6 +40,55 @@ class GPPValidationError(GPPClientError):
     """
 
     pass
+
+
+@dataclass(frozen=True)
+class WorkflowReason:
+    """
+    One of GPP's reasons about an observation's workflow, word for word.
+
+    Attributes
+    ----------
+    severity : str
+        ``"ERROR"`` when it has to be fixed, ``"WARNING"`` when it only has to be
+        reviewed (GPP keeps the observation from ``READY`` until it is dismissed).
+    code : str
+        GPP's ``ObservationValidationCode``.
+    message : str
+        GPP's text.
+    """
+
+    severity: str
+    code: str
+    message: str
+
+
+class GPPWorkflowTransitionError(GPPValidationError):
+    """
+    Raised when GPP does not allow the requested workflow state.
+
+    Attributes
+    ----------
+    requested : str
+        The state asked for.
+    allowed : list[str]
+        The states GPP allows from the current one.
+    reasons : list[WorkflowReason]
+        GPP's reasons, errors before warnings. Empty when GPP gives none.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        requested: str,
+        allowed: list[str],
+        reasons: list[WorkflowReason],
+    ) -> None:
+        super().__init__(message)
+        self.requested = requested
+        self.allowed = allowed
+        self.reasons = reasons
 
 
 class GPPRetryableError(GPPError):

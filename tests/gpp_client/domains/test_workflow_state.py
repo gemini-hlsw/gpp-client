@@ -12,9 +12,23 @@ from gpp_client.domains.workflow_state import (
     _check_ready,
     _check_valid_transition,
 )
-from gpp_client.exceptions import GPPClientError, GPPRetryableError, GPPValidationError
-from gpp_client.generated.enums import CalculationState, ObservationWorkflowState
-from gpp_client.generated.fragments import WorkflowDetailsValue
+from gpp_client.exceptions import (
+    GPPClientError,
+    GPPRetryableError,
+    GPPValidationError,
+    GPPWorkflowTransitionError,
+    WorkflowReason,
+)
+from gpp_client.generated.enums import (
+    CalculationState,
+    ObservationValidationCode,
+    ObservationValidationCodeSeverity,
+    ObservationWorkflowState,
+)
+from gpp_client.generated.fragments import (
+    WorkflowDetailsValue,
+    WorkflowDetailsValueValidationErrors,
+)
 from gpp_client.generated.get_observation_workflow_state_by_id import (
     GetObservationWorkflowStateById,
     GetObservationWorkflowStateByIdObservation,
@@ -204,8 +218,71 @@ def test_check_valid_transition_raises_for_invalid_transition() -> None:
         valid_transitions=[ObservationWorkflowState.ONGOING],
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(GPPWorkflowTransitionError):
         _check_valid_transition(workflow, ObservationWorkflowState.INACTIVE)
+
+
+def test_check_valid_transition_includes_gpp_reasons() -> None:
+    """
+    Ensure a refused transition says why, with GPP's reasons, errors first.
+    """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.UNAPPROVED,
+        valid_transitions=[ObservationWorkflowState.INACTIVE],
+    )
+    workflow.value.validation_errors = [
+        WorkflowDetailsValueValidationErrors.model_construct(
+            code=ObservationValidationCode.EXPOSURE_TIME_WARNING,
+            severity=ObservationValidationCodeSeverity.WARNING,
+            messages=["Exposure time is long."],
+        ),
+        WorkflowDetailsValueValidationErrors.model_construct(
+            code=ObservationValidationCode.CONFIG_REQUEST_NOT_REQUESTED,
+            severity=ObservationValidationCodeSeverity.ERROR,
+            messages=["Configuration is unapproved."],
+        ),
+        WorkflowDetailsValueValidationErrors.model_construct(
+            code=ObservationValidationCode.ITC_ERROR,
+            severity=ObservationValidationCodeSeverity.ERROR,
+            messages=[],
+        ),
+    ]
+
+    with pytest.raises(GPPWorkflowTransitionError) as exc_info:
+        _check_valid_transition(workflow, ObservationWorkflowState.DEFINED)
+
+    error = exc_info.value
+    assert str(error) == (
+        "Cannot change to DEFINED: Configuration is unapproved. ITC_ERROR "
+        "Exposure time is long."
+    )
+    assert error.requested == "DEFINED"
+    assert error.allowed == ["INACTIVE"]
+    assert error.reasons == [
+        WorkflowReason(
+            "ERROR", "CONFIG_REQUEST_NOT_REQUESTED", "Configuration is unapproved."
+        ),
+        WorkflowReason("ERROR", "ITC_ERROR", "ITC_ERROR"),
+        WorkflowReason("WARNING", "EXPOSURE_TIME_WARNING", "Exposure time is long."),
+    ]
+
+
+def test_check_valid_transition_without_reasons_keeps_message() -> None:
+    """
+    Ensure the message lists the allowed states when GPP gives no reason.
+    """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.READY,
+        valid_transitions=[ObservationWorkflowState.ONGOING],
+    )
+
+    with pytest.raises(GPPWorkflowTransitionError) as exc_info:
+        _check_valid_transition(workflow, ObservationWorkflowState.INACTIVE)
+
+    assert str(exc_info.value) == "Cannot change to INACTIVE. GPP allows: ONGOING."
+    assert exc_info.value.reasons == []
 
 
 @pytest.mark.asyncio
@@ -520,3 +597,119 @@ async def test_update_by_id_with_retry_raises_client_error(
             observation_id="o-1",
             workflow_state=ObservationWorkflowState.ONGOING,
         )
+
+
+@pytest.mark.asyncio
+async def test_update_by_id_with_retry_passes_reasons_through(
+    workflow_state_domain,
+    mocker,
+) -> None:
+    """
+    Ensure a refused transition reaches the caller as raised, without a prefix.
+    """
+    workflow = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.UNDEFINED,
+        valid_transitions=[ObservationWorkflowState.INACTIVE],
+    )
+    mocker.patch.object(
+        workflow_state_domain,
+        "get_by_id",
+        new=mocker.AsyncMock(return_value=_build_get_by_id_result(workflow)),
+    )
+    mocker.patch(
+        "gpp_client.domains.workflow_state.asyncio.sleep",
+        new=mocker.AsyncMock(),
+    )
+
+    with pytest.raises(GPPWorkflowTransitionError) as exc_info:
+        await workflow_state_domain.update_by_id_with_retry(
+            observation_id="o-1",
+            workflow_state=ObservationWorkflowState.DEFINED,
+        )
+
+    assert str(exc_info.value) == "Cannot change to DEFINED. GPP allows: INACTIVE."
+    assert exc_info.value.allowed == ["INACTIVE"]
+
+
+@pytest.mark.asyncio
+async def test_get_by_id_when_ready_waits_for_the_calculation(
+    workflow_state_domain,
+    mocker,
+) -> None:
+    """
+    Ensure the workflow is returned only once GPP has finished calculating it.
+    """
+    pending = _build_workflow(
+        calculation_state=CalculationState.PENDING,
+        workflow_state=ObservationWorkflowState.UNDEFINED,
+        valid_transitions=[ObservationWorkflowState.INACTIVE],
+    )
+    ready = _build_workflow(
+        calculation_state=CalculationState.READY,
+        workflow_state=ObservationWorkflowState.DEFINED,
+        valid_transitions=[ObservationWorkflowState.READY],
+    )
+    get_by_id = mocker.AsyncMock(
+        side_effect=[_build_get_by_id_result(pending), _build_get_by_id_result(ready)]
+    )
+    mocker.patch.object(workflow_state_domain, "get_by_id", new=get_by_id)
+    sleep = mocker.patch(
+        "gpp_client.domains.workflow_state.asyncio.sleep", new=mocker.AsyncMock()
+    )
+
+    observation = await workflow_state_domain.get_by_id_when_ready(
+        "o-1", initial_delay=0.5, retry_delay=0.25
+    )
+
+    assert observation.workflow.value.state == ObservationWorkflowState.DEFINED
+    assert get_by_id.await_count == 2
+    assert [c.args for c in sleep.await_args_list] == [(0.5,), (0.25,)]
+
+
+@pytest.mark.asyncio
+async def test_get_by_id_when_ready_gives_up(workflow_state_domain, mocker) -> None:
+    """
+    Ensure it fails when GPP has not finished after every attempt.
+    """
+    pending = _build_workflow(
+        calculation_state=CalculationState.CALCULATING,
+        workflow_state=ObservationWorkflowState.UNDEFINED,
+        valid_transitions=[],
+    )
+    mocker.patch.object(
+        workflow_state_domain,
+        "get_by_id",
+        new=mocker.AsyncMock(return_value=_build_get_by_id_result(pending)),
+    )
+    mocker.patch(
+        "gpp_client.domains.workflow_state.asyncio.sleep", new=mocker.AsyncMock()
+    )
+
+    with pytest.raises(GPPClientError, match="did not finish"):
+        await workflow_state_domain.get_by_id_when_ready("o-1", max_attempts=3)
+
+
+@pytest.mark.asyncio
+async def test_get_by_id_when_ready_without_observation(
+    workflow_state_domain,
+    mocker,
+) -> None:
+    """
+    Ensure it fails when GPP returns no such observation.
+    """
+    mocker.patch.object(
+        workflow_state_domain,
+        "get_by_id",
+        new=mocker.AsyncMock(
+            return_value=GetObservationWorkflowStateById.model_construct(
+                observation=None
+            )
+        ),
+    )
+    mocker.patch(
+        "gpp_client.domains.workflow_state.asyncio.sleep", new=mocker.AsyncMock()
+    )
+
+    with pytest.raises(GPPClientError, match="no workflow"):
+        await workflow_state_domain.get_by_id_when_ready("o-1")

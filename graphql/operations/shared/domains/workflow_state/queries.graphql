@@ -3,6 +3,7 @@ query getObservationWorkflowStateById($observationId: ObservationId!) {
     ...ObservationCore
     program {
       ...ProgramCore
+      dismissedWarnings
     }
     workflow {
       ...WorkflowDetails
@@ -17,6 +18,7 @@ query getObservationWorkflowStateByReference(
     ...ObservationCore
     program {
       ...ProgramCore
+      dismissedWarnings
     }
     workflow {
       ...WorkflowDetails
