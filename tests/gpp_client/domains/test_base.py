@@ -37,7 +37,7 @@ def test_raise_error_without_traceback(dummy_domain) -> None:
     with pytest.raises(GPPValidationError) as exc_info:
         dummy_domain.raise_error(GPPValidationError, ValueError("bad input"))
 
-    assert str(exc_info.value) == "DummyDomain: bad input"
+    assert str(exc_info.value) == "bad input"
     assert exc_info.value.__cause__ is None
 
 
@@ -52,7 +52,7 @@ def test_raise_error_with_traceback(dummy_domain) -> None:
             include_traceback=True,
         )
 
-    assert str(exc_info.value) == "DummyDomain: bad input"
+    assert str(exc_info.value) == "bad input"
     assert exc_info.value.__cause__ is original
 
 
@@ -143,7 +143,7 @@ def test_resolve_content_validation_error_falls_back_to_type_name(
     with pytest.raises(GPPValidationError) as exc_info:
         dummy_domain.resolve_content(file_path="file.txt", content=None)
 
-    assert str(exc_info.value) == "DummyDomain: ValueError"
+    assert str(exc_info.value) == "ValueError"
 
 
 def test_resolve_content_client_error_falls_back_to_type_name(
@@ -160,4 +160,4 @@ def test_resolve_content_client_error_falls_back_to_type_name(
     with pytest.raises(GPPClientError) as exc_info:
         dummy_domain.resolve_content(file_path=file_path, content=None)
 
-    assert str(exc_info.value) == "DummyDomain: OSError"
+    assert str(exc_info.value) == "OSError"

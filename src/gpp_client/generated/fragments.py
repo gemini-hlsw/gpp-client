@@ -55,6 +55,7 @@ from .enums import (
     MosDispersionDirection,
     ObservationPriority,
     ObservationValidationCode,
+    ObservationValidationCodeSeverity,
     ObservationWorkflowState,
     Observatory,
     ObservingModeType,
@@ -1779,6 +1780,7 @@ class WorkflowDetailsValue(BaseModel):
 
 class WorkflowDetailsValueValidationErrors(BaseModel):
     code: ObservationValidationCode
+    severity: ObservationValidationCodeSeverity
     messages: list[str]
 
 
@@ -1923,6 +1925,7 @@ class ObservationWorkflowDetails(ObservationWorkflowCore):
 
 class ObservationWorkflowDetailsValidationErrors(BaseModel):
     code: ObservationValidationCode
+    severity: ObservationValidationCodeSeverity
     messages: list[str]
 
 

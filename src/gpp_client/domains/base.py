@@ -52,6 +52,9 @@ class BaseDomain:
         """
         Raise a structured exception with contextual information.
 
+        The log line names the domain; the exception message does not, since
+        applications show it to their users.
+
         Parameters
         ----------
         exc_class : type[GPPError]
@@ -69,8 +72,8 @@ class BaseDomain:
         class_name = self.__class__.__name__
         # Fall back to the type name so an exception raised without a message
         # does not end up as an empty error.
-        message = f"{class_name}: {str(exc) or type(exc).__name__}"
-        logger.error(message, exc_info=include_traceback)
+        message = str(exc) or type(exc).__name__
+        logger.error("%s: %s", class_name, message, exc_info=include_traceback)
 
         if include_traceback:
             raise exc_class(message) from exc
