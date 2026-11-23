@@ -9,6 +9,7 @@ fragment WorkflowDetails on CalculatedObservationWorkflow {
     validTransitions
     validationErrors {
       code
+      severity
       messages
     }
   }
@@ -23,6 +24,7 @@ fragment ObservationWorkflowDetails on ObservationWorkflow {
   validTransitions
   validationErrors {
     code
+    severity
     messages
   }
 }

@@ -2733,6 +2733,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -3775,6 +3776,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -4818,6 +4820,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -5863,6 +5866,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -6911,6 +6915,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -7959,6 +7964,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -9004,6 +9010,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -10049,6 +10056,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -11094,6 +11102,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -12140,6 +12149,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -13193,6 +13203,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -15488,6 +15499,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -17042,6 +17054,7 @@ class GraphQLClient(AsyncBaseClient):
               validTransitions
               validationErrors {
                 code
+                severity
                 messages
               }
             }
@@ -17065,6 +17078,7 @@ class GraphQLClient(AsyncBaseClient):
                 ...ObservationCore
                 program {
                   ...ProgramCore
+                  dismissedWarnings
                 }
                 workflow {
                   ...WorkflowDetails
@@ -17103,6 +17117,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
@@ -17127,6 +17142,7 @@ class GraphQLClient(AsyncBaseClient):
                 ...ObservationCore
                 program {
                   ...ProgramCore
+                  dismissedWarnings
                 }
                 workflow {
                   ...WorkflowDetails
@@ -17165,6 +17181,7 @@ class GraphQLClient(AsyncBaseClient):
                 validTransitions
                 validationErrors {
                   code
+                  severity
                   messages
                 }
               }
