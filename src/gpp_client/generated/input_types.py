@@ -1612,6 +1612,18 @@ class SpiralTelescopeConfigGeneratorInput(BaseModel):
     "Random generator seed, which will default to a random value if not specified."
 
 
+class UnfreezeTimeAccountingInput(BaseModel):
+    """Input parameters for unfreezing time accounting.  Select one of
+    `observationId` or `observationReference` to unfreeze every visit of an
+    observation, or `visitId` to unfreeze just that visit."""
+
+    observation_id: Optional[Any] = Field(alias=str("observationId"), default=None)
+    observation_reference: Optional[Any] = Field(
+        alias=str("observationReference"), default=None
+    )
+    visit_id: Optional[Any] = Field(alias=str("visitId"), default=None)
+
+
 class UniformTelescopeConfigGeneratorInput(BaseModel):
     """Defines the region over which the pattern of offsets will be distributed.
     The number of points is determined by integration time calculator results."""

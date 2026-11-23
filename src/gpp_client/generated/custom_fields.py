@@ -431,6 +431,7 @@ from .custom_typing_fields import (
     TooTriggerChronicleEntrySelectResultGraphQLField,
     TooTriggerGraphQLField,
     TooTriggerSelectResultGraphQLField,
+    UnfreezeTimeAccountingResultGraphQLField,
     UniformTelescopeConfigGeneratorGraphQLField,
     UnlinkUserResultGraphQLField,
     UnnormalizedSedGraphQLField,
@@ -10107,7 +10108,7 @@ class Igrins2SvcConfigFields(GraphQLField):
 
     @classmethod
     def default_exposure(cls) -> "TimeSpanFields":
-        """Default SVC exposure time (3.08 s)."""
+        """Default SVC exposure time (1.63 s)."""
         return TimeSpanFields("defaultExposure")
 
     @classmethod
@@ -15807,6 +15808,13 @@ class TimeChargeInvoiceFields(GraphQLField):
         initial 'executionTime'."""
         return CategorizedTimeFields("finalCharge")
 
+    rules_version: "TimeChargeInvoiceGraphQLField" = TimeChargeInvoiceGraphQLField(
+        "rulesVersion"
+    )
+    "The version of the time accounting rules that produced this charge.  Each\nchange to the rules gets a new version."
+    frozen: "TimeChargeInvoiceGraphQLField" = TimeChargeInvoiceGraphQLField("frozen")
+    "Whether the charge is frozen: worked out under earlier time accounting rules\nthan the ones in effect now.  A visit's charge follows the rules in effect\nwhile it was observed and reviewed, and a later change to the rules leaves it\nas it was.  A frozen charge isn't recomputed, so later changes to the visit,\nsuch as dataset QA updates, don't affect it.  Staff can still add\ncorrections, which apply right away, or recompute it under the current rules\nwith `unfreezeTimeAccounting`."
+
     def fields(
         self,
         *subfields: Union[
@@ -16279,6 +16287,37 @@ class TooTriggerSelectResultFields(GraphQLField):
         return self
 
     def alias(self, alias: str) -> "TooTriggerSelectResultFields":
+        self._alias = alias
+        return self
+
+
+class UnfreezeTimeAccountingResultFields(GraphQLField):
+    """The result of unfreezing time accounting."""
+
+    @classmethod
+    def observation(cls) -> "ObservationFields":
+        """The observation whose time accounting was unfrozen, or the visit's observation."""
+        return ObservationFields("observation")
+
+    @classmethod
+    def visits(cls) -> "VisitFields":
+        """The visits that were moved to the current time accounting rules and
+        recomputed, in visit id order.  A visit on a newer version of the rules than
+        this service implements (as after a rollback) is left alone and doesn't
+        appear, so this may be empty."""
+        return VisitFields("visits")
+
+    def fields(
+        self,
+        *subfields: Union[
+            UnfreezeTimeAccountingResultGraphQLField, "ObservationFields", "VisitFields"
+        ],
+    ) -> "UnfreezeTimeAccountingResultFields":
+        """Subfields should come from the UnfreezeTimeAccountingResultFields class"""
+        self._subfields.extend(subfields)
+        return self
+
+    def alias(self, alias: str) -> "UnfreezeTimeAccountingResultFields":
         self._alias = alias
         return self
 

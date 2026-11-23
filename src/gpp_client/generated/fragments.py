@@ -4,10 +4,15 @@ from pydantic import Field
 
 from .base_model import BaseModel
 from .enums import (
+    ArcType,
     AttachmentType,
+    Band,
+    BrightnessIntegratedUnits,
     CalculationState,
     CalibrationRole,
     CloudExtinctionPreset,
+    ConfigurationRequestStatus,
+    CoolStarTemperature,
     EphemerisKeyType,
     Existence,
     Flamingos2CustomSlitWidth,
@@ -18,6 +23,8 @@ from .enums import (
     Flamingos2ReadMode,
     Flamingos2ReadoutMode,
     Flamingos2Reads,
+    FocalPlane,
+    GalaxySpectrum,
     GeminiCallForProposalsType,
     GhostBinning,
     GhostIfu1FiberAgitator,
@@ -49,7 +56,9 @@ from .enums import (
     GnirsReadMode,
     GnirsWellDepth,
     GuideState,
+    HiiRegionSpectrum,
     ImageQualityPreset,
+    ImagingVariantType,
     Instrument,
     KeckInstrument,
     MosDispersionDirection,
@@ -59,21 +68,29 @@ from .enums import (
     ObservationWorkflowState,
     Observatory,
     ObservingModeType,
+    PlanetaryNebulaSpectrum,
+    PlanetSpectrum,
+    PosAngleConstraintMode,
     ProgramType,
     ProposalStatus,
+    QuasarSpectrum,
     SchedulingMode,
     ScienceBand,
     ScienceMode,
     ScienceSubtype,
+    Site,
     SkyBackground,
     SlitOffsetMode,
+    StellarLibrarySpectrum,
     SubaruCallForProposalsType,
     SubaruInstrument,
+    TelescopeConfigGeneratorType,
     TelluricTag,
     TimingWindowInclusion,
     TooActivation,
     VisitorObservingModeType,
     WaterVapor,
+    WavelengthOrder,
 )
 
 
@@ -338,6 +355,944 @@ class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountTime(BaseM
 
 class Flamingos2LongSlitDetailsAcquisitionExposureTimeModeTimeAndCountAt(BaseModel):
     nanometers: Any
+
+
+class GOATSConfigurationTarget(BaseModel):
+    coordinates: Optional["GOATSConfigurationTargetCoordinates"]
+    region: Optional["GOATSConfigurationTargetRegion"]
+
+
+class GOATSConfigurationTargetCoordinates(BaseModel):
+    ra: "GOATSConfigurationTargetCoordinatesRa"
+    dec: "GOATSConfigurationTargetCoordinatesDec"
+
+
+class GOATSConfigurationTargetCoordinatesRa(BaseModel):
+    hms: Any
+    degrees: Any
+
+
+class GOATSConfigurationTargetCoordinatesDec(BaseModel):
+    dms: Any
+    degrees: Any
+
+
+class GOATSConfigurationTargetRegion(BaseModel):
+    right_ascension_arc: "GOATSConfigurationTargetRegionRightAscensionArc" = Field(
+        alias="rightAscensionArc"
+    )
+    declination_arc: "GOATSConfigurationTargetRegionDeclinationArc" = Field(
+        alias="declinationArc"
+    )
+
+
+class GOATSConfigurationTargetRegionRightAscensionArc(BaseModel):
+    type_: ArcType = Field(alias="type")
+    start: Optional["GOATSConfigurationTargetRegionRightAscensionArcStart"]
+    end: Optional["GOATSConfigurationTargetRegionRightAscensionArcEnd"]
+
+
+class GOATSConfigurationTargetRegionRightAscensionArcStart(BaseModel):
+    hms: Any
+    degrees: Any
+
+
+class GOATSConfigurationTargetRegionRightAscensionArcEnd(BaseModel):
+    hms: Any
+    degrees: Any
+
+
+class GOATSConfigurationTargetRegionDeclinationArc(BaseModel):
+    type_: ArcType = Field(alias="type")
+    start: Optional["GOATSConfigurationTargetRegionDeclinationArcStart"]
+    end: Optional["GOATSConfigurationTargetRegionDeclinationArcEnd"]
+
+
+class GOATSConfigurationTargetRegionDeclinationArcStart(BaseModel):
+    dms: Any
+    degrees: Any
+
+
+class GOATSConfigurationTargetRegionDeclinationArcEnd(BaseModel):
+    dms: Any
+    degrees: Any
+
+
+class GOATSConfigurationRequest(BaseModel):
+    id: Any
+    status: ConfigurationRequestStatus
+    justification: Optional[Any]
+    applicable_observations: list[Any] = Field(alias="applicableObservations")
+    configuration: "GOATSConfigurationRequestConfiguration"
+
+
+class GOATSConfigurationRequestConfiguration(BaseModel):
+    conditions: "GOATSConfigurationRequestConfigurationConditions"
+    target: Optional["GOATSConfigurationRequestConfigurationTarget"]
+    observing_mode: Optional["GOATSConfigurationRequestConfigurationObservingMode"] = (
+        Field(alias="observingMode")
+    )
+
+
+class GOATSConfigurationRequestConfigurationConditions(BaseModel):
+    image_quality: ImageQualityPreset = Field(alias="imageQuality")
+    cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
+    sky_background: SkyBackground = Field(alias="skyBackground")
+    water_vapor: WaterVapor = Field(alias="waterVapor")
+
+
+class GOATSConfigurationRequestConfigurationTarget(GOATSConfigurationTarget):
+    pass
+
+
+class GOATSConfigurationRequestConfigurationObservingMode(BaseModel):
+    instrument: Optional[Instrument]
+    mode: ObservingModeType
+    gmos_north_long_slit: Optional[
+        "GOATSConfigurationRequestConfigurationObservingModeGmosNorthLongSlit"
+    ] = Field(alias="gmosNorthLongSlit")
+    gmos_south_long_slit: Optional[
+        "GOATSConfigurationRequestConfigurationObservingModeGmosSouthLongSlit"
+    ] = Field(alias="gmosSouthLongSlit")
+    gmos_north_imaging: Optional[
+        "GOATSConfigurationRequestConfigurationObservingModeGmosNorthImaging"
+    ] = Field(alias="gmosNorthImaging")
+    gmos_south_imaging: Optional[
+        "GOATSConfigurationRequestConfigurationObservingModeGmosSouthImaging"
+    ] = Field(alias="gmosSouthImaging")
+
+
+class GOATSConfigurationRequestConfigurationObservingModeGmosNorthLongSlit(BaseModel):
+    grating: GmosNorthGrating
+
+
+class GOATSConfigurationRequestConfigurationObservingModeGmosSouthLongSlit(BaseModel):
+    grating: GmosSouthGrating
+
+
+class GOATSConfigurationRequestConfigurationObservingModeGmosNorthImaging(BaseModel):
+    filters: list[GmosNorthFilter]
+
+
+class GOATSConfigurationRequestConfigurationObservingModeGmosSouthImaging(BaseModel):
+    filters: list[GmosSouthFilter]
+
+
+class GOATSConstraintSet(BaseModel):
+    image_quality: ImageQualityPreset = Field(alias="imageQuality")
+    cloud_extinction: CloudExtinctionPreset = Field(alias="cloudExtinction")
+    sky_background: SkyBackground = Field(alias="skyBackground")
+    water_vapor: WaterVapor = Field(alias="waterVapor")
+    elevation_range: "GOATSConstraintSetElevationRange" = Field(alias="elevationRange")
+
+
+class GOATSConstraintSetElevationRange(BaseModel):
+    air_mass: Optional["GOATSConstraintSetElevationRangeAirMass"] = Field(
+        alias="airMass"
+    )
+    hour_angle: Optional["GOATSConstraintSetElevationRangeHourAngle"] = Field(
+        alias="hourAngle"
+    )
+
+
+class GOATSConstraintSetElevationRangeAirMass(BaseModel):
+    min: Any
+    max: Any
+
+
+class GOATSConstraintSetElevationRangeHourAngle(BaseModel):
+    min_hours: Any = Field(alias="minHours")
+    max_hours: Any = Field(alias="maxHours")
+
+
+class GOATSExposureTimeMode(BaseModel):
+    signal_to_noise: Optional["GOATSExposureTimeModeSignalToNoise"] = Field(
+        alias="signalToNoise"
+    )
+    time_and_count: Optional["GOATSExposureTimeModeTimeAndCount"] = Field(
+        alias="timeAndCount"
+    )
+
+
+class GOATSExposureTimeModeSignalToNoise(BaseModel):
+    value: Any
+    at: "GOATSExposureTimeModeSignalToNoiseAt"
+
+
+class GOATSExposureTimeModeSignalToNoiseAt(BaseModel):
+    nanometers: Any
+
+
+class GOATSExposureTimeModeTimeAndCount(BaseModel):
+    time: "GOATSExposureTimeModeTimeAndCountTime"
+    count: Any
+    at: "GOATSExposureTimeModeTimeAndCountAt"
+
+
+class GOATSExposureTimeModeTimeAndCountTime(BaseModel):
+    seconds: Any
+
+
+class GOATSExposureTimeModeTimeAndCountAt(BaseModel):
+    nanometers: Any
+
+
+class GOATSOffset(BaseModel):
+    p: "GOATSOffsetP"
+    q: "GOATSOffsetQ"
+
+
+class GOATSOffsetP(BaseModel):
+    arcseconds: Any
+
+
+class GOATSOffsetQ(BaseModel):
+    arcseconds: Any
+
+
+class GOATSTelescopeConfig(BaseModel):
+    guiding: GuideState
+    offset: "GOATSTelescopeConfigOffset"
+
+
+class GOATSTelescopeConfigOffset(GOATSOffset):
+    pass
+
+
+class GOATSTelescopeConfigGenerator(BaseModel):
+    generator_type: TelescopeConfigGeneratorType = Field(alias="generatorType")
+    enumerated: Optional["GOATSTelescopeConfigGeneratorEnumerated"]
+    random: Optional["GOATSTelescopeConfigGeneratorRandom"]
+    spiral: Optional["GOATSTelescopeConfigGeneratorSpiral"]
+    uniform: Optional["GOATSTelescopeConfigGeneratorUniform"]
+
+
+class GOATSTelescopeConfigGeneratorEnumerated(BaseModel):
+    values: list["GOATSTelescopeConfigGeneratorEnumeratedValues"]
+
+
+class GOATSTelescopeConfigGeneratorEnumeratedValues(GOATSTelescopeConfig):
+    pass
+
+
+class GOATSTelescopeConfigGeneratorRandom(BaseModel):
+    seed: Any
+    size: "GOATSTelescopeConfigGeneratorRandomSize"
+    center: "GOATSTelescopeConfigGeneratorRandomCenter"
+
+
+class GOATSTelescopeConfigGeneratorRandomSize(BaseModel):
+    arcseconds: Any
+
+
+class GOATSTelescopeConfigGeneratorRandomCenter(GOATSOffset):
+    pass
+
+
+class GOATSTelescopeConfigGeneratorSpiral(BaseModel):
+    seed: Any
+    size: "GOATSTelescopeConfigGeneratorSpiralSize"
+    center: "GOATSTelescopeConfigGeneratorSpiralCenter"
+
+
+class GOATSTelescopeConfigGeneratorSpiralSize(BaseModel):
+    arcseconds: Any
+
+
+class GOATSTelescopeConfigGeneratorSpiralCenter(GOATSOffset):
+    pass
+
+
+class GOATSTelescopeConfigGeneratorUniform(BaseModel):
+    corner_a: "GOATSTelescopeConfigGeneratorUniformCornerA" = Field(alias="cornerA")
+    corner_b: "GOATSTelescopeConfigGeneratorUniformCornerB" = Field(alias="cornerB")
+
+
+class GOATSTelescopeConfigGeneratorUniformCornerA(GOATSOffset):
+    pass
+
+
+class GOATSTelescopeConfigGeneratorUniformCornerB(GOATSOffset):
+    pass
+
+
+class GOATSImagingVariant(BaseModel):
+    variant_type: ImagingVariantType = Field(alias="variantType")
+    grouped: Optional["GOATSImagingVariantGrouped"]
+    interleaved: Optional["GOATSImagingVariantInterleaved"]
+    pre_imaging: Optional["GOATSImagingVariantPreImaging"] = Field(alias="preImaging")
+
+
+class GOATSImagingVariantGrouped(BaseModel):
+    sky_count: Any = Field(alias="skyCount")
+    sky_offsets: "GOATSImagingVariantGroupedSkyOffsets" = Field(alias="skyOffsets")
+    order: WavelengthOrder
+    offsets: "GOATSImagingVariantGroupedOffsets"
+
+
+class GOATSImagingVariantGroupedSkyOffsets(GOATSTelescopeConfigGenerator):
+    pass
+
+
+class GOATSImagingVariantGroupedOffsets(GOATSTelescopeConfigGenerator):
+    pass
+
+
+class GOATSImagingVariantInterleaved(BaseModel):
+    offsets: "GOATSImagingVariantInterleavedOffsets"
+    sky_count: Any = Field(alias="skyCount")
+    sky_offsets: "GOATSImagingVariantInterleavedSkyOffsets" = Field(alias="skyOffsets")
+
+
+class GOATSImagingVariantInterleavedOffsets(GOATSTelescopeConfigGenerator):
+    pass
+
+
+class GOATSImagingVariantInterleavedSkyOffsets(GOATSTelescopeConfigGenerator):
+    pass
+
+
+class GOATSImagingVariantPreImaging(BaseModel):
+    offset_1: "GOATSImagingVariantPreImagingOffset1" = Field(alias="offset1")
+    offset_2: "GOATSImagingVariantPreImagingOffset2" = Field(alias="offset2")
+    offset_3: "GOATSImagingVariantPreImagingOffset3" = Field(alias="offset3")
+    offset_4: "GOATSImagingVariantPreImagingOffset4" = Field(alias="offset4")
+
+
+class GOATSImagingVariantPreImagingOffset1(GOATSOffset):
+    pass
+
+
+class GOATSImagingVariantPreImagingOffset2(GOATSOffset):
+    pass
+
+
+class GOATSImagingVariantPreImagingOffset3(GOATSOffset):
+    pass
+
+
+class GOATSImagingVariantPreImagingOffset4(GOATSOffset):
+    pass
+
+
+class GOATSGmosNorthImaging(BaseModel):
+    filters: list["GOATSGmosNorthImagingFilters"]
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    bin: GmosBinning
+    roi: GmosRoi
+    variant: "GOATSGmosNorthImagingVariant"
+
+
+class GOATSGmosNorthImagingFilters(BaseModel):
+    filter_: GmosNorthFilter = Field(alias="filter")
+    exposure_time_mode: "GOATSGmosNorthImagingFiltersExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GOATSGmosNorthImagingFiltersExposureTimeMode(GOATSExposureTimeMode):
+    pass
+
+
+class GOATSGmosNorthImagingVariant(GOATSImagingVariant):
+    pass
+
+
+class GOATSSlitTelescopeConfigs(BaseModel):
+    along_slit: Optional[list["GOATSSlitTelescopeConfigsAlongSlit"]] = Field(
+        alias="alongSlit"
+    )
+    offset_mode: SlitOffsetMode = Field(alias="offsetMode")
+    to_sky: Optional[list["GOATSSlitTelescopeConfigsToSky"]] = Field(alias="toSky")
+
+
+class GOATSSlitTelescopeConfigsAlongSlit(BaseModel):
+    guiding: GuideState
+    q: "GOATSSlitTelescopeConfigsAlongSlitQ"
+
+
+class GOATSSlitTelescopeConfigsAlongSlitQ(BaseModel):
+    arcseconds: Any
+
+
+class GOATSSlitTelescopeConfigsToSky(GOATSTelescopeConfig):
+    pass
+
+
+class GOATSGmosNorthLongSlit(BaseModel):
+    grating: GmosNorthGrating
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
+    fpu: GmosNorthBuiltinFpu
+    central_wavelength: "GOATSGmosNorthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    wavelength_dithers: list["GOATSGmosNorthLongSlitWavelengthDithers"] = Field(
+        alias="wavelengthDithers"
+    )
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    roi: GmosRoi
+    exposure_time_mode: "GOATSGmosNorthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    default_telescope_configs: "GOATSGmosNorthLongSlitDefaultTelescopeConfigs" = Field(
+        alias="defaultTelescopeConfigs"
+    )
+    explicit_telescope_configs: Optional[
+        "GOATSGmosNorthLongSlitExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
+
+
+class GOATSGmosNorthLongSlitCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GOATSGmosNorthLongSlitWavelengthDithers(BaseModel):
+    nanometers: Any
+
+
+class GOATSGmosNorthLongSlitExposureTimeMode(GOATSExposureTimeMode):
+    pass
+
+
+class GOATSGmosNorthLongSlitDefaultTelescopeConfigs(GOATSSlitTelescopeConfigs):
+    pass
+
+
+class GOATSGmosNorthLongSlitExplicitTelescopeConfigs(GOATSSlitTelescopeConfigs):
+    pass
+
+
+class GOATSGmosSouthImaging(BaseModel):
+    filters: list["GOATSGmosSouthImagingFilters"]
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    bin: GmosBinning
+    roi: GmosRoi
+    variant: "GOATSGmosSouthImagingVariant"
+
+
+class GOATSGmosSouthImagingFilters(BaseModel):
+    filter_: GmosSouthFilter = Field(alias="filter")
+    exposure_time_mode: "GOATSGmosSouthImagingFiltersExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+
+
+class GOATSGmosSouthImagingFiltersExposureTimeMode(GOATSExposureTimeMode):
+    pass
+
+
+class GOATSGmosSouthImagingVariant(GOATSImagingVariant):
+    pass
+
+
+class GOATSGmosSouthLongSlit(BaseModel):
+    grating: GmosSouthGrating
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
+    fpu: GmosSouthBuiltinFpu
+    central_wavelength: "GOATSGmosSouthLongSlitCentralWavelength" = Field(
+        alias="centralWavelength"
+    )
+    wavelength_dithers: list["GOATSGmosSouthLongSlitWavelengthDithers"] = Field(
+        alias="wavelengthDithers"
+    )
+    x_bin: GmosBinning = Field(alias="xBin")
+    y_bin: GmosBinning = Field(alias="yBin")
+    amp_read_mode: GmosAmpReadMode = Field(alias="ampReadMode")
+    roi: GmosRoi
+    exposure_time_mode: "GOATSGmosSouthLongSlitExposureTimeMode" = Field(
+        alias="exposureTimeMode"
+    )
+    default_telescope_configs: "GOATSGmosSouthLongSlitDefaultTelescopeConfigs" = Field(
+        alias="defaultTelescopeConfigs"
+    )
+    explicit_telescope_configs: Optional[
+        "GOATSGmosSouthLongSlitExplicitTelescopeConfigs"
+    ] = Field(alias="explicitTelescopeConfigs")
+
+
+class GOATSGmosSouthLongSlitCentralWavelength(BaseModel):
+    nanometers: Any
+
+
+class GOATSGmosSouthLongSlitWavelengthDithers(BaseModel):
+    nanometers: Any
+
+
+class GOATSGmosSouthLongSlitExposureTimeMode(GOATSExposureTimeMode):
+    pass
+
+
+class GOATSGmosSouthLongSlitDefaultTelescopeConfigs(GOATSSlitTelescopeConfigs):
+    pass
+
+
+class GOATSGmosSouthLongSlitExplicitTelescopeConfigs(GOATSSlitTelescopeConfigs):
+    pass
+
+
+class GOATSImagingConfigOption(BaseModel):
+    instrument: Instrument
+    site: Site
+    filter_label: Any = Field(alias="filterLabel")
+    fov: "GOATSImagingConfigOptionFov"
+    gmos_north: Optional["GOATSImagingConfigOptionGmosNorth"] = Field(alias="gmosNorth")
+    gmos_south: Optional["GOATSImagingConfigOptionGmosSouth"] = Field(alias="gmosSouth")
+
+
+class GOATSImagingConfigOptionFov(BaseModel):
+    arcseconds: Any
+
+
+class GOATSImagingConfigOptionGmosNorth(BaseModel):
+    filter_: GmosNorthFilter = Field(alias="filter")
+
+
+class GOATSImagingConfigOptionGmosSouth(BaseModel):
+    filter_: GmosSouthFilter = Field(alias="filter")
+
+
+class GOATSObservingMode(BaseModel):
+    instrument: Optional[Instrument]
+    mode: ObservingModeType
+    gmos_north_long_slit: Optional["GOATSObservingModeGmosNorthLongSlit"] = Field(
+        alias="gmosNorthLongSlit"
+    )
+    gmos_south_long_slit: Optional["GOATSObservingModeGmosSouthLongSlit"] = Field(
+        alias="gmosSouthLongSlit"
+    )
+    gmos_north_imaging: Optional["GOATSObservingModeGmosNorthImaging"] = Field(
+        alias="gmosNorthImaging"
+    )
+    gmos_south_imaging: Optional["GOATSObservingModeGmosSouthImaging"] = Field(
+        alias="gmosSouthImaging"
+    )
+
+
+class GOATSObservingModeGmosNorthLongSlit(GOATSGmosNorthLongSlit):
+    pass
+
+
+class GOATSObservingModeGmosSouthLongSlit(GOATSGmosSouthLongSlit):
+    pass
+
+
+class GOATSObservingModeGmosNorthImaging(GOATSGmosNorthImaging):
+    pass
+
+
+class GOATSObservingModeGmosSouthImaging(GOATSGmosSouthImaging):
+    pass
+
+
+class GOATSSchedulingConstraints(BaseModel):
+    scheduling_mode: SchedulingMode = Field(alias="schedulingMode")
+    too_activation: TooActivation = Field(alias="tooActivation")
+    timing_windows: list["GOATSSchedulingConstraintsTimingWindows"] = Field(
+        alias="timingWindows"
+    )
+
+
+class GOATSSchedulingConstraintsTimingWindows(BaseModel):
+    inclusion: TimingWindowInclusion
+    start_utc: Any = Field(alias="startUtc")
+    end: Optional[
+        Annotated[
+            Union[
+                "GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAt",
+                "GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter",
+            ],
+            Field(discriminator="typename__"),
+        ]
+    ]
+
+
+class GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAt(BaseModel):
+    typename__: Literal["TimingWindowEndAt"] = Field(alias="__typename")
+    at_utc: Any = Field(alias="atUtc")
+
+
+class GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfter(BaseModel):
+    typename__: Literal["TimingWindowEndAfter"] = Field(alias="__typename")
+    after: "GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter"
+    repeat: Optional[
+        "GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat"
+    ]
+
+
+class GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterAfter(BaseModel):
+    seconds: Any
+
+
+class GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeat(BaseModel):
+    period: "GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod"
+    times: Optional[Any]
+
+
+class GOATSSchedulingConstraintsTimingWindowsEndTimingWindowEndAfterRepeatPeriod(
+    BaseModel
+):
+    seconds: Any
+
+
+class GOATSTarget(BaseModel):
+    id: Any
+    name: Any
+    opportunity: Optional["GOATSTargetOpportunity"]
+    sidereal: Optional["GOATSTargetSidereal"]
+    source_profile: "GOATSTargetSourceProfile" = Field(alias="sourceProfile")
+
+
+class GOATSTargetOpportunity(BaseModel):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
+
+
+class GOATSTargetSidereal(BaseModel):
+    ra: "GOATSTargetSiderealRa"
+    dec: "GOATSTargetSiderealDec"
+    proper_motion: Optional["GOATSTargetSiderealProperMotion"] = Field(
+        alias="properMotion"
+    )
+    parallax: Optional["GOATSTargetSiderealParallax"]
+    radial_velocity: Optional["GOATSTargetSiderealRadialVelocity"] = Field(
+        alias="radialVelocity"
+    )
+
+
+class GOATSTargetSiderealRa(BaseModel):
+    hms: Any
+    hours: Any
+    degrees: Any
+
+
+class GOATSTargetSiderealDec(BaseModel):
+    dms: Any
+    degrees: Any
+
+
+class GOATSTargetSiderealProperMotion(BaseModel):
+    ra: "GOATSTargetSiderealProperMotionRa"
+    dec: "GOATSTargetSiderealProperMotionDec"
+
+
+class GOATSTargetSiderealProperMotionRa(BaseModel):
+    milliarcseconds_per_year: Any = Field(alias="milliarcsecondsPerYear")
+
+
+class GOATSTargetSiderealProperMotionDec(BaseModel):
+    milliarcseconds_per_year: Any = Field(alias="milliarcsecondsPerYear")
+
+
+class GOATSTargetSiderealParallax(BaseModel):
+    milliarcseconds: Any
+
+
+class GOATSTargetSiderealRadialVelocity(BaseModel):
+    kilometers_per_second: Any = Field(alias="kilometersPerSecond")
+
+
+class GOATSTargetSourceProfile(BaseModel):
+    point: Optional["GOATSTargetSourceProfilePoint"]
+
+
+class GOATSTargetSourceProfilePoint(BaseModel):
+    band_normalized: Optional["GOATSTargetSourceProfilePointBandNormalized"] = Field(
+        alias="bandNormalized"
+    )
+
+
+class GOATSTargetSourceProfilePointBandNormalized(BaseModel):
+    brightnesses: list["GOATSTargetSourceProfilePointBandNormalizedBrightnesses"]
+    sed: Optional["GOATSTargetSourceProfilePointBandNormalizedSed"]
+
+
+class GOATSTargetSourceProfilePointBandNormalizedBrightnesses(BaseModel):
+    band: Band
+    value: Any
+    units: BrightnessIntegratedUnits
+
+
+class GOATSTargetSourceProfilePointBandNormalizedSed(BaseModel):
+    black_body_temp_k: Optional[Any] = Field(alias="blackBodyTempK")
+    cool_star: Optional[CoolStarTemperature] = Field(alias="coolStar")
+    flux_densities: Optional[
+        list["GOATSTargetSourceProfilePointBandNormalizedSedFluxDensities"]
+    ] = Field(alias="fluxDensities")
+    flux_densities_attachment: Optional[Any] = Field(alias="fluxDensitiesAttachment")
+    galaxy: Optional[GalaxySpectrum]
+    hii_region: Optional[HiiRegionSpectrum] = Field(alias="hiiRegion")
+    planet: Optional[PlanetSpectrum]
+    planetary_nebula: Optional[PlanetaryNebulaSpectrum] = Field(alias="planetaryNebula")
+    power_law: Optional[Any] = Field(alias="powerLaw")
+    quasar: Optional[QuasarSpectrum]
+    stellar_library: Optional[StellarLibrarySpectrum] = Field(alias="stellarLibrary")
+
+
+class GOATSTargetSourceProfilePointBandNormalizedSedFluxDensities(BaseModel):
+    wavelength: "GOATSTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength"
+    density: Any
+
+
+class GOATSTargetSourceProfilePointBandNormalizedSedFluxDensitiesWavelength(BaseModel):
+    nanometers: Any
+
+
+class GOATSObservation(BaseModel):
+    id: Any
+    reference: Optional["GOATSObservationReference"]
+    instrument: Optional[Instrument]
+    calibration_role: Optional[CalibrationRole] = Field(alias="calibrationRole")
+    configuration_requests: list["GOATSObservationConfigurationRequests"] = Field(
+        alias="configurationRequests"
+    )
+    title: Any
+    subtitle: Optional[Any]
+    constraint_set: "GOATSObservationConstraintSet" = Field(alias="constraintSet")
+    workflow: Optional["GOATSObservationWorkflow"]
+    attachments: list["GOATSObservationAttachments"]
+    target_environment: "GOATSObservationTargetEnvironment" = Field(
+        alias="targetEnvironment"
+    )
+    pos_angle_constraint: "GOATSObservationPosAngleConstraint" = Field(
+        alias="posAngleConstraint"
+    )
+    science_band: Optional[ScienceBand] = Field(alias="scienceBand")
+    observation_duration: Optional["GOATSObservationObservationDuration"] = Field(
+        alias="observationDuration"
+    )
+    observer_notes: Optional[Any] = Field(alias="observerNotes")
+    science_requirements: "GOATSObservationScienceRequirements" = Field(
+        alias="scienceRequirements"
+    )
+    observing_mode: Optional["GOATSObservationObservingMode"] = Field(
+        alias="observingMode"
+    )
+    program: "GOATSObservationProgram"
+    scheduling_constraints: "GOATSObservationSchedulingConstraints" = Field(
+        alias="schedulingConstraints"
+    )
+    priority: ObservationPriority
+
+
+class GOATSObservationReference(BaseModel):
+    label: Any
+
+
+class GOATSObservationConfigurationRequests(BaseModel):
+    id: Any
+
+
+class GOATSObservationConstraintSet(GOATSConstraintSet):
+    pass
+
+
+class GOATSObservationWorkflow(BaseModel):
+    calculation_state: CalculationState = Field(alias="calculationState")
+    value: "GOATSObservationWorkflowValue"
+
+
+class GOATSObservationWorkflowValue(BaseModel):
+    state: ObservationWorkflowState
+    valid_transitions: list[ObservationWorkflowState] = Field(alias="validTransitions")
+    validation_errors: list["GOATSObservationWorkflowValueValidationErrors"] = Field(
+        alias="validationErrors"
+    )
+
+
+class GOATSObservationWorkflowValueValidationErrors(BaseModel):
+    code: ObservationValidationCode
+
+
+class GOATSObservationAttachments(BaseModel):
+    id: Any
+    attachment_type: AttachmentType = Field(alias="attachmentType")
+    file_name: Any = Field(alias="fileName")
+    description: Optional[Any]
+    updated_at: Any = Field(alias="updatedAt")
+
+
+class GOATSObservationTargetEnvironment(BaseModel):
+    asterism: list["GOATSObservationTargetEnvironmentAsterism"]
+    first_science_target: Optional[
+        "GOATSObservationTargetEnvironmentFirstScienceTarget"
+    ] = Field(alias="firstScienceTarget")
+
+
+class GOATSObservationTargetEnvironmentAsterism(BaseModel):
+    id: Any
+    name: Any
+    opportunity: Optional["GOATSObservationTargetEnvironmentAsterismOpportunity"]
+
+
+class GOATSObservationTargetEnvironmentAsterismOpportunity(BaseModel):
+    typename__: Literal["Opportunity"] = Field(alias="__typename")
+
+
+class GOATSObservationTargetEnvironmentFirstScienceTarget(GOATSTarget):
+    pass
+
+
+class GOATSObservationPosAngleConstraint(BaseModel):
+    mode: PosAngleConstraintMode
+    angle: "GOATSObservationPosAngleConstraintAngle"
+
+
+class GOATSObservationPosAngleConstraintAngle(BaseModel):
+    degrees: Any
+
+
+class GOATSObservationObservationDuration(BaseModel):
+    seconds: Any
+    minutes: Any
+    hours: Any
+    iso: str
+
+
+class GOATSObservationScienceRequirements(BaseModel):
+    mode: Optional[ScienceMode]
+    spectroscopy: Optional["GOATSObservationScienceRequirementsSpectroscopy"]
+    exposure_time_mode: Optional[
+        "GOATSObservationScienceRequirementsExposureTimeMode"
+    ] = Field(alias="exposureTimeMode")
+
+
+class GOATSObservationScienceRequirementsSpectroscopy(BaseModel):
+    wavelength: Optional["GOATSObservationScienceRequirementsSpectroscopyWavelength"]
+
+
+class GOATSObservationScienceRequirementsSpectroscopyWavelength(BaseModel):
+    nanometers: Any
+
+
+class GOATSObservationScienceRequirementsExposureTimeMode(GOATSExposureTimeMode):
+    pass
+
+
+class GOATSObservationObservingMode(GOATSObservingMode):
+    pass
+
+
+class GOATSObservationProgram(BaseModel):
+    allocations: list["GOATSObservationProgramAllocations"]
+    time_charge: list["GOATSObservationProgramTimeCharge"] = Field(alias="timeCharge")
+
+
+class GOATSObservationProgramAllocations(BaseModel):
+    science_band: ScienceBand = Field(alias="scienceBand")
+    duration: "GOATSObservationProgramAllocationsDuration"
+
+
+class GOATSObservationProgramAllocationsDuration(BaseModel):
+    hours: Any
+
+
+class GOATSObservationProgramTimeCharge(BaseModel):
+    band: Optional[ScienceBand]
+    time: "GOATSObservationProgramTimeChargeTime"
+
+
+class GOATSObservationProgramTimeChargeTime(BaseModel):
+    program: "GOATSObservationProgramTimeChargeTimeProgram"
+
+
+class GOATSObservationProgramTimeChargeTimeProgram(BaseModel):
+    hours: Any
+
+
+class GOATSObservationSchedulingConstraints(GOATSSchedulingConstraints):
+    pass
+
+
+class GOATSProgram(BaseModel):
+    id: Any
+    name: Optional[Any]
+    description: Optional[Any]
+    reference: Optional["GOATSProgramReference"]
+    proposal_status: ProposalStatus = Field(alias="proposalStatus")
+    type_: ProgramType = Field(alias="type")
+    too_activation_ceiling: Optional[TooActivation] = Field(
+        alias="tooActivationCeiling"
+    )
+
+
+class GOATSProgramReference(BaseModel):
+    typename__: Literal[
+        "CalibrationProgramReference",
+        "CommissioningProgramReference",
+        "EngineeringProgramReference",
+        "ExampleProgramReference",
+        "KeckProgramReference",
+        "LibraryProgramReference",
+        "MonitoringProgramReference",
+        "ProgramReference",
+        "ScienceProgramReference",
+        "SubaruProgramReference",
+        "SystemProgramReference",
+    ] = Field(alias="__typename")
+    label: Any
+
+
+class GOATSSpectroscopyConfigOption(BaseModel):
+    name: Any
+    instrument: Instrument
+    site: Site
+    focal_plane: FocalPlane = Field(alias="focalPlane")
+    fpu_label: Any = Field(alias="fpuLabel")
+    disperser_label: Any = Field(alias="disperserLabel")
+    filter_label: Optional[Any] = Field(alias="filterLabel")
+    slit_width: "GOATSSpectroscopyConfigOptionSlitWidth" = Field(alias="slitWidth")
+    resolution: Any
+    wavelength_min: "GOATSSpectroscopyConfigOptionWavelengthMin" = Field(
+        alias="wavelengthMin"
+    )
+    wavelength_max: "GOATSSpectroscopyConfigOptionWavelengthMax" = Field(
+        alias="wavelengthMax"
+    )
+    wavelength_optimal: "GOATSSpectroscopyConfigOptionWavelengthOptimal" = Field(
+        alias="wavelengthOptimal"
+    )
+    wavelength_coverage: "GOATSSpectroscopyConfigOptionWavelengthCoverage" = Field(
+        alias="wavelengthCoverage"
+    )
+    gmos_north: Optional["GOATSSpectroscopyConfigOptionGmosNorth"] = Field(
+        alias="gmosNorth"
+    )
+    gmos_south: Optional["GOATSSpectroscopyConfigOptionGmosSouth"] = Field(
+        alias="gmosSouth"
+    )
+
+
+class GOATSSpectroscopyConfigOptionSlitWidth(BaseModel):
+    arcseconds: Any
+
+
+class GOATSSpectroscopyConfigOptionWavelengthMin(BaseModel):
+    nanometers: Any
+
+
+class GOATSSpectroscopyConfigOptionWavelengthMax(BaseModel):
+    nanometers: Any
+
+
+class GOATSSpectroscopyConfigOptionWavelengthOptimal(BaseModel):
+    nanometers: Any
+
+
+class GOATSSpectroscopyConfigOptionWavelengthCoverage(BaseModel):
+    nanometers: Any
+
+
+class GOATSSpectroscopyConfigOptionGmosNorth(BaseModel):
+    fpu: Optional[GmosNorthBuiltinFpu]
+    grating: GmosNorthGrating
+    filter_: Optional[GmosNorthFilter] = Field(alias="filter")
+
+
+class GOATSSpectroscopyConfigOptionGmosSouth(BaseModel):
+    fpu: Optional[GmosSouthBuiltinFpu]
+    grating: GmosSouthGrating
+    filter_: Optional[GmosSouthFilter] = Field(alias="filter")
 
 
 class GmosNorthImagingDetails(BaseModel):
@@ -2161,6 +3116,26 @@ CallForProposalsDetails.model_rebuild()
 ConstraintSetDetails.model_rebuild()
 Flamingos2ImagingDetails.model_rebuild()
 Flamingos2LongSlitDetails.model_rebuild()
+GOATSConfigurationTarget.model_rebuild()
+GOATSConfigurationRequest.model_rebuild()
+GOATSConstraintSet.model_rebuild()
+GOATSExposureTimeMode.model_rebuild()
+GOATSOffset.model_rebuild()
+GOATSTelescopeConfig.model_rebuild()
+GOATSTelescopeConfigGenerator.model_rebuild()
+GOATSImagingVariant.model_rebuild()
+GOATSGmosNorthImaging.model_rebuild()
+GOATSSlitTelescopeConfigs.model_rebuild()
+GOATSGmosNorthLongSlit.model_rebuild()
+GOATSGmosSouthImaging.model_rebuild()
+GOATSGmosSouthLongSlit.model_rebuild()
+GOATSImagingConfigOption.model_rebuild()
+GOATSObservingMode.model_rebuild()
+GOATSSchedulingConstraints.model_rebuild()
+GOATSTarget.model_rebuild()
+GOATSObservation.model_rebuild()
+GOATSProgram.model_rebuild()
+GOATSSpectroscopyConfigOption.model_rebuild()
 GmosNorthImagingDetails.model_rebuild()
 GmosNorthLongSlitDetails.model_rebuild()
 GmosSouthImagingDetails.model_rebuild()

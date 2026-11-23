@@ -637,6 +637,7 @@ class Flamingos2Fpu(str, Enum):
     LONG_SLIT_4 = "LONG_SLIT_4"
     LONG_SLIT_6 = "LONG_SLIT_6"
     LONG_SLIT_8 = "LONG_SLIT_8"
+    BLANK_MASK = "BLANK_MASK"
 
 
 class Flamingos2ReadMode(str, Enum):

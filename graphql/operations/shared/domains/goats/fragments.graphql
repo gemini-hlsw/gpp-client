@@ -1,0 +1,573 @@
+# Fragments for the GOATS queries in queries.graphql.
+#
+# GOATS reads these responses as JSON (model_dump(by_alias=True)), so each fragment
+# selects exactly what GOATS uses. They are GOATS-only: other domains keep their own
+# fragments, and a change here changes what GOATS receives.
+#
+# Select __typename by hand on every interface or union field. ariadne-codegen adds
+# it to operations but not to fragments, while the generated model still requires
+# it, so a fragment without it fails to parse GPP's response.
+
+# --- GetGOATSPrograms ---------------------------------------------------------
+
+fragment GOATSProgram on Program {
+  id
+  name
+  description
+  reference {
+    __typename
+    label
+  }
+  proposalStatus
+  type
+  tooActivationCeiling
+}
+
+# --- GetGOATSObservations -----------------------------------------------------
+
+fragment GOATSObservation on Observation {
+  id
+  reference {
+    label
+  }
+  instrument
+  calibrationRole
+  configurationRequests {
+    id
+  }
+  title
+  subtitle
+  constraintSet {
+    ...GOATSConstraintSet
+  }
+  workflow {
+    calculationState
+    value {
+      state
+      validTransitions
+      validationErrors {
+        code
+      }
+    }
+  }
+  attachments {
+    id
+    attachmentType
+    fileName
+    description
+    updatedAt
+  }
+  targetEnvironment {
+    asterism {
+      id
+      name
+      opportunity {
+        __typename
+      }
+    }
+    firstScienceTarget {
+      ...GOATSTarget
+    }
+  }
+  posAngleConstraint {
+    mode
+    angle {
+      degrees
+    }
+  }
+  scienceBand
+  observationDuration {
+    seconds
+    minutes
+    hours
+    iso
+  }
+  observerNotes
+  scienceRequirements {
+    mode
+    spectroscopy {
+      wavelength {
+        nanometers
+      }
+    }
+    exposureTimeMode {
+      ...GOATSExposureTimeMode
+    }
+  }
+  observingMode {
+    ...GOATSObservingMode
+  }
+  program {
+    allocations {
+      scienceBand
+      duration {
+        hours
+      }
+    }
+    timeCharge {
+      band
+      time {
+        program {
+          hours
+        }
+      }
+    }
+  }
+  schedulingConstraints {
+    ...GOATSSchedulingConstraints
+  }
+  priority
+}
+
+fragment GOATSConstraintSet on ConstraintSet {
+  imageQuality
+  cloudExtinction
+  skyBackground
+  waterVapor
+  elevationRange {
+    airMass {
+      min
+      max
+    }
+    hourAngle {
+      minHours
+      maxHours
+    }
+  }
+}
+
+fragment GOATSTarget on Target {
+  id
+  name
+  opportunity {
+    __typename
+  }
+  sidereal {
+    ra {
+      hms
+      hours
+      degrees
+    }
+    dec {
+      dms
+      degrees
+    }
+    properMotion {
+      ra {
+        milliarcsecondsPerYear
+      }
+      dec {
+        milliarcsecondsPerYear
+      }
+    }
+    parallax {
+      milliarcseconds
+    }
+    radialVelocity {
+      kilometersPerSecond
+    }
+  }
+  sourceProfile {
+    point {
+      bandNormalized {
+        brightnesses {
+          band
+          value
+          units
+        }
+        sed {
+          blackBodyTempK
+          coolStar
+          fluxDensities {
+            wavelength {
+              nanometers
+            }
+            density
+          }
+          fluxDensitiesAttachment
+          galaxy
+          hiiRegion
+          planet
+          planetaryNebula
+          powerLaw
+          quasar
+          stellarLibrary
+        }
+      }
+    }
+  }
+}
+
+fragment GOATSSchedulingConstraints on SchedulingConstraints {
+  schedulingMode
+  tooActivation
+  timingWindows {
+    inclusion
+    startUtc
+    end {
+      __typename
+      ... on TimingWindowEndAt {
+        atUtc
+      }
+      ... on TimingWindowEndAfter {
+        after {
+          seconds
+        }
+        repeat {
+          period {
+            seconds
+          }
+          times
+        }
+      }
+    }
+  }
+}
+
+# Observing modes GOATS supports. Add a mode here and as a fragment below.
+fragment GOATSObservingMode on ObservingMode {
+  instrument
+  mode
+  gmosNorthLongSlit {
+    ...GOATSGmosNorthLongSlit
+  }
+  gmosSouthLongSlit {
+    ...GOATSGmosSouthLongSlit
+  }
+  gmosNorthImaging {
+    ...GOATSGmosNorthImaging
+  }
+  gmosSouthImaging {
+    ...GOATSGmosSouthImaging
+  }
+}
+
+# GmosNorthLongSlit and GmosSouthLongSlit share no interface in the schema, so the
+# two fragments repeat the same selection. Keep them in step.
+fragment GOATSGmosNorthLongSlit on GmosNorthLongSlit {
+  grating
+  filter
+  fpu
+  centralWavelength {
+    nanometers
+  }
+  wavelengthDithers {
+    nanometers
+  }
+  xBin
+  yBin
+  ampReadMode
+  roi
+  exposureTimeMode {
+    ...GOATSExposureTimeMode
+  }
+  defaultTelescopeConfigs {
+    ...GOATSSlitTelescopeConfigs
+  }
+  explicitTelescopeConfigs {
+    ...GOATSSlitTelescopeConfigs
+  }
+}
+
+fragment GOATSGmosSouthLongSlit on GmosSouthLongSlit {
+  grating
+  filter
+  fpu
+  centralWavelength {
+    nanometers
+  }
+  wavelengthDithers {
+    nanometers
+  }
+  xBin
+  yBin
+  ampReadMode
+  roi
+  exposureTimeMode {
+    ...GOATSExposureTimeMode
+  }
+  defaultTelescopeConfigs {
+    ...GOATSSlitTelescopeConfigs
+  }
+  explicitTelescopeConfigs {
+    ...GOATSSlitTelescopeConfigs
+  }
+}
+
+# Same as above: GmosNorthImaging and GmosSouthImaging repeat one selection.
+fragment GOATSGmosNorthImaging on GmosNorthImaging {
+  filters {
+    filter
+    exposureTimeMode {
+      ...GOATSExposureTimeMode
+    }
+  }
+  ampReadMode
+  bin
+  roi
+  variant {
+    ...GOATSImagingVariant
+  }
+}
+
+fragment GOATSGmosSouthImaging on GmosSouthImaging {
+  filters {
+    filter
+    exposureTimeMode {
+      ...GOATSExposureTimeMode
+    }
+  }
+  ampReadMode
+  bin
+  roi
+  variant {
+    ...GOATSImagingVariant
+  }
+}
+
+# Building blocks shared by the observing modes and science requirements.
+
+fragment GOATSExposureTimeMode on ExposureTimeMode {
+  signalToNoise {
+    value
+    at {
+      nanometers
+    }
+  }
+  timeAndCount {
+    time {
+      seconds
+    }
+    count
+    at {
+      nanometers
+    }
+  }
+}
+
+fragment GOATSOffset on Offset {
+  p {
+    arcseconds
+  }
+  q {
+    arcseconds
+  }
+}
+
+fragment GOATSTelescopeConfig on TelescopeConfig {
+  guiding
+  offset {
+    ...GOATSOffset
+  }
+}
+
+fragment GOATSSlitTelescopeConfigs on SlitTelescopeConfigs {
+  alongSlit {
+    guiding
+    q {
+      arcseconds
+    }
+  }
+  offsetMode
+  toSky {
+    ...GOATSTelescopeConfig
+  }
+}
+
+fragment GOATSTelescopeConfigGenerator on TelescopeConfigGenerator {
+  generatorType
+  enumerated {
+    values {
+      ...GOATSTelescopeConfig
+    }
+  }
+  random {
+    seed
+    size {
+      arcseconds
+    }
+    center {
+      ...GOATSOffset
+    }
+  }
+  spiral {
+    seed
+    size {
+      arcseconds
+    }
+    center {
+      ...GOATSOffset
+    }
+  }
+  uniform {
+    cornerA {
+      ...GOATSOffset
+    }
+    cornerB {
+      ...GOATSOffset
+    }
+  }
+}
+
+fragment GOATSImagingVariant on ImagingVariant {
+  variantType
+  grouped {
+    skyCount
+    skyOffsets {
+      ...GOATSTelescopeConfigGenerator
+    }
+    order
+    offsets {
+      ...GOATSTelescopeConfigGenerator
+    }
+  }
+  interleaved {
+    offsets {
+      ...GOATSTelescopeConfigGenerator
+    }
+    skyCount
+    skyOffsets {
+      ...GOATSTelescopeConfigGenerator
+    }
+  }
+  preImaging {
+    offset1 {
+      ...GOATSOffset
+    }
+    offset2 {
+      ...GOATSOffset
+    }
+    offset3 {
+      ...GOATSOffset
+    }
+    offset4 {
+      ...GOATSOffset
+    }
+  }
+}
+
+# --- GetGOATSConfigurationRequests --------------------------------------------
+
+fragment GOATSConfigurationRequest on ConfigurationRequest {
+  id
+  status
+  justification
+  applicableObservations
+  configuration {
+    conditions {
+      imageQuality
+      cloudExtinction
+      skyBackground
+      waterVapor
+    }
+    target {
+      ...GOATSConfigurationTarget
+    }
+    observingMode {
+      instrument
+      mode
+      gmosNorthLongSlit {
+        grating
+      }
+      gmosSouthLongSlit {
+        grating
+      }
+      gmosNorthImaging {
+        filters
+      }
+      gmosSouthImaging {
+        filters
+      }
+    }
+  }
+}
+
+fragment GOATSConfigurationTarget on ConfigurationTarget {
+  coordinates {
+    ra {
+      hms
+      degrees
+    }
+    dec {
+      dms
+      degrees
+    }
+  }
+  region {
+    rightAscensionArc {
+      type
+      start {
+        hms
+        degrees
+      }
+      end {
+        hms
+        degrees
+      }
+    }
+    declinationArc {
+      type
+      start {
+        dms
+        degrees
+      }
+      end {
+        dms
+        degrees
+      }
+    }
+  }
+}
+
+# --- GetGOATSConfigOptions ----------------------------------------------------
+
+fragment GOATSSpectroscopyConfigOption on SpectroscopyConfigOption {
+  name
+  instrument
+  site
+  focalPlane
+  fpuLabel
+  disperserLabel
+  filterLabel
+  slitWidth {
+    arcseconds
+  }
+  resolution
+  wavelengthMin {
+    nanometers
+  }
+  wavelengthMax {
+    nanometers
+  }
+  wavelengthOptimal {
+    nanometers
+  }
+  wavelengthCoverage {
+    nanometers
+  }
+  gmosNorth {
+    fpu
+    grating
+    filter
+  }
+  gmosSouth {
+    fpu
+    grating
+    filter
+  }
+}
+
+fragment GOATSImagingConfigOption on ImagingConfigOption {
+  instrument
+  site
+  filterLabel
+  fov {
+    arcseconds
+  }
+  gmosNorth {
+    filter
+  }
+  gmosSouth {
+    filter
+  }
+}
